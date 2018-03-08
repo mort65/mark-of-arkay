@@ -52,6 +52,7 @@ Int oidExternalTeleportLocation
 Int oidTeleportLocation_M
 Int oidRemovableItems_M
 Int oidNoTradingAftermath_M
+Int oidArkayCurses_M
 Int oidInformation
 Int oidResetHistory
 Int oidHistory
@@ -63,6 +64,7 @@ String[] Property sRespawnPoints Auto
 String[] Property sLoseOptions Auto
 String[] Property sAftermathOptions Auto
 Bool[] Property bRespawnPointsFlags Auto
+String[] Property sArkayCurses Auto
 Actor Property PlayerRef Auto
 GlobalVariable Property moaState Auto
 GlobalVariable Property moaLootChance Auto
@@ -78,7 +80,7 @@ Bool Property bIsDragonSoulEnabled = True Auto Hidden
 Bool Property bIsBSoulGemEnabled = True Auto Hidden
 Bool Property bIsGSoulGemEnabled = True Auto Hidden
 Bool Property bIsPotionEnabled = False Auto Hidden
-Bool Property bAutoDrinkPotion = True Auto Hidden
+Bool Property bAutoDrinkPotion = False Auto Hidden
 Bool Property bIsGoldEnabled = True Auto Hidden 
 Bool Property bRecallByArkayMark = False Auto Hidden ;
 Bool Property bIsMarkEnabled = True Auto Hidden
@@ -95,6 +97,7 @@ Bool Property bIsRecallRestricted = True Auto Hidden
 Bool Property bAutoSwitchRP = False Auto Hidden
 Int Property iNotTradingAftermath = 0 Auto Hidden
 Int Property iRemovableItems = 0 Auto Hidden
+Int Property iArkayCurse = 0 Auto Hidden
 Bool Property bLoseForever = False Auto Hidden
 Bool Property bSoulMarkStay = False Auto Hidden
 Bool Property bIsHistoryEnabled = False Auto Hidden
@@ -121,6 +124,7 @@ Spell Property SacrificePower Auto
 Spell Property MoveCustomMarker Auto
 Spell Property RecallMarker Auto
 Spell Property ArkayCurse Auto
+Spell Property ArkayCurseAlt Auto
 Bool Property bShiftBack = False Auto Hidden
 Bool Property bShiftBackRespawn = True Auto Hidden
 String Property sResetHistory = "" Auto Hidden
@@ -291,20 +295,32 @@ Event OnPageReset(String page)
 			flags = OPTION_FLAG_DISABLED
 		Endif
 		oidRemovableItems_M = AddMenuOption("$mrt_MarkofArkay_RemovableItems_M", sLoseOptions[iRemovableItems], flags)
-		SetCursorPosition(8)
-		oidRespawnNaked =AddToggleOption("$mrt_MarkofArkay_RespawnNaked", bRespawnNaked, flags)
+		SetCursorPosition(6)
+		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bArkayCurse )
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		Endif
+		oidArkayCurses_M = AddMenuOption("$mrt_MarkofArkay_ArkayCurses_M", sArkayCurses[iArkayCurse], flags)
 		SetCursorPosition(10)
-		oidArkayCurse =AddToggleOption("$mrt_MarkofArkay_ArkayCurse", bArkayCurse, flags)
+		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1))
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		Endif
+		oidRespawnNaked = AddToggleOption("$mrt_MarkofArkay_RespawnNaked", bRespawnNaked, flags)
 		SetCursorPosition(12)
+		oidArkayCurse = AddToggleOption("$mrt_MarkofArkay_ArkayCurse", bArkayCurse, flags)
+		SetCursorPosition(14)
 		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && ( iRemovableItems != 0 ))
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		Endif
 		oidLoseforever = AddToggleOption("$mrt_MarkofArkay_Loseforever",bLoseForever, flags)
-		SetCursorPosition(14)
-		oidSoulMarkStay = AddToggleOption("$mrt_MarkofArkay_SoulMarkStay",bSoulMarkStay,flags)
 		SetCursorPosition(16)
+		oidSoulMarkStay = AddToggleOption("$mrt_MarkofArkay_SoulMarkStay",bSoulMarkStay,flags)
+		SetCursorPosition(18)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled
 			flags =	OPTION_FLAG_NONE
 		Else
@@ -685,13 +701,19 @@ Event OnOptionSelect(Int option)
 	ElseIf (option == oidArkayCurse)
 		bArkayCurse = !bArkayCurse
 		SetToggleOptionValue(oidArkayCurse, bArkayCurse)
+		If  ( bIsRevivalEnabled ) && ( iNotTradingAftermath == 1) && ( bArkayCurse )
+			flags = OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		Endif
+		SetOptionFlags(oidArkayCurses_M, flags)
 	ElseIf (option == oidLoseforever)
 		bLoseForever = !bLoseForever
 		SetToggleOptionValue(oidLoseforever, bLoseForever)
 	ElseIf (option == oidLostItemQuest)
 		bLostItemQuest = !bLostItemQuest
 		SetToggleOptionValue(oidLostItemQuest, bLostItemQuest)
-		If bLostItemQuest && ( ReviveScript.bIsItemsRemoved || PlayerRef.HasSpell(ArkayCurse) )
+		If bLostItemQuest && ( ReviveScript.bIsItemsRemoved || PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt) )
 			moaRetrieveLostItems.start()
 			moaRetrieveLostItems.SetStage(1)
 		ElseIf moaRetrieveLostItems.IsRunning()
@@ -765,6 +787,7 @@ Event OnOptionSelect(Int option)
 		SetOptionFlags(oidTeleportLocation_M,flags,True)
 		SetOptionFlags(oidRespawnNaked,flags,True)
 		SetOptionFlags(oidArkayCurse,flags,True)
+		SetOptionFlags(oidArkayCurses_M,flags,True)
 		SetOptionFlags(oidLoseforever,flags,True)
 		SetOptionFlags(oidLostItemQuest,flags,True)
 		SetOptionFlags(oidAutoSwitchRP,flags,True)
@@ -829,6 +852,7 @@ Event OnOptionSelect(Int option)
 		SetOptionFlags(oidTeleportLocation_M,flags,True)
 		SetOptionFlags(oidRespawnNaked,flags,True)
 		SetOptionFlags(oidArkayCurse,flags,True)
+		SetOptionFlags(oidArkayCurses_M,flags,True)
 		SetOptionFlags(oidLoseforever,flags,True)
 		SetOptionFlags(oidLostItemQuest,flags,True)
 		SetOptionFlags(oidLostItemQuest,flags,True)
@@ -1003,6 +1027,10 @@ Event OnOptionMenuOpen(Int option)
 		SetMenuDialogoptions(sAftermathOptions)
 		SetMenuDialogStartIndex(iNotTradingAftermath)
 		SetMenuDialogDefaultIndex(0)
+	ElseIf (option == oidArkayCurses_M)
+		SetMenuDialogoptions(sArkayCurses)
+		SetMenuDialogStartIndex(iArkayCurse)
+		SetMenuDialogDefaultIndex(0)
 	EndIf
 EndEvent
 
@@ -1056,6 +1084,12 @@ Event OnOptionMenuAccept(Int option, Int index)
 		SetOptionFlags(oidRespawnNaked,flags,True)
 		SetOptionFlags(oidArkayCurse,flags,True)
 		SetOptionFlags(oidRemovableItems_M,flags,True)
+		If bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bArkayCurse
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		Endif
+		SetOptionFlags(oidArkayCurses_M,flags,True)
 		If ( bIsRevivalEnabled && ( iNotTradingAftermath == 1) && !( iRemovableItems == 0 ))
 			flags =	OPTION_FLAG_NONE
 		Else
@@ -1088,7 +1122,10 @@ Event OnOptionMenuAccept(Int option, Int index)
 		SetOptionFlags(oidRespawnPoint5,flags,True)
 		SetOptionFlags(oidRespawnPoint6,flags,True)
 		SetOptionFlags(oidRespawnPoint7,flags)
-	EndIf
+	ElseIf (option == oidArkayCurses_M)
+	    iArkayCurse = index
+		SetMenuOptionValue(oidArkayCurses_M, sArkayCurses[iArkayCurse])
+	Endif
 EndEvent
 
 Event OnOptionDefault(Int option)
@@ -1127,7 +1164,7 @@ Event OnOptionDefault(Int option)
 		bIsPotionEnabled = False
 		SetToggleOptionValue(oidPotionRevivalEnabled, bIsPotionEnabled)
 	ElSeIf (option == oidAutoDrinkPotion)
-		bAutoDrinkPotion = True
+		bAutoDrinkPotion = False
 		SetToggleOptionValue(oidAutoDrinkPotion, bAutoDrinkPotion) 
 	ElseIf (option == oidDragonSoulSlider)
 		fValueSoulSlider = 1.0
@@ -1224,6 +1261,8 @@ Event OnOptionDefault(Int option)
 	ElseIf (option == oidArkayCurse)
 		bArkayCurse = False
 		SetToggleOptionValue(oidArkayCurse,False)
+		flags = OPTION_FLAG_DISABLED
+		SetOptionFlags(oidArkayCurses_M, flags)
 	ElseIf (option == oidLoseforever)
 		bLoseForever = False
 		SetToggleOptionValue(oidLoseforever,False)
@@ -1255,6 +1294,7 @@ Event OnOptionDefault(Int option)
 		flags = OPTION_FLAG_DISABLED
 		SetOptionFlags(oidRespawnNaked,flags,True)
 		SetOptionFlags(oidArkayCurse,flags,True)
+		SetOptionFlags(oidArkayCurses_M,flags,True)
 		SetOptionFlags(oidLoseforever,flags,True)
 		SetOptionFlags(oidSoulMarkStay,flags,True)
 		SetOptionFlags(oidRemovableItems_M,flags)
@@ -1275,6 +1315,9 @@ Event OnOptionDefault(Int option)
 	ElseIf (option == oidAutoSwitchRP)
 		bAutoSwitchRP = False
 		SetToggleOptionValue(oidAutoSwitchRP,False)
+	ElseIf (option == oidArkayCurses_M)
+		iArkayCurse = 0
+		SetMenuOptionValue(oidArkayCurses_M, sArkayCurses[0])
 	EndIf
 EndEvent
 
@@ -1436,6 +1479,8 @@ Event OnOptionHighlight(Int option)
 		SetInfoText("$mrt_MarkofArkay_DESC_AutoSwitchRP")
 	ElseIf (option == oidRecallCost)
 		SetInfoText("$mrt_MarkofArkay_DESC_RecallCost")
+	ElseIf (option == oidArkayCurses_M)
+	    setInfotext("$mrt_MarkofArkay_DESC_ArkayCurses_M")
 	Endif
 EndEvent
 
@@ -1484,6 +1529,7 @@ Function moaStop()
 		PlayerRef.RemoveSpell(SacrificePower)
 		PlayerRef.RemoveSpell(RevivalPower)
 		PlayerRef.RemoveSpell(ArkayCurse)
+		PlayerRef.RemoveSpell(ArkayCurseAlt)
 		PlayerRef.RemoveSpell(MoveCustomMarker)
 		PlayerRef.RemoveSpell(RecallMarker)
 		Debug.SetGodMode(False)
@@ -1531,7 +1577,7 @@ Function setPages()
 EndFunction
 
 Int Function GetVersion()
-	Return 23
+	Return 25
 EndFunction
 
 Event OnVersionUpdate(int a_version)
@@ -1623,7 +1669,7 @@ Event OnVersionUpdate(int a_version)
 		If moaState.GetValue() == 1
 			PlayerRef.AddSpell(RecallMarker)
 		EndIf
-		If bLostItemQuest && ( ReviveScript.bIsItemsRemoved || PlayerRef.HasSpell(ArkayCurse) )
+		If bLostItemQuest && ( ReviveScript.bIsItemsRemoved || PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt) )
 			moaRetrieveLostItems.start()
 			moaRetrieveLostItems.SetStage(1)
 		ElseIf moaRetrieveLostItems.IsRunning()
@@ -1661,8 +1707,11 @@ Event OnVersionUpdate(int a_version)
 		ReviveScript.RegisterForSleep()
 	EndIf
 	If (a_version >= 23 && CurrentVersion < 23)
-		setArrays()
 		Debug.Trace(self + ": Updating script to version "  + 23)
+	EndIf
+	If (a_version >= 25 && CurrentVersion < 25)
+		setArrays()
+		Debug.Trace(self + ": Updating script to version "  + 25)
 	EndIf
 EndEvent
 
@@ -1711,6 +1760,10 @@ Function setArrays()
 	sAftermathOptions[0] = "$mrt_MarkofArkay_AftermathOptions_0"
 	sAftermathOptions[1] = "$mrt_MarkofArkay_AftermathOptions_1"
 	sAftermathOptions[2] = "$mrt_MarkofArkay_AftermathOptions_2"
+	sArkayCurses = New String[3]
+	sArkayCurses[0]="$mrt_MarkofArkay_ArkayCurses_0"
+	sArkayCurses[1]="$mrt_MarkofArkay_ArkayCurses_1"
+	sArkayCurses[2]="$mrt_MarkofArkay_ArkayCurses_2"
 EndFunction
 
 

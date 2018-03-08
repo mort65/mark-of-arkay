@@ -33,12 +33,14 @@ Spell Property BleedoutProtection Auto
 Spell Property MoveCustomMarker Auto
 Spell Property RecallMarker Auto
 Spell Property ArkayCurse Auto
+Spell Property ArkayCurseAlt Auto
 MagicEffect property AutoReviveSelf Auto
 ImageSpaceModifier Property FadeOut Auto
 ImageSpaceModifier Property BlackScreen Auto
 ImageSpaceModifier Property FadeIn Auto
 ImageSpaceModifier Property LowHealthImod Auto
 ObjectReference Property CustomMarker Auto
+ObjectReference Property PlayerMarker Auto
 ObjectReference Property SleepMarker Auto
 Objectreference Property LostItemsMarker Auto
 ObjectReference Property LostItemsChest Auto
@@ -199,7 +201,7 @@ Function BleedoutHandler(String CurrentState)
 	SetVars()
 	strRemovedItem = ""
 	bHasAutoReviveEffect = PlayerRef.HasMagicEffect(AutoReviveSelf)
-	PlayerRef.StopCombatAlarm()
+	;PlayerRef.StopCombatAlarm()
 	If !ConfigMenu.bIsRevivalEnabled
 		If !ConfigMenu.bIsEffectEnabled
 			Debug.SetGodMode(False)
@@ -279,7 +281,7 @@ Function BleedoutHandler(String CurrentState)
 			Utility.Wait(ConfigMenu.fBleedoutTimeSlider)
 		Else
 			Game.EnablePlayerControls()
-			PlayerRef.StopCombatAlarm()
+			;PlayerRef.StopCombatAlarm()
 			Debug.SetGodMode(False)
 			Utility.Wait(ConfigMenu.fBleedoutTimeSlider)
 		Endif
@@ -529,15 +531,15 @@ Function SortPriorityArray () ;sort priority so higher priority and those items 
 				Elseif (PriorityArray[Index1]>10) && (PriorityArray[Index1]<20) && bSeptimRevive
 					bIsIndex1 = True
 				EndIf
-				If (PriorityArray[Index2]>50) && bGSoulGemRevive
+				If (PriorityArray[Index1 + 1]>50) && bGSoulGemRevive
 					bIsIndex2 = True ; Item at index 2 is tradable
-				Elseif (PriorityArray[Index2]>40) && (PriorityArray[Index2]<50) && bArkayMarkRevive
+				Elseif (PriorityArray[Index1 + 1]>40) && (PriorityArray[Index1 + 1]<50) && bArkayMarkRevive
 					bIsIndex2 = True
-				Elseif (PriorityArray[Index2]>30) && (PriorityArray[Index2]<40) && bBSoulGemRevive
+				Elseif (PriorityArray[Index1 + 1]>30) && (PriorityArray[Index1 + 1]<40) && bBSoulGemRevive
 					bIsIndex2 = True
-				Elseif (PriorityArray[Index2]>20) && (PriorityArray[Index2]<30) && bDragonSoulRevive
+				Elseif (PriorityArray[Index1 + 1]>20) && (PriorityArray[Index1 + 1]<30) && bDragonSoulRevive
 					bIsIndex2 = True
-				Elseif (PriorityArray[Index2]>10) && (PriorityArray[Index2]<20) && bSeptimRevive
+				Elseif (PriorityArray[Index1 + 1]>10) && (PriorityArray[Index1 + 1]<20) && bSeptimRevive
 					bIsIndex2 = True
 				EndIf
 				If (bIsIndex1 == True) && (bIsIndex2 == False) ;tradable items should have lower index in the array after sort
@@ -732,11 +734,12 @@ Function RevivePlayer(Bool bRevive)
 			PlayerRef.SetActorValue("Paralysis",0)
 		EndIf
 		PlayerRef.ResetHealthAndLimbs()
-		PlayerRef.StopCombatAlarm()
+		;PlayerRef.StopCombatAlarm()
 		Game.ForceThirdPerson()
 		Debug.SetGodMode(False)
-		If !bHasAutoReviveEffect && PlayerRef.HasSpell(ArkayCurse)
+		If !bHasAutoReviveEffect && ( PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt) )
 			PlayerRef.RemoveSpell(ArkayCurse)
+			PlayerRef.RemoveSpell(ArkayCurseAlt)
 			If !bIsItemsRemoved
 				If ( LostItemsMarker.GetParentCell() != DefaultCell )
 					LostItemsMarker.MoveToMyEditorLocation()
@@ -909,7 +912,14 @@ Function RevivePlayer(Bool bRevive)
 			PlayerRef.DispelAllSpells()
 			Utility.Wait(6.0)
 			If ConfigMenu.bArkayCurse
-				PlayerRef.AddSpell(ArkayCurse)
+			    If ConfigMenu.iArkayCurse == 0
+					PlayerRef.AddSpell(ArkayCurse)
+				ElseIf ConfigMenu.iArkayCurse == 1
+					PlayerRef.AddSpell(ArkayCurseAlt)
+				Else
+					PlayerRef.AddSpell(ArkayCurse)
+					PlayerRef.AddSpell(ArkayCurseAlt)
+				Endif
 			EndIf
 			BlackScreen.PopTo(FadeIn)
 			Debug.SetGodMode(False)
@@ -918,7 +928,7 @@ Function RevivePlayer(Bool bRevive)
 			PlayerRef.StopCombatAlarm()
 			moaBleedoutHandlerState.SetValue(0)
 			LowHealthImod.Remove()
-			If ( ConfigMenu.bLostItemQuest && ( ( iRemovableItems != 0 ) || PlayerRef.HasSpell(ArkayCurse) ) )
+			If ( ConfigMenu.bLostItemQuest && ( ( iRemovableItems != 0 ) || PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt) ) )
 				If ( ConfigMenu.bLoseForever && moaRetrieveLostItems.IsRunning() && bDidItemsRemoved )
 					moaRetrieveLostItems.SetStage(10)
 					Utility.Wait(0.5)
@@ -1076,11 +1086,13 @@ Int Function iGetRandomWithExclusionArray( Int iFrom, Int iTo, Bool[] iFlagArray
 EndFunction
 
 Function Teleport()
+	PlayerMarker.Enable()
+	PlayerMarker.MoveTo(playerRef)
 	If (ConfigMenu.iTeleportLocation < (ConfigMenu.sRespawnPoints.Length - 4))
 		If (PlayerRef.GetDistance(MarkerList.GetAt(ConfigMenu.iTeleportLocation) As Objectreference) >= 3000.0)
 			PlayerRef.MoveTo( MarkerList.GetAt( ConfigMenu.iTeleportLocation ) As Objectreference, abMatchRotation = true)
 			Utility.Wait(0.5)
-			If (PlayerRef.GetDistance(MarkerList.GetAt(ConfigMenu.iTeleportLocation) As Objectreference) > 999.0)
+			If (PlayerRef.GetDistance(MarkerList.GetAt(ConfigMenu.iTeleportLocation) As Objectreference) > 1999.0)
 				RandomTeleport()
 			EndIf 
 		Else
@@ -1092,11 +1104,11 @@ Function Teleport()
 		If (!SleepMarker.Isdisabled() && (SleepMarker.GetParentCell() != DefaultCell) && (PlayerRef.GetDistance(SleepMarker) >= 3000.0))
 			PlayerRef.MoveTo(SleepMarker, abMatchRotation = true)
 			Utility.Wait(0.5)
-			If ( PlayerRef.GetDistance(SleepMarker) > 999.0 )
-				If (((PlayerRef.GetDistance(CustomMarker) >= 3000.0)) && !CustomMarker.IsDisabled() && (CustomMarker.GetParentCell() != DefaultCell))
+			If ( PlayerRef.GetDistance(SleepMarker) > 1999.0 )
+				If ( !CustomMarker.IsDisabled() && ( CustomMarker.GetDistance(PlayerMarker) >= 3000.0 ) && (CustomMarker.GetParentCell() != DefaultCell))
 					PlayerRef.MoveTo(CustomMarker, abMatchRotation = true)
 					Utility.Wait(0.5)
-					If ( PlayerRef.GetDistance(CustomMarker) > 999.0 )
+					If ( PlayerRef.GetDistance(CustomMarker) > 1999.0 )
 						RandomTeleport()
 					EndIf
 				Else
@@ -1106,7 +1118,7 @@ Function Teleport()
 		ElseIf ((PlayerRef.GetDistance(CustomMarker) >= 3000.0 ) && !CustomMarker.Isdisabled() && (CustomMarker.GetParentCell() != DefaultCell))
 			PlayerRef.MoveTo(CustomMarker, abMatchRotation = true)
 			Utility.Wait(0.5)
-			If ( PlayerRef.GetDistance(CustomMarker) > 999.0 )
+			If ( PlayerRef.GetDistance(CustomMarker) > 1999.0 )
 				RandomTeleport()
 			EndIf	
 		Else
@@ -1116,11 +1128,11 @@ Function Teleport()
 		If ((PlayerRef.GetDistance(CustomMarker) >= 3000.0) && !CustomMarker.IsDisabled() && (CustomMarker.GetParentCell() != DefaultCell))
 			PlayerRef.MoveTo(CustomMarker, abMatchRotation = true)
 			Utility.Wait(0.5)
-			If ( PlayerRef.GetDistance(CustomMarker) > 999.0 )
-				If (!SleepMarker.Isdisabled() && (SleepMarker.GetParentCell() != DefaultCell) && (PlayerRef.GetDistance(SleepMarker) >= 3000.0))
+			If ( PlayerRef.GetDistance(CustomMarker) > 1999.0 )
+				If (!SleepMarker.Isdisabled() && (SleepMarker.GetParentCell() != DefaultCell) && ( SleepMarker.GetDistance(PlayerMarker) >= 3000.0 ))
 					PlayerRef.MoveTo(SleepMarker, abMatchRotation = true)
 					Utility.Wait(0.5)
-					If ( PlayerRef.GetDistance(SleepMarker) > 999.0 )
+					If ( PlayerRef.GetDistance(SleepMarker) > 1999.0 )
 						RandomTeleport()
 					EndIf
 				Else
@@ -1130,7 +1142,7 @@ Function Teleport()
 		ElseIf (!SleepMarker.Isdisabled() && (SleepMarker.GetParentCell() != DefaultCell) && (PlayerRef.GetDistance(SleepMarker) >= 3000.0))
 			PlayerRef.MoveTo(SleepMarker, abMatchRotation = true)
 			Utility.Wait(0.5)
-			If ( PlayerRef.GetDistance(SleepMarker) > 999.0 )
+			If ( PlayerRef.GetDistance(SleepMarker) > 1999.0 )
 				RandomTeleport()
 			EndIf
 		Else
@@ -1142,14 +1154,40 @@ Function Teleport()
 				Int iMarkerIndex = iGetRandomRefFromListWithExclusions( 0, ExternalMarkerList.GetSize() - 1, ExternalMarkerList )
 				If iMarkerIndex != -1
 					PlayerRef.MoveTo( ExternalMarkerList.GetAt(iMarkerIndex) As ObjectReference, abMatchRotation = true )
+					Utility.Wait(0.5)
+					If ( PlayerRef.GetDistance(ExternalMarkerList.GetAt( iMarkerIndex ) As ObjectReference) > 1999.0 )
+						If ((PlayerMarker.GetDistance(CustomMarker) >= 3000.0) && !CustomMarker.IsDisabled() && (CustomMarker.GetParentCell() != DefaultCell))
+							PlayerRef.MoveTo(CustomMarker, abMatchRotation = true)
+							Utility.Wait(0.5)
+							If ( PlayerRef.GetDistance(CustomMarker) > 1999.0 )
+								If (!SleepMarker.Isdisabled() && (SleepMarker.GetParentCell() != DefaultCell) && (PlayerMarker.GetDistance(SleepMarker) >= 3000.0))
+									PlayerRef.MoveTo(SleepMarker, abMatchRotation = true)
+									Utility.Wait(0.5)
+									If ( PlayerRef.GetDistance(SleepMarker) > 1999.0 )
+										RandomTeleport()
+									EndIf
+								Else
+									RandomTeleport()
+								Endif
+							EndIf
+						ElseIf (!SleepMarker.Isdisabled() && (SleepMarker.GetParentCell() != DefaultCell) && (PlayerMarker.GetDistance(SleepMarker) >= 3000.0))
+							PlayerRef.MoveTo(SleepMarker, abMatchRotation = true)
+							Utility.Wait(0.5)
+							If ( PlayerRef.GetDistance(SleepMarker) > 1999.0 )
+								RandomTeleport()
+							EndIf
+						Else
+							RandomTeleport()
+						EndIf
+					EndIf
 				ElseIf ((PlayerRef.GetDistance(CustomMarker) >= 3000.0 ) && !CustomMarker.IsDisabled() && (CustomMarker.GetParentCell() != DefaultCell))
 					PlayerRef.MoveTo( CustomMarker, abMatchRotation = true )
 					Utility.Wait(0.5)
-					If ( PlayerRef.GetDistance(CustomMarker) > 999.0 )
-						If (!SleepMarker.Isdisabled() && (SleepMarker.GetParentCell() != DefaultCell) && (PlayerRef.GetDistance(SleepMarker) >= 3000.0))
+					If ( PlayerRef.GetDistance(CustomMarker) > 1999.0 )
+						If (!SleepMarker.Isdisabled() && (SleepMarker.GetParentCell() != DefaultCell) && (PlayerMarker.GetDistance(SleepMarker) >= 3000.0))
 							PlayerRef.MoveTo(SleepMarker, abMatchRotation = true)
 							Utility.Wait(0.5)
-							If ( PlayerRef.GetDistance(SleepMarker) > 999.0 )
+							If ( PlayerRef.GetDistance(SleepMarker) > 1999.0 )
 								RandomTeleport()
 							EndIf
 						Else
@@ -1159,7 +1197,7 @@ Function Teleport()
 				ElseIf (!SleepMarker.Isdisabled() && (SleepMarker.GetParentCell() != DefaultCell) && (PlayerRef.GetDistance(SleepMarker) >= 3000.0))
 					PlayerRef.MoveTo(SleepMarker, abMatchRotation = true)
 					Utility.Wait(0.5)
-					If ( PlayerRef.GetDistance(SleepMarker) > 999.0 )
+					If ( PlayerRef.GetDistance(SleepMarker) > 1999.0 )
 						RandomTeleport()
 					EndIf
 				Else
@@ -1168,25 +1206,25 @@ Function Teleport()
 			ElseIf ( bCanTeleportToExtMarker( ExternalMarkerList.GetAt( ConfigMenu.iExternalIndex ) As ObjectReference ) &&  (PlayerRef.GetDistance(ExternalMarkerList.GetAt( ConfigMenu.iExternalIndex ) As ObjectReference) >= 3000.0) && ( ExternalMarkerList.GetAt( ConfigMenu.iExternalIndex ).GetType() == 61 ) )
 				PlayerRef.MoveTo( ExternalMarkerList.GetAt( ConfigMenu.iExternalIndex ) As ObjectReference, abMatchRotation = true )
 				Utility.Wait(0.5)
-				If ( PlayerRef.GetDistance(ExternalMarkerList.GetAt( ConfigMenu.iExternalIndex ) As ObjectReference) > 999.0 )
+				If ( PlayerRef.GetDistance(ExternalMarkerList.GetAt( ConfigMenu.iExternalIndex ) As ObjectReference) > 1999.0 )
 					If ((PlayerRef.GetDistance(CustomMarker) >= 3000.0) && !CustomMarker.IsDisabled() && (CustomMarker.GetParentCell() != DefaultCell))
 						PlayerRef.MoveTo(CustomMarker, abMatchRotation = true)
 						Utility.Wait(0.5)
-						If ( PlayerRef.GetDistance(CustomMarker) > 999.0 )
-							If (!SleepMarker.Isdisabled() && (SleepMarker.GetParentCell() != DefaultCell) && (PlayerRef.GetDistance(SleepMarker) >= 3000.0))
+						If ( PlayerRef.GetDistance(CustomMarker) > 1999.0 )
+							If (!SleepMarker.Isdisabled() && (SleepMarker.GetParentCell() != DefaultCell) && (PlayerMarker.GetDistance(SleepMarker) >= 3000.0))
 								PlayerRef.MoveTo(SleepMarker, abMatchRotation = true)
 								Utility.Wait(0.5)
-								If ( PlayerRef.GetDistance(SleepMarker) > 999.0 )
+								If ( PlayerRef.GetDistance(SleepMarker) > 1999.0 )
 									RandomTeleport()
 								EndIf
 							Else
 								RandomTeleport()
 							Endif
 						EndIf
-					ElseIf (!SleepMarker.Isdisabled() && (SleepMarker.GetParentCell() != DefaultCell) && (PlayerRef.GetDistance(SleepMarker) >= 3000.0))
+					ElseIf (!SleepMarker.Isdisabled() && (SleepMarker.GetParentCell() != DefaultCell) && (PlayerMarker.GetDistance(SleepMarker) >= 3000.0))
 						PlayerRef.MoveTo(SleepMarker, abMatchRotation = true)
 						Utility.Wait(0.5)
-						If ( PlayerRef.GetDistance(SleepMarker) > 999.0 )
+						If ( PlayerRef.GetDistance(SleepMarker) > 1999.0 )
 							RandomTeleport()
 						EndIf
 					Else
@@ -1196,11 +1234,11 @@ Function Teleport()
 			ElseIf ((PlayerRef.GetDistance(CustomMarker) >= 3000.0) && !CustomMarker.IsDisabled() && (CustomMarker.GetParentCell() != DefaultCell))
 				PlayerRef.MoveTo( CustomMarker, abMatchRotation = true )
 				Utility.Wait(0.5)
-				If ( PlayerRef.GetDistance(CustomMarker) > 999.0 )
-					If (!SleepMarker.Isdisabled() && (SleepMarker.GetParentCell() != DefaultCell) && (PlayerRef.GetDistance(SleepMarker) >= 3000.0))
+				If ( PlayerRef.GetDistance(CustomMarker) > 1999.0 )
+					If (!SleepMarker.Isdisabled() && (SleepMarker.GetParentCell() != DefaultCell) && (PlayerMarker.GetDistance(SleepMarker) >= 3000.0))
 						PlayerRef.MoveTo(SleepMarker, abMatchRotation = true)
 						Utility.Wait(0.5)
-						If ( PlayerRef.GetDistance(SleepMarker) > 999.0 )
+						If ( PlayerRef.GetDistance(SleepMarker) > 1999.0 )
 							RandomTeleport()
 						EndIf
 					Else
@@ -1210,7 +1248,7 @@ Function Teleport()
 			ElseIf (!SleepMarker.Isdisabled() && (SleepMarker.GetParentCell() != DefaultCell) && (PlayerRef.GetDistance(SleepMarker) >= 3000.0))
 				PlayerRef.MoveTo(SleepMarker, abMatchRotation = true)
 				Utility.Wait(0.5)
-				If ( PlayerRef.GetDistance(SleepMarker) > 999.0 )
+				If ( PlayerRef.GetDistance(SleepMarker) > 1999.0 )
 					RandomTeleport()
 				EndIf
 			Else
@@ -1219,11 +1257,11 @@ Function Teleport()
 		ElseIf ((PlayerRef.GetDistance(CustomMarker) >= 3000.0) && !CustomMarker.IsDisabled() && (CustomMarker.GetParentCell() != DefaultCell))
 			PlayerRef.MoveTo( CustomMarker, abMatchRotation = true )
 			Utility.Wait(0.5)
-			If ( PlayerRef.GetDistance(CustomMarker) > 999.0 )
-				If (!SleepMarker.Isdisabled() && (SleepMarker.GetParentCell() != DefaultCell) && (PlayerRef.GetDistance(SleepMarker) >= 3000.0))
+			If ( PlayerRef.GetDistance(CustomMarker) > 1999.0 )
+				If (!SleepMarker.Isdisabled() && (SleepMarker.GetParentCell() != DefaultCell) && (PlayerMarker.GetDistance(SleepMarker) >= 3000.0))
 					PlayerRef.MoveTo(SleepMarker, abMatchRotation = true)
 					Utility.Wait(0.5)
-					If ( PlayerRef.GetDistance(SleepMarker) > 999.0 )
+					If ( PlayerRef.GetDistance(SleepMarker) > 1999.0 )
 						RandomTeleport()
 					EndIf
 				Else
@@ -1233,17 +1271,19 @@ Function Teleport()
 		ElseIf (!SleepMarker.Isdisabled() && (SleepMarker.GetParentCell() != DefaultCell) && (PlayerRef.GetDistance(SleepMarker) >= 3000.0))
 			PlayerRef.MoveTo(SleepMarker, abMatchRotation = true)
 			Utility.Wait(0.5)
-			If ( PlayerRef.GetDistance(SleepMarker) > 999.0 )
+			If ( PlayerRef.GetDistance(SleepMarker) > 1999.0 )
 				RandomTeleport()
 			EndIf
 		Else
 			RandomTeleport()
 		Endif
 	Endif
+	PlayerMarker.MoveToMyEditorLocation()
+	PlayerMarker.Disable()
 EndFunction
 
 Bool Function bIsCurrentCell(int iIndex)
-	Return ((( MarkerList.GetAt(iIndex))  As Objectreference ).GetParentCell() == PlayerRef.GetParentCell() )
+	Return ((( MarkerList.GetAt(iIndex))  As Objectreference ).GetParentCell() == PlayerMarker.GetParentCell() )
 EndFunction
 
 Bool Function bCanTeleport()
@@ -1346,6 +1386,7 @@ Function RestoreLostItems(Actor ActorRef)
 		EndIf
 	EndIf
 	ActorRef.RemoveSpell(ArkayCurse)
+	ActorRef.RemoveSpell(ArkayCurseAlt)
 EndFunction
 
 Function RefreshFace()	;for closed eye bug

@@ -4,7 +4,7 @@ ObjectReference property Marker auto
 zzzmoaReviveMCM Property ConfigMenu Auto
 Actor Caster
 
-Event OnEffectStart(Actor akTarget, Actor akCaster) 
+Event OnEffectStart(Actor akTarget, Actor akCaster)
 	Caster = akCaster
 	Marker.Enable()
 	;Debug.Notification(Caster.GetDistance(Marker))

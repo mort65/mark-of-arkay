@@ -27,6 +27,7 @@ FormList property ArkayAmulets Auto
 FormList Property QuestBlackList Auto
 FormList property MarkerList Auto
 FormList Property LocationBlackList Auto
+Formlist Property CityMarkersList Auto
 MagicEffect property FortifyHealthFFSelf Auto
 Spell Property moaReviveAfterEffect Auto
 Spell Property BleedoutProtection Auto
@@ -42,6 +43,10 @@ ImageSpaceModifier Property LowHealthImod Auto
 ObjectReference Property CustomMarker Auto
 ObjectReference Property PlayerMarker Auto
 ObjectReference Property SleepMarker Auto
+ObjectReference Property DetachMarker1 Auto
+ObjectReference Property DetachMarker2 Auto
+Objectreference Property CellLoadMarker Auto
+ObjectReference Property LocationMarker Auto
 Objectreference Property LostItemsMarker Auto
 ObjectReference Property LostItemsChest Auto
 ObjectReference Property EquippedItemsChest Auto
@@ -50,12 +55,14 @@ Cell Property DefaultCell Auto
 Bool Property bIsItemsRemoved Auto
 Float Property fLostSouls Auto
 Actor Property Victim Auto
+Actor Property Attacker Auto
 Quest Property moaRetrieveLostItems Auto
 FormList property WorldspacesInterior auto
 Formlist property ExternalMarkerList Auto
 Quest Property WerewolfQuest Auto
 Quest Property VampireLordQuest Auto
 Formlist Property PotionList Auto
+FormList Property LocationsList Auto
 Form[] Property VItemArr Auto Hidden
 Int Property iTotalBleedOut = 0 Auto Hidden
 Int Property iTotalRespawn = 0 Auto Hidden
@@ -66,6 +73,34 @@ Int Property iRevivesBySacrificeSpell = 0 Auto Hidden
 Int Property iRevivesByPotion = 0 Auto Hidden
 Int Property iDestroyedItems = 0 Auto Hidden
 Form[] Property Equipment Auto Hidden
+Location Property PaleHoldLocation  Auto
+Location Property HjaalmarchHoldLocation  Auto
+Keyword property HoldKeyword Auto
+Quest Property CidhnaMineJailEventScene Auto
+Objectreference Property RiftenJailMarker Auto
+Objectreference Property WhiterunJailMarker Auto
+Objectreference Property FalkreathJailMarker Auto
+Objectreference Property WindhelmJailMarker Auto
+Objectreference Property MarkarthJailMarker Auto
+Objectreference Property WinterholdJailMarker Auto
+Objectreference Property DawnstarJailMarker Auto
+Objectreference Property MorthalJailMarker Auto
+Objectreference Property SolitudeJailMarker Auto
+Objectreference Property DLC2RavenRockJailMarker Auto
+Faction Property CrimeFactionPale  Auto
+Faction Property CrimeFactionFalkreath  Auto
+Faction Property CrimeFactionReach  Auto
+Faction Property CrimeFactionHjaalmarch  Auto
+Faction Property CrimeFactionHaafingar  Auto
+Faction Property CrimeFactionRift  Auto
+Faction Property CrimeFactionWhiterun  Auto
+Faction Property CrimeFactionEastmarch  Auto
+Faction Property CrimeFactionWinterhold  Auto
+Faction Property DLC2CrimeRavenRockFaction Auto
+Race Property WereWolfBeastRace Auto
+Race Property DLC1VampireBeastRace Auto
+
+Bool bCidhnaJail
 Bool bDidItemsRemoved
 Bool  bSeptimRevive  
 Bool  bDragonSoulRevive  
@@ -139,6 +174,8 @@ Event OnInit()
 	RegisterForSleep()
 	PlayerRef.AddSpell(MoveCustomMarker)
 	PlayerRef.AddSpell(RecallMarker)
+	DetachMarker2.Enable()
+	DetachMarker2.MoveTo(PlayerRef)
 	Debug.notification("$mrt_MarkofArkay_Notification_Init")
 EndEvent
 
@@ -162,9 +199,54 @@ Event OnSleepStart(float afSleepStartTime, float afDesiredSleepEndTime)
 		SleepMarker.SetPosition(PlayerRef.GetPositionx(), PlayerRef.GetPositiony(), PlayerRef.GetPositionz())
 		SleepMarker.SetAngle(0.0, 0.0, PlayerRef.GetAnglez())
 		If ConfigMenu.bAutoSwitchRP
-			ConfigMenu.iTeleportLocation = ( ConfigMenu.sRespawnPoints.Length - 3 )
+			ConfigMenu.iTeleportLocation = ( ConfigMenu.sRespawnPoints.Length - 4 )
 		EndIf
 	EndIf
+EndEvent
+
+Event OnObjectEquipped(Form akBaseObject, ObjectReference akReference) ; using equiped spells as workaround a bug which happens when player goes to bleedout while fighting with spell
+	If ( !PlayerRef.IsBleedingOut() && GetState() == "")
+		Utility.Wait(0.5)
+		If PlayerRef.GetEquippedItemType(0) != 0
+			LeftHandEquippedItem = PlayerRef.GetEquippedObject(0)
+		Else
+			LeftHandEquippedItem = None
+		EndIf
+		If PlayerRef.GetEquippedItemType(1) != 0
+			RightHandEquipedItem = PlayerRef.GetEquippedObject(1)
+		Else
+			RightHandEquipedItem = None
+		EndIf
+	EndIf
+EndEvent
+
+Event OnObjectUnequipped(Form akBaseObject, ObjectReference akReference) ;SKSE
+    If (!PlayerRef.IsBleedingOut() && GetState() == "")
+		If PlayerRef.GetEquippedItemType(0) != 0
+			LeftHandEquippedItem = PlayerRef.GetEquippedObject(0)
+		Else
+			LeftHandEquippedItem = None
+		EndIf
+		If PlayerRef.GetEquippedItemType(1) != 0
+			RightHandEquipedItem = PlayerRef.GetEquippedObject(1)
+		Else
+			RightHandEquipedItem = None
+		EndIf
+	EndIf
+EndEvent
+
+Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile, bool abPowerattack, bool abSneakAttack, bool abBashAttack, bool abHitBlocked)
+	Attacker = akAggressor as Actor
+EndEvent
+
+Event OnLocationChange(Location akOldLoc, Location akNewLoc)
+	LocationMarker.Enable()
+	LocationMarker.MoveTo(PlayerRef)
+EndEvent
+
+Event OnCellLoad()
+	CellLoadMarker.Enable()
+	CellLoadMarker.MoveTo(PlayerRef)
 EndEvent
 
 String Function ToggleState() ;prevents double menu when player revived with potion and returns to bleedout while previous bleedout event is not finished
@@ -174,7 +256,7 @@ String Function ToggleState() ;prevents double menu when player revived with pot
 	Else
 		GoToState("Bleedout1")
 		Return "Bleedout1"
-	Endif
+	EndIf
 Endfunction
 
 Function BleedoutHandler(String CurrentState)
@@ -195,7 +277,7 @@ Function BleedoutHandler(String CurrentState)
 		Game.ForceThirdPerson() ; fix camera bug 
 	Else
 		bIsPlayerRagdoll = False
-	Endif
+	EndIf
 	moaBleedoutHandlerState.SetValue(1)
 	LowHealthImod.Remove()
 	SetVars()
@@ -212,11 +294,11 @@ Function BleedoutHandler(String CurrentState)
 		LowHealthImod.Remove()
 		GoToState("")
 		Return
-	Endif
+	EndIf
 	If PlayerRef.GetActorValue("health") < -10
 		PlayerRef.RestoreActorValue( "health", -10 - PlayerRef.GetActorValue("health") )
 	EndIf
-	If ConfigMenu.bAutoDrinkPotion && !WerewolfQuest.IsRunning() && !VampireLordQuest.IsRunning()
+	If ConfigMenu.bAutoDrinkPotion && !bInBeastForm()
 		Int iPotion = iHasHealingPotion()
 		If iPotion > -1
 			Utility.Wait(ConfigMenu.fBleedoutTimeSlider)
@@ -247,10 +329,10 @@ Function BleedoutHandler(String CurrentState)
 				EndIf
 				If ConfigMenu.bIsNotificationEnabled
 					Debug.Notification("$mrt_MarkofArkay_Notification_Revive_Potion")
-				Endif
+				EndIf
 				If ConfigMenu.bIsEffectEnabled
 					moaReviveAfterEffect.Cast(PlayerRef)
-				Endif
+				EndIf
 				RequipSpells()
 				Debug.SetGodMode(True)
 				PlayerRef.ResetHealthAndLimbs()
@@ -258,7 +340,7 @@ Function BleedoutHandler(String CurrentState)
 				PlayerRef.EquipItem(PotionList.GetAt(iPotion) As Potion, False, True)
 				If ConfigMenu.bIsEffectEnabled
 					BleedoutProtection.Cast(PlayerRef)
-				Endif
+				EndIf
 				Debug.SetGodMode(False)
 				Game.ForceThirdPerson()
 				Game.EnablePlayerControls()
@@ -277,20 +359,20 @@ Function BleedoutHandler(String CurrentState)
 		EndIf
 	EndIf
 	If ( bIsRevivable() || bPotionRevive || bHasAutoReviveEffect || Victim )
-		If !bPotionRevive || bHasAutoReviveEffect || Victim || WerewolfQuest.IsRunning() || VampireLordQuest.IsRunning()
+		If !bPotionRevive || bHasAutoReviveEffect || Victim || bInBeastForm()
 			Utility.Wait(ConfigMenu.fBleedoutTimeSlider)
 		Else
 			Game.EnablePlayerControls()
 			;PlayerRef.StopCombatAlarm()
 			Debug.SetGodMode(False)
 			Utility.Wait(ConfigMenu.fBleedoutTimeSlider)
-		Endif
+		EndIf
 		If (GetState() != CurrentState) ; player revived with a potion but returned to bleedout in less than 6 secs
 			Return
 		ElseIf !PlayerRef.IsBleedingOut() ;player revived with potion or another script and is alive after 6 secs
 			If bPotionRevive && ConfigMenu.bIsEffectEnabled
 				moaReviveAfterEffect.Cast(PlayerRef)
-			Endif
+			EndIf
 			If bIsPlayerRagdoll
 				PlayerRef.SetActorValue("Paralysis",0)
 			EndIf
@@ -319,15 +401,15 @@ Function BleedoutHandler(String CurrentState)
 				SoulAbsorbWind.play(PlayerRef) 
 				SoulAbsorbExplosion.play(PlayerRef) 
 				EffectHealCirclFXS.Play(PlayerRef, ConfigMenu.fRecoveryTimeSlider + 1.0)
-			Endif
+			EndIf
 			Utility.Wait(ConfigMenu.fRecoveryTimeSlider)
 			If ConfigMenu.bIsEffectEnabled
 				moaReviveAfterEffect.Cast(PlayerRef)
-			Endif
+			EndIf
 			RequipSpells()
 			If ConfigMenu.bIsNotificationEnabled
 				Debug.Notification("$mrt_MarkofArkay_Notification_Revive_Revival_Scroll")
-			Endif
+			EndIf
 			RevivePlayer(True)
 			If iRevivesByRevivalSpell < 99999999
 				iRevivesByRevivalSpell += 1
@@ -344,11 +426,11 @@ Function BleedoutHandler(String CurrentState)
 				SoulAbsorbWind.play(PlayerRef) 
 				SoulAbsorbExplosion.play(PlayerRef) 
 				EffectHealCirclFXS.Play(PlayerRef, ConfigMenu.fRecoveryTimeSlider + 1.0)
-			Endif
+			EndIf
 			Utility.Wait(ConfigMenu.fRecoveryTimeSlider)
 			If ConfigMenu.bIsEffectEnabled
 				moaReviveAfterEffect.Cast(PlayerRef)
-			Endif
+			EndIf
 			RestoreLostItems(PlayerRef)
 			RequipSpells()
 			RevivePlayer(True)
@@ -360,7 +442,7 @@ Function BleedoutHandler(String CurrentState)
 			EndIf
 			If ConfigMenu.bIsNotificationEnabled
 				Debug.Notification("$mrt_MarkofArkay_Notification_Revive_Sacrifice_Scroll")
-			Endif
+			EndIf
 			If ( ConfigMenu.bLostItemQuest || moaRetrieveLostItems.IsRunning() )
 				moaRetrieveLostItems.SetStage(20)
 			EndIf
@@ -374,11 +456,11 @@ Function BleedoutHandler(String CurrentState)
 						SoulAbsorbWind.play(PlayerRef) 
 						SoulAbsorbExplosion.play(PlayerRef) 
 						EffectHealCirclFXS.Play(PlayerRef, ConfigMenu.fRecoveryTimeSlider + 1)
-					Endif
+					EndIf
 					Utility.Wait(ConfigMenu.fRecoveryTimeSlider)
 					If ConfigMenu.bIsEffectEnabled
 						moaReviveAfterEffect.Cast(PlayerRef)
-					Endif
+					EndIf
 					RequipSpells()
 					ShowNotification()
 					RevivePlayer(True)
@@ -417,7 +499,7 @@ Function BleedoutHandler(String CurrentState)
 					Elseif (PriorityArray[i]>10) && (PriorityArray[i]<20) && bSeptimRevive
 						AutoRemoveItem(i)
 						bBreak = True					
-					Endif 
+					EndIf 
 					i-=1
 				EndWhile
 				If bBreak ;player has traded 
@@ -427,11 +509,11 @@ Function BleedoutHandler(String CurrentState)
 						SoulAbsorbWind.play(PlayerRef) 
 						SoulAbsorbExplosion.play(PlayerRef) 
 						EffectHealCirclFXS.Play(PlayerRef, ConfigMenu.fRecoveryTimeSlider + 1)
-					Endif
+					EndIf
 					Utility.Wait(ConfigMenu.fRecoveryTimeSlider)
 					If ConfigMenu.bIsEffectEnabled
 						moaReviveAfterEffect.Cast(PlayerRef)
-					Endif
+					EndIf
 					RequipSpells()
 					ShowNotification()
 					RevivePlayer(True)
@@ -443,11 +525,11 @@ Function BleedoutHandler(String CurrentState)
 					EndIf
 				Else ; player couldn't trade
 					RevivePlayer(False)
-				Endif
+				EndIf
 			EndIf
 		Else
 			RevivePlayer(False)
-		Endif
+		EndIf
 	Else
 		Utility.Wait(ConfigMenu.fBleedoutTimeSlider)
 		If !PlayerRef.IsBleedingOut()
@@ -475,37 +557,6 @@ Function BleedoutHandler(String CurrentState)
 		EndIf
 	EndIf
 Endfunction
-
-Event OnObjectEquipped(Form akBaseObject, ObjectReference akReference) ; using equiped spells as workaround a bug which happens when player goes to bleedout while fighting with spell
-	If ( !PlayerRef.IsBleedingOut() && GetState() == "")
-		Utility.Wait(0.5)
-		If PlayerRef.GetEquippedItemType(0) != 0
-			LeftHandEquippedItem = PlayerRef.GetEquippedObject(0)
-		Else
-			LeftHandEquippedItem = None
-		EndIf
-		If PlayerRef.GetEquippedItemType(1) != 0
-			RightHandEquipedItem = PlayerRef.GetEquippedObject(1)
-		Else
-			RightHandEquipedItem = None
-		EndIf
-	EndIf
-EndEvent
-
-Event OnObjectUnequipped(Form akBaseObject, ObjectReference akReference) ;SKSE
-    If (!PlayerRef.IsBleedingOut() && GetState() == "")
-		If PlayerRef.GetEquippedItemType(0) != 0
-			LeftHandEquippedItem = PlayerRef.GetEquippedObject(0)
-		Else
-			LeftHandEquippedItem = None
-		EndIf
-		If PlayerRef.GetEquippedItemType(1) != 0
-			RightHandEquipedItem = PlayerRef.GetEquippedObject(1)
-		Else
-			RightHandEquipedItem = None
-		EndIf
-	EndIf
-EndEvent
 
 Function SortPriorityArray () ;sort priority so higher priority and those items that can be traded are first 
 	Int Index1
@@ -597,31 +648,31 @@ Function AutoRemoveItem(Int i) ;trade without menu
 					count+=1
 				Else
 					bBreak = True
-				Endif
+				EndIf
 			Elseif (PriorityArray[j]>40) && (PriorityArray[j]<50) && bArkayMarkRevive
 				If ((PriorityArray[j] as Int )%10) == ((PriorityArray[i] as Int )%10)
 					count+=1
 				Else
 					bBreak = True
-				Endif
+				EndIf
 			Elseif (PriorityArray[j]>30) && (PriorityArray[j]<40) && bBSoulGemRevive
 				If ((PriorityArray[j] as Int )%10) == ((PriorityArray[i] as Int )%10)
 					count+=1
 				Else
 					bBreak = True
-				Endif
+				EndIf
 			Elseif (PriorityArray[j]>20) && (PriorityArray[j]<30) && bDragonSoulRevive
 				If ((PriorityArray[j] as Int )%10) == ((PriorityArray[i] as Int )%10)
 					count+=1
 				Else
 					bBreak = True
-				Endif
+				EndIf
 			Elseif (PriorityArray[j]>10) && (PriorityArray[j]<20) && bSeptimRevive
 				If ((PriorityArray[j] as Int )%10) == ((PriorityArray[i] as Int )%10)
 					count+=1
 				Else
 					bBreak = True
-				Endif
+				EndIf
 			Else
 				bBreak = True
 			EndIf
@@ -677,48 +728,48 @@ Function ShowNotification()
 				Debug.Notification( "$mrt_MarkofArkay_Notification_Septim_Removed" )
 				Debug.Notification( ConfigMenu.fValueGoldSlider as Int )
 			EndIf
-		Endif
+		EndIf
 		If (bArkayMarkRevive)
 			If ConfigMenu.fValueMarkSlider == 0.0
 			  return
 			Else
 				totalRemainingLives += ( iArkayMarkCount / ConfigMenu.fValueMarkSlider ) as Int
-			Endif
-		Endif
+			EndIf
+		EndIf
 		If ( bBSoulGemRevive )
 			If ConfigMenu.fValueBSoulGemSlider == 0.0
 				return
 			Else
 				totalRemainingLives += ( iBSoulGemCount / ConfigMenu.fValueBSoulGemSlider ) as Int
 			EndIf
-		Endif
+		EndIf
 		If ( bGSoulGemRevive )
 			If ConfigMenu.fValueGSoulGemSlider == 0.0
 				return
 			Else
 				totalRemainingLives += ( iGSoulGemCount / ConfigMenu.fValueGSoulGemSlider ) as Int
 			EndIf
-		Endif
+		EndIf
 		If ( bDragonSoulRevive )
 			If ConfigMenu.fValueSoulSlider == 0.0
 				return
 			Else
 				totalRemainingLives += ( fDragonSoulCount / ConfigMenu.fValueSoulSlider ) as Int
 			EndIf
-		Endif
+		EndIf
 		If ( bSeptimRevive )
 			If ConfigMenu.fValueGoldSlider == 0.0
 				return
 			Else
 				totalRemainingLives += ( iSeptimCount / ConfigMenu.fValueGoldSlider ) as Int
 			EndIf
-		Endif
+		EndIf
 		If ( totalRemainingLives > 0 )
 			Debug.Notification("$mrt_MarkofArkay_Notification_totalRemainingTrades")
 			Debug.Notification(totalRemainingLives)
 		Else
 			Debug.notification("$mrt_MarkofArkay_Notification_NoRemainingTrades")
-		Endif
+		EndIf
 	EndIf
 EndFunction
 
@@ -728,13 +779,12 @@ Function RevivePlayer(Bool bRevive)
 			ShiftBack()
 			If ConfigMenu.bIsEffectEnabled
 				BleedoutProtection.Cast(PlayerRef)
-			Endif
-		Endif
+			EndIf
+		EndIf
 		If bIsPlayerRagdoll
 			PlayerRef.SetActorValue("Paralysis",0)
 		EndIf
 		PlayerRef.ResetHealthAndLimbs()
-		;PlayerRef.StopCombatAlarm()
 		Game.ForceThirdPerson()
 		Debug.SetGodMode(False)
 		If !bHasAutoReviveEffect && ( PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt) )
@@ -788,7 +838,7 @@ Function RevivePlayer(Bool bRevive)
 			Utility.Wait(2.5)
 			FadeOut.PopTo(BlackScreen)
 			iRemovableItems = ConfigMenu.iRemovableItems
-            If ( WerewolfQuest.IsRunning() || VampireLordQuest.IsRunning() )
+            If bInBeastForm()
                 iRemovableItems = 0
             EndIf
 			If ( iRemovableItems == 9 ) ;random
@@ -799,7 +849,7 @@ Function RevivePlayer(Bool bRevive)
 				iRemovableItems = Utility.RandomInt(1,5)
 			Elseif ( iRemovableItems == 6 ) ;Random but not everything
 				iRemovableItems = Utility.RandomInt(0,4)
-			Endif
+			EndIf
 			If  ConfigMenu.bLoseForever && (iRemovableItems != 0)
 				If ( ( LostItemsChest.GetNumItems() > 0 ) || ( fLostSouls > 0.0 ) )
 					bDidItemsRemoved = True
@@ -831,20 +881,20 @@ Function RevivePlayer(Bool bRevive)
 					RemoveUnequippedItems(PlayerRef)
 					If ( iSeptimCount > 0 ) && ConfigMenu.bIsGoldEnabled
 						LostItemsChest.RemoveItem(Gold001, iSeptimCount, True, PlayerRef)
-					Endif
+					EndIf
 					If ( iBSoulGemCount > 0 ) && ConfigMenu.bIsBSoulGemEnabled
 						LostItemsChest.RemoveItem(BlackFilledGem, iBSoulGemCount, True, PlayerRef)
-					Endif
+					EndIf
 					If ( iGSoulGemCount > 0 ) && ConfigMenu.bIsGSoulGemEnabled
 						LostItemsChest.RemoveItem(GrandFilledGem, iGSoulGemCount, True, PlayerRef)
-					Endif
+					EndIf
 					If ( iArkayMarkCount > 0 ) && ConfigMenu.bIsMarkEnabled
 						LostItemsChest.RemoveItem(MarkOfArkay, iArkayMarkCount, True, PlayerRef)
-					Endif
+					EndIf
 					If ( fDragonSoulCount > 0 ) && !ConfigMenu.bIsDragonSoulEnabled
 						PlayerRef.ModActorValue("DragonSouls", -fDragonSoulCount)
 						fLostSouls += fDragonSoulCount
-					Endif
+					EndIf
 				Elseif iRemovableItems == 4  ; Everything except tradables
 					iSeptimCount = PlayerRef.GetItemCount(Gold001)
 					iArkayMarkCount = PlayerRef.GetItemCount(MarkOfArkay) 
@@ -854,20 +904,20 @@ Function RevivePlayer(Bool bRevive)
 					PlayerRef.RemoveAllItems(LostItemsChest, True)
 					If ( iSeptimCount > 0 ) && ConfigMenu.bIsGoldEnabled
 						LostItemsChest.RemoveItem(Gold001, iSeptimCount, True, PlayerRef)
-					Endif
+					EndIf
 					If ( iBSoulGemCount > 0 ) && ConfigMenu.bIsBSoulGemEnabled
 						LostItemsChest.RemoveItem(BlackFilledGem, iBSoulGemCount, True, PlayerRef)
-					Endif
+					EndIf
 					If ( iGSoulGemCount > 0 ) && ConfigMenu.bIsGSoulGemEnabled
 						LostItemsChest.RemoveItem(GrandFilledGem, iGSoulGemCount, True, PlayerRef)
-					Endif
+					EndIf
 					If ( iArkayMarkCount > 0 ) && ConfigMenu.bIsMarkEnabled
 						LostItemsChest.RemoveItem(MarkOfArkay, iArkayMarkCount, True, PlayerRef)
-					Endif
+					EndIf
 					If ( fDragonSoulCount > 0 ) && !ConfigMenu.bIsDragonSoulEnabled
 						PlayerRef.ModActorValue("DragonSouls", -fDragonSoulCount)
 						fLostSouls += fDragonSoulCount
-					Endif
+					EndIf
 				Elseif iRemovableItems == 5
 					RemoveTradbleItems(PlayerRef)
 					PlayerRef.RemoveAllItems(LostItemsChest, True)
@@ -898,11 +948,37 @@ Function RevivePlayer(Bool bRevive)
 			PlayerRef.ResetHealthAndLimbs()
 			PlayerRef.StopCombatAlarm()
 			Game.ForceThirdPerson()
-			If ( ConfigMenu.bRespawnNaked && !WerewolfQuest.IsRunning() && !VampireLordQuest.IsRunning() )
-				PlayerRef.UnequipAll()
+			If ( ConfigMenu.bSendToJail && bGuardCanSendToJail() && !bInBeastForm() )
+				PlayerRef.SetActorValue("Paralysis",0) 
+				If ( Attacker.GetCrimeFaction() == CrimeFactionPale )
+					PlayerRef.MoveTo(DawnstarJailMarker)
+				ElseIf ( Attacker.GetCrimeFaction() == CrimeFactionFalkreath )
+					PlayerRef.MoveTo(FalkreathJailMarker)
+				ElseIf ( Attacker.GetCrimeFaction() == CrimeFactionHjaalmarch )
+					PlayerRef.MoveTo(MorthalJailMarker)
+				ElseIf ( Attacker.GetCrimeFaction() == CrimeFactionHaafingar )
+					PlayerRef.MoveTo(SolitudeJailMarker)
+				ElseIf ( Attacker.GetCrimeFaction() == CrimeFactionRift )
+					PlayerRef.MoveTo(RiftenJailMarker)
+				ElseIf ( Attacker.GetCrimeFaction() == CrimeFactionWhiterun )
+					PlayerRef.MoveTo(WhiterunJailMarker)
+				ElseIf ( Attacker.GetCrimeFaction() == CrimeFactionEastmarch )
+					PlayerRef.MoveTo(WindhelmJailMarker)
+				ElseIf ( Attacker.GetCrimeFaction() == CrimeFactionWinterhold )
+					PlayerRef.MoveTo(WinterholdJailMarker)
+				ElseIf ( Attacker.GetCrimeFaction() == CrimeFactionReach )
+					PlayerRef.MoveTo(MarkarthJailMarker)
+					bCidhnaJail = True
+				ElseIf ( Attacker.GetCrimeFaction() == DLC2CrimeRavenRockFaction )
+					PlayerRef.MoveTo(DLC2RavenRockJailMarker)
+				EndIf
+				Utility.Wait(0.5)
+				Attacker.GetCrimeFaction().SendPlayerToJail( abRemoveInventory = True, abRealJail = True )
+			Else
+				Teleport()
 			EndIf
-			Teleport()
 			Utility.Wait(0.5)
+			Attacker = None
 			RequipSpells()
 			If PlayerRef.IsWeaponDrawn() ;If Player has a weapon drawn,
 				PlayerRef.SheatheWeapon() ;Sheathe the drawn weapon.
@@ -910,7 +986,10 @@ Function RevivePlayer(Bool bRevive)
 			PlayerRef.SetActorValue("Paralysis",0)
 			RefreshFace()
 			PlayerRef.DispelAllSpells()
-			Utility.Wait(6.0)
+			Utility.Wait(6.0)			
+			If ( ConfigMenu.bRespawnNaked && !bInBeastForm() )
+				PlayerRef.UnequipAll()
+			EndIf
 			If ConfigMenu.bArkayCurse
 			    If ConfigMenu.iArkayCurse == 0
 					PlayerRef.AddSpell(ArkayCurse)
@@ -919,7 +998,7 @@ Function RevivePlayer(Bool bRevive)
 				Else
 					PlayerRef.AddSpell(ArkayCurse)
 					PlayerRef.AddSpell(ArkayCurseAlt)
-				Endif
+				EndIf
 			EndIf
 			BlackScreen.PopTo(FadeIn)
 			Debug.SetGodMode(False)
@@ -928,6 +1007,14 @@ Function RevivePlayer(Bool bRevive)
 			PlayerRef.StopCombatAlarm()
 			moaBleedoutHandlerState.SetValue(0)
 			LowHealthImod.Remove()
+			If bCidhnaJail 
+				If ( PlayerRef.GetParentCell() == MarkarthJailMarker.GetParentCell() )
+					If CidhnaMineJailEventScene.GetStageDone(10) == 0
+						CidhnaMineJailEventScene.SetStage(10)
+					EndIf
+				EndIf
+				bCidhnaJail = False
+			EndIf
 			If ( ConfigMenu.bLostItemQuest && ( ( iRemovableItems != 0 ) || PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt) ) )
 				If ( ConfigMenu.bLoseForever && moaRetrieveLostItems.IsRunning() && bDidItemsRemoved )
 					moaRetrieveLostItems.SetStage(10)
@@ -950,7 +1037,7 @@ Function RevivePlayer(Bool bRevive)
 			LowHealthImod.Remove()
 			GoToState("")
 			Game.QuitToMainMenu()
-		Endif
+		EndIf
 	EndIf
 EndFunction
 
@@ -1031,13 +1118,13 @@ Bool Function bIsRevivable() ;if player can be revived by trading
 				Return True
 			Else
 				Return False
-			Endif
+			EndIf
 		Else
 			Return True
 		EndIf
 	Else
 		Return False
-	Endif
+	EndIf
 EndFunction
 
 Bool Function bIsEquipedFromFormlist(FormList ItemList)
@@ -1046,7 +1133,7 @@ Bool Function bIsEquipedFromFormlist(FormList ItemList)
 		iIndex -= 1
 		If PlayerRef.IsEquipped(ItemList.GetAt(iIndex))
 			Return True
-		Endif
+		EndIf
 	EndWhile
 	Return False
 EndFunction
@@ -1058,7 +1145,7 @@ Int Function iGetRandomWithExclusion( Int iFrom, Int iTo, Int iExclude)
 	Int iRandom = Utility.RandomInt(iFrom, iTo - 1)
 	If iRandom >= iExclude
 		iRandom += 1
-	Endif
+	EndIf
 	Return iRandom
 EndFunction
 
@@ -1079,7 +1166,7 @@ Int Function iGetRandomWithExclusionArray( Int iFrom, Int iTo, Bool[] iFlagArray
 			Return iRandom
 		ElseIf (( iRandom >= iIndex ) && (!iFlagArray[iIndex] || bIsCurrentCell(iIndex) ))
 			iRandom += 1
-		Endif
+		EndIf
 		iIndex += 1
 	EndWhile
 	Return iRandom
@@ -1088,196 +1175,198 @@ EndFunction
 Function Teleport()
 	PlayerMarker.Enable()
 	PlayerMarker.MoveTo(playerRef)
-	If (ConfigMenu.iTeleportLocation < (ConfigMenu.sRespawnPoints.Length - 4))
+	If (ConfigMenu.iTeleportLocation < (ConfigMenu.sRespawnPoints.Length - 5))
 		If (PlayerRef.GetDistance(MarkerList.GetAt(ConfigMenu.iTeleportLocation) As Objectreference) >= 3000.0)
 			PlayerRef.MoveTo( MarkerList.GetAt( ConfigMenu.iTeleportLocation ) As Objectreference, abMatchRotation = true)
 			Utility.Wait(0.5)
-			If (PlayerRef.GetDistance(MarkerList.GetAt(ConfigMenu.iTeleportLocation) As Objectreference) > 1999.0)
-				RandomTeleport()
+			If (PlayerRef.GetDistance(MarkerList.GetAt(ConfigMenu.iTeleportLocation) As Objectreference) > 1500.0)
+				SendToAnotherLocation()
 			EndIf 
 		Else
-			 RandomTeleport()
-		Endif
-	ElseIf (ConfigMenu.iTeleportLocation == (ConfigMenu.sRespawnPoints.Length - 4))
+			 SendToAnotherLocation()
+		EndIf
+	ElseIf (ConfigMenu.iTeleportLocation == (ConfigMenu.sRespawnPoints.Length - 5))
 		RandomTeleport()
-	ElseIf (ConfigMenu.iTeleportLocation == (ConfigMenu.sRespawnPoints.Length - 3))
+	ElseIf (ConfigMenu.iTeleportLocation == (ConfigMenu.sRespawnPoints.Length - 4))
 		If (!SleepMarker.Isdisabled() && (SleepMarker.GetParentCell() != DefaultCell) && (PlayerRef.GetDistance(SleepMarker) >= 3000.0))
 			PlayerRef.MoveTo(SleepMarker, abMatchRotation = true)
 			Utility.Wait(0.5)
-			If ( PlayerRef.GetDistance(SleepMarker) > 1999.0 )
+			If ( PlayerRef.GetDistance(SleepMarker) > 1500.0 )
 				If ( !CustomMarker.IsDisabled() && ( CustomMarker.GetDistance(PlayerMarker) >= 3000.0 ) && (CustomMarker.GetParentCell() != DefaultCell))
 					PlayerRef.MoveTo(CustomMarker, abMatchRotation = true)
 					Utility.Wait(0.5)
-					If ( PlayerRef.GetDistance(CustomMarker) > 1999.0 )
-						RandomTeleport()
+					If ( PlayerRef.GetDistance(CustomMarker) > 1500.0 )
+						SendToAnotherLocation()
 					EndIf
 				Else
-					RandomTeleport()
+					SendToAnotherLocation()
 				EndIf
 			EndIf
 		ElseIf ((PlayerRef.GetDistance(CustomMarker) >= 3000.0 ) && !CustomMarker.Isdisabled() && (CustomMarker.GetParentCell() != DefaultCell))
 			PlayerRef.MoveTo(CustomMarker, abMatchRotation = true)
 			Utility.Wait(0.5)
-			If ( PlayerRef.GetDistance(CustomMarker) > 1999.0 )
-				RandomTeleport()
+			If ( PlayerRef.GetDistance(CustomMarker) > 1500.0 )
+				SendToAnotherLocation()
 			EndIf	
 		Else
-			 RandomTeleport()
-		Endif
-	ElseIf (ConfigMenu.iTeleportLocation == (ConfigMenu.sRespawnPoints.Length - 2))
+			 SendToAnotherLocation()
+		EndIf
+	ElseIf (ConfigMenu.iTeleportLocation == (ConfigMenu.sRespawnPoints.Length - 3))
 		If ((PlayerRef.GetDistance(CustomMarker) >= 3000.0) && !CustomMarker.IsDisabled() && (CustomMarker.GetParentCell() != DefaultCell))
 			PlayerRef.MoveTo(CustomMarker, abMatchRotation = true)
 			Utility.Wait(0.5)
-			If ( PlayerRef.GetDistance(CustomMarker) > 1999.0 )
+			If ( PlayerRef.GetDistance(CustomMarker) > 1500.0 )
 				If (!SleepMarker.Isdisabled() && (SleepMarker.GetParentCell() != DefaultCell) && ( SleepMarker.GetDistance(PlayerMarker) >= 3000.0 ))
 					PlayerRef.MoveTo(SleepMarker, abMatchRotation = true)
 					Utility.Wait(0.5)
-					If ( PlayerRef.GetDistance(SleepMarker) > 1999.0 )
-						RandomTeleport()
+					If ( PlayerRef.GetDistance(SleepMarker) > 1500.0 )
+						SendToAnotherLocation()
 					EndIf
 				Else
-					RandomTeleport()
-				Endif
+					SendToAnotherLocation()
+				EndIf
 			EndIf
 		ElseIf (!SleepMarker.Isdisabled() && (SleepMarker.GetParentCell() != DefaultCell) && (PlayerRef.GetDistance(SleepMarker) >= 3000.0))
 			PlayerRef.MoveTo(SleepMarker, abMatchRotation = true)
 			Utility.Wait(0.5)
-			If ( PlayerRef.GetDistance(SleepMarker) > 1999.0 )
-				RandomTeleport()
+			If ( PlayerRef.GetDistance(SleepMarker) > 1500.0 )
+				SendToAnotherLocation()
 			EndIf
 		Else
-			 RandomTeleport()
-		Endif
-	Else
+			 SendToAnotherLocation()
+		EndIf
+	ElseIf (ConfigMenu.iTeleportLocation == (ConfigMenu.sRespawnPoints.Length - 2))
 		If ExternalMarkerList.GetSize() > 0
 			If ( ExternalMarkerList.GetSize() > 1 ) && ( ConfigMenu.iExternalIndex == -1 || ( ConfigMenu.iExternalIndex >= ExternalMarkerList.GetSize() ) || ( !bCanTeleportToExtMarker( ExternalMarkerList.GetAt( ConfigMenu.iExternalIndex ) As ObjectReference ) || (PlayerRef.GetDistance(ExternalMarkerList.GetAt( ConfigMenu.iExternalIndex ) As ObjectReference) < 3000.0) || ( ExternalMarkerList.GetAt( ConfigMenu.iExternalIndex ).GetType() != 61 ) ) )
 				Int iMarkerIndex = iGetRandomRefFromListWithExclusions( 0, ExternalMarkerList.GetSize() - 1, ExternalMarkerList )
 				If iMarkerIndex != -1
 					PlayerRef.MoveTo( ExternalMarkerList.GetAt(iMarkerIndex) As ObjectReference, abMatchRotation = true )
 					Utility.Wait(0.5)
-					If ( PlayerRef.GetDistance(ExternalMarkerList.GetAt( iMarkerIndex ) As ObjectReference) > 1999.0 )
+					If ( PlayerRef.GetDistance(ExternalMarkerList.GetAt( iMarkerIndex ) As ObjectReference) > 1500.0 )
 						If ((PlayerMarker.GetDistance(CustomMarker) >= 3000.0) && !CustomMarker.IsDisabled() && (CustomMarker.GetParentCell() != DefaultCell))
 							PlayerRef.MoveTo(CustomMarker, abMatchRotation = true)
 							Utility.Wait(0.5)
-							If ( PlayerRef.GetDistance(CustomMarker) > 1999.0 )
+							If ( PlayerRef.GetDistance(CustomMarker) > 1500.0 )
 								If (!SleepMarker.Isdisabled() && (SleepMarker.GetParentCell() != DefaultCell) && (PlayerMarker.GetDistance(SleepMarker) >= 3000.0))
 									PlayerRef.MoveTo(SleepMarker, abMatchRotation = true)
 									Utility.Wait(0.5)
-									If ( PlayerRef.GetDistance(SleepMarker) > 1999.0 )
-										RandomTeleport()
+									If ( PlayerRef.GetDistance(SleepMarker) > 1500.0 )
+										SendToAnotherLocation()
 									EndIf
 								Else
-									RandomTeleport()
-								Endif
+									SendToAnotherLocation()
+								EndIf
 							EndIf
 						ElseIf (!SleepMarker.Isdisabled() && (SleepMarker.GetParentCell() != DefaultCell) && (PlayerMarker.GetDistance(SleepMarker) >= 3000.0))
 							PlayerRef.MoveTo(SleepMarker, abMatchRotation = true)
 							Utility.Wait(0.5)
-							If ( PlayerRef.GetDistance(SleepMarker) > 1999.0 )
-								RandomTeleport()
+							If ( PlayerRef.GetDistance(SleepMarker) > 1500.0 )
+								SendToAnotherLocation()
 							EndIf
 						Else
-							RandomTeleport()
+							SendToAnotherLocation()
 						EndIf
 					EndIf
 				ElseIf ((PlayerRef.GetDistance(CustomMarker) >= 3000.0 ) && !CustomMarker.IsDisabled() && (CustomMarker.GetParentCell() != DefaultCell))
 					PlayerRef.MoveTo( CustomMarker, abMatchRotation = true )
 					Utility.Wait(0.5)
-					If ( PlayerRef.GetDistance(CustomMarker) > 1999.0 )
+					If ( PlayerRef.GetDistance(CustomMarker) > 1500.0 )
 						If (!SleepMarker.Isdisabled() && (SleepMarker.GetParentCell() != DefaultCell) && (PlayerMarker.GetDistance(SleepMarker) >= 3000.0))
 							PlayerRef.MoveTo(SleepMarker, abMatchRotation = true)
 							Utility.Wait(0.5)
-							If ( PlayerRef.GetDistance(SleepMarker) > 1999.0 )
-								RandomTeleport()
+							If ( PlayerRef.GetDistance(SleepMarker) > 1500.0 )
+								SendToAnotherLocation()
 							EndIf
 						Else
-							RandomTeleport()
-						Endif
+							SendToAnotherLocation()
+						EndIf
 					EndIf
 				ElseIf (!SleepMarker.Isdisabled() && (SleepMarker.GetParentCell() != DefaultCell) && (PlayerRef.GetDistance(SleepMarker) >= 3000.0))
 					PlayerRef.MoveTo(SleepMarker, abMatchRotation = true)
 					Utility.Wait(0.5)
-					If ( PlayerRef.GetDistance(SleepMarker) > 1999.0 )
-						RandomTeleport()
+					If ( PlayerRef.GetDistance(SleepMarker) > 1500.0 )
+						SendToAnotherLocation()
 					EndIf
 				Else
-					RandomTeleport()
-				Endif
+					SendToAnotherLocation()
+				EndIf
 			ElseIf ( bCanTeleportToExtMarker( ExternalMarkerList.GetAt( ConfigMenu.iExternalIndex ) As ObjectReference ) &&  (PlayerRef.GetDistance(ExternalMarkerList.GetAt( ConfigMenu.iExternalIndex ) As ObjectReference) >= 3000.0) && ( ExternalMarkerList.GetAt( ConfigMenu.iExternalIndex ).GetType() == 61 ) )
 				PlayerRef.MoveTo( ExternalMarkerList.GetAt( ConfigMenu.iExternalIndex ) As ObjectReference, abMatchRotation = true )
 				Utility.Wait(0.5)
-				If ( PlayerRef.GetDistance(ExternalMarkerList.GetAt( ConfigMenu.iExternalIndex ) As ObjectReference) > 1999.0 )
+				If ( PlayerRef.GetDistance(ExternalMarkerList.GetAt( ConfigMenu.iExternalIndex ) As ObjectReference) > 1500.0 )
 					If ((PlayerRef.GetDistance(CustomMarker) >= 3000.0) && !CustomMarker.IsDisabled() && (CustomMarker.GetParentCell() != DefaultCell))
 						PlayerRef.MoveTo(CustomMarker, abMatchRotation = true)
 						Utility.Wait(0.5)
-						If ( PlayerRef.GetDistance(CustomMarker) > 1999.0 )
+						If ( PlayerRef.GetDistance(CustomMarker) > 1500.0 )
 							If (!SleepMarker.Isdisabled() && (SleepMarker.GetParentCell() != DefaultCell) && (PlayerMarker.GetDistance(SleepMarker) >= 3000.0))
 								PlayerRef.MoveTo(SleepMarker, abMatchRotation = true)
 								Utility.Wait(0.5)
-								If ( PlayerRef.GetDistance(SleepMarker) > 1999.0 )
-									RandomTeleport()
+								If ( PlayerRef.GetDistance(SleepMarker) > 1500.0 )
+									SendToAnotherLocation()
 								EndIf
 							Else
-								RandomTeleport()
-							Endif
+								SendToAnotherLocation()
+							EndIf
 						EndIf
 					ElseIf (!SleepMarker.Isdisabled() && (SleepMarker.GetParentCell() != DefaultCell) && (PlayerMarker.GetDistance(SleepMarker) >= 3000.0))
 						PlayerRef.MoveTo(SleepMarker, abMatchRotation = true)
 						Utility.Wait(0.5)
-						If ( PlayerRef.GetDistance(SleepMarker) > 1999.0 )
-							RandomTeleport()
+						If ( PlayerRef.GetDistance(SleepMarker) > 1500.0 )
+							SendToAnotherLocation()
 						EndIf
 					Else
-						RandomTeleport()
+						SendToAnotherLocation()
 					EndIf
 				EndIf
 			ElseIf ((PlayerRef.GetDistance(CustomMarker) >= 3000.0) && !CustomMarker.IsDisabled() && (CustomMarker.GetParentCell() != DefaultCell))
 				PlayerRef.MoveTo( CustomMarker, abMatchRotation = true )
 				Utility.Wait(0.5)
-				If ( PlayerRef.GetDistance(CustomMarker) > 1999.0 )
+				If ( PlayerRef.GetDistance(CustomMarker) > 1500.0 )
 					If (!SleepMarker.Isdisabled() && (SleepMarker.GetParentCell() != DefaultCell) && (PlayerMarker.GetDistance(SleepMarker) >= 3000.0))
 						PlayerRef.MoveTo(SleepMarker, abMatchRotation = true)
 						Utility.Wait(0.5)
-						If ( PlayerRef.GetDistance(SleepMarker) > 1999.0 )
-							RandomTeleport()
+						If ( PlayerRef.GetDistance(SleepMarker) > 1500.0 )
+							SendToAnotherLocation()
 						EndIf
 					Else
-						RandomTeleport()
-					Endif
+						SendToAnotherLocation()
+					EndIf
 				EndIf
 			ElseIf (!SleepMarker.Isdisabled() && (SleepMarker.GetParentCell() != DefaultCell) && (PlayerRef.GetDistance(SleepMarker) >= 3000.0))
 				PlayerRef.MoveTo(SleepMarker, abMatchRotation = true)
 				Utility.Wait(0.5)
-				If ( PlayerRef.GetDistance(SleepMarker) > 1999.0 )
-					RandomTeleport()
+				If ( PlayerRef.GetDistance(SleepMarker) > 1500.0 )
+					SendToAnotherLocation()
 				EndIf
 			Else
-				RandomTeleport()
-			Endif
+				SendToAnotherLocation()
+			EndIf
 		ElseIf ((PlayerRef.GetDistance(CustomMarker) >= 3000.0) && !CustomMarker.IsDisabled() && (CustomMarker.GetParentCell() != DefaultCell))
 			PlayerRef.MoveTo( CustomMarker, abMatchRotation = true )
 			Utility.Wait(0.5)
-			If ( PlayerRef.GetDistance(CustomMarker) > 1999.0 )
+			If ( PlayerRef.GetDistance(CustomMarker) > 1500.0 )
 				If (!SleepMarker.Isdisabled() && (SleepMarker.GetParentCell() != DefaultCell) && (PlayerMarker.GetDistance(SleepMarker) >= 3000.0))
 					PlayerRef.MoveTo(SleepMarker, abMatchRotation = true)
 					Utility.Wait(0.5)
-					If ( PlayerRef.GetDistance(SleepMarker) > 1999.0 )
-						RandomTeleport()
+					If ( PlayerRef.GetDistance(SleepMarker) > 1500.0 )
+						SendToAnotherLocation()
 					EndIf
 				Else
-					RandomTeleport()
-				Endif
+					SendToAnotherLocation()
+				EndIf
 			EndIf
 		ElseIf (!SleepMarker.Isdisabled() && (SleepMarker.GetParentCell() != DefaultCell) && (PlayerRef.GetDistance(SleepMarker) >= 3000.0))
 			PlayerRef.MoveTo(SleepMarker, abMatchRotation = true)
 			Utility.Wait(0.5)
-			If ( PlayerRef.GetDistance(SleepMarker) > 1999.0 )
-				RandomTeleport()
+			If ( PlayerRef.GetDistance(SleepMarker) > 1500.0 )
+				SendToAnotherLocation()
 			EndIf
 		Else
-			RandomTeleport()
-		Endif
-	Endif
+			SendToAnotherLocation()
+		EndIf
+	Else
+		SendToNearestLocation()
+	EndIf
 	PlayerMarker.MoveToMyEditorLocation()
 	PlayerMarker.Disable()
 EndFunction
@@ -1292,14 +1381,14 @@ Bool Function bCanTeleport()
 		iIndex -= 1
 		If (QuestBlackList.GetAt(iIndex) As Quest).IsRunning()
 			Return False
-		Endif
+		EndIf
 	EndWhile
 	iIndex = LocationBlackList.GetSize()
 	While iIndex > 0
 		iIndex -= 1
 		If PlayerRef.IsInLocation(LocationBlackList.GetAt(iIndex) As Location)
 			Return False
-		Endif
+		EndIf
 	EndWhile
 	Return True
 EndFunction
@@ -1329,11 +1418,11 @@ Function RemoveUnequippedItems(Actor ActorRef)
 	If RightHandEquipedItem && !(RightHandEquipedItem As Spell) 
 		ActorRef.RemoveItem(RightHandEquipedItem, 1, True, EquippedItemsChest)
 		RightHand = True
-	Endif
+	EndIf
 	If LeftHandEquippedItem && !(LeftHandEquippedItem As Spell) && !( LeftHandEquippedItem == RightHandEquipedItem )
 		ActorRef.RemoveItem(LeftHandEquippedItem, 1, True, EquippedItemsChest)
 		LeftHand = True
-	Endif
+	EndIf
 	Int i = 30
 	While i < 61
 		ActorRef.unequipItemSlot(i)
@@ -1357,7 +1446,7 @@ Function RemoveUnequippedItems(Actor ActorRef)
 		;If LeftHand
 		;	ActorRef.EquipItemEx(LeftHandEquippedItem,2,False,True) ;CTD?
 		;	Utility.Wait(0.2)
-		;Endif
+		;EndIf
 		i = Equipment.length
 		While i > 0
 			i -= 1
@@ -1413,8 +1502,8 @@ Bool Function IsInInteriorActual(ObjectReference akObjectReference)
 			Return True
 		Else
 			Return False
-		Endif
-	Endif
+		EndIf
+	EndIf
 EndFunction
 
 Bool Function bCanTeleportToExtMarker( Objectreference ExternalMarker )
@@ -1442,7 +1531,7 @@ Int Function iGetRandomRefFromListWithExclusions( Int iFrom, Int iTo, Formlist R
 	Endwhile
 	If ( ExcludeCount == RefList.GetSize() )
 		Return -1
-	Endif
+	EndIf
 	iRandom = Utility.RandomInt(iFrom, iTo - ExcludeCount)
 	 iIndex = 0 
 	 While ( iIndex < RefList.GetSize() )
@@ -1451,7 +1540,7 @@ Int Function iGetRandomRefFromListWithExclusions( Int iFrom, Int iTo, Formlist R
 			Return iRandom
 		ElseIf (( iRandom >= iIndex ) && ( ( RefList.GetAt(iIndex).GetType() != 61 ) || !bCanTeleportToExtMarker( MarkerRef ) || BIsRefInCurrentCell( MarkerRef ) ))
 			iRandom += 1
-		Endif
+		EndIf
 		iIndex += 1
 	EndWhile
 	Return iRandom
@@ -1463,6 +1552,49 @@ EndFunction
 
 Function RandomTeleport()
 	PlayerRef.MoveTo( MarkerList.GetAt( iGetRandomWithExclusionArray( 0, (MarkerList.GetSize() - 1), ConfigMenu.bRespawnPointsFlags) ) As Objectreference, abMatchRotation = true )
+EndFunction
+
+Function SendToAnotherLocation()
+	Int iIndex = LocationsList.GetSize()
+	While ( iIndex > 0 )
+		iIndex -= 1
+		If ( iIndex == 4 )
+			If ( bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(HjaalmarchHoldLocation) ) ;Solitude or Morthal
+				If ConfigMenu.bRespawnPointsFlags[iIndex]
+					If ( PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference) >= 3000.0 )
+						PlayerRef.MoveTo( MarkerList.GetAt(iIndex) As ObjectReference )
+						Utility.Wait(0.5)
+						If ( PlayerRef.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference) <= 1500.0 )
+							Return
+						EndIf
+					EndIf
+				EndIf
+			EndIf
+		ElseIf ( iIndex == 6 )
+			If ( bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(PaleHoldLocation) ) ;Winterhold or Dawnstar
+				If ConfigMenu.bRespawnPointsFlags[iIndex]
+					If ( PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference) >= 3000.0 )
+						PlayerRef.MoveTo( MarkerList.GetAt(iIndex) As ObjectReference )
+						Utility.Wait(0.5)
+						If ( PlayerRef.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference) <= 1500.0 )
+							Return
+						EndIf
+					EndIf
+				EndIf
+			EndIf
+		ElseIf bInSameLocation(LocationsList.GetAt(iIndex) As Location)
+			If ConfigMenu.bRespawnPointsFlags[iIndex]
+				If ( PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference) >= 3000.0 )
+					PlayerRef.MoveTo( MarkerList.GetAt(iIndex) As ObjectReference )
+					Utility.Wait(0.5)
+					If ( PlayerRef.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference) <= 1500.0 )
+						Return
+					EndIf
+				EndIf
+			EndIf
+		EndIf
+	EndWhile
+	RandomTeleport()
 EndFunction
 
 Function ShiftBack()
@@ -1479,7 +1611,7 @@ Function ShiftBack()
 		EndWhile
 		;Debug.SetGodMode(False)
 		;Game.EnablePlayerControls()
-	ElseIf(VampireLordQuest && VampireLordQuest.IsRunning())
+	ElseIf(VampireLordQuest.IsRunning())
 		PlayerRef.StopCombatAlarm()
 		Debug.SetGodMode(True)
 		PlayerRef.DispelSpell(BleedoutProtection)
@@ -1491,7 +1623,7 @@ Function ShiftBack()
 		EndWhile
 		;Debug.SetGodMode(False)
 		;Game.EnablePlayerControls()
-	Endif
+	EndIf
 EndFunction
 
 Int Function iHasHealingPotion()
@@ -1533,11 +1665,11 @@ Function RemoveValuableItems(Actor ActorRef)
 	If RightHandEquipedItem && !(RightHandEquipedItem As Spell) 
 		ActorRef.RemoveItem(RightHandEquipedItem, 1, True, EquippedItemsChest)
 		RightHand = True
-	Endif
+	EndIf
 	If LeftHandEquippedItem && !(LeftHandEquippedItem As Spell) && !( LeftHandEquippedItem == RightHandEquipedItem )
 		ActorRef.RemoveItem(LeftHandEquippedItem, 1, True, EquippedItemsChest)
 		LeftHand = True
-	Endif
+	EndIf
 	Int itemIndex = 30
 	While itemIndex < 61
 		ActorRef.unequipItemSlot(itemIndex)
@@ -1757,7 +1889,7 @@ Function RemoveValuableItems(Actor ActorRef)
 		;If LeftHand && ActorRef.GetItemCount(LeftHandEquippedItem) > 0
 		;	ActorRef.EquipItemEx(LeftHandEquippedItem, 2, False, True)
 		;	Utility.Wait(0.2)
-		;Endif
+		;EndIf
 		itemIndex = Equipment.Length
 		While itemIndex > 0
 			itemIndex -= 1
@@ -1784,7 +1916,7 @@ Function RemoveValuableItemsGreedy(Actor ActorRef)
 		fLostSouls += ActorRef.GetActorValue("DragonSouls")
 		ActorRef.ModActorValue("DragonSouls", -ActorRef.GetActorValue("DragonSouls"))
 		bFound1 = True
-	Endif
+	EndIf
 	If( ActorRef.GetItemCount(MarkOfArkay) > 0 ) && ConfigMenu.bIsMarkEnabled
 		ActorRef.RemoveItem(MarkOfArkay, ActorRef.GetItemCount(MarkOfArkay), True, LostItemsChest)
 		bFound1 = True
@@ -1802,11 +1934,11 @@ Function RemoveValuableItemsGreedy(Actor ActorRef)
 	If RightHandEquipedItem && !(RightHandEquipedItem As Spell) 
 		ActorRef.RemoveItem(RightHandEquipedItem, 1, True, EquippedItemsChest)
 		RightHand = True
-	Endif
+	EndIf
 	If LeftHandEquippedItem && !(LeftHandEquippedItem As Spell) && !( LeftHandEquippedItem == RightHandEquipedItem )
 		ActorRef.RemoveItem(LeftHandEquippedItem, 1, True, EquippedItemsChest)
 		LeftHand = True
-	Endif
+	EndIf
 	Int itemIndex = 30
 	While itemIndex < 61
 		ActorRef.unequipItemSlot(itemIndex)
@@ -2030,7 +2162,7 @@ Function RemoveValuableItemsGreedy(Actor ActorRef)
 		;If LeftHand && ActorRef.GetItemCount(LeftHandEquippedItem) > 0
 		;	ActorRef.EquipItemEx(LeftHandEquippedItem, 2, False, True)
 		;	Utility.Wait(0.2)
-		;Endif
+		;EndIf
 		itemIndex = Equipment.Length
 		While itemIndex > 0
 			itemIndex -= 1
@@ -2050,4 +2182,362 @@ Bool Function bIsTypeLegit( Form KItem)
 		Return True
 	EndIf
 	Return False
+EndFunction
+
+Bool Function bGuardCanSendToJail()
+	bool bResult = False
+	If ( Attacker && !Attacker.IsDead() )
+		If ( Attacker.IsGuard() )
+			If ( PlayerRef.GetDistance(Attacker) < 2000.0 )
+				If ( Attacker.GetCrimeFaction().GetCrimeGold() > 0 )
+					bResult =  True
+				EndIf
+			EndIf
+		EndIf
+	EndIf
+	If !bResult
+		Int i = 0
+		Actor RandomActor
+		Bool bBreak = False
+		While ( ( i < 15 ) && !bBreak )
+			i += 1
+			RandomActor = Game.FindRandomActorFromRef(PlayerRef,2000)
+			If RandomActor
+				If RandomActor != Game.GetPlayer()
+					If !RandomActor.IsDead()
+						If RandomActor.IsGuard()
+							If RandomActor.GetCrimeFaction().GetCrimeGold() > 0
+								Attacker = RandomActor
+								bResult = True
+								bBreak = True
+							EndIf
+						EndIf
+					EndIf
+				EndIf
+			Else
+				bBreak = True ;No Actor is around.
+			EndIf
+		EndWhile
+	EndIf
+	Return bResult
+EndFunction
+
+Bool Function bInBeastForm()
+	If VampireLordQuest.IsRunning() || WerewolfQuest.IsRunning()
+		Return True
+	ElseIf ( PlayerRef.GetRace() == WereWolfBeastRace )
+		Return True
+	ElseIf ( PlayerRef.GetRace() == DLC1VampireBeastRace )
+		Return True
+	EndIf
+	Return False
+Endfunction
+
+Bool Function bInSameLocation(Location Loc)
+	If PlayerRef.IsInLocation(Loc)
+		Return True
+	EndIf
+	If PlayerRef.GetCurrentLocation()
+		If PlayerRef.GetCurrentLocation().IsSameLocation(Loc,HoldKeyword)
+			Return True
+		EndIf
+	EndIf
+	Return False
+EndFunction
+
+ObjectReference Function FindClosestMarker(ObjectReference[] Exclude,Bool bFast)
+	Float fDistance
+	ObjectReference Marker
+	If bFast
+		If ( Exclude.find(DetachMarker1) < 0 )
+			If ( !DetachMarker1.IsDisabled() && ( DetachMarker1.GetParentCell() != DefaultCell ) )
+				If ( !fDistance || ( fDistance > PlayerMarker.GetDistance(DetachMarker1) ) ) 
+					If ( PlayerMarker.GetDistance(DetachMarker1) >= 3000.0)
+						fDistance = PlayerMarker.GetDistance(DetachMarker1)
+						Marker = DetachMarker1
+					EndIf
+				EndIf
+			EndIf
+		EndIf
+		If ( Exclude.find(DetachMarker2) < 0 )
+			If ( !DetachMarker2.IsDisabled() && ( DetachMarker2.GetParentCell() != DefaultCell ) )
+				If ( !fDistance || ( fDistance > PlayerMarker.GetDistance(DetachMarker2) ) ) 
+					If ( PlayerMarker.GetDistance(DetachMarker2) >= 3000.0)
+						Marker = DetachMarker2
+					EndIf
+				EndIf
+			EndIf
+		EndIf
+		Return Marker
+	Else
+		If ( Exclude.find(DetachMarker1) < 0 )
+			If ( !PlayerRef.IsInInterior() || ( PlayerRef.GetParentCell() == DetachMarker1.GetParentCell() ) )
+				If ( !DetachMarker1.IsDisabled() && ( DetachMarker1.GetParentCell() != DefaultCell ) )
+					If ( !fDistance || ( fDistance > PlayerMarker.GetDistance(DetachMarker1) ) ) 
+						If ( PlayerMarker.GetDistance(DetachMarker1) >= 3000.0)
+							fDistance = PlayerMarker.GetDistance(DetachMarker1)
+							Marker = DetachMarker1
+						EndIf
+					EndIf
+				EndIf
+			EndIf
+		EndIf
+		If ( Exclude.find(DetachMarker2) < 0 )
+			If ( !PlayerRef.IsInInterior() || ( PlayerRef.GetParentCell() == DetachMarker2.GetParentCell() ) )
+				If ( !DetachMarker2.IsDisabled() && ( DetachMarker2.GetParentCell() != DefaultCell ) )
+					If ( !fDistance || ( fDistance > PlayerMarker.GetDistance(DetachMarker2) ) ) 
+						If ( PlayerMarker.GetDistance(DetachMarker2) >= 3000.0)
+							fDistance = PlayerMarker.GetDistance(DetachMarker2)
+							Marker = DetachMarker2
+						EndIf
+					EndIf
+				EndIf
+			EndIf
+		EndIf
+		If ( Exclude.find(CellLoadMarker) < 0 )
+			If ( !PlayerRef.IsInInterior() || ( PlayerRef.GetParentCell() == CellLoadMarker.GetParentCell() ) )
+				If ( !CellLoadMarker.IsDisabled() && ( CellLoadMarker.GetParentCell() != DefaultCell ) )
+					If ( !fDistance || ( fDistance > PlayerMarker.GetDistance(CellLoadMarker) ) ) 
+						If ( PlayerMarker.GetDistance(CellLoadMarker) >= 3000.0)
+							fDistance = PlayerMarker.GetDistance(CellLoadMarker)
+							Marker = CellLoadMarker
+						EndIf
+					EndIf
+				EndIf
+			EndIf
+		EndIf
+		If ( Exclude.find(LocationMarker) < 0 )
+			If ( !PlayerRef.IsInInterior() || ( PlayerRef.GetParentCell() == LocationMarker.GetParentCell() ) )
+				If ( !LocationMarker.IsDisabled() && ( LocationMarker.GetParentCell() != DefaultCell ) )
+					If ( !fDistance || ( fDistance > PlayerMarker.GetDistance(LocationMarker) ) ) 
+						If ( PlayerMarker.GetDistance(LocationMarker) >= 3000.0)
+							fDistance = PlayerMarker.GetDistance(LocationMarker)
+							Marker = LocationMarker
+						EndIf
+					EndIf
+				EndIf
+			EndIf
+		EndIf
+		If ( Exclude.find(CustomMarker) < 0 )
+			If ( !PlayerRef.IsInInterior() || ( PlayerRef.GetParentCell() == CustomMarker.GetParentCell() ) )
+				If ( !CustomMarker.IsDisabled() && ( CustomMarker.GetParentCell() != DefaultCell ) )
+					If ( !fDistance || ( fDistance > PlayerMarker.GetDistance(CustomMarker) ) )
+						If ( PlayerMarker.GetDistance(CustomMarker) >= 3000.0)
+							fDistance = PlayerMarker.GetDistance(CustomMarker)
+							Marker = CustomMarker
+						EndIf
+					EndIf
+				EndIf
+			EndIf
+		EndIf
+		If ( Exclude.find(SleepMarker) < 0 )
+			If ( !PlayerRef.IsInInterior() || ( PlayerRef.GetParentCell() == SleepMarker.GetParentCell() ) )
+				If ( !SleepMarker.IsDisabled() && ( SleepMarker.GetParentCell() != DefaultCell ) )
+					If ( !fDistance || ( fDistance > PlayerMarker.GetDistance(SleepMarker) ) ) 
+						If ( PlayerMarker.GetDistance(SleepMarker) >= 3000.0) 
+							fDistance = PlayerMarker.GetDistance(SleepMarker)
+							Marker = SleepMarker
+						EndIf
+					EndIf
+				EndIf
+			EndIf
+		EndIf
+		If ( fDistance && fDistance < 999999999.0 )
+			Return Marker
+		EndIf
+		If ExternalMarkerList.GetSize() > 0
+			Int jIndex = ExternalMarkerList.GetSize()
+			While jIndex > 0
+				jIndex -= 1
+				If ( PlayerRef.GetParentCell() == ( ExternalMarkerList.GetAt( jIndex ) As ObjectReference ).GetParentCell() )
+					If ( ExternalMarkerList.GetAt( jIndex ).GetType() == 61 ) 
+						If( Exclude.find( ExternalMarkerList.GetAt( jIndex ) As ObjectReference ) < 0 )
+							If bCanTeleportToExtMarker( ExternalMarkerList.GetAt( jIndex ) As ObjectReference )
+								If ( !fDistance || ( fDistance > PlayerMarker.GetDistance( ExternalMarkerList.GetAt( jIndex ) As ObjectReference ) ) )
+									If ( PlayerMarker.GetDistance(ExternalMarkerList.GetAt( jIndex ) As ObjectReference) >= 3000.0)
+										fDistance = PlayerMarker.GetDistance( ExternalMarkerList.GetAt( jIndex ) As ObjectReference )
+										Marker = ExternalMarkerList.GetAt( jIndex ) As ObjectReference
+									EndIf
+								EndIf
+							EndIf
+						EndIf
+					EndIf
+				EndIf
+			EndWhile	
+		EndIf
+		If !PlayerRef.IsInInterior()
+			Int iIndex = CityMarkersList.GetSize()
+			While iIndex > 0
+				iIndex -= 1
+				If ConfigMenu.bRespawnPointsFlags[iIndex]
+					If ( Exclude.find(MarkerList.GetAt(iIndex) As ObjectReference ) < 0 )
+						If ( !fDistance || ( fDistance > PlayerMarker.GetDistance(CityMarkersList.GetAt(iIndex) As ObjectReference) ) )
+							fDistance = PlayerMarker.GetDistance(CityMarkersList.GetAt(iIndex) As ObjectReference)
+							Marker = MarkerList.GetAt(iIndex) As ObjectReference
+						EndIf
+					EndIf
+				EndIf
+			EndWhile
+		EndIf
+		If ( fDistance && fDistance < 999999999.0 )
+			Return Marker
+		EndIf
+		Return None
+	EndIf
+EndFunction
+
+Function SendToNearestLocation()
+	ObjectReference[] Except = New ObjectReference[4]
+	ObjectReference Destination = FindClosestMarker(Except,False)
+	If ( Destination )
+		PlayerRef.MoveTo( Destination )
+		Utility.Wait(0.5)
+		If ( PlayerRef.GetDistance(Destination) <= 1500.0 )
+			Return
+		EndIf
+		Except[0] = Destination
+		ObjectReference SecondDestination = FindClosestMarker(Except,False)
+		If ( SecondDestination )
+			PlayerRef.MoveTo( SecondDestination )
+			Utility.Wait(0.5)
+			If ( PlayerRef.GetDistance(SecondDestination) <= 1500.0 )
+				Return
+			EndIf
+			Except[1] = SecondDestination
+			ObjectReference ThirdDestination = FindClosestMarker(Except,False)
+			If ( ThirdDestination )
+				PlayerRef.MoveTo( ThirdDestination )
+				Utility.Wait(0.5)
+				If ( PlayerRef.GetDistance(ThirdDestination) <= 1500.0 )
+					Return
+				EndIf
+				Except[2] = ThirdDestination
+				ObjectReference FourthDestination = FindClosestMarker(Except,False)
+				If ( FourthDestination )
+					PlayerRef.MoveTo( FourthDestination )
+					Utility.Wait(0.5)
+					If ( PlayerRef.GetDistance(FourthDestination) <= 1500.0 )
+						Return
+					EndIf
+					Except[3] = FourthDestination
+					ObjectReference FifthDestination = FindClosestMarker(Except,False)
+					If ( FifthDestination )
+						PlayerRef.MoveTo( FifthDestination )
+						Utility.Wait(0.5)
+						If ( PlayerRef.GetDistance(FifthDestination) <= 1500.0 )
+							Return
+						EndIf
+					EndIf
+				EndIf
+			EndIf
+		EndIf
+	EndIf
+	If ( Except.find(DetachMarker1) < 0 )
+		If ( !DetachMarker1.IsDisabled() && ( DetachMarker1.GetParentCell() != DefaultCell ) )
+			If bInSameLocation( DetachMarker1.GetCurrentLocation() )
+				If ( PlayerMarker.GetDistance(DetachMarker1) >= 3000.0 )
+					PlayerRef.MoveTo( DetachMarker1 )
+					Utility.Wait(0.5)
+					If ( PlayerRef.GetDistance(DetachMarker1) <= 1500.0 )
+						return
+					EndIf
+				EndIf
+			EndIf
+		EndIf
+	EndIf
+	If ( Except.find(DetachMarker2) < 0 )
+		If ( !DetachMarker2.IsDisabled() && ( DetachMarker2.GetParentCell() != DefaultCell ) )
+			If bInSameLocation( DetachMarker2.GetCurrentLocation() )
+				If ( PlayerMarker.GetDistance(DetachMarker2) >= 3000.0 )
+					PlayerRef.MoveTo( DetachMarker2 )
+					Utility.Wait(0.5)
+					If ( PlayerRef.GetDistance(DetachMarker2) <= 1500.0 )
+						return
+					EndIf
+				EndIf
+			EndIf
+		EndIf
+	EndIf
+	If ( Except.find(CellLoadMarker) < 0 )
+		If ( !CellLoadMarker.IsDisabled() && ( CellLoadMarker.GetParentCell() != DefaultCell ) )
+			If bInSameLocation( CellLoadMarker.GetCurrentLocation() )
+				If ( PlayerMarker.GetDistance(CellLoadMarker) >= 3000.0 )
+					PlayerRef.MoveTo( CellLoadMarker )
+					Utility.Wait(0.5)
+					If ( PlayerRef.GetDistance(CellLoadMarker) <= 1500.0 )
+						return
+					EndIf
+				EndIf
+			EndIf
+		EndIf
+	EndIf
+	If ( Except.find(LocationMarker) < 0 )
+		If ( !LocationMarker.IsDisabled() && ( LocationMarker.GetParentCell() != DefaultCell ) )
+			If bInSameLocation( LocationMarker.GetCurrentLocation() )
+				If ( PlayerMarker.GetDistance(LocationMarker) >= 3000.0 )
+					PlayerRef.MoveTo( LocationMarker )
+					Utility.Wait(0.5)
+					If ( PlayerRef.GetDistance(LocationMarker) <= 1500.0 )
+						return
+					EndIf
+				EndIf
+			EndIf
+		EndIf
+	EndIf
+	If ( Except.find(CustomMarker) < 0 )
+		If ( !CustomMarker.IsDisabled() && ( CustomMarker.GetParentCell() != DefaultCell ) )
+			If bInSameLocation( CustomMarker.GetCurrentLocation() )
+				If ( PlayerMarker.GetDistance(CustomMarker) >= 3000.0 )
+					PlayerRef.MoveTo( CustomMarker )
+					Utility.Wait(0.5)
+					If ( PlayerRef.GetDistance(CustomMarker) <= 1500.0 )
+						return
+					EndIf
+				EndIf
+			EndIf
+		EndIf
+	EndIf
+	If ( Except.find(SleepMarker) < 0 )
+		If ( !SleepMarker.IsDisabled() && ( SleepMarker.GetParentCell() != DefaultCell ) )
+			If bInSameLocation( SleepMarker.GetCurrentLocation() )
+				If ( PlayerMarker.GetDistance(SleepMarker) >= 3000.0 )
+					PlayerRef.MoveTo( SleepMarker )
+					Utility.Wait(0.5)
+					If ( PlayerRef.GetDistance(SleepMarker) <= 1500.0 )
+						return
+					EndIf
+				EndIf
+			EndIf
+		EndIf
+	EndIf
+	If ExternalMarkerList.GetSize() > 0
+		Int jIndex = ExternalMarkerList.GetSize()
+		While jIndex > 0
+			jIndex -= 1
+			If ( Except.find(ExternalMarkerList.GetAt( jIndex ) As ObjectReference) < 0 )
+				If ( ExternalMarkerList.GetAt( jIndex ).GetType() == 61 )
+					If bCanTeleportToExtMarker( ExternalMarkerList.GetAt( jIndex ) As ObjectReference )
+						If bInSameLocation( ( ExternalMarkerList.GetAt( jIndex ) As ObjectReference ).GetCurrentLocation() )
+							If ( PlayerMarker.GetDistance(ExternalMarkerList.GetAt( jIndex ) As ObjectReference) >= 3000.0 )
+								PlayerRef.MoveTo( ExternalMarkerList.GetAt( jIndex ) As ObjectReference )
+								Utility.Wait(0.5)
+								If ( PlayerRef.GetDistance(ExternalMarkerList.GetAt( jIndex ) As ObjectReference) <= 1500.0 )
+									return
+								EndIf
+							EndIf
+						EndIf
+					EndIf
+				EndIf
+			EndIf
+		EndWhile	
+	EndIf
+	ObjectReference SixthDestination = FindClosestMarker(Except,True)
+	If SixthDestination
+		PlayerRef.MoveTo(SixthDestination)
+		Utility.Wait(0.5)
+		If (PlayerRef.GetDistance(SixthDestination) <= 1500.0)
+			Return
+		EndIf
+	EndIf
+	SendToAnotherLocation()
 EndFunction

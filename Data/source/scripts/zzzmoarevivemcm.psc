@@ -59,7 +59,8 @@ Int oidHistory
 Int oidAutoSwitchRP
 int oidRecallCost
 int oidBleedoutTime
-Int oidRecallByArkayMark ;
+Int oidRecallByArkayMark
+Int oidJail
 String[] Property sRespawnPoints Auto
 String[] Property sLoseOptions Auto
 String[] Property sAftermathOptions Auto
@@ -102,6 +103,7 @@ Bool Property bLoseForever = False Auto Hidden
 Bool Property bSoulMarkStay = False Auto Hidden
 Bool Property bIsHistoryEnabled = False Auto Hidden
 Bool Property bIsInfoEnabled = False Auto Hidden
+Bool Property bSendToJail = False Auto Hidden
 Int Property iTeleportLocation = 0 Auto Hidden
 Float Property fValueSoulSlider = 1.0 Auto Hidden
 Float Property fValueGoldSlider = 1000.0 Auto Hidden
@@ -130,8 +132,12 @@ Bool Property bShiftBackRespawn = True Auto Hidden
 String Property sResetHistory = "" Auto Hidden
 FormList property MarkerList Auto
 ObjectReference Property SleepMarker Auto
+ObjectReference Property LocationMarker Auto
 ObjectReference Property LostItemsMarker Auto
 ObjectReference Property CustomMarker Auto
+ObjectReference Property DetachMarker1 Auto
+ObjectReference Property DetachMarker2 Auto
+Objectreference Property CellLoadMarker Auto
 ObjectReference Property LostItemsChest Auto
 zzzmoaReviverScript Property ReviveScript Auto
 Formlist property ExternalMarkerList Auto
@@ -310,17 +316,19 @@ Event OnPageReset(String page)
 		Endif
 		oidRespawnNaked = AddToggleOption("$mrt_MarkofArkay_RespawnNaked", bRespawnNaked, flags)
 		SetCursorPosition(12)
-		oidArkayCurse = AddToggleOption("$mrt_MarkofArkay_ArkayCurse", bArkayCurse, flags)
+		oidJail = AddToggleOption("$mrt_MarkofArkay_Jail",bSendToJail,flags)
 		SetCursorPosition(14)
+		oidArkayCurse = AddToggleOption("$mrt_MarkofArkay_ArkayCurse", bArkayCurse, flags)
+		SetCursorPosition(16)
 		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && ( iRemovableItems != 0 ))
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		Endif
 		oidLoseforever = AddToggleOption("$mrt_MarkofArkay_Loseforever",bLoseForever, flags)
-		SetCursorPosition(16)
-		oidSoulMarkStay = AddToggleOption("$mrt_MarkofArkay_SoulMarkStay",bSoulMarkStay,flags)
 		SetCursorPosition(18)
+		oidSoulMarkStay = AddToggleOption("$mrt_MarkofArkay_SoulMarkStay",bSoulMarkStay,flags)
+		SetCursorPosition(20)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled
 			flags =	OPTION_FLAG_NONE
 		Else
@@ -328,7 +336,7 @@ Event OnPageReset(String page)
 		Endif
 		oidLostItemQuest = AddToggleOption("$mrt_MarkofArkay_LostItemQuest",bLostItemQuest,flags)
 		SetCursorPosition(5)
-		If (( moaState.getValue() == 1 ) && ( iTeleportLocation == (sRespawnPoints.Length - 1) ) && ExternalMarkerList.GetSize() > 1 )
+		If (( moaState.getValue() == 1 ) && ( iTeleportLocation == (sRespawnPoints.Length - 2) ) && ExternalMarkerList.GetSize() > 1 )
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
@@ -342,7 +350,7 @@ Event OnPageReset(String page)
 			oidExternalTeleportLocation = AddTextOption("$mrt_MarkofArkay_ExternalTeleportLocation", ( (iExternalIndex + 1) As String ), flags)
 		Endif
 		SetCursorPosition(9)
-		If (( moaState.getValue() == 1 ) && ( iTeleportLocation == (sRespawnPoints.Length - 4) ))
+		If ( moaState.getValue() == 1 )
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
@@ -416,7 +424,7 @@ Event OnPageReset(String page)
 		EndIf
 		SetCursorPosition(5)
 		If ( moaState.getValue() == 1 ) && bIsInfoEnabled
-			If iTeleportLocation < sRespawnPoints.Length - 4
+			If iTeleportLocation < sRespawnPoints.Length - 5
 				If (MarkerList.GetAt(iTeleportLocation) As Objectreference)
 					Float fDistance = PlayerRef.GetDistance(MarkerList.GetAt(iTeleportLocation) As Objectreference)
 					If fDistance
@@ -431,7 +439,7 @@ Event OnPageReset(String page)
 				Else
 					AddTextOption("$mrt_MarkofArkay_Dis_From_Respawn", "$Unknown", flags)
 				EndIf
-			Elseif (iTeleportLocation == sRespawnPoints.Length - 3)
+			Elseif (iTeleportLocation == sRespawnPoints.Length - 4)
 				If ( SleepMarker && !SleepMarker.Isdisabled() )
 					Float fDistance = PlayerRef.GetDistance(SleepMarker)
 					If fDistance
@@ -446,7 +454,7 @@ Event OnPageReset(String page)
 				Else
 					AddTextOption("$mrt_MarkofArkay_Dis_From_Respawn", "$Unknown", flags)
 				EndIf
-			ElseIf (iTeleportLocation == sRespawnPoints.Length - 2)
+			ElseIf (iTeleportLocation == sRespawnPoints.Length - 3)
 				If ( CustomMarker && !CustomMarker.Isdisabled() )
 					Float fDistance = PlayerRef.GetDistance(CustomMarker)
 					If fDistance
@@ -461,7 +469,7 @@ Event OnPageReset(String page)
 				Else
 					AddTextOption("$mrt_MarkofArkay_Dis_From_Respawn", "$Unknown", flags)
 				EndIf
-			ElseIf (iTeleportLocation == sRespawnPoints.Length - 1) && (ExternalMarkerList.GetSize() > 1) && (iExternalIndex != -1)
+			ElseIf (iTeleportLocation == sRespawnPoints.Length - 2) && (ExternalMarkerList.GetSize() > 1) && (iExternalIndex != -1)
 				ObjectReference ExtMarker = ExternalMarkerList.GetAt(iExternalIndex) As ObjectReference
 				If ( ExtMarker && !ExtMarker.Isdisabled() )
 					Float fDistance = PlayerRef.GetDistance(ExtMarker)
@@ -477,7 +485,7 @@ Event OnPageReset(String page)
 				Else
 					AddTextOption("$mrt_MarkofArkay_Dis_From_Respawn", "$Unknown", flags)
 				EndIf
-			ElseIf (iTeleportLocation == sRespawnPoints.Length - 1) && (ExternalMarkerList.GetSize() == 1)
+			ElseIf (iTeleportLocation == sRespawnPoints.Length - 2) && (ExternalMarkerList.GetSize() == 1)
 				ObjectReference ExtMarker = ExternalMarkerList.GetAt(0) As ObjectReference
 				If ( ExtMarker && !ExtMarker.Isdisabled() )
 					Float fDistance = PlayerRef.GetDistance(ExtMarker)
@@ -698,6 +706,9 @@ Event OnOptionSelect(Int option)
 	ElseIf (option == oidRespawnNaked)
 		bRespawnNaked = !bRespawnNaked
 		SetToggleOptionValue(oidRespawnNaked, bRespawnNaked)
+	ElseIf (option == oidJail)
+		bSendToJail = !bSendToJail
+		SetToggleOptionValue(oidJail, bSendToJail)
 	ElseIf (option == oidArkayCurse)
 		bArkayCurse = !bArkayCurse
 		SetToggleOptionValue(oidArkayCurse, bArkayCurse)
@@ -786,6 +797,7 @@ Event OnOptionSelect(Int option)
 		SetOptionFlags(oidScrollChanceSlider,flags,True)
 		SetOptionFlags(oidTeleportLocation_M,flags,True)
 		SetOptionFlags(oidRespawnNaked,flags,True)
+		SetOptionFlags(oidJail,flags,True)
 		SetOptionFlags(oidArkayCurse,flags,True)
 		SetOptionFlags(oidArkayCurses_M,flags,True)
 		SetOptionFlags(oidLoseforever,flags,True)
@@ -851,6 +863,7 @@ Event OnOptionSelect(Int option)
 		SetOptionFlags(oidScrollChanceSlider,flags,True)
 		SetOptionFlags(oidTeleportLocation_M,flags,True)
 		SetOptionFlags(oidRespawnNaked,flags,True)
+		SetOptionFlags(oidJail,flags,True)
 		SetOptionFlags(oidArkayCurse,flags,True)
 		SetOptionFlags(oidArkayCurses_M,flags,True)
 		SetOptionFlags(oidLoseforever,flags,True)
@@ -1038,13 +1051,13 @@ Event OnOptionMenuAccept(Int option, Int index)
 	If (option == oidTeleportLocation_M)
 		iTeleportLocation = index
 		SetMenuOptionValue(oidTeleportLocation_M, sRespawnPoints[iTeleportLocation])
-		If ( ( moaState.getValue() == 1 ) && ( iTeleportLocation == (sRespawnPoints.Length - 1 ) ) && ExternalMarkerList.GetSize() > 1 )
+		If ( ( moaState.getValue() == 1 ) && ( iTeleportLocation == (sRespawnPoints.Length - 2 ) ) && ExternalMarkerList.GetSize() > 1 )
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		Endif
 		SetOptionFlags(oidExternalTeleportLocation,flags,True)
-		If ( moaState.getValue() == 1 ) && ( iTeleportLocation == (sRespawnPoints.Length - 4))
+		If ( moaState.getValue() == 1 )
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
@@ -1082,6 +1095,7 @@ Event OnOptionMenuAccept(Int option, Int index)
 			flags = OPTION_FLAG_DISABLED
 		Endif
 		SetOptionFlags(oidRespawnNaked,flags,True)
+		SetOptionFlags(oidJail,flags,True)
 		SetOptionFlags(oidArkayCurse,flags,True)
 		SetOptionFlags(oidRemovableItems_M,flags,True)
 		If bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bArkayCurse
@@ -1103,17 +1117,13 @@ Event OnOptionMenuAccept(Int option, Int index)
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		SetOptionFlags(oidLostItemQuest,flags,True)
-		If ( ( iTeleportLocation == (sRespawnPoints.Length - 1 ) ) && ExternalMarkerList.GetSize() > 1 )
+		If ( ( iTeleportLocation == (sRespawnPoints.Length - 2 ) ) && ExternalMarkerList.GetSize() > 1 )
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		SetOptionFlags(oidExternalTeleportLocation,flags,True)
-		If ( iTeleportLocation == (sRespawnPoints.Length - 4) )
-			flags =	OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
+		flags =	OPTION_FLAG_NONE
 		SetOptionFlags(oidRespawnPoint0,flags,True)
 		SetOptionFlags(oidRespawnPoint1,flags,True)
 		SetOptionFlags(oidRespawnPoint2,flags,True)
@@ -1258,6 +1268,9 @@ Event OnOptionDefault(Int option)
 	ElseIf (option == oidRespawnNaked)
 		bRespawnNaked = False
 		SetToggleOptionValue(oidRespawnNaked,False)
+	ElseIf (option == oidJail)
+		bSendToJail = False
+		SetToggleOptionValue(oidJail,False)
 	ElseIf (option == oidArkayCurse)
 		bArkayCurse = False
 		SetToggleOptionValue(oidArkayCurse,False)
@@ -1293,6 +1306,7 @@ Event OnOptionDefault(Int option)
 		SetMenuOptionValue(oidNoTradingAftermath_M, sAftermathOptions[0])
 		flags = OPTION_FLAG_DISABLED
 		SetOptionFlags(oidRespawnNaked,flags,True)
+		SetOptionFlags(oidJail,flags,True)
 		SetOptionFlags(oidArkayCurse,flags,True)
 		SetOptionFlags(oidArkayCurses_M,flags,True)
 		SetOptionFlags(oidLoseforever,flags,True)
@@ -1451,6 +1465,8 @@ Event OnOptionHighlight(Int option)
 		SetInfoText("$mrt_MarkofArkay_DESC_RespawnPoint7")
 	ElseIf (option == oidRespawnNaked)
 		SetInfoText("$mrt_MarkofArkay_DESC_RespawnNaked")
+	ElseIf (option == oidJail)
+		SetInfoText("$mrt_MarkofArkay_DESC_Jail")
 	ElseIf (option == oidArkayCurse)
 		SetInfoText("$mrt_MarkofArkay_DESC_ArkayCurse")
 	ElseIf (option == oidRemovableItems_M)
@@ -1532,6 +1548,14 @@ Function moaStop()
 		PlayerRef.RemoveSpell(ArkayCurseAlt)
 		PlayerRef.RemoveSpell(MoveCustomMarker)
 		PlayerRef.RemoveSpell(RecallMarker)
+		DetachMarker1.MoveToMyEditorLocation()
+		DetachMarker2.MoveToMyEditorLocation()
+		CellLoadMarker.MoveToMyEditorLocation()
+		LocationMarker.MoveToMyEditorLocation()
+		DetachMarker1.Disable()
+		DetachMarker2.Disable()
+		CellLoadMarker.Disable()
+		LocationMarker.Disable()
 		Debug.SetGodMode(False)
 		moaLootChance.SetValue(100.0)
 		moaScrollChance.SetValue(100.0)
@@ -1577,7 +1601,7 @@ Function setPages()
 EndFunction
 
 Int Function GetVersion()
-	Return 25
+	Return 27
 EndFunction
 
 Event OnVersionUpdate(int a_version)
@@ -1685,7 +1709,7 @@ Event OnVersionUpdate(int a_version)
 	If (a_version >= 15 && CurrentVersion < 15)
 		Debug.Trace(self + ": Updating script to version "  + 15)
 		If iTeleportLocation >= sRespawnPoints.Length
-			iTeleportLocation = ( sRespawnPoints.Length - 4 )
+			iTeleportLocation = ( sRespawnPoints.Length - 5 )
 		Endif
 	EndIf
 	If (a_version >= 17 && CurrentVersion < 17)
@@ -1698,7 +1722,19 @@ Event OnVersionUpdate(int a_version)
 	Endif
 	If (a_version >= 21 && CurrentVersion < 21)
 		Debug.Trace(self + ": Updating script to version "  + 21)
-		setArrays()
+		sRespawnPoints = New String[12]
+		sRespawnPoints[0] = "$Whiterun"
+		sRespawnPoints[1] = "$Falkreath"
+		sRespawnPoints[2] = "$Markarth"
+		sRespawnPoints[3] = "$Riften"
+		sRespawnPoints[4] = "$Solitude"
+		sRespawnPoints[5] = "$Windhelm"
+		sRespawnPoints[6] = "$Winterhold"
+		sRespawnPoints[7] = "$RavenRock"
+		sRespawnPoints[8] = "$Random"
+		sRespawnPoints[9] = "$LastSleepLocation"
+		sRespawnPoints[10] = "$Custom"
+		sRespawnPoints[11] = "$External"
 		If iTeleportLocation == 9
 			iTeleportLocation = 10
 		Elseif iTeleportLocation == 10
@@ -1710,13 +1746,18 @@ Event OnVersionUpdate(int a_version)
 		Debug.Trace(self + ": Updating script to version "  + 23)
 	EndIf
 	If (a_version >= 25 && CurrentVersion < 25)
-		setArrays()
 		Debug.Trace(self + ": Updating script to version "  + 25)
+	EndIf
+	If (a_version >= 27 && CurrentVersion < 27)
+		Debug.Trace(self + ": Updating script to version "  + 27)
+		setArrays()
+		DetachMarker2.Enable()
+		DetachMarker2.MoveTo(PlayerRef)
 	EndIf
 EndEvent
 
 Function setRespawnPoints()
-	sRespawnPoints = New String[12]
+	sRespawnPoints = New String[13]
 	bRespawnPointsFlags = New Bool[8]
 	sRespawnPoints[0] = "$Whiterun"
 	sRespawnPoints[1] = "$Falkreath"
@@ -1730,6 +1771,7 @@ Function setRespawnPoints()
 	sRespawnPoints[9] = "$LastSleepLocation"
 	sRespawnPoints[10] = "$Custom"
 	sRespawnPoints[11] = "$External"
+	sRespawnPoints[12] = "$Nearby"
 	bRespawnPointsFlags[0] = True
 	bRespawnPointsFlags[1] = True
 	bRespawnPointsFlags[2] = True
@@ -1770,7 +1812,7 @@ EndFunction
 Int Function iGetRespawnPointsCount()
 	int iIndex = 0
 	Int iCount = 0
-	while( iIndex < ( sRespawnPoints.Length - 4 ))
+	while( iIndex < ( sRespawnPoints.Length - 5 ))
 		If bRespawnPointsFlags[iIndex]
 			iCount += 1
 		EndIf

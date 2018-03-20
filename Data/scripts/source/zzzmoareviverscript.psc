@@ -2387,7 +2387,7 @@ ObjectReference Function FindClosestMarker(ObjectReference[] Exclude,Bool bFast)
 EndFunction
 
 Function SendToNearestLocation()
-	ObjectReference[] Except = New ObjectReference[4]
+	ObjectReference[] Except = New ObjectReference[6]
 	ObjectReference Destination = FindClosestMarker(Except,False)
 	If ( Destination )
 		PlayerRef.MoveTo( Destination )
@@ -2426,6 +2426,16 @@ Function SendToNearestLocation()
 						Utility.Wait(0.5)
 						If ( PlayerRef.GetDistance(FifthDestination) <= 1500.0 )
 							Return
+						EndIf
+						Except[4] = FifthDestination
+						ObjectReference SixthDestination = FindClosestMarker(Except,False)
+						If ( SixthDestination )
+							PlayerRef.MoveTo( SixthDestination )
+							Utility.Wait(0.5)
+							If ( PlayerRef.GetDistance(SixthDestination) <= 1500.0 )
+								Return
+							EndIf
+							Except[5] = SixthDestination
 						EndIf
 					EndIf
 				EndIf
@@ -2531,13 +2541,52 @@ Function SendToNearestLocation()
 			EndIf
 		EndWhile	
 	EndIf
-	ObjectReference SixthDestination = FindClosestMarker(Except,True)
-	If SixthDestination
-		PlayerRef.MoveTo(SixthDestination)
+	Int iIndex = LocationsList.GetSize()
+	While ( iIndex > 0 )
+		iIndex -= 1
+		If ( iIndex == 4 )
+			If ( bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(HjaalmarchHoldLocation) ) ;Solitude or Morthal
+				If ConfigMenu.bRespawnPointsFlags[iIndex]
+					If ( PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference) >= 3000.0 )
+						PlayerRef.MoveTo( MarkerList.GetAt(iIndex) As ObjectReference )
+						Utility.Wait(0.5)
+						If ( PlayerRef.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference) <= 1500.0 )
+							Return
+						EndIf
+					EndIf
+				EndIf
+			EndIf
+		ElseIf ( iIndex == 6 )
+			If ( bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(PaleHoldLocation) ) ;Winterhold or Dawnstar
+				If ConfigMenu.bRespawnPointsFlags[iIndex]
+					If ( PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference) >= 3000.0 )
+						PlayerRef.MoveTo( MarkerList.GetAt(iIndex) As ObjectReference )
+						Utility.Wait(0.5)
+						If ( PlayerRef.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference) <= 1500.0 )
+							Return
+						EndIf
+					EndIf
+				EndIf
+			EndIf
+		ElseIf bInSameLocation(LocationsList.GetAt(iIndex) As Location)
+			If ConfigMenu.bRespawnPointsFlags[iIndex]
+				If ( PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference) >= 3000.0 )
+					PlayerRef.MoveTo( MarkerList.GetAt(iIndex) As ObjectReference )
+					Utility.Wait(0.5)
+					If ( PlayerRef.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference) <= 1500.0 )
+						Return
+					EndIf
+				EndIf
+			EndIf
+		EndIf
+	EndWhile
+	ObjectReference NewDestination = FindClosestMarker(Except,True)
+	If NewDestination
+		PlayerRef.MoveTo(NewDestination)
 		Utility.Wait(0.5)
-		If (PlayerRef.GetDistance(SixthDestination) <= 1500.0)
+		If (PlayerRef.GetDistance(NewDestination) <= 1500.0)
 			Return
 		EndIf
 	EndIf
-	SendToAnotherLocation()
+	RandomTeleport()
 EndFunction

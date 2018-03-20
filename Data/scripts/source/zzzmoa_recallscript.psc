@@ -86,8 +86,35 @@ Event OnEffectStart(Actor akTarget, Actor akCaster)
 	EndIf
 EndEvent
 
+Bool Function bIsCurrentCell(int iIndex)
+	Return ((( MarkerList.GetAt(iIndex))  As Objectreference ).GetParentCell() == Caster.GetParentCell() )
+EndFunction
+
+Int Function iGetRandomWithExclusionArray( Int iFrom, Int iTo, Bool[] iFlagArray) 
+	Int ExcludeCount = 0
+	int iIndex = 0
+	Int iRandom = 0
+	While iIndex < iFlagArray.Length
+		If (!iFlagArray[iIndex] || bIsCurrentCell(iIndex))
+			ExcludeCount += 1
+		EndIf
+		iIndex += 1
+	Endwhile
+	iRandom = Utility.RandomInt(iFrom, iTo - ExcludeCount)
+	 iIndex = 0 
+	 While (iIndex < iFlagArray.Length)
+		If ( iRandom < iIndex )
+			Return iRandom
+		ElseIf (( iRandom >= iIndex ) && (!iFlagArray[iIndex] || bIsCurrentCell(iIndex) ))
+			iRandom += 1
+		EndIf
+		iIndex += 1
+	EndWhile
+	Return iRandom
+EndFunction
+
 Function RandomTeleport()
-	Caster.MoveTo( MarkerList.GetAt( ReviveScript.iGetRandomWithExclusionArray( 0, (MarkerList.GetSize() - 1), ConfigMenu.bRespawnPointsFlags) ) As Objectreference, abMatchRotation = true )
+	Caster.MoveTo( MarkerList.GetAt( iGetRandomWithExclusionArray( 0, (MarkerList.GetSize() - 1), ConfigMenu.bRespawnPointsFlags) ) As Objectreference, abMatchRotation = true )
 EndFunction
 
 Function SendToAnotherLocation()
@@ -289,6 +316,36 @@ Function SendToNearestLocation()
 			EndIf
 		EndWhile	
 	EndIf
+	Int iIndex = LocationsList.GetSize()
+	While ( iIndex > 0 )
+		iIndex -= 1
+		If ( iIndex == 4 )
+			If ( bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(HjaalmarchHoldLocation) ) ;Solitude or Morthal
+				If ConfigMenu.bRespawnPointsFlags[iIndex]
+					If ( Caster.GetDistance( MarkerList.GetAt(iIndex) As ObjectReference ) >= 3000.0 )
+						Caster.MoveTo( MarkerList.GetAt(iIndex) As ObjectReference )
+						Return
+					EndIf
+				EndIf
+			EndIf
+		ElseIf ( iIndex == 6 )
+			If ( bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(PaleHoldLocation) ) ;Winterhold or Dawnstar
+				If ConfigMenu.bRespawnPointsFlags[iIndex]
+					If ( Caster.GetDistance( MarkerList.GetAt(iIndex) As ObjectReference ) >= 3000.0 )
+						Caster.MoveTo( MarkerList.GetAt(iIndex) As ObjectReference )
+						Return
+					EndIf
+				EndIf
+			EndIf
+		ElseIf bInSameLocation(LocationsList.GetAt(iIndex) As Location)
+			If ConfigMenu.bRespawnPointsFlags[iIndex]
+				If ( Caster.GetDistance( MarkerList.GetAt(iIndex) As ObjectReference ) >= 3000.0 )
+					Caster.MoveTo( MarkerList.GetAt(iIndex) As ObjectReference )
+					Return
+				EndIf
+			EndIf
+		EndIf
+	EndWhile
 	If ( Caster.GetDistance(DetachMarker1) >= 3000.0 )
 		If ( !DetachMarker1.IsDisabled() && ( DetachMarker1.GetParentCell() != ReviveScript.DefaultCell ) )
 			If ( !fDistance || ( fDistance > Caster.GetDistance(DetachMarker1) ) )
@@ -308,7 +365,7 @@ Function SendToNearestLocation()
 		Caster.MoveTo( Marker )
 		return
 	EndIf
-	SendToAnotherLocation()
+	RandomTeleport()
 EndFunction
 
 Bool Function bInSameLocation(Location Loc)

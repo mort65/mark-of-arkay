@@ -14,6 +14,7 @@ Location Property PaleHoldLocation  Auto
 Location Property HjaalmarchHoldLocation  Auto
 ObjectReference Property DetachMarker1 Auto
 ObjectReference Property DetachMarker2 Auto
+ObjectReference Property DetachMarker3 Auto
 Objectreference Property CellLoadMarker Auto
 Objectreference Property CellLoadMarker2 Auto
 ObjectReference Property LocationMarker2 Auto
@@ -172,6 +173,16 @@ Function SendToNearestLocation()
 				If ( !fDistance || ( fDistance > Caster.GetDistance(DetachMarker2) ) )
 					fDistance = Caster.GetDistance(DetachMarker2)
 					Marker = DetachMarker2
+				EndIf
+			EndIf			
+		EndIf
+	EndIf
+	If ( !DetachMarker3.IsDisabled() && ( DetachMarker3.GetParentCell() != ReviveScript.DefaultCell ) )
+		If ( Caster.GetDistance(DetachMarker3) >= 7000.0 )
+			If ( !Caster.IsInInterior() || ( Caster.GetParentCell() == DetachMarker3.GetParentCell() ) )
+				If ( !fDistance || ( fDistance > Caster.GetDistance(DetachMarker3) ) )
+					fDistance = Caster.GetDistance(DetachMarker3)
+					Marker = DetachMarker3
 				EndIf
 			EndIf			
 		EndIf
@@ -376,6 +387,14 @@ Function SendToNearestLocation()
 			EndIf
 		EndIf
 	EndIf
+	If ( Caster.GetDistance(DetachMarker3) >= 7000.0 )
+		If ( !DetachMarker3.IsDisabled() && ( DetachMarker3.GetParentCell() != ReviveScript.DefaultCell ) )
+			If bInSameLocation( DetachMarker3.GetCurrentLocation() )
+				Caster.MoveTo( DetachMarker3 )
+				Return	
+			EndIf
+		EndIf
+	EndIf
 	If ( Caster.GetDistance(CellLoadMarker2) >= 7000.0 )
 		If ( !CellLoadMarker2.IsDisabled() && ( CellLoadMarker2.GetParentCell() != ReviveScript.DefaultCell ) )
 			If bInSameLocation( CellLoadMarker2.GetCurrentLocation() )
@@ -419,6 +438,13 @@ Function SendToNearestLocation()
 		If ( !LocationMarker2.IsDisabled() && ( LocationMarker2.GetParentCell() != ReviveScript.DefaultCell ) )
 			If ( !fDistance || ( fDistance > Caster.GetDistance(LocationMarker2) ) )
 				Marker = LocationMarker2
+			EndIf
+		EndIf
+	EndIf
+	If ( Caster.GetDistance(DetachMarker3) >= 7000.0 )
+		If ( !DetachMarker3.IsDisabled() && ( DetachMarker3.GetParentCell() != ReviveScript.DefaultCell ) )
+			If ( !fDistance || ( fDistance > Caster.GetDistance(DetachMarker3) ) )
+				Marker = DetachMarker3
 			EndIf
 		EndIf
 	EndIf

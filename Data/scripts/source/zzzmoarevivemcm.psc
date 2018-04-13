@@ -137,6 +137,7 @@ ObjectReference Property LostItemsMarker Auto
 ObjectReference Property CustomMarker Auto
 ObjectReference Property DetachMarker1 Auto
 ObjectReference Property DetachMarker2 Auto
+ObjectReference Property DetachMarker3 Auto
 Objectreference Property CellLoadMarker Auto
 Objectreference Property CellLoadMarker2 Auto
 Objectreference Property LocationMarker2 Auto
@@ -1552,12 +1553,14 @@ Function moaStop()
 		PlayerRef.RemoveSpell(RecallMarker)
 		DetachMarker1.MoveToMyEditorLocation()
 		DetachMarker2.MoveToMyEditorLocation()
+		DetachMarker3.MoveToMyEditorLocation()
 		CellLoadMarker.MoveToMyEditorLocation()
 		LocationMarker.MoveToMyEditorLocation()
 		CellLoadMarker2.MoveToMyEditorLocation()
 		LocationMarker2.MoveToMyEditorLocation()
 		DetachMarker1.Disable()
 		DetachMarker2.Disable()
+		DetachMarker3.Disable()
 		CellLoadMarker.Disable()
 		LocationMarker.Disable()
 		CellLoadMarker2.Disable()

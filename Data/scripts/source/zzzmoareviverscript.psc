@@ -45,6 +45,7 @@ ObjectReference Property PlayerMarker Auto
 ObjectReference Property SleepMarker Auto
 ObjectReference Property DetachMarker1 Auto
 ObjectReference Property DetachMarker2 Auto
+ObjectReference Property DetachMarker3 Auto
 Objectreference Property CellLoadMarker Auto
 ObjectReference Property LocationMarker Auto
 Objectreference Property CellLoadMarker2 Auto
@@ -189,10 +190,25 @@ Event OnPlayerLoadGame()
 	Utility.Wait(3.0)
 	Debug.SetGodMode(False)
 	If moaBleedoutHandlerState.GetValue() == 0
+		DetachMarker2.Enable()
 		DetachMarker2.MoveTo(PlayerRef)
-		LocationMarker.MoveTo(PlayerRef)
-		DetachMarker1.MoveToMyEditorLocation()
-		LocationMarker2.MoveToMyEditorLocation()
+		If !DetachMarker1.IsInInterior()
+			DetachMarker1.MoveToMyEditorLocation()
+		EndIf
+		If !LocationMarker.IsInInterior()
+			LocationMarker.Enable()
+			LocationMarker.MoveTo(PlayerRef)
+		EndIf
+		If !LocationMarker2.IsInInterior()
+			LocationMarker2.MoveToMyEditorLocation()
+		EndIf
+		If !CellLoadMarker.IsInInterior()
+			CellLoadMarker.Enable()
+			CellLoadMarker.MoveTo(PlayerRef)
+		EndIf
+		If !CellLoadMarker2.IsInInterior()
+			CellLoadMarker2.MoveToMyEditorLocation()
+		EndIf
 	EndIf
 EndEvent
 
@@ -2295,6 +2311,18 @@ ObjectReference Function FindMarkerByDistance(ObjectReference[] Exclude)
 			EndIf
 		EndIf
 	EndIf
+	If ( Exclude.find(DetachMarker3) < 0 )
+		If ( !PlayerRef.IsInInterior() || ( PlayerRef.GetParentCell() == DetachMarker3.GetParentCell() ) )
+			If ( bCanTeleportToDynMarker(DetachMarker3) )
+				If ( !fDistance || ( fDistance > PlayerMarker.GetDistance(DetachMarker3) ) ) 
+					If ( PlayerMarker.GetDistance(DetachMarker3) >= 7000.0)
+						fDistance = PlayerMarker.GetDistance(DetachMarker3)
+						Marker = DetachMarker3
+					EndIf
+				EndIf
+			EndIf
+		EndIf
+	EndIf
 	If ( Exclude.find(LocationMarker) < 0 )
 		If ( !PlayerRef.IsInInterior() || ( PlayerRef.GetParentCell() == LocationMarker.GetParentCell() ) )
 			If ( bCanTeleportToDynMarker(LocationMarker) )
@@ -2546,6 +2574,15 @@ ObjectReference Function FindMarkerByLocation(ObjectReference[] Exclude)
 			EndIf
 		EndIf
 	EndIf
+	If ( Exclude.find(DetachMarker3) < 0 )
+		If ( bCanTeleportToDynMarker(DetachMarker3) )
+			If bInSameLocation( DetachMarker3.GetCurrentLocation() )
+				If ( PlayerMarker.GetDistance(DetachMarker3) >= 7000.0 )
+					Return DetachMarker3
+				EndIf
+			EndIf
+		EndIf
+	EndIf
 	If ( Exclude.find(CellLoadMarker2) < 0 )
 		If ( bCanTeleportToDynMarker(CellLoadMarker2) )
 			If bInSameLocation( CellLoadMarker2.GetCurrentLocation() )
@@ -2581,6 +2618,11 @@ ObjectReference Function FindMarkerByOrder(ObjectReference[] Exclude)
 	If ( Exclude.find(LocationMarker2) < 0 )
 		If ( bCanTeleportToDynMarker(LocationMarker2) )
 			Return LocationMarker2
+		EndIf
+	EndIf
+	If ( Exclude.find(DetachMarker3) < 0 )
+		If  ( bCanTeleportToDynMarker(DetachMarker3) )
+			Return DetachMarker3
 		EndIf
 	EndIf
 	If ( Exclude.find(CellLoadMarker2) < 0 )

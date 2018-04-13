@@ -138,6 +138,8 @@ ObjectReference Property CustomMarker Auto
 ObjectReference Property DetachMarker1 Auto
 ObjectReference Property DetachMarker2 Auto
 Objectreference Property CellLoadMarker Auto
+Objectreference Property CellLoadMarker2 Auto
+Objectreference Property LocationMarker2 Auto
 ObjectReference Property LostItemsChest Auto
 zzzmoaReviverScript Property ReviveScript Auto
 Formlist property ExternalMarkerList Auto
@@ -1552,10 +1554,14 @@ Function moaStop()
 		DetachMarker2.MoveToMyEditorLocation()
 		CellLoadMarker.MoveToMyEditorLocation()
 		LocationMarker.MoveToMyEditorLocation()
+		CellLoadMarker2.MoveToMyEditorLocation()
+		LocationMarker2.MoveToMyEditorLocation()
 		DetachMarker1.Disable()
 		DetachMarker2.Disable()
 		CellLoadMarker.Disable()
 		LocationMarker.Disable()
+		CellLoadMarker2.Disable()
+		LocationMarker2.Disable()
 		Debug.SetGodMode(False)
 		moaLootChance.SetValue(100.0)
 		moaScrollChance.SetValue(100.0)

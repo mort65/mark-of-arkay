@@ -285,18 +285,18 @@ Function SendToNearestLocation()
 		Caster.MoveTo( Marker )
 		return
 	EndIf
-	If ( Caster.GetDistance(DetachMarker1) >= 3000.0 )
-		If ( !DetachMarker1.IsDisabled() && ( DetachMarker1.GetParentCell() != ReviveScript.DefaultCell ) )
-			If ( bInSameLocation( DetachMarker1.GetCurrentLocation() ) || ( ReviveScript.IsInInteriorActual(Caster) && !ReviveScript.IsInInteriorActual(DetachMarker1) ) )
-				Caster.MoveTo( DetachMarker1 )
-				Return	
-			EndIf
-		EndIf
-	EndIf
 	If ( Caster.GetDistance(DetachMarker2) >= 3000.0 )
 		If ( !DetachMarker2.IsDisabled() && ( DetachMarker2.GetParentCell() != ReviveScript.DefaultCell ) )
 			If ( bInSameLocation( DetachMarker2.GetCurrentLocation() ) || ( ReviveScript.IsInInteriorActual(Caster) && !ReviveScript.IsInInteriorActual(DetachMarker2) ) )
 				Caster.MoveTo( DetachMarker2 )
+				Return	
+			EndIf
+		EndIf
+	EndIf
+	If ( Caster.GetDistance(DetachMarker1) >= 3000.0 )
+		If ( !DetachMarker1.IsDisabled() && ( DetachMarker1.GetParentCell() != ReviveScript.DefaultCell ) )
+			If ( bInSameLocation( DetachMarker1.GetCurrentLocation() ) || ( ReviveScript.IsInInteriorActual(Caster) && !ReviveScript.IsInInteriorActual(DetachMarker1) ) )
+				Caster.MoveTo( DetachMarker1 )
 				Return	
 			EndIf
 		EndIf
@@ -403,15 +403,15 @@ Function SendToNearestLocation()
 			EndIf
 		EndIf
 	EndWhile
-	If ( Caster.GetDistance(DetachMarker1) >= 3000.0 )
-		If ( !DetachMarker1.IsDisabled() && ( DetachMarker1.GetParentCell() != ReviveScript.DefaultCell ) )
-			Caster.MoveTo(DetachMarker1)
-			Return
-		EndIf
-	EndIf
 	If ( Caster.GetDistance(DetachMarker2) >= 3000.0 )
 		If ( !DetachMarker2.IsDisabled() && ( DetachMarker2.GetParentCell() != ReviveScript.DefaultCell ) )
 			Caster.MoveTo(DetachMarker2)
+			Return
+		EndIf
+	EndIf
+	If ( Caster.GetDistance(DetachMarker1) >= 3000.0 )
+		If ( !DetachMarker1.IsDisabled() && ( DetachMarker1.GetParentCell() != ReviveScript.DefaultCell ) )
+			Caster.MoveTo(DetachMarker1)
 			Return
 		EndIf
 	EndIf

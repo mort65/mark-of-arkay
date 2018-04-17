@@ -2430,17 +2430,17 @@ ObjectReference Function FindCityMarkerByDistance()
 Endfunction
 
 ObjectReference Function FindMarkerByLocation()
-	If ( ExcludedMarkerList.find(DetachMarker1) < 0 )
-		If ( bInSameLocation( DetachMarker1.GetCurrentLocation() ) || ( IsInInteriorActual(PlayerRef) && !IsInInteriorActual(DetachMarker1) ) )
-			If ( PlayerMarker.GetDistance(DetachMarker1) >= 3000.0 )
-				Return DetachMarker1
-			EndIf
-		EndIf
-	EndIf
 	If ( ExcludedMarkerList.find(DetachMarker2) < 0 )
 		If ( bInSameLocation( DetachMarker2.GetCurrentLocation() ) || ( IsInInteriorActual(PlayerRef) && !IsInInteriorActual(DetachMarker2) ) ) 
 			If ( PlayerMarker.GetDistance(DetachMarker2) >= 3000.0 )
 				Return DetachMarker2
+			EndIf
+		EndIf
+	EndIf
+	If ( ExcludedMarkerList.find(DetachMarker1) < 0 )
+		If ( bInSameLocation( DetachMarker1.GetCurrentLocation() ) || ( IsInInteriorActual(PlayerRef) && !IsInInteriorActual(DetachMarker1) ) )
+			If ( PlayerMarker.GetDistance(DetachMarker1) >= 3000.0 )
+				Return DetachMarker1
 			EndIf
 		EndIf
 	EndIf
@@ -2538,11 +2538,11 @@ ObjectReference Function FindMarkerByLocation()
 EndFunction
 
 ObjectReference Function FindMarkerByOrder()
-	If ( ExcludedMarkerList.find(DetachMarker1) < 0 )
-		Return DetachMarker1
-	EndIf
 	If ( ExcludedMarkerList.find(DetachMarker2) < 0 )
 		Return DetachMarker2
+	EndIf
+	If ( ExcludedMarkerList.find(DetachMarker1) < 0 )
+		Return DetachMarker1
 	EndIf
 	If ( ExcludedMarkerList.find(LocationMarker) < 0 )
 		Return LocationMarker

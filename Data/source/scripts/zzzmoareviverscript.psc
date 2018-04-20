@@ -858,7 +858,7 @@ Function RevivePlayer(Bool bRevive)
 				PlayerRef.SetActorValue("Paralysis",1)
 				PlayerRef.PushActorAway(PlayerRef,0)
 			EndIf
-			Debug.ToggleAI()
+			Debug.ToggleAI() ;so that npcs wont talk to the player
 			PlayerRef.ResetHealthAndLimbs()
 			PlayerRef.Say(DeathTopic,abSpeakInPlayersHead = False)
 			Game.ForceThirdPerson()
@@ -974,9 +974,9 @@ Function RevivePlayer(Bool bRevive)
 				EndIf
 				Utility.Wait(0.1)
 			EndIf
+			Utility.Wait(1.0)
 			PlayerRef.SetActorValue("Paralysis",0)
 			DefaultTimeScale = TimeScale.GetValue()
-			Utility.Wait(1.0)
 			If ( ConfigMenu.bSendToJail && bGuardCanSendToJail() && !bInBeastForm() )
 				If ( Attacker.GetCrimeFaction() == CrimeFactionPale )
 					PlayerRef.MoveTo(DawnstarJailMarker)

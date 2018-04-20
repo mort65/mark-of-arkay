@@ -7,7 +7,6 @@ Actor Caster
 Event OnEffectStart(Actor akTarget, Actor akCaster)
 	Caster = akCaster
 	Marker.Enable()
-	;Debug.Notification(Caster.GetDistance(Marker))
 	Marker.MoveTo(Caster)
 	Marker.SetPosition(Caster.GetPositionx(), Caster.GetPositiony(), Caster.GetPositionz())
 	Marker.SetAngle(0.0, 0.0, Caster.GetAnglez())

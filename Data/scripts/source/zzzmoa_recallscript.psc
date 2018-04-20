@@ -12,6 +12,8 @@ ObjectReference Property LocationMarker Auto
 MiscObject Property MarkOfArkay Auto
 Location Property PaleHoldLocation  Auto
 Location Property HjaalmarchHoldLocation  Auto
+Location Property DLC1VampireCastleLocation Auto
+Location Property DLC1HunterHQLocation Auto
 ObjectReference Property DetachMarker1 Auto
 ObjectReference Property DetachMarker2 Auto
 ObjectReference Property DetachMarker3 Auto
@@ -124,8 +126,17 @@ Function SendToAnotherLocation()
 	Int iIndex = LocationsList.GetSize()
 	While ( iIndex > 0 )
 		iIndex -= 1
-		If ( iIndex == 4 )
-			If ( bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(HjaalmarchHoldLocation) ) ;Solitude or Morthal
+		If ( iIndex == 3 )
+			If bInSameLocation(LocationsList.GetAt(iIndex) As Location) ||  bInSameLocation(DLC1HunterHQLocation) ;Riften or Dayspring Canyon
+				If ConfigMenu.bRespawnPointsFlags[iIndex]
+					If ( Caster.GetDistance( MarkerList.GetAt(iIndex) As ObjectReference ) >= 3000.0 )
+						Caster.MoveTo( MarkerList.GetAt(iIndex) As ObjectReference )
+						Return
+					EndIf
+				EndIf
+			EndIf
+		ElseIf ( iIndex == 4 )
+			If bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(HjaalmarchHoldLocation) ||  bInSameLocation(DLC1VampireCastleLocation) ;Solitude or Morthal or Castle Volkihar
 				If ConfigMenu.bRespawnPointsFlags[iIndex]
 					If ( Caster.GetDistance( MarkerList.GetAt(iIndex) As ObjectReference ) >= 3000.0 )
 						Caster.MoveTo( MarkerList.GetAt(iIndex) As ObjectReference )
@@ -376,8 +387,17 @@ Function SendToNearestLocation()
 	Int iIndex = LocationsList.GetSize()
 	While ( iIndex > 0 )
 		iIndex -= 1
-		If ( iIndex == 4 )
-			If ( bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(HjaalmarchHoldLocation) ) ;Solitude or Morthal
+		If ( iIndex == 3 )
+			If bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(DLC1HunterHQLocation) ;Riften or Dayspring Canyon
+				If ConfigMenu.bRespawnPointsFlags[iIndex]
+					If ( Caster.GetDistance( MarkerList.GetAt(iIndex) As ObjectReference ) >= 3000.0 )
+						Caster.MoveTo( MarkerList.GetAt(iIndex) As ObjectReference )
+						Return
+					EndIf
+				EndIf
+			EndIf
+		ElseIf ( iIndex == 4 )
+			If bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(HjaalmarchHoldLocation) || bInSameLocation(DLC1VampireCastleLocation) ;Solitude or Morthal
 				If ConfigMenu.bRespawnPointsFlags[iIndex]
 					If ( Caster.GetDistance( MarkerList.GetAt(iIndex) As ObjectReference ) >= 3000.0 )
 						Caster.MoveTo( MarkerList.GetAt(iIndex) As ObjectReference )
@@ -449,15 +469,14 @@ Function SendToNearestLocation()
 EndFunction
 
 Bool Function bInSameLocation(Location Loc)
-    If !Loc
-		Return False
-	EndIf
-	If Caster.IsInLocation(Loc)
-		Return True
-	EndIf
-	If Caster.GetCurrentLocation()
-		If Caster.GetCurrentLocation().IsSameLocation(Loc,HoldKeyword)
+    If Loc
+		If Caster.IsInLocation(Loc)
 			Return True
+		EndIf
+		If Caster.GetCurrentLocation()
+			If Caster.GetCurrentLocation().IsSameLocation(Loc,HoldKeyword)
+				Return True
+			EndIf
 		EndIf
 	EndIf
 	Return False

@@ -79,6 +79,8 @@ Form[] Property Equipment Auto Hidden
 ObjectReference[] Property ExcludedMarkerList Auto Hidden
 Location Property PaleHoldLocation  Auto
 Location Property HjaalmarchHoldLocation  Auto
+Location Property DLC1VampireCastleLocation Auto
+Location Property DLC1HunterHQLocation Auto
 Keyword property HoldKeyword Auto
 Quest Property CidhnaMineJailEventScene Auto
 Objectreference Property RiftenJailMarker Auto
@@ -91,6 +93,9 @@ Objectreference Property DawnstarJailMarker Auto
 Objectreference Property MorthalJailMarker Auto
 Objectreference Property SolitudeJailMarker Auto
 Objectreference Property DLC2RavenRockJailMarker Auto
+Actor Property Runil Auto
+Faction Property RunilMerchantFaction Auto
+Faction Property JobMerchantFaction Auto
 Faction Property CrimeFactionPale  Auto
 Faction Property CrimeFactionFalkreath  Auto
 Faction Property CrimeFactionReach  Auto
@@ -103,6 +108,9 @@ Faction Property CrimeFactionWinterhold  Auto
 Faction Property DLC2CrimeRavenRockFaction Auto
 Race Property WereWolfBeastRace Auto
 Race Property DLC1VampireBeastRace Auto
+GlobalVariable Property TimeScale Auto
+Float Property DefaultTimeScale = 20.0 Auto Hidden
+Topic Property DeathTopic Auto
 
 Bool bCidhnaJail
 Bool bDidItemsRemoved
@@ -176,10 +184,15 @@ Event OnInit()
 	SetVars()
 	SetGameVars()
 	RegisterForSleep()
-	PlayerRef.AddSpell(MoveCustomMarker)
-	PlayerRef.AddSpell(RecallMarker)
+	;PlayerRef.AddSpell(MoveCustomMarker)
+	;PlayerRef.AddSpell(RecallMarker)
 	DetachMarker2.Enable()
 	DetachMarker2.MoveTo(PlayerRef)
+	If Runil && !Runil.Isdead()
+		Runil.AddToFaction(JobMerchantFaction)
+		Runil.AddToFaction(RunilMerchantFaction)
+		Runil.GetActorBase().SetEssential(True)
+	EndIf
 	Debug.notification("$mrt_MarkofArkay_Notification_Init")
 EndEvent
 
@@ -286,7 +299,7 @@ Function BleedoutHandler(String CurrentState)
 		PlayerRef.SetActorValue("Paralysis",1)
 		PlayerRef.PushActorAway(PlayerRef,0)
 		bIsPlayerRagdoll = True
-		Game.ForceThirdPerson() ; fix camera bug 
+		Game.ForceThirdPerson()
 	Else
 		bIsPlayerRagdoll = False
 	EndIf
@@ -295,7 +308,6 @@ Function BleedoutHandler(String CurrentState)
 	SetVars()
 	strRemovedItem = ""
 	bHasAutoReviveEffect = PlayerRef.HasMagicEffect(AutoReviveSelf)
-	;PlayerRef.StopCombatAlarm()
 	If !ConfigMenu.bIsRevivalEnabled
 		If !ConfigMenu.bIsEffectEnabled
 			Debug.SetGodMode(False)
@@ -325,7 +337,6 @@ Function BleedoutHandler(String CurrentState)
 				Else
 					Debug.SetGodMode(False)
 				EndIf
-				Game.ForceThirdPerson()
 				Game.EnablePlayerControls()
 				Game.EnableFastTravel(True)
 				If iTotalRevives < 99999999
@@ -354,7 +365,6 @@ Function BleedoutHandler(String CurrentState)
 					BleedoutProtection.Cast(PlayerRef)
 				EndIf
 				Debug.SetGodMode(False)
-				Game.ForceThirdPerson()
 				Game.EnablePlayerControls()
 				Game.EnableFastTravel(True)
 				If iRevivesByPotion < 99999999
@@ -375,7 +385,6 @@ Function BleedoutHandler(String CurrentState)
 			Utility.Wait(ConfigMenu.fBleedoutTimeSlider)
 		Else
 			Game.EnablePlayerControls()
-			;PlayerRef.StopCombatAlarm()
 			Debug.SetGodMode(False)
 			Utility.Wait(ConfigMenu.fBleedoutTimeSlider)
 		EndIf
@@ -400,7 +409,6 @@ Function BleedoutHandler(String CurrentState)
 					Debug.SetGodMode(False)
 				EndIf
 			EndIf
-			Game.ForceThirdPerson()
 			Game.EnablePlayerControls()
 			Game.EnableFastTravel(True)
 			moaBleedoutHandlerState.SetValue(0)
@@ -415,14 +423,14 @@ Function BleedoutHandler(String CurrentState)
 				EffectHealCirclFXS.Play(PlayerRef, ConfigMenu.fRecoveryTimeSlider + 1.0)
 			EndIf
 			Utility.Wait(ConfigMenu.fRecoveryTimeSlider)
-			If ConfigMenu.bIsEffectEnabled
-				moaReviveAfterEffect.Cast(PlayerRef)
-			EndIf
 			RequipSpells()
 			If ConfigMenu.bIsNotificationEnabled
 				Debug.Notification("$mrt_MarkofArkay_Notification_Revive_Revival_Scroll")
 			EndIf
 			RevivePlayer(True)
+			If ConfigMenu.bIsEffectEnabled
+				moaReviveAfterEffect.Cast(PlayerRef)
+			EndIf
 			If iRevivesByRevivalSpell < 99999999
 				iRevivesByRevivalSpell += 1
 			EndIf
@@ -440,12 +448,12 @@ Function BleedoutHandler(String CurrentState)
 				EffectHealCirclFXS.Play(PlayerRef, ConfigMenu.fRecoveryTimeSlider + 1.0)
 			EndIf
 			Utility.Wait(ConfigMenu.fRecoveryTimeSlider)
-			If ConfigMenu.bIsEffectEnabled
-				moaReviveAfterEffect.Cast(PlayerRef)
-			EndIf
 			RestoreLostItems(PlayerRef)
 			RequipSpells()
 			RevivePlayer(True)
+			If ConfigMenu.bIsEffectEnabled
+				moaReviveAfterEffect.Cast(PlayerRef)
+			EndIf
 			If iRevivesBySacrificeSpell < 99999999
 				iRevivesBySacrificeSpell += 1
 			EndIf
@@ -470,12 +478,12 @@ Function BleedoutHandler(String CurrentState)
 						EffectHealCirclFXS.Play(PlayerRef, ConfigMenu.fRecoveryTimeSlider + 1)
 					EndIf
 					Utility.Wait(ConfigMenu.fRecoveryTimeSlider)
-					If ConfigMenu.bIsEffectEnabled
-						moaReviveAfterEffect.Cast(PlayerRef)
-					EndIf
 					RequipSpells()
 					ShowNotification()
 					RevivePlayer(True)
+					If ConfigMenu.bIsEffectEnabled
+						moaReviveAfterEffect.Cast(PlayerRef)
+					EndIf
 					If iRevivesByTrade < 99999999
 						iRevivesByTrade += 1
 					EndIf
@@ -523,12 +531,12 @@ Function BleedoutHandler(String CurrentState)
 						EffectHealCirclFXS.Play(PlayerRef, ConfigMenu.fRecoveryTimeSlider + 1)
 					EndIf
 					Utility.Wait(ConfigMenu.fRecoveryTimeSlider)
-					If ConfigMenu.bIsEffectEnabled
-						moaReviveAfterEffect.Cast(PlayerRef)
-					EndIf
 					RequipSpells()
 					ShowNotification()
 					RevivePlayer(True)
+					If ConfigMenu.bIsEffectEnabled
+						moaReviveAfterEffect.Cast(PlayerRef)
+					EndIf
 					If iRevivesByTrade < 99999999
 						iRevivesByTrade += 1
 					EndIf
@@ -555,7 +563,6 @@ Function BleedoutHandler(String CurrentState)
 			Else
 				Debug.SetGodMode(False)
 			EndIf
-			Game.ForceThirdPerson()
 			Game.EnablePlayerControls()
 			Game.EnableFastTravel(True)
 			If iTotalRevives < 99999999
@@ -804,7 +811,6 @@ Function RevivePlayer(Bool bRevive)
 			PlayerRef.SetActorValue("Paralysis",0)
 		EndIf
 		PlayerRef.ResetHealthAndLimbs()
-		Game.ForceThirdPerson()
 		Debug.SetGodMode(False)
 		If !bHasAutoReviveEffect && ( PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt) )
 			PlayerRef.RemoveSpell(ArkayCurse)
@@ -852,6 +858,10 @@ Function RevivePlayer(Bool bRevive)
 				PlayerRef.SetActorValue("Paralysis",1)
 				PlayerRef.PushActorAway(PlayerRef,0)
 			EndIf
+			Debug.ToggleAI()
+			PlayerRef.ResetHealthAndLimbs()
+			PlayerRef.Say(DeathTopic,abSpeakInPlayersHead = False)
+			Game.ForceThirdPerson()
 			Utility.Wait(1.0)
 			FadeOut.Apply()
 			Utility.Wait(2.5)
@@ -964,11 +974,9 @@ Function RevivePlayer(Bool bRevive)
 				EndIf
 				Utility.Wait(0.1)
 			EndIf
-			PlayerRef.ResetHealthAndLimbs()
 			PlayerRef.SetActorValue("Paralysis",0)
-			PlayerRef.StopCombatAlarm()
+			DefaultTimeScale = TimeScale.GetValue()
 			Utility.Wait(1.0)
-			Game.ForceThirdPerson()
 			If ( ConfigMenu.bSendToJail && bGuardCanSendToJail() && !bInBeastForm() )
 				If ( Attacker.GetCrimeFaction() == CrimeFactionPale )
 					PlayerRef.MoveTo(DawnstarJailMarker)
@@ -998,6 +1006,7 @@ Function RevivePlayer(Bool bRevive)
 				Teleport()
 			EndIf
 			Utility.Wait(0.5)
+			Debug.ToggleAI()
 			Attacker = None
 			RequipSpells()
 			If PlayerRef.IsWeaponDrawn() ;If Player has a weapon drawn,
@@ -1005,7 +1014,8 @@ Function RevivePlayer(Bool bRevive)
 			EndIf
 			RefreshFace()
 			PlayerRef.DispelAllSpells()
-			Utility.Wait(6.0)			
+			PassTime(6.0)
+			Utility.Wait(0.5)
 			If ( ConfigMenu.bRespawnNaked && !bInBeastForm() )
 				PlayerRef.UnequipAll()
 			EndIf
@@ -1023,7 +1033,6 @@ Function RevivePlayer(Bool bRevive)
 			Debug.SetGodMode(False)
 			Game.EnablePlayerControls()
 			Game.EnableFastTravel(True)
-			PlayerRef.StopCombatAlarm()
 			moaBleedoutHandlerState.SetValue(0)
 			LowHealthImod.Remove()
 			If bCidhnaJail 
@@ -1189,6 +1198,16 @@ Int Function iGetRandomWithExclusionArray( Int iFrom, Int iTo, Bool[] iFlagArray
 		iIndex += 1
 	EndWhile
 	Return iRandom
+EndFunction
+
+Function PassTime(Float fRealTime)
+	If ConfigMenu.fRespawnTimeSlider > 0.0
+		TimeScale.SetValue( (3600.0 / fRealTime) * ConfigMenu.fRespawnTimeSlider )
+		Utility.Wait(fRealTime)
+		TimeScale.SetValue(DefaultTimeScale)
+	Else
+		Utility.Wait(fRealTime)
+	EndIf
 EndFunction
 
 Function Teleport()
@@ -1486,6 +1505,7 @@ Bool Function bCanTeleport()
 	While iIndex > 0
 		iIndex -= 1
 		If (QuestBlackList.GetAt(iIndex) As Quest).IsRunning()
+			Debug.Trace("MarkofArkay: You can't Respawn while " + QuestBlackList.GetAt(iIndex) As Quest + " is running.")
 			Return False
 		EndIf
 	EndWhile
@@ -1493,6 +1513,7 @@ Bool Function bCanTeleport()
 	While iIndex > 0
 		iIndex -= 1
 		If PlayerRef.IsInLocation(LocationBlackList.GetAt(iIndex) As Location)
+			Debug.Trace("MarkofArkay: Respawn from " + LocationBlackList.GetAt(iIndex) As Location + " is disabled.")
 			Return False
 		EndIf
 	EndWhile
@@ -1578,8 +1599,19 @@ Function SendToAnotherLocation()
 	Int iIndex = LocationsList.GetSize()
 	While ( iIndex > 0 )
 		iIndex -= 1
-		If ( iIndex == 4 )
-			If ( bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(HjaalmarchHoldLocation) ) ;Solitude or Morthal
+		If (iIndex == 3)
+			If bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(DLC1HunterHQLocation) ;Riften or Dayspring Canyon
+				If ConfigMenu.bRespawnPointsFlags[iIndex]
+					If ( PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference) >= 3000.0 )
+						PlayerRef.MoveTo( MarkerList.GetAt(iIndex) As ObjectReference )
+						If bIsArrived(MarkerList.GetAt(iIndex) As ObjectReference)
+							Return
+						EndIf
+					EndIf
+				EndIf
+			EndIf
+		ElseIf ( iIndex == 4 )
+			If bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(HjaalmarchHoldLocation) || bInSameLocation(DLC1VampireCastleLocation) ;Solitude or Morthal or Castle Volkihar
 				If ConfigMenu.bRespawnPointsFlags[iIndex]
 					If ( PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference) >= 3000.0 )
 						PlayerRef.MoveTo( MarkerList.GetAt(iIndex) As ObjectReference )
@@ -1617,7 +1649,6 @@ EndFunction
 Function ShiftBack()
 	float i = 5.0
 	If (WerewolfQuest.IsRunning())
-		PlayerRef.StopCombatAlarm()
 		Debug.SetGodMode(True)
 		PlayerRef.DispelSpell(BleedoutProtection)
 		Game.DisablePlayerControls()
@@ -1629,7 +1660,6 @@ Function ShiftBack()
 		;Debug.SetGodMode(False)
 		;Game.EnablePlayerControls()
 	ElseIf(VampireLordQuest.IsRunning())
-		PlayerRef.StopCombatAlarm()
 		Debug.SetGodMode(True)
 		PlayerRef.DispelSpell(BleedoutProtection)
 		Game.DisablePlayerControls()
@@ -2220,7 +2250,7 @@ Bool Function bGuardCanSendToJail()
 			i += 1
 			RandomActor = Game.FindRandomActorFromRef(PlayerRef,2000)
 			If RandomActor
-				If RandomActor != Game.GetPlayer()
+				If RandomActor != PlayerRef
 					If !RandomActor.IsDead()
 						If RandomActor.IsGuard()
 							If RandomActor.GetCrimeFaction().GetCrimeGold() > 0
@@ -2240,7 +2270,7 @@ Bool Function bGuardCanSendToJail()
 EndFunction
 
 Bool Function bInBeastForm()
-	If VampireLordQuest.IsRunning() || WerewolfQuest.IsRunning()
+	If  WerewolfQuest.IsRunning() || VampireLordQuest.IsRunning()
 		Return True
 	ElseIf ( PlayerRef.GetRace() == WereWolfBeastRace )
 		Return True
@@ -2251,15 +2281,14 @@ Bool Function bInBeastForm()
 Endfunction
 
 Bool Function bInSameLocation(Location Loc)
-    If !Loc
-		Return False
-	EndIf
-	If PlayerMarker.IsInLocation(Loc)
-		Return True
-	EndIf
-	If PlayerMarker.GetCurrentLocation()
-		If PlayerMarker.GetCurrentLocation().IsSameLocation(Loc,HoldKeyword)
+    If Loc
+		If PlayerMarker.IsInLocation(Loc)
 			Return True
+		EndIf
+		If PlayerMarker.GetCurrentLocation()
+			If PlayerMarker.GetCurrentLocation().IsSameLocation(Loc,HoldKeyword)
+				Return True
+			EndIf
 		EndIf
 	EndIf
 	Return False
@@ -2497,8 +2526,16 @@ ObjectReference Function FindMarkerByLocation()
 	While ( iIndex > 0 )
 		iIndex -= 1
 		If ( ExcludedMarkerList.find(MarkerList.GetAt(iIndex) As ObjectReference) < 0 )
-			If ( iIndex == 4 )
-				If ( bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(HjaalmarchHoldLocation) ) ;Solitude or Morthal
+			If (iIndex == 3)
+				If bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(DLC1HunterHQLocation) ;Riften or Dayspring Canyon
+					If ConfigMenu.bRespawnPointsFlags[iIndex]
+						If ( PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference) >= 3000.0 )
+							Return ( MarkerList.GetAt(iIndex) As ObjectReference )
+						EndIf
+					EndIf
+				EndIf
+			ElseIf ( iIndex == 4 )
+				If bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(HjaalmarchHoldLocation) || bInSameLocation(DLC1VampireCastleLocation) ;Solitude or Morthal or Castle Volkihar
 					If ConfigMenu.bRespawnPointsFlags[iIndex]
 						If ( PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference) >= 3000.0 )
 							Return ( MarkerList.GetAt(iIndex) As ObjectReference )

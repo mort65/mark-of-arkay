@@ -61,6 +61,9 @@ int oidRecallCost
 int oidBleedoutTime
 Int oidRecallByArkayMark
 Int oidJail
+Int oidTogglePowers
+Int oidToggleSpells
+Int oidRespawnTimeSlider
 String[] Property sRespawnPoints Auto
 String[] Property sLoseOptions Auto
 String[] Property sAftermathOptions Auto
@@ -120,6 +123,7 @@ Float Property fBleedoutTimeSlider = 6.0 Auto Hidden
 Float Property fLootChanceSlider = 50.0 Auto Hidden
 Float Property fScrollChanceSlider = 25.0 Auto Hidden
 Float Property fRecallCastSlider = 0.0 Auto Hidden
+Float Property fRespawnTimeSlider = 0.0 Auto Hidden
 Int Property iExternalIndex = -1 Auto Hidden
 Spell Property RevivalPower Auto
 Spell Property SacrificePower Auto
@@ -352,6 +356,13 @@ Event OnPageReset(String page)
 		Else
 			oidExternalTeleportLocation = AddTextOption("$mrt_MarkofArkay_ExternalTeleportLocation", ( (iExternalIndex + 1) As String ), flags)
 		Endif
+		SetCursorPosition(7)
+		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1))
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		Endif
+		oidRespawnTimeSlider = AddSliderOption("$mrt_MarkofArkay_RespawnTimeSlider", fRespawnTimeSlider, "$mrt_MarkofArkay_RespawnTimeSlider2", flags)
 		SetCursorPosition(9)
 		If ( moaState.getValue() == 1 )
 			flags =	OPTION_FLAG_NONE
@@ -390,23 +401,35 @@ Event OnPageReset(String page)
 		Endif
 		oidReset = AddTextOption("$mrt_MarkofArkay_Reset", "", flags)
 		SetCursorPosition(6)
+			If ( PlayerRef.HasSpell(MoveCustomMarker ) || PlayerRef.HasSpell(RecallMarker ) )
+			oidToggleSpells = AddTextOption("$mrt_MarkofArkay_ToggleSpells1", "", flags) 
+		Else
+			oidToggleSpells = AddTextOption("$mrt_MarkofArkay_ToggleSpells2", "", flags) 
+		EndIf
+		SetCursorPosition(8)
+		If ( PlayerRef.HasSpell(RevivalPower) || PlayerRef.HasSpell(SacrificePower) )
+			oidTogglePowers = AddTextOption("$mrt_MarkofArkay_TogglePowers1", "", flags) 
+		Else
+			oidTogglePowers = AddTextOption("$mrt_MarkofArkay_TogglePowers2", "", flags) 
+		EndIf
+		SetCursorPosition(10)
 		sResetHistory = ""
 		oidResetHistory = AddTextOption("$mrt_MarkofArkay_ResetHistory", sResetHistory, flags)
-		SetCursorPosition(8)
+		SetCursorPosition(12)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		Endif
 		oidNotification = AddToggleOption("$mrt_MarkofArkay_Notification", bIsNotificationEnabled, flags )
-		SetCursorPosition(10)
+		SetCursorPosition(14)
 		If ( moaState.getValue() == 1 )
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		Endif
 		oidInformation = AddToggleOption("$mrt_MarkofArkay_Info", bIsInfoEnabled, flags )
-		SetCursorPosition(12)
+		SetCursorPosition(16)
 		oidHistory = AddToggleOption("$mrt_MarkofArkay_History", bIsHistoryEnabled, flags )
 		SetCursorPosition(1)
 		AddHeaderOption("$Info")
@@ -747,6 +770,24 @@ Event OnOptionSelect(Int option)
 		bIsHistoryEnabled = !bIsHistoryEnabled
 		SetToggleOptionValue(oidHistory,bIsHistoryEnabled)
 		ForcePageReset()
+	ElseIf (option == oidTogglePowers)
+		If ( PlayerRef.HasSpell(RevivalPower) || PlayerRef.HasSpell(SacrificePower) )
+			PlayerRef.RemoveSpell(RevivalPower)
+			PlayerRef.RemoveSpell(SacrificePower)
+		Else
+			PlayerRef.AddSpell(RevivalPower)
+			PlayerRef.AddSpell(SacrificePower)
+		EndIf
+		ForcePageReset()
+	ElseIf (option == oidToggleSpells)
+		If ( PlayerRef.HasSpell(MoveCustomMarker ) || PlayerRef.HasSpell(RecallMarker) )
+			PlayerRef.RemoveSpell(MoveCustomMarker )
+			PlayerRef.RemoveSpell(RecallMarker )
+		Else
+			PlayerRef.AddSpell(MoveCustomMarker )
+			PlayerRef.AddSpell(RecallMarker )
+		EndIf
+		ForcePageReset()
 	ElseIf (option == oidResetHistory)
 		If sResetHistory == ""
 			sResetHistory = "$Are_You_Sure"
@@ -799,6 +840,7 @@ Event OnOptionSelect(Int option)
 		SetOptionFlags(oidLootChanceSlider,flags,True)
 		SetOptionFlags(oidScrollChanceSlider,flags,True)
 		SetOptionFlags(oidTeleportLocation_M,flags,True)
+		SetOptionFlags(oidRespawnTimeSlider,flags,True)
 		SetOptionFlags(oidRespawnNaked,flags,True)
 		SetOptionFlags(oidJail,flags,True)
 		SetOptionFlags(oidArkayCurse,flags,True)
@@ -813,6 +855,8 @@ Event OnOptionSelect(Int option)
 		SetOptionFlags(oidShiftBackRespawn,flags,True)
 		SetOptionFlags(oidInformation,flags,True)
 		SetOptionFlags(oidHistory,flags,True)
+		SetOptionFlags(oidTogglePowers,flags,True)
+		SetOptionFlags(oidToggleSpells,flags,True)
 		SetOptionFlags(oidResetHistory,flags,True)
 		SetOptionFlags(oidRespawnPoint0,flags,True)
 		SetOptionFlags(oidRespawnPoint1,flags,True)
@@ -865,6 +909,7 @@ Event OnOptionSelect(Int option)
 		SetOptionFlags(oidLootChanceSlider,flags,True)
 		SetOptionFlags(oidScrollChanceSlider,flags,True)
 		SetOptionFlags(oidTeleportLocation_M,flags,True)
+		SetOptionFlags(oidRespawnTimeSlider,flags,True)
 		SetOptionFlags(oidRespawnNaked,flags,True)
 		SetOptionFlags(oidJail,flags,True)
 		SetOptionFlags(oidArkayCurse,flags,True)
@@ -880,6 +925,9 @@ Event OnOptionSelect(Int option)
 		SetOptionFlags(oidHistory,flags,True)
 		SetOptionFlags(oidShiftBack,flags,True)
 		SetOptionFlags(oidShiftBackRespawn,flags,True)
+		SetOptionFlags(oidResetHistory,flags,True)
+		SetOptionFlags(oidTogglePowers,flags,True)
+		SetOptionFlags(oidToggleSpells,flags,True)
 		SetOptionFlags(oidResetHistory,flags,True)
 		SetOptionFlags(oidRespawnPoint0,flags,True)
 		SetOptionFlags(oidRespawnPoint1,flags,True)
@@ -975,6 +1023,11 @@ Event OnOptionSliderOpen(Int option)
 		SetSliderDialogDefaultValue(0.0)
 		SetSliderDialogRange(0.0, 100.0)
 		SetSliderDialogInterval(1.0)
+	Elseif(option == oidRespawnTimeSlider)
+		SetSliderDialogStartValue(fRespawnTimeSlider)
+		SetSliderDialogDefaultValue(0.0)
+		SetSliderDialogRange(0.0, 744.0)
+		SetSliderDialogInterval(1.0)
 	EndIf
 EndEvent
 
@@ -1027,6 +1080,9 @@ Event OnOptionSliderAccept(int option, Float value)
 	ElseIf (option == oidRecallCost)
 		fRecallCastSlider = value
 		SetSliderOptionValue(oidRecallCost, fRecallCastSlider, "$mrt_MarkofArkay_MarkSlider_2")
+	ElseIf (option == oidRespawnTimeSlider)
+		fRespawnTimeSlider = value
+		SetSliderOptionValue(oidRespawnTimeSlider, fRespawnTimeSlider, "$mrt_MarkofArkay_RespawnTimeSlider2")
 	EndIf
 EndEvent
 
@@ -1101,6 +1157,7 @@ Event OnOptionMenuAccept(Int option, Int index)
 		SetOptionFlags(oidJail,flags,True)
 		SetOptionFlags(oidArkayCurse,flags,True)
 		SetOptionFlags(oidRemovableItems_M,flags,True)
+		SetOptionFlags(oidRespawnTimeSlider,flags,True)
 		If bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bArkayCurse
 			flags =	OPTION_FLAG_NONE
 		Else
@@ -1226,6 +1283,9 @@ Event OnOptionDefault(Int option)
 		fScrollChanceSlider = 25.0
 		SetSliderOptionValue(oidScrollChanceSlider,fScrollChanceSlider,"$mrt_MarkofArkay_LootChanceSlider_2")
 		moaScrollChance.SetValue(100.0 - fScrollChanceSlider)
+	ElseIf (option == oidRespawnTimeSlider)
+		fRespawnTimeSlider = 0.0
+		SetSliderOptionValue(oidRespawnTimeSlider, fRespawnTimeSlider, "$mrt_MarkofArkay_RespawnTimeSlider2")	
 	ElseIf (option == oidEffect)
 		bIsEffectEnabled = True
 		SetToggleOptionValue(oidEffect, bIsEffectEnabled)
@@ -1314,6 +1374,7 @@ Event OnOptionDefault(Int option)
 		SetOptionFlags(oidArkayCurses_M,flags,True)
 		SetOptionFlags(oidLoseforever,flags,True)
 		SetOptionFlags(oidSoulMarkStay,flags,True)
+		SetOptionFlags(oidRespawnTimeSlider,flags,True)
 		SetOptionFlags(oidRemovableItems_M,flags)
 	ElseIf (option == oidRemovableItems_M)
 		iRemovableItems = 0
@@ -1422,6 +1483,8 @@ Event OnOptionHighlight(Int option)
 		SetInfoText("$mrt_MarkofArkay_DESC_LootChanceSlider")
 	ElseIf (option == oidScrollChanceSlider)
 		SetInfoText("$mrt_MarkofArkay_DESC_ScrollChanceSlider")
+	ElseIf (option == oidRespawnTimeSlider)
+		SetInfoText("$mrt_MarkofArkay_DESC_RespawnTimeSlider")
 	ElseIf (option == oidEffect)
 		If bIsEffectEnabled
 			SetInfoText("$mrt_MarkofArkay_DESC_Effect_On")
@@ -1494,6 +1557,10 @@ Event OnOptionHighlight(Int option)
 		SetInfoText("$mrt_MarkofArkay_DESC_Info")
 	ElseIf (option == oidResetHistory)
 		SetInfoText("$mrt_MarkofArkay_DESC_ResetHistory")
+	ElseIf (option == oidTogglePowers)
+		SetInfoText("$mrt_MarkofArkay_DESC_TogglePowers")
+	ElseIf (option == oidToggleSpells)
+		SetInfoText("$mrt_MarkofArkay_DESC_ToggleSpells")
 	ElseIf (option == oidAutoSwitchRP)
 		SetInfoText("$mrt_MarkofArkay_DESC_AutoSwitchRP")
 	ElseIf (option == oidRecallCost)
@@ -1688,9 +1755,9 @@ Event OnVersionUpdate(int a_version)
 		bRespawnPointsFlags[5] = True
 		bRespawnPointsFlags[6] = True
 		bRespawnPointsFlags[7] = True
-		If moaState.GetValue() == 1
-			PlayerRef.AddSpell(MoveCustomMarker)
-		EndIf
+		;If moaState.GetValue() == 1
+		;	PlayerRef.AddSpell(MoveCustomMarker)
+		;EndIf
 	Endif
 	If (a_version >= 9 && CurrentVersion < 9)
 		Debug.Trace(self + ": Updating script to version " + 9)
@@ -1699,9 +1766,9 @@ Event OnVersionUpdate(int a_version)
 		Else
 			moaBleedouAnimation.SetValue(0)
 		EndIf
-		If moaState.GetValue() == 1
-			PlayerRef.AddSpell(RecallMarker)
-		EndIf
+		;If moaState.GetValue() == 1
+		;	PlayerRef.AddSpell(RecallMarker)
+		;EndIf
 		If bLostItemQuest && ( ReviveScript.bIsItemsRemoved || PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt) )
 			moaRetrieveLostItems.start()
 			moaRetrieveLostItems.SetStage(1)

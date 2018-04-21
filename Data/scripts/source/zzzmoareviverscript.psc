@@ -974,7 +974,7 @@ Function RevivePlayer(Bool bRevive)
 				EndIf
 				Utility.Wait(0.1)
 			EndIf
-			Utility.Wait(1.5)
+			Utility.Wait(1.0)
 			PlayerRef.SetActorValue("Paralysis",0)
 			DefaultTimeScale = TimeScale.GetValue()
 			If ( ConfigMenu.bSendToJail && bGuardCanSendToJail() && !bInBeastForm() )
@@ -1012,10 +1012,10 @@ Function RevivePlayer(Bool bRevive)
 			If PlayerRef.IsWeaponDrawn() ;If Player has a weapon drawn,
 				PlayerRef.SheatheWeapon() ;Sheathe the drawn weapon.
 			EndIf
-			RefreshFace()
 			PlayerRef.DispelAllSpells()
 			PassTime(6.0)
 			Utility.Wait(0.5)
+			RefreshFace()
 			If ( ConfigMenu.bRespawnNaked && !bInBeastForm() )
 				PlayerRef.UnequipAll()
 			EndIf
@@ -2247,8 +2247,10 @@ EndFunction
 
 Bool Function bIsTypeLegit( Form KItem)
 	Int iType = KItem.GetType()
-	If ( KItem.GetWeight() > 0.0 ) && ( ( iType == 26 ) || ( iType == 42 ) || ( iType == 27 ) || ( iType == 46 ) || ( iType == 30 ) || ( iType == 32 ) || ( iType == 23 ) || ( iType == 52 ) || ( iType == 41 ) )
-		Return True
+	If ( ( iType == 26 ) || ( iType == 42 ) || ( iType == 27 ) || ( iType == 46 ) || ( iType == 30 ) || ( iType == 32 ) || ( iType == 23 ) || ( iType == 52 ) || ( iType == 41 ) )
+		If ( KItem.GetWeight() > 0.0 ) 
+			Return True
+		EndIf
 	EndIf
 	Return False
 EndFunction

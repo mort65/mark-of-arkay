@@ -858,7 +858,7 @@ Function RevivePlayer(Bool bRevive)
 				PlayerRef.SetActorValue("Paralysis",1)
 				PlayerRef.PushActorAway(PlayerRef,0)
 			EndIf
-			Debug.ToggleAI() ;so that npcs wont talk to the player
+			Debug.ToggleAI() ;so that npcs won't talk to the player
 			PlayerRef.ResetHealthAndLimbs()
 			PlayerRef.Say(DeathTopic,abSpeakInPlayersHead = False)
 			Game.ForceThirdPerson()
@@ -974,7 +974,7 @@ Function RevivePlayer(Bool bRevive)
 				EndIf
 				Utility.Wait(0.1)
 			EndIf
-			Utility.Wait(1.0)
+			Utility.Wait(1.5)
 			PlayerRef.SetActorValue("Paralysis",0)
 			DefaultTimeScale = TimeScale.GetValue()
 			If ( ConfigMenu.bSendToJail && bGuardCanSendToJail() && !bInBeastForm() )
@@ -1504,19 +1504,32 @@ Bool Function bCanTeleport()
 	Int iIndex = QuestBlackList.GetSize()
 	While iIndex > 0
 		iIndex -= 1
-		If (QuestBlackList.GetAt(iIndex) As Quest).IsRunning()
-			Debug.Trace("MarkofArkay: You can't Respawn while " + QuestBlackList.GetAt(iIndex) As Quest + " is running.")
-			Return False
+		Quest ForbidenQuest = QuestBlackList.GetAt(iIndex) As Quest
+		If ForbidenQuest
+			If ForbidenQuest.IsRunning()
+				Debug.Trace("MarkofArkay: You can't Respawn while " + ForbidenQuest + " is running.")
+				Return False
+			EndIf
 		EndIf
 	EndWhile
-	iIndex = LocationBlackList.GetSize()
-	While iIndex > 0
-		iIndex -= 1
-		If PlayerRef.IsInLocation(LocationBlackList.GetAt(iIndex) As Location)
-			Debug.Trace("MarkofArkay: Respawn from " + LocationBlackList.GetAt(iIndex) As Location + " is disabled.")
+	Location CurrLoc = PlayerRef.GetCurrentLocation()
+	If CurrLoc
+		If CurrLoc.HasKeywordString("loctypejail")
+			Debug.Trace("MarkofArkay: Respawn from jail is disabled.")
 			Return False
 		EndIf
-	EndWhile
+		iIndex = LocationBlackList.GetSize()
+		While iIndex > 0
+			iIndex -= 1
+			Location ForbiddenLocation = LocationBlackList.GetAt(iIndex) As Location
+			If ForbiddenLocation
+				If (( CurrLoc == ForbiddenLocation ) || ForbiddenLocation.IsChild(CurrLoc))
+					Debug.Trace("MarkofArkay: Respawn from " + ForbiddenLocation + " is disabled.")
+					Return False
+				EndIf
+			EndIf
+		EndWhile
+	EndIf
 	Return True
 EndFunction
 
@@ -1537,14 +1550,23 @@ Bool Function bCanTeleportToExtMarker( Objectreference ExternalMarker )
 EndFunction
 
 Bool Function bCanTeleportToDynMarker(Objectreference Marker)
-	If Marker
-		Int iIndex = LocationBlackList.GetSize()
-		While iIndex > 0
-			iIndex -= 1
-			If Marker.IsInLocation(LocationBlackList.GetAt(iIndex) As Location)
+	If Marker 
+		Location CurrLoc = Marker.GetCurrentLocation()
+		If CurrLoc
+			If CurrLoc.HasKeywordString("loctypejail")
 				Return False
 			EndIf
-		EndWhile 
+			Int iIndex = LocationBlackList.GetSize()
+			While iIndex > 0
+				iIndex -= 1
+				Location ForbiddenLocation = LocationBlackList.GetAt(iIndex) As Location
+				If ForbiddenLocation
+					If (( CurrLoc == ForbiddenLocation ) || ForbiddenLocation.IsChild(CurrLoc))
+						Return False
+					EndIf
+				EndIf
+			EndWhile
+		EndIf	
 		If !Marker.IsDisabled()
 			If ( Marker.GetParentCell() != DefaultCell )
 				Return True

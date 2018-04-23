@@ -67,14 +67,14 @@ Quest Property VampireLordQuest Auto
 Formlist Property PotionList Auto
 FormList Property LocationsList Auto
 Form[] Property VItemArr Auto Hidden
-Int Property iTotalBleedOut = 0 Auto Hidden
-Int Property iTotalRespawn = 0 Auto Hidden
-Int Property iTotalRevives = 0 Auto Hidden
-Int Property iRevivesByTrade = 0 Auto Hidden
-Int Property iRevivesByRevivalSpell = 0 Auto Hidden
-Int Property iRevivesBySacrificeSpell = 0 Auto Hidden
-Int Property iRevivesByPotion = 0 Auto Hidden
-Int Property iDestroyedItems = 0 Auto Hidden
+Int Property iTotalBleedOut = 0 Auto Hidden;
+Int Property iTotalRespawn = 0 Auto Hidden;
+Int Property iTotalRevives = 0 Auto Hidden;
+Int Property iRevivesByTrade = 0 Auto Hidden;
+Int Property iRevivesByRevivalSpell = 0 Auto Hidden;
+Int Property iRevivesBySacrificeSpell = 0 Auto Hidden;
+Int Property iRevivesByPotion = 0 Auto Hidden;
+Int Property iDestroyedItems = 0 Auto Hidden;
 Form[] Property Equipment Auto Hidden
 ObjectReference[] Property ExcludedMarkerList Auto Hidden
 Location Property PaleHoldLocation  Auto
@@ -292,8 +292,8 @@ Function BleedoutHandler(String CurrentState)
 	EndIf
 	Game.DisablePlayerControls()
 	Game.EnableFastTravel(False)
-	If iTotalBleedOut < 99999999
-		iTotalBleedOut += 1
+	If ConfigMenu.iTotalBleedOut < 99999999
+		ConfigMenu.iTotalBleedOut += 1
 	EndIf
 	If ( ConfigMenu.bIsRevivalEnabled &&  PlayerRef.IsSwimming() && !WerewolfQuest.IsRunning() ) ;SKSE
 		PlayerRef.SetActorValue("Paralysis",1)
@@ -339,8 +339,8 @@ Function BleedoutHandler(String CurrentState)
 				EndIf
 				Game.EnablePlayerControls()
 				Game.EnableFastTravel(True)
-				If iTotalRevives < 99999999
-					iTotalRevives += 1
+				If ConfigMenu.iTotalRevives < 99999999
+					ConfigMenu.iTotalRevives += 1
 				EndIf
 				moaBleedoutHandlerState.SetValue(0)
 				LowHealthImod.Remove()
@@ -367,11 +367,11 @@ Function BleedoutHandler(String CurrentState)
 				Debug.SetGodMode(False)
 				Game.EnablePlayerControls()
 				Game.EnableFastTravel(True)
-				If iRevivesByPotion < 99999999
-					iRevivesByPotion += 1
+				If ConfigMenu.iRevivesByPotion < 99999999
+					ConfigMenu.iRevivesByPotion += 1
 				EndIf
-				If iTotalRevives < 99999999
-					iTotalRevives += 1
+				If ConfigMenu.iTotalRevives < 99999999
+					ConfigMenu.iTotalRevives += 1
 				EndIf
 				moaBleedoutHandlerState.SetValue(0)
 				LowHealthImod.Remove()
@@ -399,8 +399,8 @@ Function BleedoutHandler(String CurrentState)
 			EndIf
 			RequipSpells()
 			PlayerRef.ResetHealthAndLimbs()
-			If iTotalRevives < 99999999
-				iTotalRevives += 1
+			If ConfigMenu.iTotalRevives < 99999999
+				ConfigMenu.iTotalRevives += 1
 			EndIf
 			If !bPotionRevive
 				If ConfigMenu.bIsEffectEnabled
@@ -431,11 +431,11 @@ Function BleedoutHandler(String CurrentState)
 			If ConfigMenu.bIsEffectEnabled
 				moaReviveAfterEffect.Cast(PlayerRef)
 			EndIf
-			If iRevivesByRevivalSpell < 99999999
-				iRevivesByRevivalSpell += 1
+			If ConfigMenu.iRevivesByRevivalSpell < 99999999
+				ConfigMenu.iRevivesByRevivalSpell += 1
 			EndIf
-			If iTotalRevives < 99999999
-				iTotalRevives += 1
+			If ConfigMenu.iTotalRevives < 99999999
+				ConfigMenu.iTotalRevives += 1
 			EndIf
 		ElseIf (Victim && !Victim.IsDead()) ; player has cast a sacrifice spell or scroll on someone
 			Victim.Kill()
@@ -454,11 +454,11 @@ Function BleedoutHandler(String CurrentState)
 			If ConfigMenu.bIsEffectEnabled
 				moaReviveAfterEffect.Cast(PlayerRef)
 			EndIf
-			If iRevivesBySacrificeSpell < 99999999
-				iRevivesBySacrificeSpell += 1
+			If ConfigMenu.iRevivesBySacrificeSpell < 99999999
+				ConfigMenu.iRevivesBySacrificeSpell += 1
 			EndIf
-			If iTotalRevives < 99999999
-				iTotalRevives += 1
+			If ConfigMenu.iTotalRevives < 99999999
+				ConfigMenu.iTotalRevives += 1
 			EndIf
 			If ConfigMenu.bIsNotificationEnabled
 				Debug.Notification("$mrt_MarkofArkay_Notification_Revive_Sacrifice_Scroll")
@@ -484,11 +484,11 @@ Function BleedoutHandler(String CurrentState)
 					If ConfigMenu.bIsEffectEnabled
 						moaReviveAfterEffect.Cast(PlayerRef)
 					EndIf
-					If iRevivesByTrade < 99999999
-						iRevivesByTrade += 1
+					If ConfigMenu.iRevivesByTrade < 99999999
+						ConfigMenu.iRevivesByTrade += 1
 					EndIf
-					If iTotalRevives < 99999999
-						iTotalRevives += 1
+					If ConfigMenu.iTotalRevives < 99999999
+						ConfigMenu.iTotalRevives += 1
 					EndIf
 				Else
 					RevivePlayer(False)
@@ -537,11 +537,11 @@ Function BleedoutHandler(String CurrentState)
 					If ConfigMenu.bIsEffectEnabled
 						moaReviveAfterEffect.Cast(PlayerRef)
 					EndIf
-					If iRevivesByTrade < 99999999
-						iRevivesByTrade += 1
+					If ConfigMenu.iRevivesByTrade < 99999999
+						ConfigMenu.iRevivesByTrade += 1
 					EndIf
-					If iTotalRevives < 99999999
-						iTotalRevives += 1
+					If ConfigMenu.iTotalRevives < 99999999
+						ConfigMenu.iTotalRevives += 1
 					EndIf
 				Else ; player couldn't trade
 					RevivePlayer(False)
@@ -565,8 +565,8 @@ Function BleedoutHandler(String CurrentState)
 			EndIf
 			Game.EnablePlayerControls()
 			Game.EnableFastTravel(True)
-			If iTotalRevives < 99999999
-				iTotalRevives += 1
+			If ConfigMenu.iTotalRevives < 99999999
+				ConfigMenu.iTotalRevives += 1
 			EndIf
 			moaBleedoutHandlerState.SetValue(0)
 			LowHealthImod.Remove()
@@ -881,10 +881,10 @@ Function RevivePlayer(Bool bRevive)
 			If  ConfigMenu.bLoseForever && (iRemovableItems != 0)
 				If ( ( LostItemsChest.GetNumItems() > 0 ) || ( fLostSouls > 0.0 ) )
 					bDidItemsRemoved = True
-					If iDestroyedItems < 99999999
-						iDestroyedItems += LostItemsChest.GetNumItems()
+					If ConfigMenu.iDestroyedItems < 99999999
+						ConfigMenu.iDestroyedItems += LostItemsChest.GetNumItems()
 						If fLostSouls > 0.0
-							iDestroyedItems += 1
+							ConfigMenu.iDestroyedItems += 1
 						EndIf
 					EndIf
 				Else
@@ -975,32 +975,36 @@ Function RevivePlayer(Bool bRevive)
 			EndIf
 			Utility.Wait(2.0)
 			PlayerRef.DispelAllSpells()
-			DefaultTimeScale = TimeScale.GetValue()
 			If ( ConfigMenu.bSendToJail && bGuardCanSendToJail() && !bInBeastForm() )
-				If ( Attacker.GetCrimeFaction() == CrimeFactionPale )
-					bIsArrived(DawnstarJailMarker)
-				ElseIf ( Attacker.GetCrimeFaction() == CrimeFactionFalkreath )
-					bIsArrived(FalkreathJailMarker)
-				ElseIf ( Attacker.GetCrimeFaction() == CrimeFactionHjaalmarch )
-					bIsArrived(MorthalJailMarker)
-				ElseIf ( Attacker.GetCrimeFaction() == CrimeFactionHaafingar )
-					bIsArrived(SolitudeJailMarker)
-				ElseIf ( Attacker.GetCrimeFaction() == CrimeFactionRift )
-					bIsArrived(RiftenJailMarker)
-				ElseIf ( Attacker.GetCrimeFaction() == CrimeFactionWhiterun )
-					bIsArrived(WhiterunJailMarker)
-				ElseIf ( Attacker.GetCrimeFaction() == CrimeFactionEastmarch )
-					bIsArrived(WindhelmJailMarker)
-				ElseIf ( Attacker.GetCrimeFaction() == CrimeFactionWinterhold )
-					bIsArrived(WinterholdJailMarker)
-				ElseIf ( Attacker.GetCrimeFaction() == CrimeFactionReach )
-					bIsArrived(MarkarthJailMarker)
-					bCidhnaJail = True
-				ElseIf ( Attacker.GetCrimeFaction() == DLC2CrimeRavenRockFaction )
-					bIsArrived(DLC2RavenRockJailMarker)
+				Faction CrimeFaction = Attacker.GetCrimeFaction()
+				If ( CrimeFaction As Faction )
+					If ( CrimeFaction == CrimeFactionPale )
+						bIsArrived(DawnstarJailMarker)
+					ElseIf ( CrimeFaction == CrimeFactionFalkreath )
+						bIsArrived(FalkreathJailMarker)
+					ElseIf ( CrimeFaction == CrimeFactionHjaalmarch )
+						bIsArrived(MorthalJailMarker)
+					ElseIf ( CrimeFaction == CrimeFactionHaafingar )
+						bIsArrived(SolitudeJailMarker)
+					ElseIf ( CrimeFaction == CrimeFactionRift )
+						bIsArrived(RiftenJailMarker)
+					ElseIf ( CrimeFaction == CrimeFactionWhiterun )
+						bIsArrived(WhiterunJailMarker)
+					ElseIf ( CrimeFaction == CrimeFactionEastmarch )
+						bIsArrived(WindhelmJailMarker)
+					ElseIf ( CrimeFaction == CrimeFactionWinterhold )
+						bIsArrived(WinterholdJailMarker)
+					ElseIf ( CrimeFaction == CrimeFactionReach )
+						bIsArrived(MarkarthJailMarker)
+						bCidhnaJail = True
+					ElseIf ( CrimeFaction == DLC2CrimeRavenRockFaction )
+						bIsArrived(DLC2RavenRockJailMarker)
+					EndIf
+					Utility.Wait(0.5)
+					CrimeFaction.SendPlayerToJail( abRemoveInventory = True, abRealJail = True )
+				Else
+					Teleport()
 				EndIf
-				Utility.Wait(0.5)
-				Attacker.GetCrimeFaction().SendPlayerToJail( abRemoveInventory = True, abRealJail = True )
 			Else
 				Teleport()
 			EndIf
@@ -1014,8 +1018,9 @@ Function RevivePlayer(Bool bRevive)
 				PlayerRef.SheatheWeapon() ;Sheathe the drawn weapon.
 			EndIf
 			PlayerRef.DispelAllSpells()
-			PassTime(6.0)
-			Utility.Wait(0.5)
+			;PassTime(6.0)
+			Utility.Wait(6.0)
+			PlayerRef.ClearExtraArrows()
 			RefreshFace()
 			If ( ConfigMenu.bRespawnNaked && !bInBeastForm() )
 				PlayerRef.UnequipAll()
@@ -1054,8 +1059,8 @@ Function RevivePlayer(Bool bRevive)
 					moaRetrieveLostItems.SetStage(1)
 				EndIf
 			EndIf
-			If iTotalRespawn < 99999999
-				iTotalRespawn += 1
+			If ConfigMenu.iTotalRespawn < 99999999
+				ConfigMenu.iTotalRespawn += 1
 			EndIf
 			GoToState("")
 		Else
@@ -1071,11 +1076,11 @@ Function RevivePlayer(Bool bRevive)
 EndFunction
 
 Function RequipSpells() ; after entering bleedou while fighting with spell the game unequips spells and equip none as an item re-equiping spells usually that
-		If ( LeftHandEquippedItem As Spell ) != None
+		If ( LeftHandEquippedItem As Spell )
 			PlayerRef.UnequipSpell((LeftHandEquippedItem as spell), 0)
 			PlayerRef.EquipSpell((LeftHandEquippedItem as spell), 0)
 		EndIf
-		If ( RightHandEquipedItem As Spell ) != None
+		If ( RightHandEquipedItem As Spell )
 			PlayerRef.UnequipSpell((RightHandEquipedItem as spell), 1)
 			PlayerRef.EquipSpell((RightHandEquipedItem as spell), 1)
 		EndIf
@@ -1203,9 +1208,11 @@ EndFunction
 
 Function PassTime(Float fRealTime)
 	If ConfigMenu.fRespawnTimeSlider > 0.0
+		DefaultTimeScale = TimeScale.GetValue()
 		TimeScale.SetValue( (3600.0 / fRealTime) * ConfigMenu.fRespawnTimeSlider )
 		Utility.Wait(fRealTime)
 		TimeScale.SetValue(DefaultTimeScale)
+		PlayerRef.StopCombatalarm()
 	Else
 		Utility.Wait(fRealTime)
 	EndIf
@@ -1684,17 +1691,14 @@ Function ShiftBack()
 EndFunction
 
 Int Function iHasHealingPotion()
-		Int iPotionIndex = -1
-		Bool bBreak = False
 		Int iIndex = PotionList.GetSize()
-		While ( ( iIndex > 0 ) && !bBreak )
+		While ( iIndex > 0 )
 			iIndex -= 1
 			If PlayerRef.GetItemCount(PotionList.GetAt(iIndex) As Potion) > 0
-				bBreak = True
-				iPotionIndex = iIndex
+				Return iIndex
 			EndIf
 		Endwhile
-		Return iPotionIndex
+		Return -1
 EndFunction
 
 Function RemoveValuableItems(Actor ActorRef)
@@ -2249,36 +2253,32 @@ Bool Function bGuardCanSendToJail()
 		If ( Attacker.IsGuard() )
 			If ( PlayerRef.GetDistance(Attacker) < 2000.0 )
 				If ( Attacker.GetCrimeFaction().GetCrimeGold() > 0 )
-					bResult =  True
+					Return True
 				EndIf
 			EndIf
 		EndIf
 	EndIf
-	If !bResult
-		Int i = 0
-		Actor RandomActor
-		Bool bBreak = False
-		While ( ( i < 15 ) && !bBreak )
-			i += 1
-			RandomActor = Game.FindRandomActorFromRef(PlayerRef,2000)
-			If RandomActor
-				If RandomActor != PlayerRef
-					If !RandomActor.IsDead()
-						If RandomActor.IsGuard()
-							If RandomActor.GetCrimeFaction().GetCrimeGold() > 0
-								Attacker = RandomActor
-								bResult = True
-								bBreak = True
-							EndIf
+	Int i = 0
+	Actor RandomActor
+	While ( i < 15 )
+		i += 1
+		RandomActor = Game.FindRandomActorFromRef(PlayerRef,2000)
+		If RandomActor
+			If RandomActor != PlayerRef
+				If !RandomActor.IsDead()
+					If RandomActor.IsGuard()
+						If RandomActor.GetCrimeFaction().GetCrimeGold() > 0
+							Attacker = RandomActor
+							Return True
 						EndIf
 					EndIf
 				EndIf
-			Else
-				bBreak = True ;No Actor is around.
 			EndIf
-		EndWhile
-	EndIf
-	Return bResult
+		Else ;No NPC is around the player
+			Return False
+		EndIf
+	EndWhile
+	Return False
 EndFunction
 
 Bool Function bInBeastForm()
@@ -2687,9 +2687,8 @@ EndFunction
 Bool Function TryToMoveByDistanceNear()
 	Int i = 0
 	Int j = 0
-	Bool bBreak = False
 	ObjectReference Marker
-	While ( i < 9 ) && !bBreak
+	While ( i < 9 )
 		i += 1
 		Marker = FindMarkerByDistance()
 		If Marker
@@ -2701,7 +2700,7 @@ Bool Function TryToMoveByDistanceNear()
 				ExcludedMarkerList[j] = Marker
 			EndIf
 		Else
-			bBreak = True
+			Return False
 		EndIf
 	EndWhile
 	Return False

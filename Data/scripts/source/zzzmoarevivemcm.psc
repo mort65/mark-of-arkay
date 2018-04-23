@@ -148,6 +148,14 @@ Objectreference Property LocationMarker2 Auto
 ObjectReference Property LostItemsChest Auto
 zzzmoaReviverScript Property ReviveScript Auto
 Formlist property ExternalMarkerList Auto
+Int Property iTotalBleedOut = 0 Auto Hidden
+Int Property iTotalRespawn = 0 Auto Hidden
+Int Property iTotalRevives = 0 Auto Hidden
+Int Property iRevivesByTrade = 0 Auto Hidden
+Int Property iRevivesByRevivalSpell = 0 Auto Hidden
+Int Property iRevivesBySacrificeSpell = 0 Auto Hidden
+Int Property iRevivesByPotion = 0 Auto Hidden
+Int Property iDestroyedItems = 0 Auto Hidden
 Bool bToggling
 
 Event OnPageReset(String page)
@@ -356,13 +364,13 @@ Event OnPageReset(String page)
 		Else
 			oidExternalTeleportLocation = AddTextOption("$mrt_MarkofArkay_ExternalTeleportLocation", ( (iExternalIndex + 1) As String ), flags)
 		Endif
-		SetCursorPosition(7)
-		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1))
-			flags =	OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		Endif
-		oidRespawnTimeSlider = AddSliderOption("$mrt_MarkofArkay_RespawnTimeSlider", fRespawnTimeSlider, "$mrt_MarkofArkay_RespawnTimeSlider2", flags)
+		;SetCursorPosition(7)
+		;If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1))
+		;	flags =	OPTION_FLAG_NONE
+		;Else
+		;	flags = OPTION_FLAG_DISABLED
+		;Endif
+		;oidRespawnTimeSlider = AddSliderOption("$mrt_MarkofArkay_RespawnTimeSlider", fRespawnTimeSlider, "$mrt_MarkofArkay_RespawnTimeSlider2", flags)
 		SetCursorPosition(9)
 		If ( moaState.getValue() == 1 )
 			flags =	OPTION_FLAG_NONE
@@ -537,80 +545,80 @@ Event OnPageReset(String page)
 		AddHeaderOption("$History")
 		SetCursorPosition(9)
 		If bIsHistoryEnabled && ( moaState.getValue() == 1 )
-			If ReviveScript.iTotalBleedOut > 99999999
+			If iTotalBleedOut > 99999999
 				AddTextOption("$Bleedouts", "+99999999", flags)
 			Else
-				AddTextOption("$Bleedouts", ReviveScript.iTotalBleedOut, flags)
+				AddTextOption("$Bleedouts", iTotalBleedOut, flags)
 			EndIf
 		Else
 			AddTextOption("$Bleedouts", "$Disabled", flags)
 		EndIf
 		SetCursorPosition(11)
 		If bIsHistoryEnabled && ( moaState.getValue() == 1 )
-			If ReviveScript.iTotalRevives > 99999999
+			If iTotalRevives > 99999999
 				AddTextOption("$Revivals", "+99999999", flags)
 			Else
-				AddTextOption("$Revivals", ReviveScript.iTotalRevives, flags)
+				AddTextOption("$Revivals", iTotalRevives, flags)
 			EndIf
 		Else
 			AddTextOption("$Revivals", "$Disabled", flags)
 		EndIf
 		SetCursorPosition(13)
 		If bIsHistoryEnabled && ( moaState.getValue() == 1 )
-			If ReviveScript.iRevivesByPotion > 99999999
+			If iRevivesByPotion > 99999999
 				AddTextOption("$mrt_MarkofArkay_Revive_With_Potion", "+99999999", flags)
 			Else
-				AddTextOption("$mrt_MarkofArkay_Revive_With_Potion", ReviveScript.iRevivesByPotion, flags)
+				AddTextOption("$mrt_MarkofArkay_Revive_With_Potion", iRevivesByPotion, flags)
 			EndIf
 		Else
 			AddTextOption("$mrt_MarkofArkay_Revive_With_Potion", "$Disabled", flags)
 		EndIf
 		SetCursorPosition(15)
 		If bIsHistoryEnabled && ( moaState.getValue() == 1 )
-			If ReviveScript.iRevivesByRevivalSpell > 99999999
+			If iRevivesByRevivalSpell > 99999999
 				AddTextOption("$mrt_MarkofArkay_Revive_With_Revival_Spell", "+99999999", flags)
 			Else
-				AddTextOption("$mrt_MarkofArkay_Revive_With_Revival_Spell", ReviveScript.iRevivesByRevivalSpell, flags)
+				AddTextOption("$mrt_MarkofArkay_Revive_With_Revival_Spell", iRevivesByRevivalSpell, flags)
 			EndIf
 		Else
 			AddTextOption("$mrt_MarkofArkay_Revive_With_Revival_Spell", "$Disabled", flags)
 		EndIf
 		SetCursorPosition(17)
 		If bIsHistoryEnabled && ( moaState.getValue() == 1 )
-			If ReviveScript.iRevivesBySacrificeSpell > 99999999
+			If iRevivesBySacrificeSpell > 99999999
 				AddTextOption("$mrt_MarkofArkay_Revive_With_Sacrifice_Spell", "+99999999", flags)
 			Else
-				AddTextOption("$mrt_MarkofArkay_Revive_With_Sacrifice_Spell", ReviveScript.iRevivesBySacrificeSpell, flags)
+				AddTextOption("$mrt_MarkofArkay_Revive_With_Sacrifice_Spell", iRevivesBySacrificeSpell, flags)
 			EndIf
 		Else
 			AddTextOption("$mrt_MarkofArkay_Revive_With_Sacrifice_Spell", "$Disabled", flags)
 		EndIf
 		SetCursorPosition(19)
 		If bIsHistoryEnabled && ( moaState.getValue() == 1 )
-			If ReviveScript.iRevivesByTrade > 99999999
+			If iRevivesByTrade > 99999999
 				AddTextOption("$mrt_MarkofArkay_Revive_By_Trading", "+99999999", flags)
 			Else
-				AddTextOption("$mrt_MarkofArkay_Revive_By_Trading", ReviveScript.iRevivesByTrade, flags)
+				AddTextOption("$mrt_MarkofArkay_Revive_By_Trading", iRevivesByTrade, flags)
 			EndIf
 		Else
 			AddTextOption("$mrt_MarkofArkay_Revive_By_Trading", "$Disabled", flags)
 		EndIf
 		SetCursorPosition(21)
 		If bIsHistoryEnabled && ( moaState.getValue() == 1 )
-			If ReviveScript.iTotalRespawn > 99999999
+			If iTotalRespawn > 99999999
 				AddTextOption("$Respawns", "+99999999", flags)
 			Else
-				AddTextOption("$Respawns", ReviveScript.iTotalRespawn, flags)
+				AddTextOption("$Respawns", iTotalRespawn, flags)
 			EndIf
 		Else
 			AddTextOption("$Respawns", "$Disabled", flags)
 		EndIf
 		SetCursorPosition(23)
 		If bIsHistoryEnabled && ( moaState.getValue() == 1 )
-			If ReviveScript.iDestroyedItems > 99999999
+			If iDestroyedItems > 99999999
 				AddTextOption("$mrt_MarkofArkay_Destroyed_Items", "+99999999", flags)
 			Else
-				AddTextOption("$mrt_MarkofArkay_Destroyed_Items", ReviveScript.iDestroyedItems, flags)
+				AddTextOption("$mrt_MarkofArkay_Destroyed_Items", iDestroyedItems, flags)
 			EndIf
 		Else
 			AddTextOption("$mrt_MarkofArkay_Destroyed_Items", "$Disabled", flags)
@@ -795,14 +803,14 @@ Event OnOptionSelect(Int option)
 		Else
 			sResetHistory = ""
 			SetTextOptionValue(option, sResetHistory)
-			ReviveScript.iTotalBleedOut = 0
-			ReviveScript.iTotalRespawn = 0
-			ReviveScript.iTotalRevives = 0
-			ReviveScript.iRevivesByTrade = 0
-			ReviveScript.iRevivesByRevivalSpell = 0
-			ReviveScript.iRevivesBySacrificeSpell = 0
-			ReviveScript.iRevivesByPotion = 0
-			ReviveScript.iDestroyedItems = 0
+			iTotalBleedOut = 0
+			iTotalRespawn = 0
+			iTotalRevives = 0
+			iRevivesByTrade = 0
+			iRevivesByRevivalSpell = 0
+			iRevivesBySacrificeSpell = 0
+			iRevivesByPotion = 0
+			iDestroyedItems = 0
 			ForcePageReset()
 		EndIf
 	ElseIf (option == oidStatus)
@@ -840,7 +848,7 @@ Event OnOptionSelect(Int option)
 		SetOptionFlags(oidLootChanceSlider,flags,True)
 		SetOptionFlags(oidScrollChanceSlider,flags,True)
 		SetOptionFlags(oidTeleportLocation_M,flags,True)
-		SetOptionFlags(oidRespawnTimeSlider,flags,True)
+		;SetOptionFlags(oidRespawnTimeSlider,flags,True)
 		SetOptionFlags(oidRespawnNaked,flags,True)
 		SetOptionFlags(oidJail,flags,True)
 		SetOptionFlags(oidArkayCurse,flags,True)
@@ -909,7 +917,7 @@ Event OnOptionSelect(Int option)
 		SetOptionFlags(oidLootChanceSlider,flags,True)
 		SetOptionFlags(oidScrollChanceSlider,flags,True)
 		SetOptionFlags(oidTeleportLocation_M,flags,True)
-		SetOptionFlags(oidRespawnTimeSlider,flags,True)
+		;SetOptionFlags(oidRespawnTimeSlider,flags,True)
 		SetOptionFlags(oidRespawnNaked,flags,True)
 		SetOptionFlags(oidJail,flags,True)
 		SetOptionFlags(oidArkayCurse,flags,True)
@@ -1023,11 +1031,11 @@ Event OnOptionSliderOpen(Int option)
 		SetSliderDialogDefaultValue(0.0)
 		SetSliderDialogRange(0.0, 100.0)
 		SetSliderDialogInterval(1.0)
-	Elseif(option == oidRespawnTimeSlider)
-		SetSliderDialogStartValue(fRespawnTimeSlider)
-		SetSliderDialogDefaultValue(0.0)
-		SetSliderDialogRange(0.0, 744.0)
-		SetSliderDialogInterval(1.0)
+	;Elseif(option == oidRespawnTimeSlider)
+	;	SetSliderDialogStartValue(fRespawnTimeSlider)
+	;	SetSliderDialogDefaultValue(0.0)
+	;	SetSliderDialogRange(0.0, 744.0)
+	;	SetSliderDialogInterval(1.0)
 	EndIf
 EndEvent
 
@@ -1080,9 +1088,9 @@ Event OnOptionSliderAccept(int option, Float value)
 	ElseIf (option == oidRecallCost)
 		fRecallCastSlider = value
 		SetSliderOptionValue(oidRecallCost, fRecallCastSlider, "$mrt_MarkofArkay_MarkSlider_2")
-	ElseIf (option == oidRespawnTimeSlider)
-		fRespawnTimeSlider = value
-		SetSliderOptionValue(oidRespawnTimeSlider, fRespawnTimeSlider, "$mrt_MarkofArkay_RespawnTimeSlider2")
+	;ElseIf (option == oidRespawnTimeSlider)
+	;	fRespawnTimeSlider = value
+	;	SetSliderOptionValue(oidRespawnTimeSlider, fRespawnTimeSlider, "$mrt_MarkofArkay_RespawnTimeSlider2")
 	EndIf
 EndEvent
 
@@ -1156,8 +1164,8 @@ Event OnOptionMenuAccept(Int option, Int index)
 		SetOptionFlags(oidRespawnNaked,flags,True)
 		SetOptionFlags(oidJail,flags,True)
 		SetOptionFlags(oidArkayCurse,flags,True)
-		SetOptionFlags(oidRemovableItems_M,flags,True)
-		SetOptionFlags(oidRespawnTimeSlider,flags,True)
+		SetOptionFlags(oidRemovableItems_M,flags)
+		;SetOptionFlags(oidRespawnTimeSlider,flags,True)
 		If bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bArkayCurse
 			flags =	OPTION_FLAG_NONE
 		Else
@@ -1283,9 +1291,9 @@ Event OnOptionDefault(Int option)
 		fScrollChanceSlider = 25.0
 		SetSliderOptionValue(oidScrollChanceSlider,fScrollChanceSlider,"$mrt_MarkofArkay_LootChanceSlider_2")
 		moaScrollChance.SetValue(100.0 - fScrollChanceSlider)
-	ElseIf (option == oidRespawnTimeSlider)
-		fRespawnTimeSlider = 0.0
-		SetSliderOptionValue(oidRespawnTimeSlider, fRespawnTimeSlider, "$mrt_MarkofArkay_RespawnTimeSlider2")	
+	;ElseIf (option == oidRespawnTimeSlider)
+	;	fRespawnTimeSlider = 0.0
+	;	SetSliderOptionValue(oidRespawnTimeSlider, fRespawnTimeSlider, "$mrt_MarkofArkay_RespawnTimeSlider2")	
 	ElseIf (option == oidEffect)
 		bIsEffectEnabled = True
 		SetToggleOptionValue(oidEffect, bIsEffectEnabled)
@@ -1374,7 +1382,7 @@ Event OnOptionDefault(Int option)
 		SetOptionFlags(oidArkayCurses_M,flags,True)
 		SetOptionFlags(oidLoseforever,flags,True)
 		SetOptionFlags(oidSoulMarkStay,flags,True)
-		SetOptionFlags(oidRespawnTimeSlider,flags,True)
+		;SetOptionFlags(oidRespawnTimeSlider,flags,True)
 		SetOptionFlags(oidRemovableItems_M,flags)
 	ElseIf (option == oidRemovableItems_M)
 		iRemovableItems = 0
@@ -1483,8 +1491,8 @@ Event OnOptionHighlight(Int option)
 		SetInfoText("$mrt_MarkofArkay_DESC_LootChanceSlider")
 	ElseIf (option == oidScrollChanceSlider)
 		SetInfoText("$mrt_MarkofArkay_DESC_ScrollChanceSlider")
-	ElseIf (option == oidRespawnTimeSlider)
-		SetInfoText("$mrt_MarkofArkay_DESC_RespawnTimeSlider")
+	;ElseIf (option == oidRespawnTimeSlider)
+	;	SetInfoText("$mrt_MarkofArkay_DESC_RespawnTimeSlider")
 	ElseIf (option == oidEffect)
 		If bIsEffectEnabled
 			SetInfoText("$mrt_MarkofArkay_DESC_Effect_On")
@@ -1663,9 +1671,7 @@ Function ToggleFallDamage(Bool bFallDamage)
 EndFunction
 
 Event OnConfigInit()
-	Pages = new String[2]
-	pages[0] = "$Settings"
-	pages[1] = "$Debug"
+	setPages()
 EndEvent
 
 Function setPages()
@@ -1677,21 +1683,16 @@ Function setPages()
 EndFunction
 
 Int Function GetVersion()
-	Return 27
+	Return 29
 EndFunction
 
 Event OnVersionUpdate(int a_version)
 	; a_version is the new version, CurrentVersion is the old version
 	If (a_version >= 2 && CurrentVersion < 2)
 		Debug.Trace(self + ": Updating script to version " + 2)
-		Pages = new String[3]
-		pages[0] = "$General"
-		pages[1] = "$Extra"
-		pages[2] = "$Debug"
 	EndIf
 	If (a_version >= 3 && CurrentVersion < 3)
 		Debug.Trace(self + ": Updating script to version " + 3)
-		setPages()
 		sRespawnPoints = New String[8]
 		bRespawnPointsFlags = New Bool[7]
 		sRespawnPoints[0] = "$Whiterun"
@@ -1712,7 +1713,6 @@ Event OnVersionUpdate(int a_version)
 	EndIf
 	If (a_version >= 5 && CurrentVersion < 5)
 		Debug.Trace(self + ": Updating script to version " + 5)
-		setPages()
 		sRespawnPoints = New String[9]
 		bRespawnPointsFlags = New Bool[8]
 		sRespawnPoints[0] = "$Whiterun"
@@ -1826,10 +1826,21 @@ Event OnVersionUpdate(int a_version)
 	EndIf
 	If (a_version >= 27 && CurrentVersion < 27)
 		Debug.Trace(self + ": Updating script to version "  + 27)
-		setArrays()
 		DetachMarker2.Enable()
 		DetachMarker2.MoveTo(PlayerRef)
 	EndIf
+	If (a_version >= 29 && CurrentVersion < 29)
+		Debug.Trace(self + ": Updating script to version "  + 29)
+		iTotalBleedOut = ReviveScript.iTotalBleedOut
+		iTotalRespawn = ReviveScript.iTotalRespawn
+		iTotalRevives = ReviveScript.iTotalRevives
+		iRevivesByTrade = ReviveScript.iRevivesByTrade
+		iRevivesByRevivalSpell = ReviveScript.iRevivesByRevivalSpell
+		iRevivesBySacrificeSpell = ReviveScript.iRevivesBySacrificeSpell
+		iRevivesByPotion = ReviveScript.iRevivesByPotion
+		iDestroyedItems = ReviveScript.iDestroyedItems
+	EndIf
+	setArrays()
 EndEvent
 
 Function setRespawnPoints()

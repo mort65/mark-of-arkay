@@ -52,7 +52,7 @@ Objectreference Property CellLoadMarker2 Auto
 ObjectReference Property LocationMarker2 Auto
 Objectreference Property LostItemsMarker Auto
 ObjectReference Property LostItemsChest Auto
-ObjectReference Property EquippedItemsChest Auto
+ObjectReference Property EquippedItemsChest Auto ;;
 ObjectReference Property ValuableItemsChest Auto
 Cell Property DefaultCell Auto
 Bool Property bIsItemsRemoved Auto
@@ -76,6 +76,7 @@ Int Property iRevivesBySacrificeSpell = 0 Auto Hidden;
 Int Property iRevivesByPotion = 0 Auto Hidden;
 Int Property iDestroyedItems = 0 Auto Hidden;
 Form[] Property Equipment Auto Hidden
+Form[] Property EquippedQuestItems Auto Hidden
 ObjectReference[] Property ExcludedMarkerList Auto Hidden
 Location Property PaleHoldLocation  Auto
 Location Property HjaalmarchHoldLocation  Auto
@@ -111,6 +112,8 @@ Race Property DLC1VampireBeastRace Auto
 GlobalVariable Property TimeScale Auto
 Float Property DefaultTimeScale = 20.0 Auto Hidden
 Topic Property DeathTopic Auto
+Form Property LeftHandEquippedItem Auto Hidden
+Form Property RightHandEquipedItem Auto Hidden
 
 Bool bCidhnaJail
 Bool bDidItemsRemoved
@@ -131,25 +134,16 @@ Float fDragonSoulCount
 Int iSeptimCount
 Int iRespawnPointsCount
 String strRemovedItem
-Form LeftHandEquippedItem
-Form RightHandEquipedItem
 bool bInBleedout
 Int iRemovableItems
 
 State Bleedout1
 	Event OnPlayerLoadGame()
 	EndEvent
+	
 	Event OnObjectUnequipped(Form akBaseObject, ObjectReference akReference)
-		If akBaseObject as Armor
-			If Equipment.find(akBaseObject) < 0
-				Int iEmpty = Equipment.Find(None)
-				If iEmpty > -1
-					Equipment[iEmpty] = akBaseObject
-				EndIf
-			EndIf
-			PlayerRef.RemoveItem(akBaseObject, 1, True, EquippedItemsChest)
-		EndIf
 	EndEvent
+	
 	Event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
 	EndEvent
 EndState
@@ -157,17 +151,10 @@ EndState
 State Bleedout2
 	Event OnPlayerLoadGame()
 	EndEvent
+	
 	Event OnObjectUnequipped(Form akBaseObject, ObjectReference akReference)
-		If akBaseObject as Armor
-			If Equipment.find(akBaseObject) < 0
-				Int iEmpty = Equipment.Find(None)
-				If iEmpty > -1
-					Equipment[iEmpty] = akBaseObject
-				EndIf
-			EndIf
-			PlayerRef.RemoveItem(akBaseObject, 1, True, EquippedItemsChest)
-		EndIf
 	EndEvent
+	
 	Event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
 	EndEvent
 EndState
@@ -221,7 +208,7 @@ Event OnSleepStart(float afSleepStartTime, float afDesiredSleepEndTime)
 	EndIf
 EndEvent
 
-Event OnObjectEquipped(Form akBaseObject, ObjectReference akReference) ; using equiped spells as workaround a bug which happens when player goes to bleedout while fighting with spell
+Event OnObjectEquipped(Form akBaseObject, ObjectReference akReference) ; using equipped spells as workaround a bug which happens when player goes to bleedout while fighting with spell
 	If ( !PlayerRef.IsBleedingOut() && GetState() == "")
 		Utility.Wait(0.5)
 		If PlayerRef.GetEquippedItemType(0) != 0
@@ -894,7 +881,8 @@ Function RevivePlayer(Bool bRevive)
 				fLostSouls = 0.0
 			EndIf
 			If iRemovableItems != 0
-				Equipment = New Form[31]
+				Equipment = New Form[34]
+				EquippedQuestItems = New Form[34]
 				If iRemovableItems == 1
 					RemoveTradbleItems(PlayerRef)
 				Elseif iRemovableItems == 2
@@ -1018,7 +1006,6 @@ Function RevivePlayer(Bool bRevive)
 				PlayerRef.SheatheWeapon() ;Sheathe the drawn weapon.
 			EndIf
 			PlayerRef.DispelAllSpells()
-			;PassTime(6.0)
 			Utility.Wait(6.0)
 			PlayerRef.ClearExtraArrows()
 			RefreshFace()
@@ -1206,15 +1193,15 @@ Int Function iGetRandomWithExclusionArray( Int iFrom, Int iTo, Bool[] iFlagArray
 	Return iRandom
 EndFunction
 
-Function PassTime(Float fRealTime)
+Function PassTime(Float fGameHours,Float fRealSecs)
 	If ConfigMenu.fRespawnTimeSlider > 0.0
 		DefaultTimeScale = TimeScale.GetValue()
-		TimeScale.SetValue( (3600.0 / fRealTime) * ConfigMenu.fRespawnTimeSlider )
-		Utility.Wait(fRealTime)
+		TimeScale.SetValue( (3600.0 / fRealSecs) * fGameHours )
+		Utility.Wait(fRealSecs)
 		TimeScale.SetValue(DefaultTimeScale)
 		PlayerRef.StopCombatalarm()
 	Else
-		Utility.Wait(fRealTime)
+		Utility.Wait(fRealSecs)
 	EndIf
 EndFunction
 
@@ -1404,54 +1391,6 @@ Function RemoveTradbleItems (Actor ActorRef)
 	If ( ActorRef.GetActorValue("DragonSouls") > 0 ) && ConfigMenu.bIsDragonSoulEnabled
 		fLostSouls += ActorRef.GetActorValue("DragonSouls")
 		PlayerRef.ModActorValue("DragonSouls", -PlayerRef.GetActorValue("DragonSouls"))
-	EndIf
-EndFunction
-
-Function RemoveUnequippedItems(Actor ActorRef)
-	Bool LeftHand = False
-	Bool RightHand = False
-	If RightHandEquipedItem && !(RightHandEquipedItem As Spell) 
-		ActorRef.RemoveItem(RightHandEquipedItem, 1, True, EquippedItemsChest)
-		RightHand = True
-	EndIf
-	If LeftHandEquippedItem && !(LeftHandEquippedItem As Spell) && !( LeftHandEquippedItem == RightHandEquipedItem )
-		ActorRef.RemoveItem(LeftHandEquippedItem, 1, True, EquippedItemsChest)
-		LeftHand = True
-	EndIf
-	Int i = 30
-	While i < 61
-		ActorRef.unequipItemSlot(i)
-		i += 1
-	EndWhile
-	Utility.Wait(0.2)
-	ActorRef.RemoveAllItems(LostItemsChest, True)
-	EquippedItemsChest.RemoveAllItems(ActorRef, True, True)
-	If !ConfigMenu.bRespawnNaked
-		If RightHand 
-			If	ActorRef.GetItemCount(RightHandEquipedItem) > 0
-				ActorRef.EquipItem(RightHandEquipedItem, False, True)
-				Utility.Wait(0.2)
-			EndIf
-		ElseIf LeftHand && !(RightHandEquipedItem As Spell)
-			If	ActorRef.GetItemCount(LeftHandEquippedItem) > 0
-				ActorRef.EquipItem(LeftHandEquippedItem, False, True)
-				Utility.Wait(0.2)
-			EndIf
-		EndIf
-		;If LeftHand
-		;	ActorRef.EquipItemEx(LeftHandEquippedItem,2,False,True) ;CTD?
-		;	Utility.Wait(0.2)
-		;EndIf
-		i = Equipment.length
-		While i > 0
-			i -= 1
-			If Equipment[i] As Armor
-				If ActorRef.GetItemCount(Equipment[i]) > 0
-					ActorRef.EquipItem(Equipment[i],False, True)
-					Utility.Wait(0.2)
-				EndIf
-			EndIf
-		EndWhile
 	EndIf
 EndFunction
 
@@ -1701,6 +1640,43 @@ Int Function iHasHealingPotion()
 		Return -1
 EndFunction
 
+Function RemoveUnequippedItems(Actor ActorRef)
+	Int iEmpty
+	Bool RightHand = ( RightHandEquipedItem && !( RightHandEquipedItem As Spell ) )
+	Bool LeftHand =  ( LeftHandEquippedItem && !( LeftHandEquippedItem As Spell ) && !( LeftHandEquippedItem == RightHandEquipedItem ) )
+	RegisterEquipments(ActorRef,RightHand,LeftHand)
+	ValuableItemsChest.RemoveAllItems()
+	ActorRef.RemoveAllItems(ValuableItemsChest, True,False)
+	TransferItems(Equipment,ValuableItemsChest,ActorRef As ObjectReference)
+	If !ConfigMenu.bRespawnNaked
+		If RightHand 
+			If	ActorRef.GetItemCount(RightHandEquipedItem) > 0 && !ActorRef.IsEquipped(RightHandEquipedItem)
+				ActorRef.EquipItem(RightHandEquipedItem, False, True)
+				Utility.Wait(0.2)
+			EndIf
+		ElseIf LeftHand && !(RightHandEquipedItem As Spell)
+			If	ActorRef.GetItemCount(LeftHandEquippedItem) > 0 && !ActorRef.IsEquipped(LeftHandEquippedItem)
+				ActorRef.EquipItem(LeftHandEquippedItem, False, True)
+				Utility.Wait(0.2)
+			EndIf
+		EndIf
+		;If LeftHand
+		;	ActorRef.EquipItemEx(LeftHandEquippedItem,2,False,True) ;CTD?
+		;	Utility.Wait(0.2)
+		;EndIf
+		Int i = Equipment.length
+		While i > 0
+			i -= 1
+			If Equipment[i] As Armor
+				If ActorRef.GetItemCount(Equipment[i]) > 0 && !ActorRef.IsEquipped(Equipment[i])
+					ActorRef.EquipItem(Equipment[i],False, True)
+					Utility.Wait(0.2)
+				EndIf
+			EndIf
+		EndWhile
+	EndIf
+EndFunction
+
 Function RemoveValuableItems(Actor ActorRef)
 	If ActorRef.GetItemCount(Gold001) > 499
 		ActorRef.RemoveItem(Gold001, ActorRef.GetItemCount(Gold001), True, LostItemsChest)
@@ -1719,52 +1695,56 @@ Function RemoveValuableItems(Actor ActorRef)
 		ActorRef.RemoveItem(GrandFilledGem, ActorRef.GetItemCount(GrandFilledGem), True, LostItemsChest)
 		Return
 	EndIf
+	Bool RightHand = ( RightHandEquipedItem && !( RightHandEquipedItem As Spell ) )
+	Bool LeftHand =  ( LeftHandEquippedItem && !( LeftHandEquippedItem As Spell ) && !( LeftHandEquippedItem == RightHandEquipedItem ) )
 	Bool bValuable = False
-	Bool LeftHand = False
-	Bool RightHand = False
 	Int iSum = 0
-	If RightHandEquipedItem && !(RightHandEquipedItem As Spell) 
-		ActorRef.RemoveItem(RightHandEquipedItem, 1, True, EquippedItemsChest)
-		RightHand = True
-	EndIf
-	If LeftHandEquippedItem && !(LeftHandEquippedItem As Spell) && !( LeftHandEquippedItem == RightHandEquipedItem )
-		ActorRef.RemoveItem(LeftHandEquippedItem, 1, True, EquippedItemsChest)
-		LeftHand = True
-	EndIf
-	Int itemIndex = 30
-	While itemIndex < 61
-		ActorRef.unequipItemSlot(itemIndex)
-		itemIndex += 1
-	EndWhile
-	Utility.Wait(0.2)
+	RegisterEquipments(ActorRef,RightHand,LeftHand)
 	ValuableItemsChest.RemoveAllItems()
-	ActorRef.RemoveAllItems(ValuableItemsChest, True)
-	EquippedItemsChest.RemoveAllItems(ActorRef, True, True)
+	ActorRef.RemoveAllItems(ValuableItemsChest,True,False)
+	Int iIndex = ActorRef.GetNumItems()
+	Bool bBreak = False
+	Int iEmpty
+	While ( iIndex > 0 ) && !bBreak
+		iIndex -= 1
+		Form kItem = ActorRef.GetNthForm(iIndex)
+		If ( Equipment.Find(kItem) > -1 ) ;Finding quest items that were equipped by player
+			If ( EquippedQuestItems.Find(kItem) < 0 ) 
+				iEmpty = EquippedQuestItems.Find(None)
+				If iEmpty > -1
+					EquippedQuestItems[iEmpty] = kItem
+				Else
+					bBreak = True
+				EndIf
+			EndIf
+		EndIf
+	EndWhile
+	TransferItems(Equipment,ValuableItemsChest,ActorRef As ObjectReference)
 	Int iTotal = ValuableItemsChest.GetNumItems()
 	If iTotal > 40
 		iTotal = Utility.RandomInt(40, iTotal)
 	EndIf
-	Int iIndex = iTotal
+	iIndex = iTotal
 	If iIndex != 0
 		Form kForm
-		Bool bBreak = False
+		bBreak = False
 		While ( iIndex > 0 ) && ( iTotal - iIndex ) < 40 && !bBreak
 			iIndex -= 1
-			If bIsTypeLegit( ValuableItemsChest.GetNthForm( iIndex )) 
-				If	( ( !KForm ) || ( ( KForm.GetGoldValue() * ValuableItemsChest.GetItemCount(kForm) ) <  ( ValuableItemsChest.GetNthForm(iIndex).GetGoldValue() * ValuableItemsChest.GetItemCount( ValuableItemsChest.GetNthForm( iIndex )))))
-					kForm = ValuableItemsChest.GetNthForm(iIndex)
-					If KForm.GetGoldValue()  > 499
+			Form kItem = ValuableItemsChest.GetNthForm( iIndex )
+			If bIsTypeLegit(kItem) 
+				If	( ( !KForm ) || ( ( KForm.GetGoldValue() * ValuableItemsChest.GetItemCount(kForm) ) <  ( kItem.GetGoldValue() * ValuableItemsChest.GetItemCount(kItem))))
+					kForm = kItem
+					If KForm.GetGoldValue() > 499
 						bBreak = True
 					EndIf
 				EndIf
 				If iSum < 500
-					iSum = ( iSum + ( ValuableItemsChest.GetNthForm(iIndex).GetGoldValue() * ValuableItemsChest.GetItemCount( ValuableItemsChest.GetNthForm( iIndex ))))
+					iSum = ( iSum + ( kItem.GetGoldValue() * ValuableItemsChest.GetItemCount(kItem)))
 				EndIf
 			EndIf
 		Endwhile
 		Form VItem = kForm
 		Form Ktemp
-		Int iEmpty
 		If KForm && ( VItemArr.Find(KForm) < 0 )
 			iEmpty = VItemArr.Find(None)
 			If iEmpty > -1
@@ -1813,12 +1793,13 @@ Function RemoveValuableItems(Actor ActorRef)
 			While ( c > 0 ) && ( ( iTotal - i ) < 60 ) && !bValuable
 				c -= 1
 				i -= 1
-				If bIsTypeLegit( ValuableItemsChest.GetNthForm( c ) )
-					If ( ValuableItemsChest.GetNthForm( c ).GetGoldValue() * ValuableItemsChest.GetItemCount( ValuableItemsChest.GetNthForm( c ))) > 499																
-						ValuableItemsChest.RemoveItem(ValuableItemsChest.GetNthForm(c), ValuableItemsChest.GetItemCount(ValuableItemsChest.GetNthForm(c)), True, LostItemsChest )
+				Form kItem = ValuableItemsChest.GetNthForm( c )
+				If bIsTypeLegit(kItem)
+					If ( kItem.GetGoldValue() * ValuableItemsChest.GetItemCount( kItem)) > 499																
+						ValuableItemsChest.RemoveItem(kItem, ValuableItemsChest.GetItemCount(kItem), True, LostItemsChest )
 						bValuable = True
 					ElseIf iSum < 500
-						iSum = ( iSum + ( ValuableItemsChest.GetNthForm( c ).GetGoldValue() * ValuableItemsChest.GetItemCount( ValuableItemsChest.GetNthForm( c ))))
+						iSum = ( iSum + ( kItem.GetGoldValue() * ValuableItemsChest.GetItemCount(kItem)))
 					EndIf
 				EndIf
 				If bOverlap
@@ -1854,40 +1835,23 @@ Function RemoveValuableItems(Actor ActorRef)
 				While ( iItem > 0 ) && !bValuable
 					iItem -= 1
 					If Equipment[iItem]
-						If ( Equipment[iItem] && bIsTypeLegit(Equipment[iItem]) && ActorRef.GetItemCount(Equipment[iItem]) > 0 && (( Equipment[iItem].GetGoldValue() + iSum ) > 499 ))
+						If ( ( EquippedQuestItems.Find(Equipment[iItem]) < 0 ) && bIsTypeLegit(Equipment[iItem]) && ActorRef.GetItemCount(Equipment[iItem]) > 0 && (( Equipment[iItem].GetGoldValue() + iSum ) > 499 ))
 							ActorRef.RemoveItem(Equipment[iItem], 1, True, LostItemsChest)
 							bValuable = True
 						EndIf
 					EndIf
 				EndWhile
 				If !bValuable
-					If LeftHand && ( ActorRef.GetItemCount(LeftHandEquippedItem) > 0 ) && bIsTypeLegit(LeftHandEquippedItem) && ( ( LeftHandEquippedItem.GetGoldValue() + iSum ) > 499 )
-						ActorRef.RemoveItem(LeftHandEquippedItem, 1, True, LostItemsChest)
-					ElseIf RightHand && ( ActorRef.GetItemCount(RightHandEquipedItem) > 0 ) && bIsTypeLegit(RightHandEquipedItem) && ( ( RightHandEquipedItem.GetGoldValue() + iSum ) > 499 )
-						ActorRef.RemoveItem(RightHandEquipedItem, 1, True, LostItemsChest)
-					Else
-						iItem = Equipment.Length
-						While (( iItem > 0 ) && ( iSum < 500 ))
-							iItem -= 1
-							If Equipment[iItem]
-								If ( Equipment[iItem] && bIsTypeLegit(Equipment[iItem]) && ( ActorRef.GetItemCount(Equipment[iItem]) > 0 ))
-									iSum = iSum + Equipment[iItem].GetGoldValue()
-									ActorRef.RemoveItem(Equipment[iItem], 1, True, LostItemsChest)
-								EndIf
-							EndIf
-						EndWhile
-						If iSum < 500
-							If LeftHand && ( ActorRef.GetItemCount(LeftHandEquippedItem) > 0 ) && bIsTypeLegit(LeftHandEquippedItem)
-								iSum = iSum + LeftHandEquippedItem.GetGoldValue()
-								ActorRef.RemoveItem(LeftHandEquippedItem, 1, True, LostItemsChest)
+					iItem = Equipment.Length
+					While (( iItem > 0 ) && ( iSum < 500 ))
+						iItem -= 1
+						If Equipment[iItem]
+							If ( ( EquippedQuestItems.Find(Equipment[iItem]) < 0 ) && bIsTypeLegit(Equipment[iItem]) && ( ActorRef.GetItemCount(Equipment[iItem]) > 0 ))
+								iSum = iSum + Equipment[iItem].GetGoldValue()
+								ActorRef.RemoveItem(Equipment[iItem], 1, True, LostItemsChest)
 							EndIf
 						EndIf
-						If iSum < 500
-							If RightHand && ( ActorRef.GetItemCount(RightHandEquipedItem) > 0 ) && bIsTypeLegit(RightHandEquipedItem)
-								ActorRef.RemoveItem(RightHandEquipedItem, 1, True, LostItemsChest)
-							EndIf
-						EndIf
-					EndIf
+					EndWhile
 				EndIf
 			EndIf
 		EndIf
@@ -1898,51 +1862,34 @@ Function RemoveValuableItems(Actor ActorRef)
 		While ( iItem > 0 ) && !bValuable
 			iItem -= 1
 			If Equipment[iItem]
-				If ( Equipment[iItem] && bIsTypeLegit(Equipment[iItem]) && ActorRef.GetItemCount(Equipment[iItem]) > 0 && ( Equipment[iItem].GetGoldValue() > 499 ))
+				If ( ( EquippedQuestItems.Find(Equipment[iItem]) < 0 ) && Equipment[iItem] && bIsTypeLegit(Equipment[iItem]) && ActorRef.GetItemCount(Equipment[iItem]) > 0 && ( Equipment[iItem].GetGoldValue() > 499 ))
 					ActorRef.RemoveItem(Equipment[iItem], 1, True, LostItemsChest)
 					bValuable = True
 				EndIf
 			EndIf
 		EndWhile
 		If !bValuable
-			If LeftHand && ( ActorRef.GetItemCount(LeftHandEquippedItem) > 0 ) && bIsTypeLegit(LeftHandEquippedItem) && ( LeftHandEquippedItem.GetGoldValue() > 499 )
-				ActorRef.RemoveItem(LeftHandEquippedItem, 1, True, LostItemsChest)
-			ElseIf RightHand && ( ActorRef.GetItemCount(RightHandEquipedItem) > 0 ) && bIsTypeLegit(RightHandEquipedItem) && ( RightHandEquipedItem.GetGoldValue() > 499 )
-				ActorRef.RemoveItem(RightHandEquipedItem, 1, True, LostItemsChest)
-			Else
-				iItem = Equipment.Length
-				While (( iItem > 0 ) && ( iSum < 500 ))
-					iItem -= 1
-					If Equipment[iItem]
-						If ( Equipment[iItem] && bIsTypeLegit(Equipment[iItem]) && ( ActorRef.GetItemCount(Equipment[iItem]) > 0 ))
-							iSum = iSum + Equipment[iItem].GetGoldValue()
-							ActorRef.RemoveItem(Equipment[iItem], 1, True, LostItemsChest)
-						EndIf
-					EndIf
-				EndWhile
-				If iSum < 500
-					If LeftHand && ( ActorRef.GetItemCount(LeftHandEquippedItem) > 0 ) && bIsTypeLegit(LeftHandEquippedItem)
-						iSum = iSum + LeftHandEquippedItem.GetGoldValue()
-						ActorRef.RemoveItem(LeftHandEquippedItem, 1, True, LostItemsChest)
+			iItem = Equipment.Length
+			While (( iItem > 0 ) && ( iSum < 500 ))
+				iItem -= 1
+				If Equipment[iItem]
+					If ( ( EquippedQuestItems.Find( Equipment[iItem]) < 0 ) && bIsTypeLegit(Equipment[iItem]) && ( ActorRef.GetItemCount(Equipment[iItem]) > 0 ))
+						iSum = iSum + Equipment[iItem].GetGoldValue()
+						ActorRef.RemoveItem(Equipment[iItem], 1, True, LostItemsChest)
 					EndIf
 				EndIf
-				If iSum < 500
-					If RightHand && ( ActorRef.GetItemCount(RightHandEquipedItem) > 0 ) && bIsTypeLegit(RightHandEquipedItem)
-						ActorRef.RemoveItem(RightHandEquipedItem, 1, True, LostItemsChest)
-					EndIf
-				EndIf
-			EndIf
+			EndWhile
 		EndIf
 	EndIf
 	Utility.Wait(0.1)
 	If !ConfigMenu.bRespawnNaked
 		If RightHand 
-			If	ActorRef.GetItemCount(RightHandEquipedItem) > 0
+			If	ActorRef.GetItemCount(RightHandEquipedItem) > 0 && !ActorRef.IsEquipped(RightHandEquipedItem)
 				ActorRef.EquipItem(RightHandEquipedItem, False, True)
 				Utility.Wait(0.2)
 			EndIf
 		ElseIf LeftHand && !(RightHandEquipedItem As Spell)
-			If	ActorRef.GetItemCount(LeftHandEquippedItem) > 0
+			If	ActorRef.GetItemCount(LeftHandEquippedItem) > 0 && !ActorRef.IsEquipped(LeftHandEquippedItem)
 				ActorRef.EquipItem(LeftHandEquippedItem, False, True)
 				Utility.Wait(0.2)
 			EndIf
@@ -1951,11 +1898,11 @@ Function RemoveValuableItems(Actor ActorRef)
 		;	ActorRef.EquipItemEx(LeftHandEquippedItem, 2, False, True)
 		;	Utility.Wait(0.2)
 		;EndIf
-		itemIndex = Equipment.Length
+		Int itemIndex = Equipment.Length
 		While itemIndex > 0
 			itemIndex -= 1
 			If Equipment[itemIndex] As Armor
-				If ActorRef.GetItemCount(Equipment[itemIndex]) > 0
+				If ActorRef.GetItemCount(Equipment[itemIndex]) > 0 && !ActorRef.IsEquipped(Equipment[itemIndex])
 					ActorRef.EquipItem(Equipment[itemIndex],False, True)
 					Utility.Wait(0.2)
 				EndIf
@@ -1967,6 +1914,8 @@ EndFunction
 Function RemoveValuableItemsGreedy(Actor ActorRef)
 	Bool bFound1 = False
 	Bool bFound = False
+	Bool RightHand = ( RightHandEquipedItem && !( RightHandEquipedItem As Spell ) )
+	Bool LeftHand =  ( LeftHandEquippedItem && !( LeftHandEquippedItem As Spell ) && !( LeftHandEquippedItem == RightHandEquipedItem ) )
 	If ActorRef.GetItemCount(Gold001) > 0
 		If ActorRef.GetItemCount(Gold001) > 499
 			bFound1 = True
@@ -1990,35 +1939,37 @@ Function RemoveValuableItemsGreedy(Actor ActorRef)
 		ActorRef.RemoveItem(GrandFilledGem, ActorRef.GetItemCount(GrandFilledGem), True, LostItemsChest)
 		bFound1 = True
 	EndIf
-	Bool LeftHand = False
-	Bool RightHand = False
-	If RightHandEquipedItem && !(RightHandEquipedItem As Spell) 
-		ActorRef.RemoveItem(RightHandEquipedItem, 1, True, EquippedItemsChest)
-		RightHand = True
-	EndIf
-	If LeftHandEquippedItem && !(LeftHandEquippedItem As Spell) && !( LeftHandEquippedItem == RightHandEquipedItem )
-		ActorRef.RemoveItem(LeftHandEquippedItem, 1, True, EquippedItemsChest)
-		LeftHand = True
-	EndIf
-	Int itemIndex = 30
-	While itemIndex < 61
-		ActorRef.unequipItemSlot(itemIndex)
-		itemIndex += 1
-	EndWhile
-	Utility.Wait(0.2)
+	RegisterEquipments(ActorRef,RightHand,LeftHand)
 	ValuableItemsChest.RemoveAllItems()
-	ActorRef.RemoveAllItems(ValuableItemsChest, True)
-	EquippedItemsChest.RemoveAllItems(ActorRef, True, True)
+	ActorRef.RemoveAllItems(ValuableItemsChest, True, False)
+	Int iIndex = ActorRef.GetNumItems()
+	Bool bBreak = False
+	Int iEmpty
+	Form kItem
+	While ( iIndex > 0 ) && !bBreak
+		iIndex -= 1
+		kItem = ActorRef.GetNthForm(iIndex)
+		If ( Equipment.Find(kItem) > -1 ) ;Finding quest items that were equipped by player
+			If ( EquippedQuestItems.Find(kItem) < 0 ) 
+				iEmpty = EquippedQuestItems.Find(None)
+				If iEmpty > -1
+					EquippedQuestItems[iEmpty] = kItem
+				Else
+					bBreak = True
+				EndIf
+			EndIf
+		EndIf
+	EndWhile
+	TransferItems(Equipment,ValuableItemsChest,ActorRef As ObjectReference)
 	Int iTotal = ValuableItemsChest.GetNumItems()
 	If iTotal > 40
 		iTotal = Utility.RandomInt(40, iTotal)
 	EndIf
-	Int iIndex = iTotal
+	iIndex = iTotal
 	Int iSum = 0
 	If iIndex != 0
 		Form kForm
 		Form VItem
-		Int iEmpty
 		Int iIndex1
 		Form Ktemp
 		iIndex1 = VItemArr.Length
@@ -2034,9 +1985,10 @@ Function RemoveValuableItemsGreedy(Actor ActorRef)
 		Endwhile
 		While  ( iIndex > 0 ) && ( iTotal - iIndex ) < 40
 			iIndex -= 1
-			If  bIsTypeLegit( ValuableItemsChest.GetNthForm( iIndex )) 
-				If ( ValuableItemsChest.GetNthForm(iIndex).GetGoldValue() * ValuableItemsChest.GetItemCount( ValuableItemsChest.GetNthForm( iIndex ))) > 499
-					kForm = ValuableItemsChest.GetNthForm(iIndex)
+			kItem = ValuableItemsChest.GetNthForm( iIndex )
+			If  bIsTypeLegit(kItem) 
+				If (kItem.GetGoldValue() * ValuableItemsChest.GetItemCount(kItem)) > 499
+					kForm = kItem
 					VItem = KForm
 					bFound = True
 					If ( VItemArr.Find(kForm) < 0 )
@@ -2058,7 +2010,7 @@ Function RemoveValuableItemsGreedy(Actor ActorRef)
 					ValuableItemsChest.RemoveItem(VItem, ValuableItemsChest.GetItemCount(VItem), True, LostItemsChest )
 				ElseIf !bFound
 					If iSum < 500
-						iSum += (ValuableItemsChest.GetNthForm(iIndex).GetGoldValue() * ValuableItemsChest.GetItemCount(ValuableItemsChest.GetNthForm( iIndex ))) 
+						iSum += (kItem.GetGoldValue() * ValuableItemsChest.GetItemCount(kItem)) 
 					EndIf
 				EndIf
 			EndIf
@@ -2083,13 +2035,14 @@ Function RemoveValuableItemsGreedy(Actor ActorRef)
 				While ( c > 0 ) && ( ( iTotal - i ) < 60 )
 					c -= 1
 					i -= 1
-					If bIsTypeLegit( ValuableItemsChest.GetNthForm(c))
-						If ( ValuableItemsChest.GetNthForm(c).GetGoldValue() * ValuableItemsChest.GetItemCount( ValuableItemsChest.GetNthForm( c ))) > 499																	
-							ValuableItemsChest.RemoveItem(ValuableItemsChest.GetNthForm(c), ValuableItemsChest.GetItemCount(ValuableItemsChest.GetNthForm(c)), True, LostItemsChest )
+					kItem = ValuableItemsChest.GetNthForm(c)
+					If bIsTypeLegit(kItem)
+						If (kItem.GetGoldValue() * ValuableItemsChest.GetItemCount(kItem)) > 499																	
+							ValuableItemsChest.RemoveItem(kItem, ValuableItemsChest.GetItemCount(kItem), True, LostItemsChest )
 							bFound = True
 						ElseIf !bFound
 							If iSum < 500
-								iSum += (ValuableItemsChest.GetNthForm(c).GetGoldValue() * ValuableItemsChest.GetItemCount(ValuableItemsChest.GetNthForm(c)))
+								iSum += (kItem.GetGoldValue() * ValuableItemsChest.GetItemCount(kItem))
 							EndIf
 						EndIf
 					EndIf
@@ -2127,40 +2080,23 @@ Function RemoveValuableItemsGreedy(Actor ActorRef)
 				While ( iItem > 0 ) && !bFound
 					iItem -= 1
 					If Equipment[iItem]
-						If ( Equipment[iItem] && bIsTypeLegit(Equipment[iItem]) && ActorRef.GetItemCount(Equipment[iItem]) > 0 && ( ( Equipment[iItem].GetGoldValue() + iSum ) > 499 ))
+						If ( ( EquippedQuestItems.Find(Equipment[iItem]) < 0 ) && bIsTypeLegit(Equipment[iItem]) && ( ActorRef.GetItemCount(Equipment[iItem]) > 0 ) && ( ( Equipment[iItem].GetGoldValue() + iSum ) > 499 ))
 							ActorRef.RemoveItem(Equipment[iItem], 1, True, LostItemsChest)
 							bFound = True
 						EndIf
 					EndIf
 				EndWhile
 				If !bFound
-					If LeftHand && ( ActorRef.GetItemCount(LeftHandEquippedItem) > 0 ) && bIsTypeLegit(LeftHandEquippedItem) && ( ( LeftHandEquippedItem.GetGoldValue() + iSum ) > 499 )
-						ActorRef.RemoveItem(LeftHandEquippedItem, 1, True, LostItemsChest)
-					ElseIf RightHand && ( ActorRef.GetItemCount(RightHandEquipedItem) > 0 ) && bIsTypeLegit(RightHandEquipedItem) && ( ( RightHandEquipedItem.GetGoldValue() + iSum ) > 499 )
-						ActorRef.RemoveItem(RightHandEquipedItem, 1, True, LostItemsChest)
-					Else
-						iItem = Equipment.Length
-						While (( iItem > 0 ) && ( iSum < 500 ))
-							iItem -= 1
-							If Equipment[iItem]
-								If ( Equipment[iItem] && bIsTypeLegit(Equipment[iItem]) && ( ActorRef.GetItemCount(Equipment[iItem]) > 0 ))
-									iSum = iSum + Equipment[iItem].GetGoldValue()
-									ActorRef.RemoveItem(Equipment[iItem], 1, True, LostItemsChest)
-								EndIf
-							EndIf
-						EndWhile
-						If iSum < 500
-							If LeftHand && ( ActorRef.GetItemCount(LeftHandEquippedItem) > 0 ) && bIsTypeLegit(LeftHandEquippedItem)
-								iSum = iSum + LeftHandEquippedItem.GetGoldValue()
-								ActorRef.RemoveItem(LeftHandEquippedItem, 1, True, LostItemsChest)
+					iItem = Equipment.Length
+					While (( iItem > 0 ) && ( iSum < 500 ))
+						iItem -= 1
+						If Equipment[iItem]
+							If ( Equipment[iItem] && ( EquippedQuestItems.Find(Equipment[iItem]) < 0 ) && bIsTypeLegit(Equipment[iItem]) && ( ActorRef.GetItemCount(Equipment[iItem]) > 0 ))
+								iSum = iSum + Equipment[iItem].GetGoldValue()
+								ActorRef.RemoveItem(Equipment[iItem], 1, True, LostItemsChest)
 							EndIf
 						EndIf
-						If iSum < 500
-							If RightHand && ( ActorRef.GetItemCount(RightHandEquipedItem) > 0 ) && bIsTypeLegit(RightHandEquipedItem)
-								ActorRef.RemoveItem(RightHandEquipedItem, 1, True, LostItemsChest)								
-							EndIf
-						EndIf
-					EndIf
+					EndWhile
 				EndIf
 			EndIf
 		EndIf
@@ -2171,51 +2107,34 @@ Function RemoveValuableItemsGreedy(Actor ActorRef)
 		While ( iItem > 0 ) && !bFound
 			iItem -= 1
 			If Equipment[iItem]
-				If ( Equipment[iItem] && bIsTypeLegit(Equipment[iItem]) && ActorRef.GetItemCount(Equipment[iItem]) > 0 && ( Equipment[iItem].GetGoldValue() > 499 ))
+				If ( ( EquippedQuestItems.Find(Equipment[iItem]) < 0 ) && bIsTypeLegit(Equipment[iItem]) && ActorRef.GetItemCount(Equipment[iItem]) > 0 && ( Equipment[iItem].GetGoldValue() > 499 ))
 					ActorRef.RemoveItem(Equipment[iItem], 1, True, LostItemsChest)
 					bFound = True
 				EndIf
 			EndIf
 		EndWhile
 		If !bFound
-			If LeftHand && ( ActorRef.GetItemCount(LeftHandEquippedItem) > 0 ) && bIsTypeLegit(LeftHandEquippedItem) && ( LeftHandEquippedItem.GetGoldValue() > 499 )
-				ActorRef.RemoveItem(LeftHandEquippedItem, 1, True, LostItemsChest)
-			ElseIf RightHand && ( ActorRef.GetItemCount(RightHandEquipedItem) > 0 ) && bIsTypeLegit(RightHandEquipedItem) && ( RightHandEquipedItem.GetGoldValue() > 499 )
-				ActorRef.RemoveItem(RightHandEquipedItem, 1, True, LostItemsChest)
-			Else
-				iItem = Equipment.Length
-				While (( iItem > 0 ) && ( iSum < 500 ))
-					iItem -= 1
-					If Equipment[iItem]
-						If ( Equipment[iItem] && bIsTypeLegit(Equipment[iItem]) && ( ActorRef.GetItemCount(Equipment[iItem]) > 0 ))
-							iSum = iSum + Equipment[iItem].GetGoldValue()
-							ActorRef.RemoveItem(Equipment[iItem], 1, True, LostItemsChest)
-						EndIf
-					EndIf
-				EndWhile
-				If iSum < 500
-					If LeftHand && ( ActorRef.GetItemCount(LeftHandEquippedItem) > 0 ) && bIsTypeLegit(LeftHandEquippedItem)
-						iSum = iSum + LeftHandEquippedItem.GetGoldValue()
-						ActorRef.RemoveItem(LeftHandEquippedItem, 1, True, LostItemsChest)
+			iItem = Equipment.Length
+			While (( iItem > 0 ) && ( iSum < 500 ))
+				iItem -= 1
+				If Equipment[iItem]
+					If ( ( EquippedQuestItems.Find(Equipment[iItem]) < 0 ) && bIsTypeLegit(Equipment[iItem]) && ( ActorRef.GetItemCount(Equipment[iItem]) > 0 ))
+						iSum = iSum + Equipment[iItem].GetGoldValue()
+						ActorRef.RemoveItem(Equipment[iItem], 1, True, LostItemsChest)
 					EndIf
 				EndIf
-				If iSum < 500
-					If RightHand && ( ActorRef.GetItemCount(RightHandEquipedItem) > 0 ) && bIsTypeLegit(RightHandEquipedItem)
-						ActorRef.RemoveItem(RightHandEquipedItem, 1, True, LostItemsChest)
-					EndIf
-				EndIf
-			EndIf
+			EndWhile
 		EndIf
 	EndIf
 	Utility.Wait(0.1)
 	If !ConfigMenu.bRespawnNaked
 		If RightHand 
-			If	ActorRef.GetItemCount(RightHandEquipedItem) > 0
+			If	ActorRef.GetItemCount(RightHandEquipedItem) > 0 && !ActorRef.IsEquipped(RightHandEquipedItem)
 				ActorRef.EquipItem(RightHandEquipedItem, False, True)
 				Utility.Wait(0.2)
 			EndIf
 		ElseIf LeftHand && !(RightHandEquipedItem As Spell)
-			If	ActorRef.GetItemCount(LeftHandEquippedItem) > 0
+			If	ActorRef.GetItemCount(LeftHandEquippedItem) > 0 && !ActorRef.IsEquipped(LeftHandEquippedItem)
 				ActorRef.EquipItem(LeftHandEquippedItem, False, True)
 				Utility.Wait(0.2)
 			EndIf
@@ -2224,11 +2143,11 @@ Function RemoveValuableItemsGreedy(Actor ActorRef)
 		;	ActorRef.EquipItemEx(LeftHandEquippedItem, 2, False, True)
 		;	Utility.Wait(0.2)
 		;EndIf
-		itemIndex = Equipment.Length
+		Int itemIndex = Equipment.Length
 		While itemIndex > 0
 			itemIndex -= 1
 			If Equipment[itemIndex] As Armor
-				If ActorRef.GetItemCount(Equipment[itemIndex]) > 0
+				If ActorRef.GetItemCount(Equipment[itemIndex]) > 0 && !ActorRef.IsEquipped(Equipment[itemIndex])
 					ActorRef.EquipItem(Equipment[itemIndex],False, True)
 					Utility.Wait(0.2)
 				EndIf
@@ -2237,14 +2156,56 @@ Function RemoveValuableItemsGreedy(Actor ActorRef)
 	EndIf
 EndFunction
 
-Bool Function bIsTypeLegit( Form KItem)
-	Int iType = KItem.GetType()
-	If ( ( iType == 26 ) || ( iType == 42 ) || ( iType == 27 ) || ( iType == 46 ) || ( iType == 30 ) || ( iType == 32 ) || ( iType == 23 ) || ( iType == 52 ) || ( iType == 41 ) )
-		If ( KItem.GetWeight() > 0.0 ) 
-			Return True
+Bool Function bIsTypeLegit( Form akItem)
+	If akItem
+		Int iType = akItem.GetType()
+		If ( ( iType == 26 ) || ( iType == 42 ) || ( iType == 27 ) || ( iType == 46 ) || ( iType == 30 ) || ( iType == 32 ) || ( iType == 23 ) || ( iType == 52 ) || ( iType == 41 ) )
+			If akItem.GetWeight() > 0.0
+				Return True
+			EndIf
 		EndIf
 	EndIf
 	Return False
+EndFunction
+
+Function RegisterEquipments(Actor refActor, Bool bRightArm, Bool bLeftArm)
+	Int iEmpty
+	Form akArmor
+	Int itemIndex = 30
+	If bRightArm
+		iEmpty = Equipment.find(None)
+		If iEmpty > -1
+			Equipment[iEmpty] = RightHandEquipedItem
+		EndIf
+	EndIf
+	If bLeftArm
+		iEmpty = Equipment.find(None)
+		If iEmpty > -1
+			Equipment[iEmpty] = LeftHandEquippedItem
+		EndIf
+	EndIf
+	While itemIndex < 62
+		akArmor = refActor.GetWornForm(Armor.GetMaskForSlot(itemIndex))
+		If akArmor as Armor
+			If Equipment.find(akArmor) < 0
+				iEmpty = Equipment.Find(None)
+				If iEmpty > -1
+					Equipment[iEmpty] = akArmor
+				EndIf
+			EndIf
+		EndIf
+		itemIndex += 1
+	EndWhile
+EndFunction
+
+Function TransferItems(Form[] ItemList, ObjectReference akFrom, ObjectReference akTo)
+	Int itemIndex = ItemList.Length
+	While itemIndex > 0
+		itemIndex -= 1
+		If ItemList[itemIndex] && EquippedQuestItems.Find(ItemList[itemIndex]) < 0
+			akFrom.RemoveItem(ItemList[itemIndex],1,True,akTo)
+		EndIf
+	EndWhile
 EndFunction
 
 Bool Function bGuardCanSendToJail()

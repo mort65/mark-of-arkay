@@ -123,7 +123,7 @@ Float Property fBleedoutTimeSlider = 6.0 Auto Hidden
 Float Property fLootChanceSlider = 50.0 Auto Hidden
 Float Property fScrollChanceSlider = 25.0 Auto Hidden
 Float Property fRecallCastSlider = 0.0 Auto Hidden
-Float Property fRespawnTimeSlider = 0.0 Auto Hidden
+Float Property fRespawnTimeSlider = 0.0 Auto Hidden ;
 Int Property iExternalIndex = -1 Auto Hidden
 Spell Property RevivalPower Auto
 Spell Property SacrificePower Auto
@@ -364,13 +364,6 @@ Event OnPageReset(String page)
 		Else
 			oidExternalTeleportLocation = AddTextOption("$mrt_MarkofArkay_ExternalTeleportLocation", ( (iExternalIndex + 1) As String ), flags)
 		Endif
-		;SetCursorPosition(7)
-		;If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1))
-		;	flags =	OPTION_FLAG_NONE
-		;Else
-		;	flags = OPTION_FLAG_DISABLED
-		;Endif
-		;oidRespawnTimeSlider = AddSliderOption("$mrt_MarkofArkay_RespawnTimeSlider", fRespawnTimeSlider, "$mrt_MarkofArkay_RespawnTimeSlider2", flags)
 		SetCursorPosition(9)
 		If ( moaState.getValue() == 1 )
 			flags =	OPTION_FLAG_NONE
@@ -848,7 +841,6 @@ Event OnOptionSelect(Int option)
 		SetOptionFlags(oidLootChanceSlider,flags,True)
 		SetOptionFlags(oidScrollChanceSlider,flags,True)
 		SetOptionFlags(oidTeleportLocation_M,flags,True)
-		;SetOptionFlags(oidRespawnTimeSlider,flags,True)
 		SetOptionFlags(oidRespawnNaked,flags,True)
 		SetOptionFlags(oidJail,flags,True)
 		SetOptionFlags(oidArkayCurse,flags,True)
@@ -917,7 +909,6 @@ Event OnOptionSelect(Int option)
 		SetOptionFlags(oidLootChanceSlider,flags,True)
 		SetOptionFlags(oidScrollChanceSlider,flags,True)
 		SetOptionFlags(oidTeleportLocation_M,flags,True)
-		;SetOptionFlags(oidRespawnTimeSlider,flags,True)
 		SetOptionFlags(oidRespawnNaked,flags,True)
 		SetOptionFlags(oidJail,flags,True)
 		SetOptionFlags(oidArkayCurse,flags,True)
@@ -1031,11 +1022,6 @@ Event OnOptionSliderOpen(Int option)
 		SetSliderDialogDefaultValue(0.0)
 		SetSliderDialogRange(0.0, 100.0)
 		SetSliderDialogInterval(1.0)
-	;Elseif(option == oidRespawnTimeSlider)
-	;	SetSliderDialogStartValue(fRespawnTimeSlider)
-	;	SetSliderDialogDefaultValue(0.0)
-	;	SetSliderDialogRange(0.0, 744.0)
-	;	SetSliderDialogInterval(1.0)
 	EndIf
 EndEvent
 
@@ -1088,9 +1074,6 @@ Event OnOptionSliderAccept(int option, Float value)
 	ElseIf (option == oidRecallCost)
 		fRecallCastSlider = value
 		SetSliderOptionValue(oidRecallCost, fRecallCastSlider, "$mrt_MarkofArkay_MarkSlider_2")
-	;ElseIf (option == oidRespawnTimeSlider)
-	;	fRespawnTimeSlider = value
-	;	SetSliderOptionValue(oidRespawnTimeSlider, fRespawnTimeSlider, "$mrt_MarkofArkay_RespawnTimeSlider2")
 	EndIf
 EndEvent
 
@@ -1165,7 +1148,6 @@ Event OnOptionMenuAccept(Int option, Int index)
 		SetOptionFlags(oidJail,flags,True)
 		SetOptionFlags(oidArkayCurse,flags,True)
 		SetOptionFlags(oidRemovableItems_M,flags)
-		;SetOptionFlags(oidRespawnTimeSlider,flags,True)
 		If bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bArkayCurse
 			flags =	OPTION_FLAG_NONE
 		Else
@@ -1291,9 +1273,6 @@ Event OnOptionDefault(Int option)
 		fScrollChanceSlider = 25.0
 		SetSliderOptionValue(oidScrollChanceSlider,fScrollChanceSlider,"$mrt_MarkofArkay_LootChanceSlider_2")
 		moaScrollChance.SetValue(100.0 - fScrollChanceSlider)
-	;ElseIf (option == oidRespawnTimeSlider)
-	;	fRespawnTimeSlider = 0.0
-	;	SetSliderOptionValue(oidRespawnTimeSlider, fRespawnTimeSlider, "$mrt_MarkofArkay_RespawnTimeSlider2")	
 	ElseIf (option == oidEffect)
 		bIsEffectEnabled = True
 		SetToggleOptionValue(oidEffect, bIsEffectEnabled)
@@ -1382,7 +1361,6 @@ Event OnOptionDefault(Int option)
 		SetOptionFlags(oidArkayCurses_M,flags,True)
 		SetOptionFlags(oidLoseforever,flags,True)
 		SetOptionFlags(oidSoulMarkStay,flags,True)
-		;SetOptionFlags(oidRespawnTimeSlider,flags,True)
 		SetOptionFlags(oidRemovableItems_M,flags)
 	ElseIf (option == oidRemovableItems_M)
 		iRemovableItems = 0
@@ -1491,8 +1469,6 @@ Event OnOptionHighlight(Int option)
 		SetInfoText("$mrt_MarkofArkay_DESC_LootChanceSlider")
 	ElseIf (option == oidScrollChanceSlider)
 		SetInfoText("$mrt_MarkofArkay_DESC_ScrollChanceSlider")
-	;ElseIf (option == oidRespawnTimeSlider)
-	;	SetInfoText("$mrt_MarkofArkay_DESC_RespawnTimeSlider")
 	ElseIf (option == oidEffect)
 		If bIsEffectEnabled
 			SetInfoText("$mrt_MarkofArkay_DESC_Effect_On")

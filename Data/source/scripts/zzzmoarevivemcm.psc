@@ -58,28 +58,32 @@ Int oidResetHistory
 Int oidHistory
 Int oidAutoSwitchRP
 int oidRecallCost
+int oidMarkCost
 int oidBleedoutTime
 Int oidRecallByArkayMark
 Int oidJail
 Int oidTogglePowers
 Int oidToggleSpells
 Int oidRespawnTimeSlider
+Int oidEnableSave_M
 String[] Property sRespawnPoints Auto
 String[] Property sLoseOptions Auto
 String[] Property sAftermathOptions Auto
 Bool[] Property bRespawnPointsFlags Auto
 String[] Property sArkayCurses Auto
+String[] Property sSaveOptions Auto
 Actor Property PlayerRef Auto
 GlobalVariable Property moaState Auto
 GlobalVariable Property moaLootChance Auto
 GlobalVariable Property moaScrollChance Auto
 GlobalVariable Property moaBleedoutHandlerState Auto
 GlobalVariable Property moaBleedouAnimation Auto
+GlobalVariable Property moaPraytoSave Auto
 Quest Property moaReviverQuest Auto
 Quest Property moaRetrieveLostItems Auto
 Float Property fJumpFallHeightMinDefault = 600.00 Auto Hidden
 Bool Property bIsRevivalEnabled = True Auto Hidden
-Bool Property bIsEffectEnabled = True Auto Hidden
+Bool Property bIsEffectEnabled = False Auto Hidden
 Bool Property bIsDragonSoulEnabled = True Auto Hidden
 Bool Property bIsBSoulGemEnabled = True Auto Hidden
 Bool Property bIsGSoulGemEnabled = True Auto Hidden
@@ -108,6 +112,7 @@ Bool Property bIsHistoryEnabled = False Auto Hidden
 Bool Property bIsInfoEnabled = False Auto Hidden
 Bool Property bSendToJail = False Auto Hidden
 Int Property iTeleportLocation = 0 Auto Hidden
+Int Property iSaveOption = 1 Auto Hidden
 Float Property fValueSoulSlider = 1.0 Auto Hidden
 Float Property fValueGoldSlider = 1000.0 Auto Hidden
 Float Property fValueBSoulGemSlider = 1.0 Auto Hidden
@@ -123,6 +128,7 @@ Float Property fBleedoutTimeSlider = 6.0 Auto Hidden
 Float Property fLootChanceSlider = 50.0 Auto Hidden
 Float Property fScrollChanceSlider = 25.0 Auto Hidden
 Float Property fRecallCastSlider = 0.0 Auto Hidden
+Float Property fMarkCastSlider = 0.0 Auto Hidden
 Float Property fRespawnTimeSlider = 0.0 Auto Hidden ;
 Int Property iExternalIndex = -1 Auto Hidden
 Spell Property RevivalPower Auto
@@ -131,6 +137,7 @@ Spell Property MoveCustomMarker Auto
 Spell Property RecallMarker Auto
 Spell Property ArkayCurse Auto
 Spell Property ArkayCurseAlt Auto
+Spell Property ArkayBlessing Auto
 Bool Property bShiftBack = False Auto Hidden
 Bool Property bShiftBackRespawn = True Auto Hidden
 String Property sResetHistory = "" Auto Hidden
@@ -213,43 +220,47 @@ Event OnPageReset(String page)
 		Else
 			flags = OPTION_FLAG_DISABLED
 		Endif
-		oidNoFallDamageEnabled = AddToggleOption("$mrt_MarkofArkay_NoFallDamageEnabled", bIsNoFallDamageEnabled, flags )
+		oidEnableSave_M = AddMenuOption("$mrt_MarkofArkay_EnableSave_M", sSaveOptions[iSaveOption], flags)
 		SetCursorPosition(4)
+		oidNoFallDamageEnabled = AddToggleOption("$mrt_MarkofArkay_NoFallDamageEnabled", bIsNoFallDamageEnabled, flags )
+		SetCursorPosition(6)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		Endif
 		oidEffect = AddToggleOption("$mrt_MarkofArkay_Effect", bIsEffectEnabled, flags )
-		SetCursorPosition(6)
-		oidPotionRevivalEnabled = AddToggleOption("$mrt_MarkofArkay_PotionRevivalEnabled", bIsPotionEnabled, flags )
 		SetCursorPosition(8)
+		oidPotionRevivalEnabled = AddToggleOption("$mrt_MarkofArkay_PotionRevivalEnabled", bIsPotionEnabled, flags )
+		SetCursorPosition(10)
 		If  ( moaState.getValue() == 1 ) && ( bIsRevivalEnabled )
 			flags = OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		Endif
 		oidAutoDrinkPotion = AddToggleOption("$mrt_MarkofArkay_AutoDrinkPotion", bAutoDrinkPotion, flags )
-		SetCursorPosition(10)
+		SetCursorPosition(12)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		Endif
 		oidRevivalRequireBlessing = AddToggleOption("$mrt_MarkofArkay_RevivalRequireBlessing", bIsRevivalRequiresBlessing, flags )
-		SetCursorPosition(12)
-		oidShiftBack = AddToggleOption("$mrt_MarkofArkay_ShiftBack", bShiftBack,flags)
 		SetCursorPosition(14)
-		oidShiftBackRespawn = AddToggleOption("$mrt_MarkofArkay_ShiftBackRespawn", bShiftBackRespawn,flags)
+		oidShiftBack = AddToggleOption("$mrt_MarkofArkay_ShiftBack", bShiftBack,flags)
 		SetCursorPosition(16)
+		oidShiftBackRespawn = AddToggleOption("$mrt_MarkofArkay_ShiftBackRespawn", bShiftBackRespawn,flags)
+		SetCursorPosition(18)
 		If ( moaState.getValue() == 1 )
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		Endif
 		oidRecallRestriction = AddToggleOption("$mrt_MarkofArkay_RecallRestriction", bIsRecallRestricted, flags)
-		SetCursorPosition(18)
+		SetCursorPosition(20)
 		oidAutoSwitchRP = AddToggleOption("$mrt_MarkofArkay_AutoSwitchRP",bAutoSwitchRP,flags)
+		SetCursorPosition(22)
+		oidMarkCost = AddSliderOption("$mrt_MarkofArkay_MarkCast",fMarkCastSlider,"$mrt_MarkofArkay_MarkSlider_2", flags)
 		SetCursorPosition(3)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled
 			flags =	OPTION_FLAG_NONE
@@ -828,6 +839,7 @@ Event OnOptionSelect(Int option)
 		SetOptionFlags(oidRecoveryTime,flags,True)
 		SetOptionFlags(oidBleedoutTime,flags,True)
 		SetOptionFlags(oidRecallCost,flags,True)
+		SetOptionFlags(oidMarkCost,flags,True)
 		SetOptionFlags(oidNotification, flags,True)
 		SetOptionFlags(oidGSoulGemPSlider, flags,True)
 		SetOptionFlags(oidGSoulGemSlider, flags,True)
@@ -838,6 +850,7 @@ Event OnOptionSelect(Int option)
 		SetOptionFlags(oidPotionRevivalEnabled, flags,True)
 		SetOptionFlags(oidAutoDrinkPotion, flags,True)
 		SetOptionFlags(oidNoTradingAftermath_M, flags,True)
+		SetOptionFlags(oidEnableSave_M, flags,True)
 		SetOptionFlags(oidLootChanceSlider,flags,True)
 		SetOptionFlags(oidScrollChanceSlider,flags,True)
 		SetOptionFlags(oidTeleportLocation_M,flags,True)
@@ -896,6 +909,7 @@ Event OnOptionSelect(Int option)
 		SetOptionFlags(oidRecoveryTime,flags,True)
 		SetOptionFlags(oidBleedoutTime,flags,True)
 		SetOptionFlags(oidRecallCost,flags,True)
+		SetOptionFlags(oidMarkCost,flags,True)
 		SetOptionFlags(oidNotification, flags,True)
 		SetOptionFlags(oidGSoulGemPSlider, flags,True)
 		SetOptionFlags(oidGSoulGemSlider, flags,True)
@@ -906,6 +920,7 @@ Event OnOptionSelect(Int option)
 		SetOptionFlags(oidPotionRevivalEnabled, flags,True)
 		SetOptionFlags(oidAutoDrinkPotion, flags,True)
 		SetOptionFlags(oidNoTradingAftermath_M, flags,True)
+		SetOptionFlags(oidEnableSave_M, flags,True)
 		SetOptionFlags(oidLootChanceSlider,flags,True)
 		SetOptionFlags(oidScrollChanceSlider,flags,True)
 		SetOptionFlags(oidTeleportLocation_M,flags,True)
@@ -1017,8 +1032,13 @@ Event OnOptionSliderOpen(Int option)
 		SetSliderDialogDefaultValue(25.0)
 		SetSliderDialogRange(0.0, 100.0)
 		SetSliderDialogInterval(1.0)
-	Elseif(option == oidRecallCost)
+	ElseIf(option == oidRecallCost)
 		SetSliderDialogStartValue(fRecallCastSlider)
+		SetSliderDialogDefaultValue(0.0)
+		SetSliderDialogRange(0.0, 100.0)
+		SetSliderDialogInterval(1.0)
+	ElseIf(option == oidMarkCost)
+		SetSliderDialogStartValue(fMarkCastSlider)
 		SetSliderDialogDefaultValue(0.0)
 		SetSliderDialogRange(0.0, 100.0)
 		SetSliderDialogInterval(1.0)
@@ -1074,6 +1094,9 @@ Event OnOptionSliderAccept(int option, Float value)
 	ElseIf (option == oidRecallCost)
 		fRecallCastSlider = value
 		SetSliderOptionValue(oidRecallCost, fRecallCastSlider, "$mrt_MarkofArkay_MarkSlider_2")
+	ElseIf (option == oidMarkCost)
+		fMarkCastSlider = value
+		SetSliderOptionValue(oidMarkCost, fMarkCastSlider, "$mrt_MarkofArkay_MarkSlider_2")
 	EndIf
 EndEvent
 
@@ -1094,6 +1117,10 @@ Event OnOptionMenuOpen(Int option)
 		SetMenuDialogoptions(sArkayCurses)
 		SetMenuDialogStartIndex(iArkayCurse)
 		SetMenuDialogDefaultIndex(0)
+	ElseIf (option == oidEnableSave_M)
+		SetMenuDialogoptions(sSaveOptions)
+		SetMenuDialogStartIndex(iSaveOption)
+		SetMenuDialogDefaultIndex(1)	
 	EndIf
 EndEvent
 
@@ -1185,6 +1212,10 @@ Event OnOptionMenuAccept(Int option, Int index)
 	ElseIf (option == oidArkayCurses_M)
 	    iArkayCurse = index
 		SetMenuOptionValue(oidArkayCurses_M, sArkayCurses[iArkayCurse])
+	ElseIf (option == oidEnableSave_M)
+	    iSaveOption = index
+		SetSavingOption(iSaveOption)
+		SetMenuOptionValue(oidEnableSave_M, sSaveOptions[iSaveOption]) 
 	Endif
 EndEvent
 
@@ -1265,6 +1296,9 @@ Event OnOptionDefault(Int option)
 	ElseIf (option == oidRecallCost)
 		fRecallCastSlider = 0.0
 		SetSliderOptionValue(oidRecallCost, fRecallCastSlider, "$mrt_MarkofArkay_MarkSlider_2")
+	ElseIf (option == oidMarkCost)
+		fMarkCastSlider = 0.0
+		SetSliderOptionValue(oidMarkCost, fMarkCastSlider, "$mrt_MarkofArkay_MarkSlider_2")
 	ElseIf (option == oidLootChanceSlider)
 		fLootChanceSlider = 50.0
 		SetSliderOptionValue(oidLootChanceSlider,fLootChanceSlider,"$mrt_MarkofArkay_LootChanceSlider_2")
@@ -1274,7 +1308,7 @@ Event OnOptionDefault(Int option)
 		SetSliderOptionValue(oidScrollChanceSlider,fScrollChanceSlider,"$mrt_MarkofArkay_LootChanceSlider_2")
 		moaScrollChance.SetValue(100.0 - fScrollChanceSlider)
 	ElseIf (option == oidEffect)
-		bIsEffectEnabled = True
+		bIsEffectEnabled = False
 		SetToggleOptionValue(oidEffect, bIsEffectEnabled)
 	ElseIf (option == oidExternalTeleportLocation)
 		iExternalIndex = -1
@@ -1382,6 +1416,10 @@ Event OnOptionDefault(Int option)
 	ElseIf (option == oidArkayCurses_M)
 		iArkayCurse = 0
 		SetMenuOptionValue(oidArkayCurses_M, sArkayCurses[0])
+	ElseIf (option == oidEnableSave_M)
+		SetMenuOptionValue(oidEnableSave_M, sSaveOptions[1])
+		moaPraytoSave.SetValue(0.0)
+		Game.SetInChargen(False,False,False)
 	EndIf
 EndEvent
 
@@ -1549,14 +1587,19 @@ Event OnOptionHighlight(Int option)
 		SetInfoText("$mrt_MarkofArkay_DESC_AutoSwitchRP")
 	ElseIf (option == oidRecallCost)
 		SetInfoText("$mrt_MarkofArkay_DESC_RecallCost")
+	ElseIf (option == oidMarkCost)
+		SetInfoText("$mrt_MarkofArkay_DESC_MarkCost")
 	ElseIf (option == oidArkayCurses_M)
 	    setInfotext("$mrt_MarkofArkay_DESC_ArkayCurses_M")
+	ElseIf (option == oidEnableSave_M)
+	    setInfotext("$mrt_MarkofArkay_DESC_EnableSave_M")	
 	Endif
 EndEvent
 
 Function moaStart()
 	If moaState.GetValue() == 0
 		moaState.SetValue(1)
+		setArrays()
 		moaBleedoutHandlerState.SetValue(0)
 		moaReviverQuest.Start()
 		PlayerRef.GetActorBase().SetEssential(True)
@@ -1565,7 +1608,8 @@ Function moaStart()
 		moaScrollChance.SetValue(100.0 - fScrollChanceSlider)
 		ToggleFallDamage(True)
 		ToggleFallDamage(False)
-		Utility.Wait(2.0)
+		SetSavingOption(iSaveOption)
+		Utility.Wait(1.0)
 		Debug.notification("$mrt_MarkofArkay_Notification_Started")
 	EndIf
 Endfunction
@@ -1595,6 +1639,7 @@ Function moaStop()
 		PlayerRef.GetActorBase().SetEssential(False)
 		PlayerRef.SetNoBleedoutRecovery(False)
 		moaBleedoutHandlerState.SetValue(0)
+		PlayerRef.DispelSpell(ArkayBlessing)
 		PlayerRef.DispelSpell(RevivalPower)
 		PlayerRef.RemoveSpell(SacrificePower)
 		PlayerRef.RemoveSpell(RevivalPower)
@@ -1619,7 +1664,9 @@ Function moaStop()
 		Debug.SetGodMode(False)
 		moaLootChance.SetValue(100.0)
 		moaScrollChance.SetValue(100.0)
-		Utility.Wait(2.0)
+		Game.SetInChargen(False,False,False)
+		moaPraytoSave.SetValue(0.0)
+		Utility.Wait(1.0)
 		Debug.notification("$mrt_MarkofArkay_Notification_Stopped")
 	EndIf
 EndFunction
@@ -1646,6 +1693,20 @@ Function ToggleFallDamage(Bool bFallDamage)
 	bIsNoFallDamageEnabled = bFallDamage
 EndFunction
 
+Function SetSavingOption(Int iIndex)
+	PlayerRef.DispelSpell(ArkayBlessing)
+	Game.SetInChargen(False,False,False)
+	If ( iIndex == 3 || iIndex == 4 ) ;PrayToSave
+		Game.SetInChargen(abDisableSaving = True, abDisableWaiting = False, abShowControlsDisabledMessage = True)
+		moaPraytoSave.SetValue(1.0)
+	Else
+		moaPraytoSave.SetValue(0.0)
+		If ( iIndex == 2 );After Sleep
+			Game.SetInChargen(abDisableSaving = True, abDisableWaiting = False, abShowControlsDisabledMessage = True)
+		EndIf
+	EndIf
+EndFunction
+
 Event OnConfigInit()
 	setPages()
 EndEvent
@@ -1659,7 +1720,7 @@ Function setPages()
 EndFunction
 
 Int Function GetVersion()
-	Return 29
+	Return 31
 EndFunction
 
 Event OnVersionUpdate(int a_version)
@@ -1731,9 +1792,6 @@ Event OnVersionUpdate(int a_version)
 		bRespawnPointsFlags[5] = True
 		bRespawnPointsFlags[6] = True
 		bRespawnPointsFlags[7] = True
-		;If moaState.GetValue() == 1
-		;	PlayerRef.AddSpell(MoveCustomMarker)
-		;EndIf
 	Endif
 	If (a_version >= 9 && CurrentVersion < 9)
 		Debug.Trace(self + ": Updating script to version " + 9)
@@ -1742,9 +1800,6 @@ Event OnVersionUpdate(int a_version)
 		Else
 			moaBleedouAnimation.SetValue(0)
 		EndIf
-		;If moaState.GetValue() == 1
-		;	PlayerRef.AddSpell(RecallMarker)
-		;EndIf
 		If bLostItemQuest && ( ReviveScript.bIsItemsRemoved || PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt) )
 			moaRetrieveLostItems.start()
 			moaRetrieveLostItems.SetStage(1)
@@ -1816,6 +1871,9 @@ Event OnVersionUpdate(int a_version)
 		iRevivesByPotion = ReviveScript.iRevivesByPotion
 		iDestroyedItems = ReviveScript.iDestroyedItems
 	EndIf
+	If (a_version >= 31 && CurrentVersion < 31)
+		Debug.Trace(self + ": Updating script to version "  + 31)
+	EndIf
 	setArrays()
 EndEvent
 
@@ -1866,9 +1924,15 @@ Function setArrays()
 	sAftermathOptions[1] = "$mrt_MarkofArkay_AftermathOptions_1"
 	sAftermathOptions[2] = "$mrt_MarkofArkay_AftermathOptions_2"
 	sArkayCurses = New String[3]
-	sArkayCurses[0]="$mrt_MarkofArkay_ArkayCurses_0"
-	sArkayCurses[1]="$mrt_MarkofArkay_ArkayCurses_1"
-	sArkayCurses[2]="$mrt_MarkofArkay_ArkayCurses_2"
+	sArkayCurses[0] = "$mrt_MarkofArkay_ArkayCurses_0"
+	sArkayCurses[1] = "$mrt_MarkofArkay_ArkayCurses_1"
+	sArkayCurses[2] = "$mrt_MarkofArkay_ArkayCurses_2"
+	sSaveOptions = new String[5]
+	sSaveOptions[0] = "$mrt_MarkofArkay_SaveOptions_0"
+	sSaveOptions[1] = "$mrt_MarkofArkay_SaveOptions_1"
+	sSaveOptions[2] = "$mrt_MarkofArkay_SaveOptions_2"
+	sSaveOptions[3] = "$mrt_MarkofArkay_SaveOptions_3"
+	sSaveOptions[4] = "$mrt_MarkofArkay_SaveOptions_4"
 EndFunction
 
 

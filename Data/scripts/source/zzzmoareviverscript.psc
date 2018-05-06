@@ -146,6 +146,12 @@ State Bleedout1
 	
 	Event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
 	EndEvent
+	
+	Event OnSleepStart(float afSleepStartTime, float afDesiredSleepEndTime)
+	EndEvent
+
+	Event OnSleepStop(Bool abInterrupted)
+	EndEvent
 EndState
 
 State Bleedout2
@@ -156,6 +162,12 @@ State Bleedout2
 	EndEvent
 	
 	Event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
+	EndEvent
+	
+	Event OnSleepStart(float afSleepStartTime, float afDesiredSleepEndTime)
+	EndEvent
+
+	Event OnSleepStop(Bool abInterrupted)
 	EndEvent
 EndState
 
@@ -171,10 +183,10 @@ Event OnInit()
 	SetVars()
 	SetGameVars()
 	RegisterForSleep()
-	;PlayerRef.AddSpell(MoveCustomMarker)
-	;PlayerRef.AddSpell(RecallMarker)
 	DetachMarker2.Enable()
 	DetachMarker2.MoveTo(PlayerRef)
+	DetachMarker2.SetPosition(PlayerRef.GetPositionx(), PlayerRef.GetPositiony(), PlayerRef.GetPositionz())
+	DetachMarker2.SetAngle(0.0, 0.0, PlayerRef.GetAnglez())
 	If Runil && !Runil.Isdead()
 		Runil.AddToFaction(JobMerchantFaction)
 		Runil.AddToFaction(RunilMerchantFaction)
@@ -190,6 +202,7 @@ Event OnPlayerLoadGame()
 	SetGameVars()
 	Utility.Wait(3.0)
 	Debug.SetGodMode(False)
+	Debug.Trace("Is In Bleedout: " + moaBleedoutHandlerState.Value)
 EndEvent
 
 Event OnEnterBleedout()
@@ -204,6 +217,18 @@ Event OnSleepStart(float afSleepStartTime, float afDesiredSleepEndTime)
 		SleepMarker.SetAngle(0.0, 0.0, PlayerRef.GetAnglez())
 		If ConfigMenu.bAutoSwitchRP
 			ConfigMenu.iTeleportLocation = ( ConfigMenu.sRespawnPoints.Length - 4 )
+		EndIf
+	EndIf
+EndEvent
+
+Event OnSleepStop(Bool abInterrupted)
+	If !abInterrupted
+		If ( ConfigMenu.iSaveOption == 2 || ConfigMenu.iSaveOption == 4 ) 
+			If ( !PlayerRef.IsDead() && !PlayerRef.IsBleedingOut() && GetState() == "" )
+				Game.SetInChargen(False,False,False)
+				Utility.Wait(6.0)
+				Game.SetInChargen(abDisableSaving = True, abDisableWaiting = False, abShowControlsDisabledMessage = True)
+			EndIf
 		EndIf
 	EndIf
 EndEvent
@@ -247,8 +272,15 @@ Event OnLocationChange(Location akOldLoc, Location akNewLoc)
 	If moaBleedoutHandlerState.GetValue() == 0
 		LocationMarker2.Enable()
 		LocationMarker2.MoveTo(LocationMarker)
+		LocationMarker2.SetPosition(LocationMarker.GetPositionx(), LocationMarker.GetPositiony(), LocationMarker.GetPositionz())
+		LocationMarker2.SetAngle(0.0, 0.0, LocationMarker.GetAnglez())
 		LocationMarker.Enable()
 		LocationMarker.MoveTo(PlayerRef)
+		LocationMarker.SetPosition(PlayerRef.GetPositionx(), PlayerRef.GetPositiony(), PlayerRef.GetPositionz())
+		LocationMarker.SetAngle(0.0, 0.0, PlayerRef.GetAnglez())
+		If ( ConfigMenu.iSaveOption > 1 )
+			Game.SetInChargen(abDisableSaving = True, abDisableWaiting = False, abShowControlsDisabledMessage = True)
+		EndIf
 	EndIf
 EndEvent
 
@@ -256,8 +288,15 @@ Event OnCellLoad()
 	If moaBleedoutHandlerState.GetValue() == 0
 		CellLoadMarker2.Enable()
 		CellLoadMarker2.MoveTo(CellLoadMarker)
+		CellLoadMarker2.SetPosition(CellLoadMarker.GetPositionx(), CellLoadMarker.GetPositiony(), CellLoadMarker.GetPositionz())
+		CellLoadMarker2.SetAngle(0.0, 0.0, CellLoadMarker.GetAnglez())
 		CellLoadMarker.Enable()
 		CellLoadMarker.MoveTo(PlayerRef)
+		CellLoadMarker.SetPosition(PlayerRef.GetPositionx(), PlayerRef.GetPositiony(), PlayerRef.GetPositionz())
+		CellLoadMarker.SetAngle(0.0, 0.0, PlayerRef.GetAnglez())
+		If ( ConfigMenu.iSaveOption > 1 )
+			Game.SetInChargen(abDisableSaving = True, abDisableWaiting = False, abShowControlsDisabledMessage = True)
+		EndIf
 	EndIf
 EndEvent
 
@@ -272,12 +311,14 @@ String Function ToggleState() ;prevents double menu when player revived with pot
 Endfunction
 
 Function BleedoutHandler(String CurrentState)
+	PlayerRef.DispelAllSpells()
 	If ConfigMenu.bIsEffectEnabled
 		BleedoutProtection.Cast(PlayerRef)
 	Else
 		Debug.SetGodMode(True)
 	EndIf
 	Game.DisablePlayerControls()
+	ToggleSaving(False)
 	Game.EnableFastTravel(False)
 	If ConfigMenu.iTotalBleedOut < 99999999
 		ConfigMenu.iTotalBleedOut += 1
@@ -301,6 +342,7 @@ Function BleedoutHandler(String CurrentState)
 		EndIf
 		Game.EnablePlayerControls()
 		Game.EnableFastTravel(True)
+		ToggleSaving(True)
 		moaBleedoutHandlerState.SetValue(0)
 		LowHealthImod.Remove()
 		GoToState("")
@@ -319,6 +361,7 @@ Function BleedoutHandler(String CurrentState)
 				EndIf
 				RequipSpells()
 				PlayerRef.ResetHealthAndLimbs()
+				PlayerRef.RestoreActorValue("Health",9999)
 				If ConfigMenu.bIsEffectEnabled
 					PlayerRef.DispelSpell(BleedoutProtection)
 				Else
@@ -329,6 +372,7 @@ Function BleedoutHandler(String CurrentState)
 				If ConfigMenu.iTotalRevives < 99999999
 					ConfigMenu.iTotalRevives += 1
 				EndIf
+				ToggleSaving(True)
 				moaBleedoutHandlerState.SetValue(0)
 				LowHealthImod.Remove()
 				GoToState("")
@@ -346,6 +390,7 @@ Function BleedoutHandler(String CurrentState)
 				RequipSpells()
 				Debug.SetGodMode(True)
 				PlayerRef.ResetHealthAndLimbs()
+				PlayerRef.RestoreActorValue("Health",9999)
 				Utility.Wait(0.1)
 				PlayerRef.EquipItem(PotionList.GetAt(iPotion) As Potion, False, True)
 				If ConfigMenu.bIsEffectEnabled
@@ -360,6 +405,7 @@ Function BleedoutHandler(String CurrentState)
 				If ConfigMenu.iTotalRevives < 99999999
 					ConfigMenu.iTotalRevives += 1
 				EndIf
+				ToggleSaving(True)
 				moaBleedoutHandlerState.SetValue(0)
 				LowHealthImod.Remove()
 				GoToState("")
@@ -386,6 +432,7 @@ Function BleedoutHandler(String CurrentState)
 			EndIf
 			RequipSpells()
 			PlayerRef.ResetHealthAndLimbs()
+			PlayerRef.RestoreActorValue("Health",9999)
 			If ConfigMenu.iTotalRevives < 99999999
 				ConfigMenu.iTotalRevives += 1
 			EndIf
@@ -398,6 +445,7 @@ Function BleedoutHandler(String CurrentState)
 			EndIf
 			Game.EnablePlayerControls()
 			Game.EnableFastTravel(True)
+			ToggleSaving(True)
 			moaBleedoutHandlerState.SetValue(0)
 			LowHealthImod.Remove()
 			GoToState("")
@@ -545,6 +593,7 @@ Function BleedoutHandler(String CurrentState)
 			EndIf
 			RequipSpells()
 			PlayerRef.ResetHealthAndLimbs()
+			PlayerRef.RestoreActorValue("Health",9999)
 			If ConfigMenu.bIsEffectEnabled
 				PlayerRef.DispelSpell(BleedoutProtection)
 			Else
@@ -555,6 +604,7 @@ Function BleedoutHandler(String CurrentState)
 			If ConfigMenu.iTotalRevives < 99999999
 				ConfigMenu.iTotalRevives += 1
 			EndIf
+			ToggleSaving(True)
 			moaBleedoutHandlerState.SetValue(0)
 			LowHealthImod.Remove()
 			GoToState("")
@@ -798,6 +848,7 @@ Function RevivePlayer(Bool bRevive)
 			PlayerRef.SetActorValue("Paralysis",0)
 		EndIf
 		PlayerRef.ResetHealthAndLimbs()
+		PlayerRef.RestoreActorValue("Health",9999)
 		Debug.SetGodMode(False)
 		If !bHasAutoReviveEffect && ( PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt) )
 			PlayerRef.RemoveSpell(ArkayCurse)
@@ -814,6 +865,7 @@ Function RevivePlayer(Bool bRevive)
 		EndIf
 		Game.EnablePlayerControls()
 		Game.EnableFastTravel(True)
+		ToggleSaving(True)
 		moaBleedoutHandlerState.SetValue(0)
 		LowHealthImod.Remove()
 		GoToState("")
@@ -827,6 +879,7 @@ Function RevivePlayer(Bool bRevive)
 			Game.EnableFastTravel(True)
 			PlayerRef.SetActorValue("Paralysis",1)
 			PlayerRef.PushActorAway(PlayerRef,0)
+			ToggleSaving(True)
 			moaBleedoutHandlerState.SetValue(0)
 			LowHealthImod.Remove()
 			PlayerRef.KillEssential(None)
@@ -841,6 +894,7 @@ Function RevivePlayer(Bool bRevive)
                 ShiftBack()
             EndIf
 			PlayerRef.ResetHealthAndLimbs()
+			PlayerRef.RestoreActorValue("Health",9999)
 			If !bIsPlayerRagdoll
 				PlayerRef.SetActorValue("Paralysis",1)
 				PlayerRef.PushActorAway(PlayerRef,0)
@@ -1026,6 +1080,7 @@ Function RevivePlayer(Bool bRevive)
 			Debug.SetGodMode(False)
 			Game.EnablePlayerControls()
 			Game.EnableFastTravel(True)
+			ToggleSaving(True)
 			moaBleedoutHandlerState.SetValue(0)
 			LowHealthImod.Remove()
 			If bCidhnaJail 
@@ -1054,6 +1109,7 @@ Function RevivePlayer(Bool bRevive)
 			Debug.SetGodMode(False)
 			Game.EnablePlayerControls()
 			Game.EnableFastTravel(True)
+			ToggleSaving(True)
 			moaBleedoutHandlerState.SetValue(0)
 			LowHealthImod.Remove()
 			GoToState("")
@@ -1062,7 +1118,7 @@ Function RevivePlayer(Bool bRevive)
 	EndIf
 EndFunction
 
-Function RequipSpells() ; after entering bleedou while fighting with spell the game unequips spells and equip none as an item re-equiping spells usually that
+Function RequipSpells() ; after entering bleedout while fighting with spell the game unequips spells and equip none as an item re-equiping spells usually that
 		If ( LeftHandEquippedItem As Spell )
 			PlayerRef.UnequipSpell((LeftHandEquippedItem as spell), 0)
 			PlayerRef.EquipSpell((LeftHandEquippedItem as spell), 0)
@@ -1152,8 +1208,23 @@ Bool Function bIsEquipedFromFormlist(FormList ItemList)
 	Int iIndex = ItemList.GetSize()
 	While iIndex > 0
 		iIndex -= 1
-		If PlayerRef.IsEquipped(ItemList.GetAt(iIndex))
-			Return True
+		If ItemList.GetAt(iIndex)
+			If PlayerRef.IsEquipped(ItemList.GetAt(iIndex))
+				Return True
+			EndIf
+		EndIf
+	EndWhile
+	Return False
+EndFunction
+
+Bool Function bHasMagicEffectFromFormlist(FormList ItemList)
+	Int iIndex = ItemList.GetSize()
+	While iIndex > 0
+		iIndex -= 1
+		If ItemList.GetAt(iIndex) As MagicEffect
+			If PlayerRef.HasMagicEffect(ItemList.GetAt(iIndex) As MagicEffect)
+				Return True
+			EndIf
 		EndIf
 	EndWhile
 	Return False
@@ -1223,6 +1294,8 @@ EndFunction
 Function Teleport()
 	PlayerMarker.Enable()
 	PlayerMarker.MoveTo(playerRef)
+	PlayerMarker.SetPosition(PlayerRef.GetPositionx(), PlayerRef.GetPositiony(), PlayerRef.GetPositionz())
+	PlayerMarker.SetAngle(0.0, 0.0, PlayerRef.GetAnglez())
 	If (ConfigMenu.iTeleportLocation < (ConfigMenu.sRespawnPoints.Length - 5))
 		If (PlayerRef.GetDistance(MarkerList.GetAt(ConfigMenu.iTeleportLocation) As Objectreference) >= 3000.0)
 			If !bIsArrived(MarkerList.GetAt(ConfigMenu.iTeleportLocation) As Objectreference)
@@ -2240,6 +2313,16 @@ Bool Function bGuardCanSendToJail()
 		EndIf
 	EndWhile
 	Return False
+EndFunction
+
+Function ToggleSaving(Bool bSave)
+	If ( ConfigMenu.iSaveOption == 1 )
+		If bSave
+			Game.SetInChargen(False,False,False)
+		Else
+			Game.SetInChargen(abDisableSaving = True, abDisableWaiting = False, abShowControlsDisabledMessage = True)
+		EndIf
+	EndIf
 EndFunction
 
 Bool Function bInBeastForm()

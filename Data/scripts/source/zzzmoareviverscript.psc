@@ -196,13 +196,15 @@ Event OnInit()
 EndEvent
 
 Event OnPlayerLoadGame()
+	If ( ConfigMenu.iSaveOption > 1 )
+		Game.SetInChargen(abDisableSaving = True, abDisableWaiting = False, abShowControlsDisabledMessage = True)
+	EndIf
 	If ConfigMenu.bIsEffectEnabled
 		Debug.SetGodMode(True) ;because when loading a save game usually npcs start moving before player
 	EndIf
 	SetGameVars()
 	Utility.Wait(3.0)
 	Debug.SetGodMode(False)
-	Debug.Trace("Is In Bleedout: " + moaBleedoutHandlerState.Value)
 EndEvent
 
 Event OnEnterBleedout()
@@ -311,7 +313,6 @@ String Function ToggleState() ;prevents double menu when player revived with pot
 Endfunction
 
 Function BleedoutHandler(String CurrentState)
-	PlayerRef.DispelAllSpells()
 	If ConfigMenu.bIsEffectEnabled
 		BleedoutProtection.Cast(PlayerRef)
 	Else
@@ -323,7 +324,7 @@ Function BleedoutHandler(String CurrentState)
 	If ConfigMenu.iTotalBleedOut < 99999999
 		ConfigMenu.iTotalBleedOut += 1
 	EndIf
-	If ( ConfigMenu.bIsRevivalEnabled &&  PlayerRef.IsSwimming() && !WerewolfQuest.IsRunning() ) ;SKSE
+	If ( ConfigMenu.bIsRevivalEnabled &&  PlayerRef.IsSwimming() && !WerewolfQuest.IsRunning() && !PlayerRef.GetAnimationVariableBool("bIsSynced") ) ;SKSE
 		PlayerRef.SetActorValue("Paralysis",1)
 		PlayerRef.PushActorAway(PlayerRef,0)
 		bIsPlayerRagdoll = True
@@ -895,7 +896,7 @@ Function RevivePlayer(Bool bRevive)
             EndIf
 			PlayerRef.ResetHealthAndLimbs()
 			PlayerRef.RestoreActorValue("Health",9999)
-			If !bIsPlayerRagdoll
+			If !bIsPlayerRagdoll && !PlayerRef.GetAnimationVariableBool("bIsSynced")
 				PlayerRef.SetActorValue("Paralysis",1)
 				PlayerRef.PushActorAway(PlayerRef,0)
 				Utility.Wait(0.1)
@@ -972,6 +973,7 @@ Function RevivePlayer(Bool bRevive)
 					iGSoulGemCount = PlayerRef.GetItemCount(GrandFilledGem)
 					fDragonSoulCount = PlayerRef.GetActorValue("DragonSouls")
 					PlayerRef.RemoveAllItems(LostItemsChest, True)
+					TransferItemsByType(45,LostItemsChest,PlayerRef As ObjectReference) ;Return Keys
 					If ( iSeptimCount > 0 ) && ConfigMenu.bIsGoldEnabled
 						LostItemsChest.RemoveItem(Gold001, iSeptimCount, True, PlayerRef)
 					EndIf
@@ -991,6 +993,7 @@ Function RevivePlayer(Bool bRevive)
 				Elseif iRemovableItems == 5
 					RemoveTradbleItems(PlayerRef)
 					PlayerRef.RemoveAllItems(LostItemsChest, True)
+					TransferItemsByType(45,LostItemsChest,PlayerRef As ObjectReference) ;Return Keys
 				Elseif iRemovableItems == 10
 					RemoveValuableItems(PlayerRef)
 				Elseif iRemovableItems == 11
@@ -999,6 +1002,7 @@ Function RevivePlayer(Bool bRevive)
 				If ( ConfigMenu.iRemovableItems == 7 ) ;Remove All if nothing is removed
 					If (( LostItemsChest.GetNumItems() == 0 ) && ( fLostSouls == 0 ) && ( iRemovableItems != 5 ))
 						PlayerRef.RemoveAllItems(LostItemsChest, True)
+						TransferItemsByType(45,LostItemsChest,PlayerRef As ObjectReference) ;Return Keys
 					EndIf
 				EndIf
 				bIsItemsRemoved = True 
@@ -1015,8 +1019,7 @@ Function RevivePlayer(Bool bRevive)
 				EndIf
 				Utility.Wait(0.1)
 			EndIf
-			Utility.Wait(2.0)
-			PlayerRef.DispelAllSpells()
+			Utility.Wait(1.0)
 			If ( ConfigMenu.bSendToJail && bGuardCanSendToJail() && !bInBeastForm() )
 				Faction CrimeFaction = Attacker.GetCrimeFaction()
 				If ( CrimeFaction As Faction )
@@ -1060,8 +1063,8 @@ Function RevivePlayer(Bool bRevive)
 				PlayerRef.SheatheWeapon() ;Sheathe the drawn weapon.
 			EndIf
 			PlayerRef.DispelAllSpells()
-			Utility.Wait(6.0)
 			PlayerRef.ClearExtraArrows()
+			Utility.Wait(6.0)
 			RefreshFace()
 			If ( ConfigMenu.bRespawnNaked && !bInBeastForm() )
 				PlayerRef.UnequipAll()
@@ -1721,6 +1724,7 @@ Function RemoveUnequippedItems(Actor ActorRef)
 	ValuableItemsChest.RemoveAllItems()
 	ActorRef.RemoveAllItems(ValuableItemsChest, True,False)
 	TransferItems(Equipment,ValuableItemsChest,ActorRef As ObjectReference)
+	TransferItemsByType(45,ValuableItemsChest,ActorRef As ObjectReference) ;Return Keys
 	If !ConfigMenu.bRespawnNaked
 		If RightHand 
 			If	ActorRef.GetItemCount(RightHandEquipedItem) > 0 && !ActorRef.IsEquipped(RightHandEquipedItem)
@@ -1793,6 +1797,7 @@ Function RemoveValuableItems(Actor ActorRef)
 		EndIf
 	EndWhile
 	TransferItems(Equipment,ValuableItemsChest,ActorRef As ObjectReference)
+	TransferItemsByType(45,ValuableItemsChest,ActorRef As ObjectReference) ;Return Keys
 	Int iTotal = ValuableItemsChest.GetNumItems()
 	If iTotal > 40
 		iTotal = Utility.RandomInt(40, iTotal)
@@ -2034,6 +2039,7 @@ Function RemoveValuableItemsGreedy(Actor ActorRef)
 		EndIf
 	EndWhile
 	TransferItems(Equipment,ValuableItemsChest,ActorRef As ObjectReference)
+	TransferItemsByType(45,ValuableItemsChest,ActorRef As ObjectReference) ;Return Keys
 	Int iTotal = ValuableItemsChest.GetNumItems()
 	If iTotal > 40
 		iTotal = Utility.RandomInt(40, iTotal)
@@ -2280,6 +2286,34 @@ Function TransferItems(Form[] ItemList, ObjectReference akFrom, ObjectReference 
 		EndIf
 	EndWhile
 EndFunction
+
+Function TransferItemsbyTypeArr(Int[] TypeArr, ObjectReference akFrom, ObjectReference akTo)
+	Int iIndex = akFrom.GetNumItems()
+	Form kItem
+	While ( iIndex > 0 ) 
+		iIndex -= 1
+		kItem = akFrom.GetNthForm( iIndex )
+		If kItem
+			If ( TypeArr.Find(kItem.GetType()) > -1 )
+				akFrom.RemoveItem(kItem, akFrom.GetItemCount(kItem), True, akTo )	
+			EndIf 
+		EndIf
+	EndWhile	
+Endfunction
+
+Function TransferItemsByType(Int iType, ObjectReference akFrom, ObjectReference akTo)
+	Int iIndex = akFrom.GetNumItems()
+	Form kItem
+	While ( iIndex > 0 ) 
+		iIndex -= 1
+		kItem = akFrom.GetNthForm( iIndex )
+		If kItem
+			If ( kItem.GetType() == iType )
+				akFrom.RemoveItem(kItem, akFrom.GetItemCount(kItem), True, akTo )	
+			EndIf 
+		EndIf
+	EndWhile	
+Endfunction
 
 Bool Function bGuardCanSendToJail()
 	bool bResult = False

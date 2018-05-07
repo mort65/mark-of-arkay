@@ -6,6 +6,7 @@ ObjectReference Property DetachMarker2 Auto
 ObjectReference Property DetachMarker1 Auto
 ObjectReference Property DetachMarker3 Auto
 GlobalVariable Property moaBleedoutHandlerState Auto
+zzzmoaReviveMCM Property ConfigMenu Auto
 
 Event OnCellDetach()
 	If moaState.GetValue() == 1
@@ -20,6 +21,9 @@ Event OnCellDetach()
 			DetachMarker1.MoveTo(DetachMarker2)
 			DetachMarker1.SetPosition(DetachMarker2.GetPositionx(), DetachMarker2.GetPositiony(), DetachMarker2.GetPositionz())
 			DetachMarker1.SetAngle(0.0, 0.0, DetachMarker2.GetAnglez())
+			If ( ConfigMenu.iSaveOption > 1 )
+				Game.SetInChargen(abDisableSaving = True, abDisableWaiting = False, abShowControlsDisabledMessage = True)
+			EndIf
 		EndIf
 		Enable()
 		MoveTo(PlayerRef)

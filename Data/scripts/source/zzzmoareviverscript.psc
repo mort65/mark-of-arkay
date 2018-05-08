@@ -37,6 +37,7 @@ Spell Property ArkayCurse Auto
 Spell Property ArkayCurseAlt Auto
 MagicEffect property AutoReviveSelf Auto
 ImageSpaceModifier Property FadeOut Auto
+ImageSpaceModifier Property FastFadeOut Auto
 ImageSpaceModifier Property BlackScreen Auto
 ImageSpaceModifier Property FadeIn Auto
 ImageSpaceModifier Property LowHealthImod Auto
@@ -125,7 +126,7 @@ Bool  bArkayMarkRevive
 Bool  bPotionRevive
 Float[] PriorityArray
 Int iChoice
-Bool bIsPlayerRagdoll
+Bool bWasSwimming
 Bool bHasAutoReviveEffect
 Int iArkayMarkCount
 Int iBSoulGemCount
@@ -324,13 +325,14 @@ Function BleedoutHandler(String CurrentState)
 	If ConfigMenu.iTotalBleedOut < 99999999
 		ConfigMenu.iTotalBleedOut += 1
 	EndIf
-	If ( ConfigMenu.bIsRevivalEnabled &&  PlayerRef.IsSwimming() && !WerewolfQuest.IsRunning() && !PlayerRef.GetAnimationVariableBool("bIsSynced") ) ;SKSE
-		PlayerRef.SetActorValue("Paralysis",1)
-		PlayerRef.PushActorAway(PlayerRef,0)
-		bIsPlayerRagdoll = True
+	If ( ConfigMenu.bIsRevivalEnabled && PlayerRef.IsSwimming()) ;SKSE
+		If !WerewolfQuest.IsRunning() && !PlayerRef.GetAnimationVariableBool("bIsSynced")
+			PlayerRef.PushActorAway(PlayerRef,0)
+		EndIf
+		bWasSwimming = True
 		Game.ForceThirdPerson()
 	Else
-		bIsPlayerRagdoll = False
+		bWasSwimming = False
 	EndIf
 	moaBleedoutHandlerState.SetValue(1)
 	LowHealthImod.Remove()
@@ -357,9 +359,6 @@ Function BleedoutHandler(String CurrentState)
 		If iPotion > -1
 			Utility.Wait(ConfigMenu.fBleedoutTimeSlider)
 			If !PlayerRef.IsBleedingOut()
-				If !(PlayerRef.GetActorValue("Paralysis") == 0)
-					PlayerRef.SetActorValue("Paralysis",0)
-				EndIf
 				RequipSpells()
 				PlayerRef.ResetHealthAndLimbs()
 				PlayerRef.RestoreActorValue("Health",9999)
@@ -379,9 +378,6 @@ Function BleedoutHandler(String CurrentState)
 				GoToState("")
 				Return
 			Else
-				If !(PlayerRef.GetActorValue("Paralysis") == 0)
-					PlayerRef.SetActorValue("Paralysis",0)
-				EndIf
 				If ConfigMenu.bIsNotificationEnabled
 					Debug.Notification("$mrt_MarkofArkay_Notification_Revive_Potion")
 				EndIf
@@ -418,8 +414,12 @@ Function BleedoutHandler(String CurrentState)
 		If !bPotionRevive || bHasAutoReviveEffect || Victim || bInBeastForm()
 			Utility.Wait(ConfigMenu.fBleedoutTimeSlider)
 		Else
-			Game.EnablePlayerControls()
-			Debug.SetGodMode(False)
+			If bWasSwimming
+				Game.EnablePlayerControls(abMovement = False, abFighting = False, abCamSwitch = False, abLooking = False, abSneaking = False, abMenu = True, abActivate = False, abJournalTabs = False)
+			Else
+				Game.EnablePlayerControls()
+				Debug.SetGodMode(False)
+			EndIf
 			Utility.Wait(ConfigMenu.fBleedoutTimeSlider)
 		EndIf
 		If (GetState() != CurrentState) ; player revived with a potion but returned to bleedout in less than 6 secs
@@ -427,9 +427,6 @@ Function BleedoutHandler(String CurrentState)
 		ElseIf !PlayerRef.IsBleedingOut() ;player revived with potion or another script and is alive after 6 secs
 			If bPotionRevive && ConfigMenu.bIsEffectEnabled
 				moaReviveAfterEffect.Cast(PlayerRef)
-			EndIf
-			If !(PlayerRef.GetActorValue("Paralysis") == 0)
-				PlayerRef.SetActorValue("Paralysis",0)
 			EndIf
 			RequipSpells()
 			PlayerRef.ResetHealthAndLimbs()
@@ -589,9 +586,6 @@ Function BleedoutHandler(String CurrentState)
 	Else
 		Utility.Wait(ConfigMenu.fBleedoutTimeSlider)
 		If !PlayerRef.IsBleedingOut()
-			If !(PlayerRef.GetActorValue("Paralysis") == 0)
-				PlayerRef.SetActorValue("Paralysis",0)
-			EndIf
 			RequipSpells()
 			PlayerRef.ResetHealthAndLimbs()
 			PlayerRef.RestoreActorValue("Health",9999)
@@ -845,9 +839,6 @@ Function RevivePlayer(Bool bRevive)
 				BleedoutProtection.Cast(PlayerRef)
 			EndIf
 		EndIf
-		If !(PlayerRef.GetActorValue("Paralysis") == 0)
-			PlayerRef.SetActorValue("Paralysis",0)
-		EndIf
 		PlayerRef.ResetHealthAndLimbs()
 		PlayerRef.RestoreActorValue("Health",9999)
 		Debug.SetGodMode(False)
@@ -883,7 +874,8 @@ Function RevivePlayer(Bool bRevive)
 			ToggleSaving(True)
 			moaBleedoutHandlerState.SetValue(0)
 			LowHealthImod.Remove()
-			PlayerRef.KillEssential(None)
+			PlayerRef.GetActorBase().SetEssential(False)
+			PlayerRef.Kill()
 			GoToState("")
 		ElseIf ( ConfigMenu.iNotTradingAftermath == 1)
 			Game.DisablePlayerControls()
@@ -896,17 +888,21 @@ Function RevivePlayer(Bool bRevive)
             EndIf
 			PlayerRef.ResetHealthAndLimbs()
 			PlayerRef.RestoreActorValue("Health",9999)
-			If !bIsPlayerRagdoll && !PlayerRef.GetAnimationVariableBool("bIsSynced")
-				PlayerRef.SetActorValue("Paralysis",1)
+			If !bWasSwimming
 				PlayerRef.PushActorAway(PlayerRef,0)
 				Utility.Wait(0.1)
 				PlayerRef.Say(DeathTopic)
+				Game.ForceThirdPerson()
+				FastFadeOut.Apply()
+				Utility.Wait(1.0)
+				FastFadeOut.PopTo(BlackScreen)
+				PlayerRef.SetAlpha(0)
+			Else
+				PlayerRef.SetAlpha(0)
+				FastFadeOut.Apply()
+				Utility.Wait(1.0)
+				FastFadeOut.PopTo(BlackScreen)
 			EndIf
-			Game.ForceThirdPerson()
-			Utility.Wait(1.0)
-			FadeOut.Apply()
-			Utility.Wait(2.5)
-			FadeOut.PopTo(BlackScreen)
 			iRemovableItems = ConfigMenu.iRemovableItems
             If bInBeastForm()
                 iRemovableItems = 0
@@ -1055,16 +1051,15 @@ Function RevivePlayer(Bool bRevive)
 			EndIf
 			Utility.Wait(0.5)
 			Attacker = None
-			If !(PlayerRef.GetActorValue("Paralysis") == 0)
-				PlayerRef.SetActorValue("Paralysis",0)
-			EndIf
 			RequipSpells()
 			If PlayerRef.IsWeaponDrawn() ;If Player has a weapon drawn,
 				PlayerRef.SheatheWeapon() ;Sheathe the drawn weapon.
 			EndIf
 			PlayerRef.DispelAllSpells()
 			PlayerRef.ClearExtraArrows()
-			Utility.Wait(6.0)
+			Utility.Wait(5.0)
+			PlayerRef.SetAlpha(1,True)
+			Utility.Wait(1.0)
 			RefreshFace()
 			If ( ConfigMenu.bRespawnNaked && !bInBeastForm() )
 				PlayerRef.UnequipAll()
@@ -1280,10 +1275,6 @@ Function PassTime(Float fGameHours,Float fRealSecs)
 EndFunction
 
 Bool Function bIsArrived(ObjectReference Marker)
-	If !( bIsPlayerRagdoll || ( PlayerRef.GetActorValue("Paralysis") == 0 )) 
-		PlayerRef.SetActorValue("Paralysis",0)
-		Utility.Wait(0.5)
-	EndIf
 	PlayerRef.MoveTo(Marker)
 	Utility.Wait(0.5)
 	If (PlayerRef.GetDistance(Marker) <= 500.0)

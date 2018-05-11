@@ -2278,14 +2278,14 @@ Function TransferItems(Form[] ItemList, ObjectReference akFrom, ObjectReference 
 	EndWhile
 EndFunction
 
-Function TransferItemsbyTypeArr(Int[] TypeArr, ObjectReference akFrom, ObjectReference akTo)
+Function TransferItemsbyTypeArr(Int[] iTypeArr, ObjectReference akFrom, ObjectReference akTo)
 	Int iIndex = akFrom.GetNumItems()
 	Form kItem
 	While ( iIndex > 0 ) 
 		iIndex -= 1
 		kItem = akFrom.GetNthForm( iIndex )
 		If kItem
-			If ( TypeArr.Find(kItem.GetType()) > -1 )
+			If ( iTypeArr.Find(kItem.GetType()) > -1 )
 				akFrom.RemoveItem(kItem, akFrom.GetItemCount(kItem), True, akTo )	
 			EndIf 
 		EndIf
@@ -2531,14 +2531,14 @@ Endfunction
 
 ObjectReference Function FindMarkerByLocation()
 	If ( ExcludedMarkerList.find(DetachMarker2) < 0 )
-		If ( bInSameLocation( DetachMarker2.GetCurrentLocation() ) || ( IsInInteriorActual(PlayerRef) && !IsInInteriorActual(DetachMarker2) ) ) 
+		If ( bInSameLocation( DetachMarker2.GetCurrentLocation() ) || ( IsInInteriorActual(PlayerMarker) && !IsInInteriorActual(DetachMarker2) ) ) 
 			If ( PlayerMarker.GetDistance(DetachMarker2) >= 3000.0 )
 				Return DetachMarker2
 			EndIf
 		EndIf
 	EndIf
 	If ( ExcludedMarkerList.find(DetachMarker1) < 0 )
-		If ( bInSameLocation( DetachMarker1.GetCurrentLocation() ) || ( IsInInteriorActual(PlayerRef) && !IsInInteriorActual(DetachMarker1) ) )
+		If ( bInSameLocation( DetachMarker1.GetCurrentLocation() ) || ( IsInInteriorActual(PlayerMarker) && !IsInInteriorActual(DetachMarker1) ) )
 			If ( PlayerMarker.GetDistance(DetachMarker1) >= 3000.0 )
 				Return DetachMarker1
 			EndIf

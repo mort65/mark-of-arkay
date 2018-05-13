@@ -226,14 +226,17 @@ Event OnSleepStart(float afSleepStartTime, float afDesiredSleepEndTime)
 EndEvent
 
 Event OnSleepStop(Bool abInterrupted)
-	If !abInterrupted
-		If ( ConfigMenu.iSaveOption == 2 || ConfigMenu.iSaveOption == 4 ) 
-			If ( !PlayerRef.IsDead() && !PlayerRef.IsBleedingOut() && GetState() == "" )
-				Game.SetInChargen(False,False,False)
-				Utility.Wait(6.0)
-				Game.SetInChargen(abDisableSaving = True, abDisableWaiting = False, abShowControlsDisabledMessage = True)
-			EndIf
+	If ( ConfigMenu.iSaveOption == 2 || ConfigMenu.iSaveOption == 4 ) 
+		If ( !PlayerRef.IsDead() && !PlayerRef.IsBleedingOut() && GetState() == "" )
+			Game.SetInChargen(False,False,False)
+			RegisterForSingleUpdate(6.0)
 		EndIf
+	EndIf
+EndEvent
+
+Event OnUpdate()
+	If ( ConfigMenu.iSaveOption > 1 )
+		Game.SetInChargen(abDisableSaving = True, abDisableWaiting = False, abShowControlsDisabledMessage = True)
 	EndIf
 EndEvent
 

@@ -66,6 +66,7 @@ Int oidTogglePowers
 Int oidToggleSpells
 Int oidRespawnTimeSlider
 Int oidEnableSave_M
+Int oidHealActors
 String[] Property sRespawnPoints Auto
 String[] Property sLoseOptions Auto
 String[] Property sAftermathOptions Auto
@@ -110,6 +111,7 @@ Bool Property bLoseForever = False Auto Hidden
 Bool Property bSoulMarkStay = False Auto Hidden
 Bool Property bIsHistoryEnabled = False Auto Hidden
 Bool Property bIsInfoEnabled = False Auto Hidden
+Bool property bHealActors = False Auto Hidden
 Bool Property bSendToJail = False Auto Hidden
 Int Property iTeleportLocation = 0 Auto Hidden
 Int Property iSaveOption = 1 Auto Hidden
@@ -334,17 +336,19 @@ Event OnPageReset(String page)
 			flags = OPTION_FLAG_DISABLED
 		Endif
 		oidArkayCurses_M = AddMenuOption("$mrt_MarkofArkay_ArkayCurses_M", sArkayCurses[iArkayCurse], flags)
-		SetCursorPosition(10)
+		SetCursorPosition(8)
 		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1))
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		Endif
 		oidRespawnNaked = AddToggleOption("$mrt_MarkofArkay_RespawnNaked", bRespawnNaked, flags)
-		SetCursorPosition(12)
+		SetCursorPosition(10)
 		oidJail = AddToggleOption("$mrt_MarkofArkay_Jail",bSendToJail,flags)
-		SetCursorPosition(14)
+		SetCursorPosition(12)
 		oidArkayCurse = AddToggleOption("$mrt_MarkofArkay_ArkayCurse", bArkayCurse, flags)
+		SetCursorPosition(14)
+		oidHealActors = AddToggleOption("$mrt_MarkofArkay_HealActors",bHealActors,flags)
 		SetCursorPosition(16)
 		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && ( iRemovableItems != 0 ))
 			flags =	OPTION_FLAG_NONE
@@ -747,6 +751,9 @@ Event OnOptionSelect(Int option)
 	ElseIf (option == oidJail)
 		bSendToJail = !bSendToJail
 		SetToggleOptionValue(oidJail, bSendToJail)
+	ElseIf (option == oidHealActors)
+		bHealActors = !bHealActors
+		SetToggleOptionValue(oidHealActors, bHealActors)
 	ElseIf (option == oidArkayCurse)
 		bArkayCurse = !bArkayCurse
 		SetToggleOptionValue(oidArkayCurse, bArkayCurse)
@@ -856,6 +863,7 @@ Event OnOptionSelect(Int option)
 		SetOptionFlags(oidTeleportLocation_M,flags,True)
 		SetOptionFlags(oidRespawnNaked,flags,True)
 		SetOptionFlags(oidJail,flags,True)
+		SetOptionFlags(oidHealActors,flags,True)
 		SetOptionFlags(oidArkayCurse,flags,True)
 		SetOptionFlags(oidArkayCurses_M,flags,True)
 		SetOptionFlags(oidLoseforever,flags,True)
@@ -926,6 +934,7 @@ Event OnOptionSelect(Int option)
 		SetOptionFlags(oidTeleportLocation_M,flags,True)
 		SetOptionFlags(oidRespawnNaked,flags,True)
 		SetOptionFlags(oidJail,flags,True)
+		SetOptionFlags(oidHealActors,flags,True)
 		SetOptionFlags(oidArkayCurse,flags,True)
 		SetOptionFlags(oidArkayCurses_M,flags,True)
 		SetOptionFlags(oidLoseforever,flags,True)
@@ -1173,6 +1182,7 @@ Event OnOptionMenuAccept(Int option, Int index)
 		Endif
 		SetOptionFlags(oidRespawnNaked,flags,True)
 		SetOptionFlags(oidJail,flags,True)
+		SetOptionFlags(oidHealActors,flags,True)
 		SetOptionFlags(oidArkayCurse,flags,True)
 		SetOptionFlags(oidRemovableItems_M,flags)
 		If bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bArkayCurse
@@ -1355,6 +1365,9 @@ Event OnOptionDefault(Int option)
 	ElseIf (option == oidJail)
 		bSendToJail = False
 		SetToggleOptionValue(oidJail,False)
+	ElseIf (option == oidHealActors)
+		bHealActors = False
+		SetToggleOptionValue(oidHealActors,False)
 	ElseIf (option == oidArkayCurse)
 		bArkayCurse = False
 		SetToggleOptionValue(oidArkayCurse,False)
@@ -1391,6 +1404,7 @@ Event OnOptionDefault(Int option)
 		flags = OPTION_FLAG_DISABLED
 		SetOptionFlags(oidRespawnNaked,flags,True)
 		SetOptionFlags(oidJail,flags,True)
+		SetOptionFlags(oidHealActors,flags,True)
 		SetOptionFlags(oidArkayCurse,flags,True)
 		SetOptionFlags(oidArkayCurses_M,flags,True)
 		SetOptionFlags(oidLoseforever,flags,True)
@@ -1555,6 +1569,8 @@ Event OnOptionHighlight(Int option)
 		SetInfoText("$mrt_MarkofArkay_DESC_RespawnNaked")
 	ElseIf (option == oidJail)
 		SetInfoText("$mrt_MarkofArkay_DESC_Jail")
+	ElseIf (option == oidHealActors)
+		SetInfoText("$mrt_MarkofArkay_DESC_HealActors")
 	ElseIf (option == oidArkayCurse)
 		SetInfoText("$mrt_MarkofArkay_DESC_ArkayCurse")
 	ElseIf (option == oidRemovableItems_M)

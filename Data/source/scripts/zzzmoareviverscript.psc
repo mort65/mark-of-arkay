@@ -35,6 +35,7 @@ Spell Property MoveCustomMarker Auto
 Spell Property RecallMarker Auto
 Spell Property ArkayCurse Auto
 Spell Property ArkayCurseAlt Auto
+Spell Property MassHealing Auto
 MagicEffect property AutoReviveSelf Auto
 ImageSpaceModifier Property FadeOut Auto
 ImageSpaceModifier Property FastFadeOut Auto
@@ -225,14 +226,17 @@ Event OnSleepStart(float afSleepStartTime, float afDesiredSleepEndTime)
 EndEvent
 
 Event OnSleepStop(Bool abInterrupted)
-	If !abInterrupted
-		If ( ConfigMenu.iSaveOption == 2 || ConfigMenu.iSaveOption == 4 ) 
-			If ( !PlayerRef.IsDead() && !PlayerRef.IsBleedingOut() && GetState() == "" )
-				Game.SetInChargen(False,False,False)
-				Utility.Wait(6.0)
-				Game.SetInChargen(abDisableSaving = True, abDisableWaiting = False, abShowControlsDisabledMessage = True)
-			EndIf
+	If ( ConfigMenu.iSaveOption == 2 || ConfigMenu.iSaveOption == 4 ) 
+		If ( !PlayerRef.IsDead() && !PlayerRef.IsBleedingOut() && GetState() == "" )
+			Game.SetInChargen(False,False,False)
+			RegisterForSingleUpdate(6.0)
 		EndIf
+	EndIf
+EndEvent
+
+Event OnUpdate()
+	If ( ConfigMenu.iSaveOption > 1 )
+		Game.SetInChargen(abDisableSaving = True, abDisableWaiting = False, abShowControlsDisabledMessage = True)
 	EndIf
 EndEvent
 
@@ -889,7 +893,9 @@ Function RevivePlayer(Bool bRevive)
 			PlayerRef.ResetHealthAndLimbs()
 			PlayerRef.RestoreActorValue("Health",9999)
 			If !bWasSwimming
-				PlayerRef.PushActorAway(PlayerRef,0)
+				If !WerewolfQuest.IsRunning() && !PlayerRef.GetAnimationVariableBool("bIsSynced")
+					PlayerRef.PushActorAway(PlayerRef,0)
+				EndIf
 				Utility.Wait(0.1)
 				PlayerRef.Say(DeathTopic)
 				Game.ForceThirdPerson()
@@ -902,6 +908,16 @@ Function RevivePlayer(Bool bRevive)
 				FastFadeOut.Apply()
 				Utility.Wait(1.0)
 				FastFadeOut.PopTo(BlackScreen)
+			EndIf
+			If ConfigMenu.bHealActors
+				If Attacker && !Attacker.IsDead()
+					If (( Attacker.GetParentCell() == PlayerRef.GetParentCell() ) || PlayerRef.GetDistance(Attacker) < 10000.0 )
+						If Attacker.GetActorValue("Health") > 0
+							Attacker.RestoreActorValue("Health",999999)
+						EndIf
+					EndIf
+				EndIf
+				MassHealing.Cast(PlayerRef)
 			EndIf
 			iRemovableItems = ConfigMenu.iRemovableItems
             If bInBeastForm()
@@ -1481,18 +1497,18 @@ EndFunction
 
 Function RefreshFace()	;for closed eye bug
 	; Disabling facegen
-	bool oldUseFaceGen = Utility.GetINIBool( "bUseFaceGenPreprocessedHeads:General" )
-	if ( oldUseFaceGen )
-		Utility.SetINIBool( "bUseFaceGenPreprocessedHeads:General", false )
-	endif
+	Bool oldUseFaceGen = Utility.GetINIBool( "bUseFaceGenPreprocessedHeads:General" )
+	If ( oldUseFaceGen )
+		Utility.SetINIBool( "bUseFaceGenPreprocessedHeads:General", False )
+	EndIf
 	
 	; Updating player
 	PlayerRef.QueueNiNodeUpdate()
 	
 	; Restoring facegen
-	if ( oldUseFaceGen )
-		Utility.SetINIBool( "bUseFaceGenPreprocessedHeads:General", true )
-	endif
+	If ( oldUseFaceGen )
+		Utility.SetINIBool( "bUseFaceGenPreprocessedHeads:General", True )
+	EndIf
 EndFunction
 
 Bool Function IsInInteriorActual(ObjectReference akObjectReference)
@@ -2531,14 +2547,14 @@ Endfunction
 
 ObjectReference Function FindMarkerByLocation()
 	If ( ExcludedMarkerList.find(DetachMarker2) < 0 )
-		If ( bInSameLocation( DetachMarker2.GetCurrentLocation() ) || ( IsInInteriorActual(PlayerMarker) && !IsInInteriorActual(DetachMarker2) ) ) 
+		If ( bInSameLocation( DetachMarker2.GetCurrentLocation() ) || ( IsInInteriorActual(PlayerMarker) != IsInInteriorActual(DetachMarker2) ) ) 
 			If ( PlayerMarker.GetDistance(DetachMarker2) >= 3000.0 )
 				Return DetachMarker2
 			EndIf
 		EndIf
 	EndIf
 	If ( ExcludedMarkerList.find(DetachMarker1) < 0 )
-		If ( bInSameLocation( DetachMarker1.GetCurrentLocation() ) || ( IsInInteriorActual(PlayerMarker) && !IsInInteriorActual(DetachMarker1) ) )
+		If ( bInSameLocation( DetachMarker1.GetCurrentLocation() ) || ( IsInInteriorActual(PlayerMarker) != IsInInteriorActual(DetachMarker1) ) )
 			If ( PlayerMarker.GetDistance(DetachMarker1) >= 3000.0 )
 				Return DetachMarker1
 			EndIf

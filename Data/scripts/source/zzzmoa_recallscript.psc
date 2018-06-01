@@ -263,7 +263,7 @@ Function SendToNearestLocation()
 		return
 	EndIf
 	If ExternalMarkerList.GetSize() > 0
-		Int jIndex = ReviveScript.Min(100,ExternalMarkerList.GetSize())
+		Int jIndex = ReviveScript.iMin(100,ExternalMarkerList.GetSize())
 		While jIndex > 0
 			jIndex -= 1
 			If ( ExternalMarkerList.GetAt( jIndex ).GetType() == 61 ) 
@@ -369,7 +369,7 @@ Function SendToNearestLocation()
 		EndIf
 	EndIf
 	If ExternalMarkerList.GetSize() > 0
-		Int jIndex = ReviveScript.Min(100,ExternalMarkerList.GetSize())
+		Int jIndex = ReviveScript.iMin(100,ExternalMarkerList.GetSize())
 		While jIndex > 0
 			jIndex -= 1
 			If ( ExternalMarkerList.GetAt( jIndex ).GetType() == 61 ) 

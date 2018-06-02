@@ -56,8 +56,11 @@ Event OnReset()
 					EndIf
 				EndIf
 				GetOwningQuest().Stop()	
-			ElseIf !( GetReference() As Actor ).GetItemCount( ConfigMenu.ReviveScript.StolenItemsMisc )
-				( GetReference() As Actor ).AddItem( ConfigMenu.ReviveScript.StolenItemsMisc )
+			Else
+				If !(( GetReference() As Actor ).GetItemCount( ConfigMenu.ReviveScript.StolenItemsMisc ))
+					( GetReference() As Actor ).AddItem( ConfigMenu.ReviveScript.StolenItemsMisc )
+				EndIf
+				( GetReference() As Actor ).AddToFaction(ConfigMenu.ReviveScript.PlayerEnemyFaction)
 			EndIf
 		EndIf
 	EndIf

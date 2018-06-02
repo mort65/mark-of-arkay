@@ -131,6 +131,7 @@ Faction Property CrimeFactionRift  Auto
 Faction Property CrimeFactionWhiterun  Auto
 Faction Property CrimeFactionEastmarch  Auto
 Faction Property CrimeFactionWinterhold  Auto
+Faction Property PlayerEnemyFaction Auto
 Faction Property DLC2CrimeRavenRockFaction Auto
 Faction Property CurrentFollowerFaction Auto
 Faction Property CurrentHireling Auto
@@ -343,8 +344,11 @@ Event OnLocationChange(Location akOldLoc, Location akNewLoc)
 						moaRetrieveLostItems01.setStage(20)
 					EndIf
 				EndIf
-			ElseIf (( ThiefNPC.GetReference() As Actor ) && !((ThiefNPC.GetReference() As Actor ).GetItemCount(StolenItemsMisc)))
-				(ThiefNPC.GetReference() As Actor).AddItem(StolenItemsMisc)
+			ElseIf ( ThiefNPC.GetReference() As Actor ) 
+				If !((ThiefNPC.GetReference() As Actor ).GetItemCount(StolenItemsMisc))
+					(ThiefNPC.GetReference() As Actor).AddItem(StolenItemsMisc)
+				EndIf
+				(ThiefNPC.GetReference() As Actor).AddToFaction(PlayerEnemyFaction)
 			EndIf
 		EndIf
 	EndIf
@@ -463,8 +467,11 @@ Function BleedoutHandler(String CurrentState)
 					ResurrectFollowers()
 				EndIf
 				If ( moaThiefNPC01.IsRunning() )			
-					If (( ThiefNPC.GetReference() As Actor ) && !((ThiefNPC.GetReference() As Actor ).GetItemCount(StolenItemsMisc)))
-						(ThiefNPC.GetReference() As Actor).AddItem(StolenItemsMisc)
+					If ( ThiefNPC.GetReference() As Actor ) 
+						If !((ThiefNPC.GetReference() As Actor ).GetItemCount(StolenItemsMisc))
+							(ThiefNPC.GetReference() As Actor).AddItem(StolenItemsMisc)
+						EndIf
+						(ThiefNPC.GetReference() As Actor).AddToFaction(PlayerEnemyFaction)
 					EndIf
 				EndIf
 				Attacker = None
@@ -499,8 +506,11 @@ Function BleedoutHandler(String CurrentState)
 					ResurrectFollowers()
 				EndIf
 				If ( moaThiefNPC01.IsRunning() )			
-					If (( ThiefNPC.GetReference() As Actor ) && !((ThiefNPC.GetReference() As Actor ).GetItemCount(StolenItemsMisc)))
-						(ThiefNPC.GetReference() As Actor).AddItem(StolenItemsMisc)
+					If ( ThiefNPC.GetReference() As Actor ) 
+						If	!((ThiefNPC.GetReference() As Actor ).GetItemCount(StolenItemsMisc))
+							(ThiefNPC.GetReference() As Actor).AddItem(StolenItemsMisc)
+						EndIf
+						(ThiefNPC.GetReference() As Actor).AddToFaction(PlayerEnemyFaction)
 					EndIf
 				EndIf
 				Attacker = None
@@ -555,8 +565,11 @@ Function BleedoutHandler(String CurrentState)
 				ResurrectFollowers()
 			EndIf
 			If ( moaThiefNPC01.IsRunning() )			
-				If (( ThiefNPC.GetReference() As Actor ) && !((ThiefNPC.GetReference() As Actor ).GetItemCount(StolenItemsMisc)))
-					(ThiefNPC.GetReference() As Actor).AddItem(StolenItemsMisc)
+				If ( ThiefNPC.GetReference() As Actor ) 
+					If !((ThiefNPC.GetReference() As Actor ).GetItemCount(StolenItemsMisc))
+						(ThiefNPC.GetReference() As Actor).AddItem(StolenItemsMisc)
+					EndIf
+					(ThiefNPC.GetReference() As Actor).AddToFaction(PlayerEnemyFaction)
 				EndIf
 			EndIf
 			Attacker = None
@@ -737,8 +750,11 @@ Function BleedoutHandler(String CurrentState)
 				ResurrectFollowers()
 			EndIf
 			If ( moaThiefNPC01.IsRunning() )			
-				If (( ThiefNPC.GetReference() As Actor ) && !((ThiefNPC.GetReference() As Actor ).GetItemCount(StolenItemsMisc)))
-					(ThiefNPC.GetReference() As Actor).AddItem(StolenItemsMisc)
+				If ( ThiefNPC.GetReference() As Actor ) 
+					If !((ThiefNPC.GetReference() As Actor ).GetItemCount(StolenItemsMisc))
+						(ThiefNPC.GetReference() As Actor).AddItem(StolenItemsMisc)
+					EndIf
+					(ThiefNPC.GetReference() As Actor).AddToFaction(PlayerEnemyFaction)
 				EndIf
 			EndIf
 			Attacker = None
@@ -1065,9 +1081,9 @@ Endfunction
 Bool Function bCanSteal(Actor ActorRef)
 	If ActorRef
 		Return (( ActorRef != PlayerRef ) && !ActorRef.IsDead() &&\
-		!ActorRef.Isdisabled() && !ActorRef.IsEssential() &&\
-		!ActorRef.IsCommandedActor() && !ActorRef.IsGuard() &&\
-		!ActorRef.HasKeywordString("actortypeanimal") &&\
+		!ActorRef.Isdisabled() && !ActorRef.IsEssential() && !ActorRef.GetActorBase().IsProtected() &&\
+		!ActorRef.GetActorBase().IsInvulnerable() && !ActorRef.IsGhost() && !ActorRef.IsCommandedActor() &&\
+		!ActorRef.IsGuard() && !ActorRef.HasKeywordString("actortypeanimal") && !ActorRef.HasKeywordString("actortypeghost") &&\
 		(( ActorRef.HasKeywordString("actortypenpc") && !ActorRef.HasKeywordString("actortypecreature") && ( ActorRef.GetActorValue("Morality") < 3 )) ||\
 		( Configmenu.bCreaturesCanSteal && ActorRef.HasKeywordString("actortypecreature") && !ActorRef.HasKeywordString("actortypedragon"))) &&\
 		(( ActorRef.GetFactionReaction(PlayerRef) == 1 ) || ActorRef.IsHostileToActor(PlayerRef) || ( ActorRef.GetRelationShipRank(PlayerRef) < 0 ))) &&\
@@ -1080,7 +1096,7 @@ Bool Function bIsHostile(Actor ActorRef)
 	If ActorRef
 		Return (( ActorRef != PlayerRef ) && !ActorRef.IsDead() &&\
 		!ActorRef.Isdisabled() && !ActorRef.IsCommandedActor() && !ActorRef.IsGuard() &&\
-		!ActorRef.HasKeywordString("actortypeanimal") &&\
+		!ActorRef.HasKeywordString("actortypeanimal") && !ActorRef.HasKeywordString("actortypeghost") &&\
 		(( ActorRef.HasKeywordString("actortypenpc") && !ActorRef.HasKeywordString("actortypecreature")) ||\
 		( Configmenu.bCreaturesCanSteal && ActorRef.HasKeywordString("actortypecreature") && !ActorRef.HasKeywordString("actortypedragon"))) &&\
 		(( Attacker && (Attacker == ActorRef )) || ( ActorRef.GetFactionReaction(PlayerRef) == 1 ) ||\
@@ -1091,7 +1107,7 @@ Endfunction
 
 Function DetectThiefNPC()
 	ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Finding a thief (Phase 0)...")
-	If ( LostItemsChest.GetNumItems() > 0 && !ConfigMenu.bLoseForever && Thief && !Thief.IsDisabled() )
+	If ( LostItemsChest.GetNumItems() > 0 && !ConfigMenu.bLoseForever && Thief && !Thief.IsDisabled() && !Thief.GetActorBase().IsInvulnerable() )
 		If ( !bIsHostile(Thief) || PlayerRef.GetDistance(Thief) > 2000 )
 			iRemovableItems = 0
 		EndIf
@@ -1100,14 +1116,17 @@ Function DetectThiefNPC()
 	EndIf
 	Thief = None
 	ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Finding a thief (Phase 1)...")
-	If moaHostileNPCDetector.IsRunning() && HostileActor.GetReference() As Actor
+	If moaHostileNPCDetector.IsRunning() && ( HostileActor.GetReference() As Actor ) &&\
+	!(( HostileActor.GetReference() As Actor ).IsDead() ) && !(( HostileActor.GetReference() As Actor ).GetActorBase().IsInvulnerable() )
 		Thief = HostileActor.GetReference() As Actor
 		ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Detected thief in phase 1: [ " + Thief.GetActorBase().GetName() + " : " + Thief + " ]" )
 		Return
 	Else
 		moaHostileNPCDetector.Stop()
 		moaHostileNPCDetector.Start()
-		If HostileActor.GetReference() As Actor
+		If ( HostileActor.GetReference() As Actor ) &&\
+		!(( HostileActor.GetReference() As Actor ).IsDead() ) &&\
+		!(( HostileActor.GetReference() As Actor ).GetActorBase().IsInvulnerable() )
 			Thief = HostileActor.GetReference() As Actor
 			ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Detected thief in phase 1: [ " + Thief.GetActorBase().GetName() + " : " + Thief + " ]" )
 			Return
@@ -1416,10 +1435,12 @@ Function RevivePlayer(Bool bRevive)
 					If ( ThiefNPC.GetReference() As Actor )
 						( ThiefNPC.GetReference() As Actor ).RemoveItem(StolenItemsMisc,(ThiefNPC.GetReference() As Actor ).GetItemCount(StolenItemsMisc))
 					EndIf
+					(ThiefNPC.GetReference() As Actor).RemoveFromFaction(PlayerEnemyFaction)
 					moaThiefNPC01.Stop()
 				EndIf
 				If Thief
 					Thief.RemoveItem(StolenItemsMisc,Thief.GetItemCount(StolenItemsMisc))
+					Thief.RemoveFromFaction(PlayerEnemyFaction)
 				EndIf
 				playerRef.RemoveItem(StolenItemsMisc, PlayerRef.GetItemCount(StolenItemsMisc), abSilent = True)
 			EndIf
@@ -1428,8 +1449,11 @@ Function RevivePlayer(Bool bRevive)
 			ResurrectFollowers()
 		EndIf
 		If ( moaThiefNPC01.IsRunning() )			
-			If (( ThiefNPC.GetReference() As Actor ) && !((ThiefNPC.GetReference() As Actor ).GetItemCount(StolenItemsMisc)))
-				(ThiefNPC.GetReference() As Actor).AddItem(StolenItemsMisc)
+			If ( ThiefNPC.GetReference() As Actor ) 
+				If !((ThiefNPC.GetReference() As Actor ).GetItemCount(StolenItemsMisc))
+					(ThiefNPC.GetReference() As Actor).AddItem(StolenItemsMisc)
+				EndIf
+				(ThiefNPC.GetReference() As Actor).AddToFaction(PlayerEnemyFaction)
 			EndIf
 		EndIf
 		Attacker = None
@@ -1550,9 +1574,17 @@ Function RevivePlayer(Bool bRevive)
 							EndIf
 							If !moaThiefNPC01.IsRunning()
 								moaThiefNPC01.Start()
+								If !((ThiefNPC.GetReference() As Actor).GetItemCount(StolenItemsMisc))
+									(ThiefNPC.GetReference() As Actor).AddItem(StolenItemsMisc)
+								EndIf
+								(ThiefNPC.GetReference() As Actor).AddToFaction(PlayerEnemyFaction)
 							EndIf
 						Else
-							moaThiefNPC01.Stop()
+							If moaThiefNPC01.IsRunning()
+								(ThiefNPC.GetReference() As Actor).RemoveItem(StolenItemsMisc,(ThiefNPC.GetReference() As Actor ).GetItemCount(StolenItemsMisc))
+								(ThiefNPC.GetReference() As Actor).RemoveFromFaction(PlayerEnemyFaction)
+								moaThiefNPC01.Stop()
+							EndIf
 						EndIf
 					EndIf
 				ElseIf ( moaThiefNPC01.IsRunning() )
@@ -1560,10 +1592,12 @@ Function RevivePlayer(Bool bRevive)
 						(( LostItemsChest.GetNumItems() == 0 ) && ( fLostSouls == 0.0 )))
 						If (ThiefNPC.GetReference() As Actor)
 							(ThiefNPC.GetReference() As Actor).RemoveItem(StolenItemsMisc,(ThiefNPC.GetReference() As Actor ).GetItemCount(StolenItemsMisc))
+							(ThiefNPC.GetReference() As Actor).RemoveFromFaction(PlayerEnemyFaction)
 							moaThiefNPC01.Stop()
 						EndIf
 						If Thief
 							Thief.RemoveItem(StolenItemsMisc, Thief.GetItemCount(StolenItemsMisc))
+							Thief.RemoveFromFaction(PlayerEnemyFaction)
 						EndIf
 						PlayerRef.RemoveItem(StolenItemsMisc, PlayerRef.GetItemCount(StolenItemsMisc), abSilent = True)
 						If moaRetrieveLostItems.IsRunning()
@@ -1831,25 +1865,31 @@ Function RevivePlayer(Bool bRevive)
 					If PreviousThief
 						If ( !moaThiefNPC01.IsRunning() || ( PreviousThief != Thief ))
 							PreviousThief.RemoveItem(StolenItemsMisc,PreviousThief.GetItemCount(StolenItemsMisc))
+							PreviousThief.RemoveFromFaction(PlayerEnemyFaction)
 						EndIf
 					EndIf
 					playerRef.RemoveItem(StolenItemsMisc, playerRef.GetItemCount(StolenItemsMisc), abSilent = True)
 					Utility.Wait(0.5)
 				EndIf
-				If  (( bIsItemsRemoved && (( LostItemsChest.GetNumItems() > 0 ) || ( fLostSouls > 0.0 ))) || PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt) )
-					If moaSoulMark01.IsRunning()
-						moaRetrieveLostItems.Start()
-						moaRetrieveLostItems.SetStage(1)
-						ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Soul Mark Quest Started.")
-					ElseIf moaThiefNPC01.IsRunning()
-						moaRetrieveLostItems01.Start()
-						moaRetrieveLostItems01.SetStage(1)
-						ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Stolen Items Quest Started.")
+				If ConfigMenu.bLostItemQuest
+					If  (( bIsItemsRemoved && (( LostItemsChest.GetNumItems() > 0 ) || ( fLostSouls > 0.0 ))) || PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt) )
+						If moaSoulMark01.IsRunning()
+							moaRetrieveLostItems.Start()
+							moaRetrieveLostItems.SetStage(1)
+							ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Soul Mark Quest Started.")
+						ElseIf moaThiefNPC01.IsRunning()
+							moaRetrieveLostItems01.Start()
+							moaRetrieveLostItems01.SetStage(1)
+							ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Stolen Items Quest Started.")
+						EndIf
 					EndIf
 				EndIf
 				If ( moaThiefNPC01.IsRunning() )			
-					If (( ThiefNPC.GetReference() As Actor ) && !((ThiefNPC.GetReference() As Actor ).GetItemCount(StolenItemsMisc)))
-						(ThiefNPC.GetReference() As Actor).AddItem(StolenItemsMisc)
+					If ( ThiefNPC.GetReference() As Actor ) 
+						If !((ThiefNPC.GetReference() As Actor ).GetItemCount(StolenItemsMisc))
+							(ThiefNPC.GetReference() As Actor).AddItem(StolenItemsMisc)
+						EndIf
+						(ThiefNPC.GetReference() As Actor).RemoveFromFaction(PlayerEnemyFaction)
 					EndIf
 				EndIf
 				moaHostileNPCDetector.Stop()
@@ -2072,14 +2112,11 @@ Bool Function bIsArrived(ObjectReference Marker)
 		If (PlayerRef.GetActorValue("paralysis"))
 			PlayerRef.SetActorValue("paralysis",0)
 		EndIf
-		Float i = 10.0
+		Float i = 5.0
 		While ( !bIsTeleportSafe() && ( i > 0.0 ))
 			Utility.Wait(0.2)
 			i -= 0.2
 		Endwhile
-		If !bIsTeleportSafe()
-			Return True
-		EndIf
 	EndIf
 	PlayerRef.MoveTo(Marker)
 	Utility.Wait(0.5)
@@ -2275,9 +2312,11 @@ EndFunction
 Function RestoreLostItems(Actor ActorRef)
 	If (ThiefNPC.GetReference() As Actor)
 		(ThiefNPC.GetReference() As Actor).RemoveItem(StolenItemsMisc,(ThiefNPC.GetReference() As Actor ).GetItemCount(StolenItemsMisc))
+		(ThiefNPC.GetReference() As Actor).RemoveFromFaction(PlayerEnemyFaction)
 	EndIf
 	If Thief
 		Thief.RemoveItem(StolenItemsMisc, Thief.GetItemCount(StolenItemsMisc))
+		Thief.RemoveFromFaction(PlayerEnemyFaction)
 	EndIf
 	PlayerRef.RemoveItem(StolenItemsMisc, PlayerRef.GetItemCount(StolenItemsMisc), abSilent = True)
 	Thief = None
@@ -2312,9 +2351,11 @@ Function DestroyLostItems(Actor ActorRef)
 	fLostSouls = 0.0
 	If (ThiefNPC.GetReference() As Actor)
 		(ThiefNPC.GetReference() As Actor).RemoveItem(StolenItemsMisc,(ThiefNPC.GetReference() As Actor ).GetItemCount(StolenItemsMisc))
+		(ThiefNPC.GetReference() As Actor).RemoveFromFaction(PlayerEnemyFaction)
 	EndIf
 	If Thief
 		Thief.RemoveItem(StolenItemsMisc, Thief.GetItemCount(StolenItemsMisc))
+		Thief.RemoveFromFaction(PlayerEnemyFaction)
 	EndIf
 	ActorRef.RemoveItem(StolenItemsMisc, ActorRef.GetItemCount(StolenItemsMisc), abSilent = True)
 	Thief = None

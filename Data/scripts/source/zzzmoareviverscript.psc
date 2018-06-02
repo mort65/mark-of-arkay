@@ -348,7 +348,6 @@ Event OnLocationChange(Location akOldLoc, Location akNewLoc)
 				If !((ThiefNPC.GetReference() As Actor ).GetItemCount(StolenItemsMisc))
 					(ThiefNPC.GetReference() As Actor).AddItem(StolenItemsMisc)
 				EndIf
-				(ThiefNPC.GetReference() As Actor).AddToFaction(PlayerEnemyFaction)
 			EndIf
 		EndIf
 	EndIf

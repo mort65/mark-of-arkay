@@ -898,6 +898,11 @@ Event OnOptionSelect(Int option)
 			If moaRetrieveLostItems01.IsRunning()
 				moaRetrieveLostItems01.SetStage(20)
 			EndIf
+			If ReviveScript.moaThiefNPC01.IsRunning()
+				If (ReviveScript.ThiefNPC.GetReference() As Actor)
+					(ReviveScript.ThiefNPC.GetReference() As Actor).AddToFaction(ReviveScript.PlayerEnemyFaction)
+				EndIf
+			EndIf
 		EndIf
 	ElSeIf (option == oidAutoSwitchRP)
 		bAutoSwitchRP = !bAutoSwitchRP
@@ -1677,6 +1682,11 @@ Event OnOptionDefault(Int option)
 			If moaRetrieveLostItems01.IsRunning()
 				moaRetrieveLostItems01.SetStage(20)
 			EndIf
+			If ReviveScript.moaThiefNPC01.IsRunning()
+				If (ReviveScript.ThiefNPC.GetReference() As Actor)
+					(ReviveScript.ThiefNPC.GetReference() As Actor).AddToFaction(ReviveScript.PlayerEnemyFaction)
+				EndIf
+			EndIf
 		EndIf
 	ElseIf (option == oidSoulMarkStay)
 		bSoulMarkStay = False
@@ -1957,9 +1967,11 @@ Function moaStop()
 	If moaState.GetValue() == 1
 		If (ReviveScript.ThiefNPC.GetReference() As Actor)
 			(ReviveScript.ThiefNPC.GetReference() As Actor).RemoveItem(ReviveScript.StolenItemsMisc,(ReviveScript.ThiefNPC.GetReference() As Actor ).GetItemCount(ReviveScript.StolenItemsMisc))
+			(ReviveScript.ThiefNPC.GetReference() As Actor).RemoveFromFaction(ReviveScript.PlayerEnemyFaction)
 		EndIf
 		If ReviveScript.Thief
 			ReviveScript.Thief.RemoveItem(ReviveScript.StolenItemsMisc,ReviveScript.Thief.GetItemCount(ReviveScript.StolenItemsMisc))
+			ReviveScript.Thief.RemoveFromFaction(ReviveScript.PlayerEnemyFaction)
 		EndIf
 		PlayerRef.RemoveItem(ReviveScript.StolenItemsMisc,playerRef.GetItemCount(ReviveScript.StolenItemsMisc),abSilent = True)
 		ReviveScript.Thief = None

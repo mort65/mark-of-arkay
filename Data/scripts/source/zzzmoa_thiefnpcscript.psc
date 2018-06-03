@@ -3,7 +3,7 @@ Scriptname zzzmoa_thiefnpcscript extends ReferenceAlias
 zzzmoaReviveMCM Property ConfigMenu Auto
 
 Event OnDeath(Actor akKiller)
-	If (( GetReference() As Actor ) && !( ConfigMenu.moaBleedoutHandlerState.GetValue() == 0 ))
+	If (( GetReference() As Actor ) && ( ConfigMenu.moaBleedoutHandlerState.GetValue() == 0 ))
 		If Configmenu.bIsLoggingEnabled
 			Debug.Trace( "MarkofArkay: [ " + ( GetReference() As Actor ).GetActorBase().GetName() +\
 			" : " + ( GetReference() As Actor ) + " ] who stoled player's items is killed by [ " +\
@@ -25,7 +25,7 @@ Event OnDeath(Actor akKiller)
 EndEvent
 
 Event OnReset()
-	If !(ConfigMenu.moaBleedoutHandlerState.GetValue() == 0 )
+	If (ConfigMenu.moaBleedoutHandlerState.GetValue() == 0 )
 		If Configmenu.bIsLoggingEnabled
 			If ( GetReference() As Actor )
 				If Configmenu.bIsLoggingEnabled

@@ -311,7 +311,7 @@ Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile,
 EndEvent
 
 Event OnLocationChange(Location akOldLoc, Location akNewLoc)
-	If moaBleedoutHandlerState.GetValue() == 0
+	If ( Getstate() == "" )
 		LocationMarker2.Enable()
 		LocationMarker2.MoveTo(LocationMarker)
 		LocationMarker2.SetPosition(LocationMarker.GetPositionx(), LocationMarker.GetPositiony(), LocationMarker.GetPositionz())

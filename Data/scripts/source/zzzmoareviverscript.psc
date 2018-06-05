@@ -354,7 +354,7 @@ Event OnLocationChange(Location akOldLoc, Location akNewLoc)
 EndEvent
 
 Event OnCellLoad()
-	If moaBleedoutHandlerState.GetValue() == 0
+	If ( Getstate() == "" )
 		CellLoadMarker2.Enable()
 		CellLoadMarker2.MoveTo(CellLoadMarker)
 		CellLoadMarker2.SetPosition(CellLoadMarker.GetPositionx(), CellLoadMarker.GetPositiony(), CellLoadMarker.GetPositionz())

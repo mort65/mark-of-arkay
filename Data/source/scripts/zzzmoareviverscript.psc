@@ -325,8 +325,8 @@ Event OnLocationChange(Location akOldLoc, Location akNewLoc)
 		EndIf
 		If ( moaThiefNPC01.IsRunning() )
 			If !( ThiefNPC.GetReference() As Actor ) || ( ThiefNPC.GetReference() As Actor ).IsDisabled() || ( ThiefNPC.GetReference() As Objectreference ).IsDeleted()
-				Configmenu.bIsLoggingEnabled && Debug.Trace( "MarkofArkay: [ " + ( ThiefNPC.GetReference() As Actor ).GetActorBase().GetName() +\
-				" : " + ( ThiefNPC.GetReference() As Actor ) + " ] who stoled player's items, is disabled, deleted or no longer exist." )
+				Configmenu.bIsLoggingEnabled && Debug.Trace( "MarkofArkay: [ [ " + ( ThiefNPC.GetReference() As Actor ).GetActorBase().GetName() +\
+				" : " + ( ThiefNPC.GetReference() As Actor ) + " ], " + ( ThiefNPC.GetReference() As Actor ).GetRace() + ", ] who stoled player's items, is disabled, deleted or no longer exist." )
 				If ConfigMenu.bLoseForever && (ConfigMenu.iRemovableItems != 0)
 					DestroyLostItems(PlayerRef)
 					If moaRetrieveLostItems.IsRunning()
@@ -899,8 +899,9 @@ Function LogCurrentState()
 		+ ( ConfigMenu.bHostileNPC As Int ) + ", "\
 		+ ( ConfigMenu.bNPCStealItems As Int ) + ", "\
 		+ ( ConfigMenu.bCreaturesCanSteal As Int ) + ", "\
-		+ ( ConfigMenu.bLostItemQuest As Int ) + ", ],"\
-		+ " ]" )
+		+ ( ConfigMenu.bLostItemQuest As Int ) + ", ], "\
+		+ "[ " + ( LostItemsChest.GetNumItems() ) + ", "\
+		+ ( fLostSouls As Int ) + ", ], ]" )
 EndFunction
 
 Bool Function RemoveItemByMenu() ;trade by using menu
@@ -1110,7 +1111,8 @@ Function DetectThiefNPC()
 		If ( !bIsHostile(Thief) || PlayerRef.GetDistance(Thief) > 2000 )
 			iRemovableItems = 0
 		EndIf
-		ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Detected thief in phase 0: [ " + Thief.GetActorBase().GetName() + " : " + Thief + " ]" )
+		ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Detected thief in phase 0: [ [ " +\
+		Thief.GetActorBase().GetName() + " : " + Thief + " ], " + Thief.GetRace() + ", ]" )
 		Return
 	EndIf
 	Thief = None
@@ -1118,7 +1120,8 @@ Function DetectThiefNPC()
 	If moaHostileNPCDetector.IsRunning() && ( HostileActor.GetReference() As Actor ) &&\
 	!(( HostileActor.GetReference() As Actor ).IsDead() ) && !(( HostileActor.GetReference() As Actor ).GetActorBase().IsInvulnerable() )
 		Thief = HostileActor.GetReference() As Actor
-		ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Detected thief in phase 1: [ " + Thief.GetActorBase().GetName() + " : " + Thief + " ]" )
+		ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Detected thief in phase 1: [ [" +\
+		Thief.GetActorBase().GetName() + " : " + Thief + " ], " + Thief.GetRace() + ", ]" )
 		Return
 	Else
 		moaHostileNPCDetector.Stop()
@@ -1127,7 +1130,8 @@ Function DetectThiefNPC()
 		!(( HostileActor.GetReference() As Actor ).IsDead() ) &&\
 		!(( HostileActor.GetReference() As Actor ).GetActorBase().IsInvulnerable() )
 			Thief = HostileActor.GetReference() As Actor
-			ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Detected thief in phase 1: [ " + Thief.GetActorBase().GetName() + " : " + Thief + " ]" )
+			ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Detected thief in phase 1: [ [ " +\
+			Thief.GetActorBase().GetName() + " : " + Thief + " ], " + Thief.GetRace() + ", ]")
 			Return
 		EndIf
 	EndIf
@@ -1137,7 +1141,8 @@ Function DetectThiefNPC()
 		If bCanSteal(RandomActor)
 			Thief = RandomActor
 			HostileActor.ForceRefTo(Thief)
-			ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Detected thief in phase 2: [ " + Thief.GetActorBase().GetName() + " : " + Thief + " ]" )
+			ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Detected thief in phase 2: [ [ " +\
+			Thief.GetActorBase().GetName() + " : " + Thief + " ], " + Thief.GetRace() + ", ]" )
 			Return
 		EndIf
 		Int i = 0
@@ -1148,7 +1153,8 @@ Function DetectThiefNPC()
 				If bCanSteal(RandomActor)
 					Thief = RandomActor
 					HostileActor.ForceRefTo(Thief)
-					ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Detected Thief In phase 2: [ " + Thief.GetActorBase().GetName() + " : " + Thief + " ]" )
+					ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Detected Thief In phase 2: [ [ " +\
+					Thief.GetActorBase().GetName() + " : " + Thief + " ], " + Thief.GetRace() + ", ]" )
 					Return
 				EndIf
 			EndIf
@@ -1163,15 +1169,17 @@ Endfunction
 Bool Function bIsHostileNPCNearby()
 	ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Finding a hostile NPC (Phase 1)...")
 	If moaHostileNPCDetector01.IsRunning() && HostileActor01.GetReference() As Actor
-		ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Detected hostile NPC in phase 1: [ " +\
-		(HostileActor01.GetReference() As Actor).GetActorBase().GetName() + " : " + ( HostileActor01.GetReference() As Actor ) + " ]" )
+		ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Detected hostile NPC in phase 1: [ [ " +\
+		(HostileActor01.GetReference() As Actor).GetActorBase().GetName() + " : " + ( HostileActor01.GetReference() As Actor ) +\
+		" ], " + (HostileActor01.GetReference() As Actor).GetRace() + ", ]" )
 		Return True
 	Else
 		moaHostileNPCDetector01.Stop()
 		moaHostileNPCDetector01.Start()
 		If HostileActor01.GetReference() As Actor
-			ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Detected hostile NPC in phase 1: [ " +\
-			( HostileActor01.GetReference() As Actor ).GetActorBase().GetName() + " : " + ( HostileActor01.GetReference() As Actor ) + " ]" )
+			ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Detected hostile NPC in phase 1: [ [ " +\
+			( HostileActor01.GetReference() As Actor ).GetActorBase().GetName() + " : " +\
+			( HostileActor01.GetReference() As Actor ) + " ], " + ( HostileActor01.GetReference() As Actor ).GetRace() + ", ]" )
 			Return True
 		EndIf
 	EndIf
@@ -1179,7 +1187,8 @@ Bool Function bIsHostileNPCNearby()
 	Actor RandomActor = Game.FindClosestActorFromRef(PlayerRef,2000)
 	If RandomActor
 		If bIsHostile(RandomActor)
-			ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Detected hostile NPC in phase 2: [ " + RandomActor.GetActorBase().GetName() + " : " + RandomActor + " ]" )
+			ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Detected hostile NPC in phase 2: [ [ " +\
+			RandomActor.GetActorBase().GetName() + " : " + RandomActor + " ], " + RandomActor.GetRace() + ", ]"  )
 			Return True
 		EndIf
 		Int i = 0
@@ -1188,7 +1197,8 @@ Bool Function bIsHostileNPCNearby()
 			RandomActor = Game.FindRandomActorFromRef(PlayerRef,2000)
 			If RandomActor
 				If bIsHostile(RandomActor)
-					ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Detected hostile NPC in phase 2: [ " + RandomActor.GetActorBase().GetName() + " : " + RandomActor + " ]" )
+					ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Detected hostile NPC in phase 2: [ [ " +\
+					RandomActor.GetActorBase().GetName() + " : " + RandomActor + " ], " + RandomActor.GetRace() + ", ]"  )
 					Return True
 				EndIf
 			EndIf
@@ -1258,11 +1268,11 @@ Function DetectFollowers()
 			i -= 1
 			If FollowerArr[i]
 				count += 1
-				str += "( "
+				str += "[ [ "
 				str += FollowerArr[i].GetActorBase().GetName()
 				Str += " : "
 				str += FollowerArr[i]
-				str += " ), "
+				str += " ], " + FollowerArr[i].GetRace() + ", ], "
 			EndIf
 		Endwhile
 		str += "]"
@@ -3239,7 +3249,8 @@ Bool Function bGuardCanSendToJail()
 				If ( CrimeFaction && ( CrimeFaction.GetCrimeGold() > 0 ))
 					If (( CrimeFaction != CrimeFactionReach ) || bCanSendToCidhna )
 						Guard = Attacker
-						ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Detected guard NPC In Phase 1: " + Guard)
+						ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Detected guard NPC In Phase 1: [ [ " +\
+						Guard.GetActorBase().GetName() + " : " + Guard + " ], " + Guard.GetRace() + ", ]" )
 						Return True
 					EndIf
 				EndIf
@@ -3254,7 +3265,8 @@ Bool Function bGuardCanSendToJail()
 			If (( CrimeFaction != CrimeFactionReach ) || bCanSendToCidhna )
 				Guard = GuardNPC.GetReference() As Actor
 				moaGuardDetector.Stop()
-				ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Detected guard NPC In Phase 2: " + Guard)
+				ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Detected guard NPC In Phase 2: [ [ " +\
+				Guard.GetActorBase().GetName() + " : " + Guard + " ], " + Guard.GetRace() + ", ]")
 				Return True
 			EndIf
 		EndIf
@@ -3273,7 +3285,8 @@ Bool Function bGuardCanSendToJail()
 						If ( CrimeFaction && ( CrimeFaction.GetCrimeGold() > 0 ))
 							If (( CrimeFaction != CrimeFactionReach ) || bCanSendToCidhna )
 								Guard = RandomActor
-								ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Detected guard NPC In Phase 3: " + Guard)
+								ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Detected guard NPC In Phase 3: [ [ " +\
+								Guard.GetActorBase().GetName() + " : " + Guard + " ], " + Guard.GetRace() + ", ]" )
 								Return True
 							EndIf
 						EndIf

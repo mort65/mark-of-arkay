@@ -5,9 +5,9 @@ zzzmoaReviveMCM Property ConfigMenu Auto
 Event OnDeath(Actor akKiller)
 	If (( GetReference() As Actor ) && ( ConfigMenu.moaBleedoutHandlerState.GetValue() == 0 ))
 		If Configmenu.bIsLoggingEnabled
-			Debug.Trace( "MarkofArkay: [ " + ( GetReference() As Actor ).GetActorBase().GetName() +\
-			" : " + ( GetReference() As Actor ) + " ] who stoled player's items is killed by [ " +\
-			akKiller.GetActorBase().GetName() + " : " + akKiller + "." )
+			Debug.Trace( "MarkofArkay: [ [ " + ( GetReference() As Actor ).GetActorBase().GetName() +\
+			" : " + ( GetReference() As Actor ) + " ], " + ( GetReference() As Actor ).GetRace() + ", ] who stoled player's items is killed by [ [ " +\
+			akKiller.GetActorBase().GetName() + " : " + akKiller + " ], " + akKiller.GetRace() + ", ]." )
 		EndIf
 		If !(( GetReference() As Actor ).GetParentCell().IsAttached() )
 			If GetOwningQuest().IsRunning()
@@ -29,8 +29,8 @@ Event OnReset()
 		If Configmenu.bIsLoggingEnabled
 			If ( GetReference() As Actor )
 				If Configmenu.bIsLoggingEnabled
-					Debug.Trace( "MarkofArkay: [ " + ( GetReference() As Actor ).GetActorBase().GetName() +\
-					" : " + ( GetReference() As Actor ) + " ] who stoled player's items, has reset." )
+					Debug.Trace( "MarkofArkay: [ [ " + ( GetReference() As Actor ).GetActorBase().GetName() +\
+					" : " + ( GetReference() As Actor ) + " ], " + ( GetReference() As Actor ).GetRace() + ", ] who stoled player's items, has reset." )
 				EndIf
 			ElseIf Configmenu.bIsLoggingEnabled
 				Debug.Trace("MarkofArkay: NPC who stoled player's items no longer exist.")

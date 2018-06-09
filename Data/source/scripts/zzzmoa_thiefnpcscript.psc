@@ -25,6 +25,26 @@ Event OnDeath(Actor akKiller)
 	EndIf
 EndEvent
 
+Event OnEnterBleedout()
+	If (( GetReference() As Actor ) && ( ConfigMenu.moaBleedoutHandlerState.GetValue() == 0 ))
+		If (( GetReference() As Actor ).IsEssential() )
+			If Configmenu.bIsLoggingEnabled
+				Debug.Trace( "MarkofArkay: ( '" + ( GetReference() As Actor ).GetActorBase().GetName() +\
+				"', " + ( GetReference() As Actor ) + ", " + ( GetReference() As Actor ).GetRace() +\
+				", ) who stoled player's items is bleeding out." )
+			EndIf
+			ConfigMenu.ReviveScript.RestoreLostItems(Game.GetPlayer())
+			If ConfigMenu.ReviveScript.moaRetrieveLostItems.IsRunning()
+				ConfigMenu.ReviveScript.moaRetrieveLostItems.SetStage(20)
+			EndIf
+			If ConfigMenu.ReviveScript.moaRetrieveLostItems01.IsRunning()
+				ConfigMenu.ReviveScript.moaRetrieveLostItems01.SetStage(20)
+			EndIf
+			GetOwningQuest().Stop()			
+		EndIf
+	EndIf
+EndEvent
+
 Event OnReset()
 	If (ConfigMenu.moaBleedoutHandlerState.GetValue() == 0 )
 		If Configmenu.bIsLoggingEnabled

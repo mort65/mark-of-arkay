@@ -10,7 +10,7 @@ ReferenceAlias Property Alias_ThiefNPC01 Auto
 ;BEGIN FRAGMENT Fragment_4
 Function Fragment_4()
 ;BEGIN CODE
-stop()
+Stop()
 ;END CODE
 EndFunction
 ;END FRAGMENT
@@ -22,7 +22,7 @@ Actor ThiefRef = Alias_ThiefNPC01.GetActorRef()
 If ThiefRef
     ThiefRef.AddToFaction(PlayerEnemyFaction)
 EndIf
-setObjectiveDisplayed(1)
+SetObjectiveDisplayed(1)
 ;END CODE
 EndFunction
 ;END FRAGMENT

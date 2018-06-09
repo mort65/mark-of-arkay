@@ -10,7 +10,7 @@ ReferenceAlias Property Alias_zzzmoa_ItemMarker Auto
 ;BEGIN FRAGMENT Fragment_11
 Function Fragment_11()
 ;BEGIN CODE
-stop()
+Stop()
 ;END CODE
 EndFunction
 ;END FRAGMENT
@@ -27,7 +27,7 @@ EndFunction
 ;BEGIN FRAGMENT Fragment_10
 Function Fragment_10()
 ;BEGIN CODE
-setObjectiveDisplayed(1)
+SetObjectiveDisplayed(1)
 ;END CODE
 EndFunction
 ;END FRAGMENT

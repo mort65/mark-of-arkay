@@ -50,7 +50,7 @@ Int oidRespawnPoint3
 Int oidRespawnPoint4
 Int oidRespawnPoint5
 Int oidRespawnPoint6
-Int oidRespawnPoint7
+;Int oidRespawnPoint7
 Int oidExternalTeleportLocation
 Int oidTeleportLocation_M
 Int oidRemovableItems_M
@@ -461,8 +461,8 @@ Event OnPageReset(String page)
 		oidRespawnPoint5 = AddToggleOption(sRespawnPoints[5], bRespawnPointsFlags[5], flags )
 		SetCursorPosition(21)
 		oidRespawnPoint6 = AddToggleOption(sRespawnPoints[6], bRespawnPointsFlags[6], flags )
-		SetCursorPosition(23)
-		oidRespawnPoint7 = AddToggleOption(sRespawnPoints[7], bRespawnPointsFlags[7], flags )
+		;SetCursorPosition(23)
+		;oidRespawnPoint7 = AddToggleOption(sRespawnPoints[7], bRespawnPointsFlags[7], flags )
 	ElseIf (page == "$Debug")
 		SetCursorPosition(0)
 		AddHeaderOption("$Debug")
@@ -841,11 +841,11 @@ Event OnOptionSelect(Int option)
 			bRespawnPointsFlags[6] = !bRespawnPointsFlags[6]
 			SetToggleOptionValue(oidRespawnPoint6,bRespawnPointsFlags[6])
 		EndIf
-	ElseIf (option == oidRespawnPoint7)
-		If !( (iGetRespawnPointsCount() < 3) && bRespawnPointsFlags[7])
-			bRespawnPointsFlags[7] = !bRespawnPointsFlags[7]
-			SetToggleOptionValue(oidRespawnPoint7,bRespawnPointsFlags[7])
-		EndIf
+	;ElseIf (option == oidRespawnPoint7)
+	;	If !( (iGetRespawnPointsCount() < 3) && bRespawnPointsFlags[7])
+	;		bRespawnPointsFlags[7] = !bRespawnPointsFlags[7]
+	;		SetToggleOptionValue(oidRespawnPoint7,bRespawnPointsFlags[7])
+	;	EndIf
 	ElseIf (option == oidRespawnNaked)
 		bRespawnNaked = !bRespawnNaked
 		SetToggleOptionValue(oidRespawnNaked, bRespawnNaked)
@@ -1062,8 +1062,8 @@ Event OnOptionSelect(Int option)
 		SetOptionFlags(oidRespawnPoint4,flags,True)
 		SetOptionFlags(oidRespawnPoint5,flags,True)
 		SetOptionFlags(oidReset,flags,True)
-		SetOptionFlags(oidRespawnPoint6,flags,True)
-		SetOptionFlags(oidRespawnPoint7,flags)
+		SetOptionFlags(oidRespawnPoint6,flags)
+		;SetOptionFlags(oidRespawnPoint7,flags)
 		ForcePageReset()
 		If moaState.getValue() == 1
 			moaStop()
@@ -1142,8 +1142,8 @@ Event OnOptionSelect(Int option)
 		SetOptionFlags(oidRespawnPoint4,flags,True)
 		SetOptionFlags(oidRespawnPoint5,flags,True)
 		SetOptionFlags(oidStatus,flags,True)
-		SetOptionFlags(oidRespawnPoint6,flags,True)
-		SetOptionFlags(oidRespawnPoint7,flags)
+		SetOptionFlags(oidRespawnPoint6,flags)
+		;SetOptionFlags(oidRespawnPoint7,flags)
 		ForcePageReset()
 		moaStop()
 		Utility.Wait(2.0)
@@ -1337,8 +1337,8 @@ Event OnOptionMenuAccept(Int option, Int index)
 		SetOptionFlags(oidRespawnPoint3,flags,True)
 		SetOptionFlags(oidRespawnPoint4,flags,True)
 		SetOptionFlags(oidRespawnPoint5,flags,True)
-		SetOptionFlags(oidRespawnPoint6,flags,True)
-		SetOptionFlags(oidRespawnPoint7,flags)
+		SetOptionFlags(oidRespawnPoint6,flags)
+		;SetOptionFlags(oidRespawnPoint7,flags)
 	ElseIf (option == oidRemovableItems_M)
 		iRemovableItems = index
 		SetMenuOptionValue(oidRemovableItems_M, sLoseOptions[iRemovableItems])
@@ -1447,8 +1447,8 @@ Event OnOptionMenuAccept(Int option, Int index)
 		SetOptionFlags(oidRespawnPoint3,flags,True)
 		SetOptionFlags(oidRespawnPoint4,flags,True)
 		SetOptionFlags(oidRespawnPoint5,flags,True)
-		SetOptionFlags(oidRespawnPoint6,flags,True)
-		SetOptionFlags(oidRespawnPoint7,flags)
+		SetOptionFlags(oidRespawnPoint6,flags)
+		;SetOptionFlags(oidRespawnPoint7,flags)
 	ElseIf (option == oidArkayCurses_M)
 	    iArkayCurse = index
 		SetMenuOptionValue(oidArkayCurses_M, sArkayCurses[iArkayCurse])
@@ -1587,9 +1587,9 @@ Event OnOptionDefault(Int option)
 	ElseIf (option == oidRespawnPoint6)
 		bRespawnPointsFlags[6] = True
 		SetToggleOptionValue(oidRespawnPoint6,bRespawnPointsFlags[6])
-	ElseIf (option == oidRespawnPoint7)
-		bRespawnPointsFlags[7] = True
-		SetToggleOptionValue(oidRespawnPoint7,bRespawnPointsFlags[7])
+	;ElseIf (option == oidRespawnPoint7)
+	;	bRespawnPointsFlags[7] = True
+	;	SetToggleOptionValue(oidRespawnPoint7,bRespawnPointsFlags[7])
 	ElseIf (option == oidRevivalRequireBlessing)
 		bIsRevivalRequiresBlessing = False
 		SetToggleOptionValue(oidRevivalRequireBlessing, bIsRevivalRequiresBlessing)	
@@ -1702,8 +1702,8 @@ Event OnOptionDefault(Int option)
 		SetOptionFlags(oidRespawnPoint3,flags,True)
 		SetOptionFlags(oidRespawnPoint4,flags,True)
 		SetOptionFlags(oidRespawnPoint5,flags,True)
-		SetOptionFlags(oidRespawnPoint6,flags,True)
-		SetOptionFlags(oidRespawnPoint7,flags)
+		SetOptionFlags(oidRespawnPoint6,flags)
+		;SetOptionFlags(oidRespawnPoint7,flags)
 	ElseIf (option == oidNoTradingAftermath_M)
 		iNotTradingAftermath = 0
 		SetMenuOptionValue(oidNoTradingAftermath_M, sAftermathOptions[iNotTradingAftermath])
@@ -1887,8 +1887,8 @@ Event OnOptionHighlight(Int option)
 		SetInfoText("$mrt_MarkofArkay_DESC_RespawnPoint5")
 	ElseIf (option == oidRespawnPoint6)
 		SetInfoText("$mrt_MarkofArkay_DESC_RespawnPoint6")
-	ElseIf (option == oidRespawnPoint7)
-		SetInfoText("$mrt_MarkofArkay_DESC_RespawnPoint7")
+	;ElseIf (option == oidRespawnPoint7)
+	;	SetInfoText("$mrt_MarkofArkay_DESC_RespawnPoint7")
 	ElseIf (option == oidRespawnNaked)
 		SetInfoText("$mrt_MarkofArkay_DESC_RespawnNaked")
 	ElseIf (option == oidJail)
@@ -2092,7 +2092,7 @@ Function setPages()
 EndFunction
 
 Int Function GetVersion()
-	Return 33
+	Return 32
 EndFunction
 
 Event OnVersionUpdate(int a_version)
@@ -2102,6 +2102,24 @@ Event OnVersionUpdate(int a_version)
 	EndIf
 	If (a_version >= 3 && CurrentVersion < 3)
 		Debug.Trace(self + ": Updating script to version " + 3)
+		sRespawnPoints = New String[7]
+		bRespawnPointsFlags = New Bool[6]
+		sRespawnPoints[0] = "$Whiterun"
+		sRespawnPoints[1] = "$Falkreath"
+		sRespawnPoints[2] = "$Markarth"
+		sRespawnPoints[3] = "$Riften"
+		sRespawnPoints[4] = "$Solitude"
+		sRespawnPoints[5] = "$Windhelm"
+		sRespawnPoints[6] = "$Random"
+		bRespawnPointsFlags[0] = True
+		bRespawnPointsFlags[1] = True
+		bRespawnPointsFlags[2] = True
+		bRespawnPointsFlags[3] = True
+		bRespawnPointsFlags[4] = True
+		bRespawnPointsFlags[5] = True
+	EndIf
+	If (a_version >= 4 && CurrentVersion < 4)
+		Debug.Trace(self + ": Updating script to version " + 4)
 		sRespawnPoints = New String[8]
 		bRespawnPointsFlags = New Bool[7]
 		sRespawnPoints[0] = "$Whiterun"
@@ -2110,7 +2128,7 @@ Event OnVersionUpdate(int a_version)
 		sRespawnPoints[3] = "$Riften"
 		sRespawnPoints[4] = "$Solitude"
 		sRespawnPoints[5] = "$Windhelm"
-		sRespawnPoints[6] = "$RavenRock"
+		sRespawnPoints[6] = "$Winterhold"
 		sRespawnPoints[7] = "$Random"
 		bRespawnPointsFlags[0] = True
 		bRespawnPointsFlags[1] = True
@@ -2119,11 +2137,11 @@ Event OnVersionUpdate(int a_version)
 		bRespawnPointsFlags[4] = True
 		bRespawnPointsFlags[5] = True
 		bRespawnPointsFlags[6] = True
-	EndIf
-	If (a_version >= 5 && CurrentVersion < 5)
-		Debug.Trace(self + ": Updating script to version " + 5)
+	Endif
+	If (a_version >= 6 && CurrentVersion < 6)
+		Debug.Trace(self + ": Updating script to version " + 6)
 		sRespawnPoints = New String[9]
-		bRespawnPointsFlags = New Bool[8]
+		bRespawnPointsFlags = New Bool[7]
 		sRespawnPoints[0] = "$Whiterun"
 		sRespawnPoints[1] = "$Falkreath"
 		sRespawnPoints[2] = "$Markarth"
@@ -2131,8 +2149,8 @@ Event OnVersionUpdate(int a_version)
 		sRespawnPoints[4] = "$Solitude"
 		sRespawnPoints[5] = "$Windhelm"
 		sRespawnPoints[6] = "$Winterhold"
-		sRespawnPoints[7] = "$RavenRock"
-		sRespawnPoints[8] = "$Random"
+		sRespawnPoints[7] = "$Random"
+		sRespawnPoints[8] = "$Custom"
 		bRespawnPointsFlags[0] = True
 		bRespawnPointsFlags[1] = True
 		bRespawnPointsFlags[2] = True
@@ -2140,33 +2158,9 @@ Event OnVersionUpdate(int a_version)
 		bRespawnPointsFlags[4] = True
 		bRespawnPointsFlags[5] = True
 		bRespawnPointsFlags[6] = True
-		bRespawnPointsFlags[7] = True
-	EndIf
-	If (a_version >= 7 && CurrentVersion < 7)
-		Debug.Trace(self + ": Updating script to version " + 7)
-		sRespawnPoints = New String[10]
-		bRespawnPointsFlags = New Bool[8]
-		sRespawnPoints[0] = "$Whiterun"
-		sRespawnPoints[1] = "$Falkreath"
-		sRespawnPoints[2] = "$Markarth"
-		sRespawnPoints[3] = "$Riften"
-		sRespawnPoints[4] = "$Solitude"
-		sRespawnPoints[5] = "$Windhelm"
-		sRespawnPoints[6] = "$Winterhold"
-		sRespawnPoints[7] = "$RavenRock"
-		sRespawnPoints[8] = "$Random"
-		sRespawnPoints[9] = "$Custom"
-		bRespawnPointsFlags[0] = True
-		bRespawnPointsFlags[1] = True
-		bRespawnPointsFlags[2] = True
-		bRespawnPointsFlags[3] = True
-		bRespawnPointsFlags[4] = True
-		bRespawnPointsFlags[5] = True
-		bRespawnPointsFlags[6] = True
-		bRespawnPointsFlags[7] = True
-	EndIf
-	If (a_version >= 9 && CurrentVersion < 9)
-		Debug.Trace(self + ": Updating script to version " + 9)
+	Endif
+	If (a_version >= 8 && CurrentVersion < 8)
+		Debug.Trace(self + ": Updating script to version " + 8)
 		If bIsRagdollEnabled
 			moaBleedouAnimation.SetValue(2)
 		Else
@@ -2179,61 +2173,42 @@ Event OnVersionUpdate(int a_version)
 			moaRetrieveLostItems.SetStage(20)
 		EndIf
 	EndIf
-	If (a_version >= 13 && CurrentVersion < 13)
-		Debug.Trace(self + ": Updating script to version "  + 13)
+	If (a_version >= 12 && CurrentVersion < 12)
+		Debug.Trace(self + ": Updating script to version "  + 12)
 		If moaBleedouAnimation.GetValue() == 4
 			bIsRagdollEnabled = False
 		EndIf
 	EndIf
-	If (a_version >= 15 && CurrentVersion < 15)
-		Debug.Trace(self + ": Updating script to version "  + 15)
+	If (a_version >= 14 && CurrentVersion < 14)
+		Debug.Trace(self + ": Updating script to version "  + 14)
 		If iTeleportLocation >= sRespawnPoints.Length
-			iTeleportLocation = ( sRespawnPoints.Length - 5 )
-		EndIf
+			iTeleportLocation = ( sRespawnPoints.Length - 4 )
+		Endif
 	EndIf
-	If (a_version >= 17 && CurrentVersion < 17)
-		Debug.Trace(self + ": Updating script to version "  + 17)
+	If (a_version >= 16 && CurrentVersion < 16)
+		Debug.Trace(self + ": Updating script to version "  + 16)
 		If iRemovableItems == 3
 			iRemovableItems = 5
 		ElseIf iRemovableItems == 4
 			iRemovableItems = 9
-		EndIf
-	EndIf
-	If (a_version >= 21 && CurrentVersion < 21)
-		Debug.Trace(self + ": Updating script to version "  + 21)
-		sRespawnPoints = New String[12]
-		sRespawnPoints[0] = "$Whiterun"
-		sRespawnPoints[1] = "$Falkreath"
-		sRespawnPoints[2] = "$Markarth"
-		sRespawnPoints[3] = "$Riften"
-		sRespawnPoints[4] = "$Solitude"
-		sRespawnPoints[5] = "$Windhelm"
-		sRespawnPoints[6] = "$Winterhold"
-		sRespawnPoints[7] = "$RavenRock"
-		sRespawnPoints[8] = "$Random"
-		sRespawnPoints[9] = "$LastSleepLocation"
-		sRespawnPoints[10] = "$Custom"
-		sRespawnPoints[11] = "$External"
-		If iTeleportLocation == 9
+		Endif
+	Endif
+	If (a_version >= 20 && CurrentVersion < 20)
+		Debug.Trace(self + ": Updating script to version "  + 20)
+		If iTeleportLocation == 8
+			iTeleportLocation = 9
+		Elseif iTeleportLocation == 9
 			iTeleportLocation = 10
-		ElseIf iTeleportLocation == 10
-			iTeleportLocation = 11
-		EndIf 
+		Endif 
 		ReviveScript.RegisterForSleep()
 	EndIf
-	If (a_version >= 23 && CurrentVersion < 23)
-		Debug.Trace(self + ": Updating script to version "  + 23)
-	EndIf
-	If (a_version >= 25 && CurrentVersion < 25)
-		Debug.Trace(self + ": Updating script to version "  + 25)
-	EndIf
-	If (a_version >= 27 && CurrentVersion < 27)
-		Debug.Trace(self + ": Updating script to version "  + 27)
+	If (a_version >= 26 && CurrentVersion < 26)
+		Debug.Trace(self + ": Updating script to version "  + 26)
 		DetachMarker2.Enable()
 		DetachMarker2.MoveTo(PlayerRef)
 	EndIf
-	If (a_version >= 29 && CurrentVersion < 29)
-		Debug.Trace(self + ": Updating script to version "  + 29)
+	If (a_version >= 28 && CurrentVersion < 28)
+		Debug.Trace(self + ": Updating script to version "  + 28)
 		iTotalBleedOut = ReviveScript.iTotalBleedOut
 		iTotalRespawn = ReviveScript.iTotalRespawn
 		iTotalRevives = ReviveScript.iTotalRevives
@@ -2243,12 +2218,12 @@ Event OnVersionUpdate(int a_version)
 		iRevivesByPotion = ReviveScript.iRevivesByPotion
 		iDestroyedItems = ReviveScript.iDestroyedItems
 	EndIf
-	If (a_version >= 31 && CurrentVersion < 31)
-		Debug.Trace(self + ": Updating script to version "  + 31)
+	If (a_version >= 30 && CurrentVersion < 30)
+		Debug.Trace(self + ": Updating script to version "  + 30)
 	EndIf
-	If (a_version >= 33 && CurrentVersion < 33)
+	If (a_version >= 32 && CurrentVersion < 32)
 		If ( LostItemsMarker.GetParentCell() != ReviveScript.DefaultCell )
-			Debug.Trace(self + ": Updating script to version "  + 33)
+			Debug.Trace(self + ": Updating script to version "  + 32)
 			ReviveScript.moaSoulMark01.Start()
 		EndIf
 	EndIf
@@ -2257,8 +2232,8 @@ Event OnVersionUpdate(int a_version)
 EndEvent
 
 Function setRespawnPoints()
-	sRespawnPoints = New String[13]
-	bRespawnPointsFlags = New Bool[8]
+sRespawnPoints = New String[12]
+	bRespawnPointsFlags = New Bool[7]
 	sRespawnPoints[0] = "$Whiterun"
 	sRespawnPoints[1] = "$Falkreath"
 	sRespawnPoints[2] = "$Markarth"
@@ -2266,12 +2241,11 @@ Function setRespawnPoints()
 	sRespawnPoints[4] = "$Solitude"
 	sRespawnPoints[5] = "$Windhelm"
 	sRespawnPoints[6] = "$Winterhold"
-	sRespawnPoints[7] = "$RavenRock"
-	sRespawnPoints[8] = "$Random"
-	sRespawnPoints[9] = "$LastSleepLocation"
-	sRespawnPoints[10] = "$Custom"
-	sRespawnPoints[11] = "$External"
-	sRespawnPoints[12] = "$Nearby"
+	sRespawnPoints[7] = "$Random"
+	sRespawnPoints[8] = "$LastSleepLocation"
+	sRespawnPoints[9] = "$Custom"
+	sRespawnPoints[10] = "$External"
+	sRespawnPoints[11] = "$Nearby"
 	bRespawnPointsFlags[0] = True
 	bRespawnPointsFlags[1] = True
 	bRespawnPointsFlags[2] = True
@@ -2279,7 +2253,6 @@ Function setRespawnPoints()
 	bRespawnPointsFlags[4] = True
 	bRespawnPointsFlags[5] = True
 	bRespawnPointsFlags[6] = True
-	bRespawnPointsFlags[7] = True
 EndFunction
 
 Function setArrays()

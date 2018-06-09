@@ -76,7 +76,7 @@ Quest Property moaRetrieveLostItems01 Auto
 FormList property WorldspacesInterior auto
 Formlist property ExternalMarkerList Auto
 Quest Property WerewolfQuest Auto
-Quest Property VampireLordQuest Auto
+;Quest Property VampireLordQuest Auto
 Formlist Property PotionList Auto
 FormList Property LocationsList Auto
 Form[] Property VItemArr Auto Hidden
@@ -93,8 +93,8 @@ Form[] Property EquippedQuestItems Auto Hidden
 ObjectReference[] Property ExcludedMarkerList Auto Hidden
 Location Property PaleHoldLocation  Auto
 Location Property HjaalmarchHoldLocation  Auto
-Location Property DLC1VampireCastleLocation Auto
-Location Property DLC1HunterHQLocation Auto
+;Location Property DLC1VampireCastleLocation Auto
+;Location Property DLC1HunterHQLocation Auto
 Keyword property HoldKeyword Auto
 Quest Property CidhnaMineJailEventScene Auto
 ReferenceAlias[] Property Followers Auto
@@ -118,7 +118,7 @@ Objectreference Property WinterholdJailMarker Auto
 Objectreference Property DawnstarJailMarker Auto
 Objectreference Property MorthalJailMarker Auto
 Objectreference Property SolitudeJailMarker Auto
-Objectreference Property DLC2RavenRockJailMarker Auto
+;Objectreference Property DLC2RavenRockJailMarker Auto
 Actor Property Runil Auto
 Faction Property RunilMerchantFaction Auto
 Faction Property JobMerchantFaction Auto
@@ -132,12 +132,12 @@ Faction Property CrimeFactionWhiterun  Auto
 Faction Property CrimeFactionEastmarch  Auto
 Faction Property CrimeFactionWinterhold  Auto
 Faction Property PlayerEnemyFaction Auto
-Faction Property DLC2CrimeRavenRockFaction Auto
+;Faction Property DLC2CrimeRavenRockFaction Auto
 Faction Property CurrentFollowerFaction Auto
 Faction Property CurrentHireling Auto
 Faction Property CreatureFaction Auto
 Race Property WereWolfBeastRace Auto
-Race Property DLC1VampireBeastRace Auto
+;Race Property DLC1VampireBeastRace Auto
 GlobalVariable Property TimeScale Auto
 Float Property DefaultTimeScale = 20.0 Auto Hidden
 Topic Property DeathTopic Auto
@@ -859,7 +859,6 @@ Function LogCurrentState()
 		+ Game.GetCameraState() + ", "\
 		+ ( PlayerRef.IsSwimming() As Int ) + ", "\
 		+ ( WerewolfQuest.IsRunning() As Int ) + ", "\
-		+ (( VampireLordQuest && VampireLordQuest.IsRunning() ) As Int ) + ", "\
 		+ ( PlayerRef.GetAnimationVariableBool("bIsSynced") As Int ) + ", "\
 		+ ( PlayerRef.GetAnimationVariableBool("IsStaggering") As Int ) + ", "\
 		+ ( PlayerRef.GetAnimationVariableBool("bIsInMT") As Int ) + ", "\
@@ -1817,8 +1816,8 @@ Function RevivePlayer(Bool bRevive)
 						ElseIf ( CrimeFaction == CrimeFactionReach )
 							bIsArrived(MarkarthJailMarker)
 							bCidhnaJail = True
-						ElseIf ( CrimeFaction == DLC2CrimeRavenRockFaction )
-							bIsArrived(DLC2RavenRockJailMarker)
+						;ElseIf ( CrimeFaction == DLC2CrimeRavenRockFaction )
+						;	bIsArrived(DLC2RavenRockJailMarker)
 						EndIf
 						ReleaseFollowers()
 						Utility.Wait(0.5)
@@ -2534,7 +2533,7 @@ Function SendToAnotherLocation()
 	While ( iIndex > 0 )
 		iIndex -= 1
 		If (iIndex == 3)
-			If bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(DLC1HunterHQLocation) ;Riften or Dayspring Canyon
+			If bInSameLocation(LocationsList.GetAt(iIndex) As Location) ;|| bInSameLocation(DLC1HunterHQLocation) ;Riften or Dayspring Canyon
 				If ConfigMenu.bRespawnPointsFlags[iIndex]
 					If ( PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference) >= 3000.0 )
 						If bIsArrived(MarkerList.GetAt(iIndex) As ObjectReference)
@@ -2544,7 +2543,7 @@ Function SendToAnotherLocation()
 				EndIf
 			EndIf
 		ElseIf ( iIndex == 4 )
-			If bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(HjaalmarchHoldLocation) || bInSameLocation(DLC1VampireCastleLocation) ;Solitude or Morthal or Castle Volkihar
+			If bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(HjaalmarchHoldLocation) ;|| bInSameLocation(DLC1VampireCastleLocation) ;Solitude or Morthal or Castle Volkihar
 				If ConfigMenu.bRespawnPointsFlags[iIndex]
 					If ( PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference) >= 3000.0 )
 						If bIsArrived(MarkerList.GetAt(iIndex) As ObjectReference)
@@ -2589,15 +2588,15 @@ Function ShiftBack()
 		EndWhile
 		;Debug.SetGodMode(False)
 		;Game.EnablePlayerControls()
-	ElseIf(VampireLordQuest.IsRunning())
-		Debug.SetGodMode(True)
-		PlayerRef.DispelSpell(BleedoutProtection)
-		Game.DisablePlayerControls()
-		VampireLordQuest.SetStage(100) ; shift back
-		While (PlayerRef.GetAnimationVariableBool("bIsSynced") && (i > 0.0))
-			Utility.Wait(0.2)
-			i -= 0.2
-		EndWhile
+	;ElseIf(VampireLordQuest.IsRunning())
+	;	Debug.SetGodMode(True)
+	;	PlayerRef.DispelSpell(BleedoutProtection)
+	;	Game.DisablePlayerControls()
+	;	VampireLordQuest.SetStage(100) ; shift back
+	;	While (PlayerRef.GetAnimationVariableBool("bIsSynced") && (i > 0.0))
+	;		Utility.Wait(0.2)
+	;		i -= 0.2
+	;	EndWhile
 		;Debug.SetGodMode(False)
 		;Game.EnablePlayerControls()
 	EndIf
@@ -3321,12 +3320,12 @@ Function ToggleSaving(Bool bSave)
 EndFunction
 
 Bool Function bInBeastForm()
-	If  WerewolfQuest.IsRunning() || VampireLordQuest.IsRunning()
+	If  WerewolfQuest.IsRunning() ;|| VampireLordQuest.IsRunning()
 		Return True
 	ElseIf ( PlayerRef.GetRace() == WereWolfBeastRace )
 		Return True
-	ElseIf ( PlayerRef.GetRace() == DLC1VampireBeastRace )
-		Return True
+	;ElseIf ( PlayerRef.GetRace() == DLC1VampireBeastRace )
+	;	Return True
 	EndIf
 	Return False
 Endfunction
@@ -3568,7 +3567,7 @@ ObjectReference Function FindMarkerByLocation()
 		iIndex -= 1
 		If ( ExcludedMarkerList.find(MarkerList.GetAt(iIndex) As ObjectReference) < 0 )
 			If (iIndex == 3)
-				If bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(DLC1HunterHQLocation) ;Riften or Dayspring Canyon
+				If bInSameLocation(LocationsList.GetAt(iIndex) As Location) ;|| bInSameLocation(DLC1HunterHQLocation) ;Riften or Dayspring Canyon
 					If ConfigMenu.bRespawnPointsFlags[iIndex]
 						If ( PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference) >= 3000.0 )
 							Return ( MarkerList.GetAt(iIndex) As ObjectReference )
@@ -3576,7 +3575,7 @@ ObjectReference Function FindMarkerByLocation()
 					EndIf
 				EndIf
 			ElseIf ( iIndex == 4 )
-				If bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(HjaalmarchHoldLocation) || bInSameLocation(DLC1VampireCastleLocation) ;Solitude or Morthal or Castle Volkihar
+				If bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(HjaalmarchHoldLocation) ;|| bInSameLocation(DLC1VampireCastleLocation) ;Solitude or Morthal or Castle Volkihar
 					If ConfigMenu.bRespawnPointsFlags[iIndex]
 						If ( PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference) >= 3000.0 )
 							Return ( MarkerList.GetAt(iIndex) As ObjectReference )

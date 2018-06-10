@@ -25,8 +25,6 @@ Spell versions of the scroll of revival and sacrifice are in a chest at Falkreat
 You can choose to lose some or all of your items before respawning. If you enable this option you can take back your items by activating a grand soul gem which is placed where you died or reviving yourself with sacrificing someone.
 You can also toggle losing your items permanently whenever you respawn before finding them.
 
-
-
 Compatibility
 
 This mod should be compatible with almost anything except mods that do the same thing or remove the essential flag from the player.
@@ -39,13 +37,6 @@ SexLab Defeat (if Bleedout is enabled)
 Dragons Souls - Death is Highly Overrated
 Death Alternative - Your Money or Your Life
 SkyTweak (if Bleedout is enabled in the Scripts page)
-
-Load Order
-
-Immersive Citizens - AI Overhaul 
-
-    place Mark of Arkay's esp after it if you don't want to see two chests at the same position in Falkreath's hall of the dead.
-
 
 Installation
 

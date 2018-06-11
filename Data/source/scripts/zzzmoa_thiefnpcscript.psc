@@ -27,7 +27,7 @@ EndEvent
 
 Event OnEnterBleedout()
 	If (( GetReference() As Actor ) && ( ConfigMenu.moaBleedoutHandlerState.GetValue() == 0 ))
-		If (( GetReference() As Actor ).IsEssential() )
+		If (( GetReference() As Actor ).GetParentCell().IsAttached() && ( GetReference() As Actor ).IsEssential() )
 			If Configmenu.bIsLoggingEnabled
 				Debug.Trace( "MarkofArkay: ( '" + ( GetReference() As Actor ).GetActorBase().GetName() +\
 				"', " + ( GetReference() As Actor ) + ", " + ( GetReference() As Actor ).GetRace() +\

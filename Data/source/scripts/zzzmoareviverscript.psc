@@ -405,9 +405,9 @@ Function BleedoutHandler(String CurrentState)
 		AttackerActor01.ForceRefTo(Attacker)
 		If ConfigMenu.bIsLoggingEnabled
 			Debug.Trace( "MarkOfArkay: Last attacker = ( '" +\
-			( AttackerActor.GetReference() As Actor ).GetActorBase().GetName() +\
-			"', " + ( AttackerActor.GetReference() As Actor ) + ", " +\
-			( AttackerActor.GetReference() As Actor ).GetRace() + ", )" ) 
+			Attacker.GetActorBase().GetName() +\
+			"', " + Attacker + ", " +\
+			Attacker.GetRace() + ", )" ) 
 		EndIf
 	Else
 		AttackerActor.Clear()
@@ -689,16 +689,16 @@ Function BleedoutHandler(String CurrentState)
 					If PriorityArray[i]>50 && bGSoulGemRevive ; player has enough grand soul gem and its Priority is higher
 						AutoRemoveItem(i)
 						bBreak = True
-					Elseif PriorityArray[i]>40 && (PriorityArray[i]<50) && bArkayMarkRevive
+					ElseIf PriorityArray[i]>40 && (PriorityArray[i]<50) && bArkayMarkRevive
 						AutoRemoveItem(i)
 						bBreak = True
-					Elseif (PriorityArray[i]>30) && (PriorityArray[i]<40) && bBSoulGemRevive
+					ElseIf (PriorityArray[i]>30) && (PriorityArray[i]<40) && bBSoulGemRevive
 						AutoRemoveItem(i)
 						bBreak = True
-					Elseif (PriorityArray[i]>20) && (PriorityArray[i]<30) && bDragonSoulRevive
+					ElseIf (PriorityArray[i]>20) && (PriorityArray[i]<30) && bDragonSoulRevive
 						AutoRemoveItem(i)
 						bBreak = True
-					Elseif (PriorityArray[i]>10) && (PriorityArray[i]<20) && bSeptimRevive
+					ElseIf (PriorityArray[i]>10) && (PriorityArray[i]<20) && bSeptimRevive
 						AutoRemoveItem(i)
 						bBreak = True					
 					EndIf 
@@ -788,27 +788,27 @@ Function SortPriorityArray () ;sort priority so higher priority and those items 
 				Float SwapDummy = PriorityArray [Index1]
 				PriorityArray [Index1] = PriorityArray [Index1 + 1]
 				PriorityArray [Index1 + 1] = SwapDummy
-			Elseif (((PriorityArray [Index1] as Int) % 10) == (((PriorityArray [Index1 + 1] as Int) % 10))) ; when two item has the same priority
+			ElseIf (((PriorityArray [Index1] as Int) % 10) == (((PriorityArray [Index1 + 1] as Int) % 10))) ; when two item has the same priority
 				If (PriorityArray[Index1]>50) && bGSoulGemRevive
 					bIsIndex1 = True ;  Item at index 1 is tradable
-				Elseif (PriorityArray[Index1]>40) && (PriorityArray[Index1]<50) && bArkayMarkRevive
+				ElseIf (PriorityArray[Index1]>40) && (PriorityArray[Index1]<50) && bArkayMarkRevive
 					bIsIndex1 = True
-				Elseif (PriorityArray[Index1]>30) && (PriorityArray[Index1]<40) && bBSoulGemRevive
+				ElseIf (PriorityArray[Index1]>30) && (PriorityArray[Index1]<40) && bBSoulGemRevive
 					bIsIndex1 = True
-				Elseif (PriorityArray[Index1]>20) && (PriorityArray[Index1]<30) && bDragonSoulRevive
+				ElseIf (PriorityArray[Index1]>20) && (PriorityArray[Index1]<30) && bDragonSoulRevive
 					bIsIndex1 = True
-				Elseif (PriorityArray[Index1]>10) && (PriorityArray[Index1]<20) && bSeptimRevive
+				ElseIf (PriorityArray[Index1]>10) && (PriorityArray[Index1]<20) && bSeptimRevive
 					bIsIndex1 = True
 				EndIf
 				If (PriorityArray[Index1 + 1]>50) && bGSoulGemRevive
 					bIsIndex2 = True ; Item at index 2 is tradable
-				Elseif (PriorityArray[Index1 + 1]>40) && (PriorityArray[Index1 + 1]<50) && bArkayMarkRevive
+				ElseIf (PriorityArray[Index1 + 1]>40) && (PriorityArray[Index1 + 1]<50) && bArkayMarkRevive
 					bIsIndex2 = True
-				Elseif (PriorityArray[Index1 + 1]>30) && (PriorityArray[Index1 + 1]<40) && bBSoulGemRevive
+				ElseIf (PriorityArray[Index1 + 1]>30) && (PriorityArray[Index1 + 1]<40) && bBSoulGemRevive
 					bIsIndex2 = True
-				Elseif (PriorityArray[Index1 + 1]>20) && (PriorityArray[Index1 + 1]<30) && bDragonSoulRevive
+				ElseIf (PriorityArray[Index1 + 1]>20) && (PriorityArray[Index1 + 1]<30) && bDragonSoulRevive
 					bIsIndex2 = True
-				Elseif (PriorityArray[Index1 + 1]>10) && (PriorityArray[Index1 + 1]<20) && bSeptimRevive
+				ElseIf (PriorityArray[Index1 + 1]>10) && (PriorityArray[Index1 + 1]<20) && bSeptimRevive
 					bIsIndex2 = True
 				EndIf
 				If (bIsIndex1 == True) && (bIsIndex2 == False) ;tradable items should have lower index in the array after sort
@@ -914,19 +914,19 @@ Bool Function RemoveItemByMenu() ;trade by using menu
 		PlayerRef.RemoveItem(MarkOfArkay,(ConfigMenu.fValueMarkSlider as Int),True)
 		bRevive = True
 		strRemovedItem = "Arkay Mark"
-	Elseif ((iChoice == 1) && bBSoulGemRevive)
+	ElseIf ((iChoice == 1) && bBSoulGemRevive)
 		PlayerRef.RemoveItem(BlackFilledGem,(ConfigMenu.fValueBSoulGemSlider as Int),True)
 		bRevive = True
 		strRemovedItem = "Black Soul Gem"
-	Elseif ((iChoice == 2) && bDragonSoulRevive)
+	ElseIf ((iChoice == 2) && bDragonSoulRevive)
 		PlayerRef.ModActorValue("DragonSouls", -ConfigMenu.fValueSoulSlider)
 		bRevive = True
 		strRemovedItem = "Dragon Soul"
-	Elseif ((iChoice == 3) && bGSoulGemRevive)
+	ElseIf ((iChoice == 3) && bGSoulGemRevive)
 		PlayerRef.RemoveItem(GrandFilledGem,(ConfigMenu.fValueGSoulGemSlider as Int),True)
 		bRevive = True
 		strRemovedItem = "Grand Soul Gem"
-	Elseif ((iChoice == 4) && bSeptimRevive)
+	ElseIf ((iChoice == 4) && bSeptimRevive)
 		PlayerRef.RemoveItem(Gold001,(ConfigMenu.fValueGoldSlider as Int),True)
 		bRevive = True
 		strRemovedItem = "Septim"
@@ -949,25 +949,25 @@ Function AutoRemoveItem(Int i) ;trade without menu
 				Else
 					bBreak = True
 				EndIf
-			Elseif (PriorityArray[j]>40) && (PriorityArray[j]<50) && bArkayMarkRevive
+			ElseIf (PriorityArray[j]>40) && (PriorityArray[j]<50) && bArkayMarkRevive
 				If ((PriorityArray[j] as Int )%10) == ((PriorityArray[i] as Int )%10)
 					count+=1
 				Else
 					bBreak = True
 				EndIf
-			Elseif (PriorityArray[j]>30) && (PriorityArray[j]<40) && bBSoulGemRevive
+			ElseIf (PriorityArray[j]>30) && (PriorityArray[j]<40) && bBSoulGemRevive
 				If ((PriorityArray[j] as Int )%10) == ((PriorityArray[i] as Int )%10)
 					count+=1
 				Else
 					bBreak = True
 				EndIf
-			Elseif (PriorityArray[j]>20) && (PriorityArray[j]<30) && bDragonSoulRevive
+			ElseIf (PriorityArray[j]>20) && (PriorityArray[j]<30) && bDragonSoulRevive
 				If ((PriorityArray[j] as Int )%10) == ((PriorityArray[i] as Int )%10)
 					count+=1
 				Else
 					bBreak = True
 				EndIf
-			Elseif (PriorityArray[j]>10) && (PriorityArray[j]<20) && bSeptimRevive
+			ElseIf (PriorityArray[j]>10) && (PriorityArray[j]<20) && bSeptimRevive
 				If ((PriorityArray[j] as Int )%10) == ((PriorityArray[i] as Int )%10)
 					count+=1
 				Else
@@ -989,16 +989,16 @@ Function AutoRemoveItemByIndex(Int iIndex) ; removing item at iIndex
 	If (PriorityArray[iIndex]>50) && bGSoulGemRevive
 		PlayerRef.RemoveItem(GrandFilledGem,(ConfigMenu.fValueGSoulGemSlider as Int),True)
 		strRemovedItem = "Grand Soul Gem"
-	Elseif (PriorityArray[iIndex]>40) && (PriorityArray[iIndex]<50) && bArkayMarkRevive
+	ElseIf (PriorityArray[iIndex]>40) && (PriorityArray[iIndex]<50) && bArkayMarkRevive
 		PlayerRef.RemoveItem(MarkOfArkay,(ConfigMenu.fValueMarkSlider as Int),True)
 		strRemovedItem = "Arkay Mark"
-	Elseif (PriorityArray[iIndex]>30) && (PriorityArray[iIndex]<40) && bBSoulGemRevive
+	ElseIf (PriorityArray[iIndex]>30) && (PriorityArray[iIndex]<40) && bBSoulGemRevive
 		PlayerRef.RemoveItem(BlackFilledGem,(ConfigMenu.fValueBSoulGemSlider as Int),True)
 		strRemovedItem = "Black Soul Gem"
-	Elseif (PriorityArray[iIndex]>20) && (PriorityArray[iIndex]<30) && bDragonSoulRevive
+	ElseIf (PriorityArray[iIndex]>20) && (PriorityArray[iIndex]<30) && bDragonSoulRevive
 		PlayerRef.ModActorValue("DragonSouls", -ConfigMenu.fValueSoulSlider)
 		strRemovedItem = "Dragon Soul"
-	Elseif (PriorityArray[iIndex]>10) && (PriorityArray[iIndex]<20) && bSeptimRevive
+	ElseIf (PriorityArray[iIndex]>10) && (PriorityArray[iIndex]<20) && bSeptimRevive
 		PlayerRef.RemoveItem(Gold001,(ConfigMenu.fValueGoldSlider as Int),True)
 		strRemovedItem = "Septim"
 	EndIf
@@ -1015,16 +1015,16 @@ Function ShowNotification()
 			If (strRemovedItem == "Arkay Mark")
 				Debug.Notification("$mrt_MarkofArkay_Notification_ArkayMark_Removed" )
 				Debug.Notification( ConfigMenu.fValueMarkSlider as Int )
-			Elseif (strRemovedItem == "Black Soul Gem") 
+			ElseIf (strRemovedItem == "Black Soul Gem") 
 					Debug.Notification( "$mrt_MarkofArkay_Notification_BSoulGem_Removed"  )
 					Debug.Notification( ConfigMenu.fValueBSoulGemSlider as Int )
-			Elseif (strRemovedItem == "Grand Soul Gem")
+			ElseIf (strRemovedItem == "Grand Soul Gem")
 				Debug.Notification( "$mrt_MarkofArkay_Notification_GSoulGem_Removed" )
 				Debug.Notification( ConfigMenu.fValueGSoulGemSlider as Int )
-			Elseif (strRemovedItem == "Dragon Soul")
+			ElseIf (strRemovedItem == "Dragon Soul")
 				Debug.Notification( "$mrt_MarkofArkay_Notification_DragonSoul_Removed" )
 				Debug.Notification( ConfigMenu.fValueSoulSlider as Int )
-			Elseif (strRemovedItem == "Septim")
+			ElseIf (strRemovedItem == "Septim")
 				Debug.Notification( "$mrt_MarkofArkay_Notification_Septim_Removed" )
 				Debug.Notification( ConfigMenu.fValueGoldSlider as Int )
 			EndIf
@@ -1084,7 +1084,7 @@ Endfunction
 Bool Function bCanSteal(Actor ActorRef)
 	If ActorRef
 		Return (( ActorRef != PlayerRef ) && !ActorRef.IsDead() &&\
-		!ActorRef.Isdisabled() && !ActorRef.IsEssential() && !ActorRef.GetActorBase().IsProtected() &&\
+		!ActorRef.IsDisabled() && !ActorRef.IsEssential() && !ActorRef.GetActorBase().IsProtected() &&\
 		!ActorRef.GetActorBase().IsInvulnerable() && !ActorRef.IsGhost() && !ActorRef.IsCommandedActor() &&\
 		!ActorRef.IsGuard() && !ActorRef.HasKeywordString("actortypeanimal") && !ActorRef.HasKeywordString("actortypeghost") &&\
 		(( ActorRef.HasKeywordString("actortypenpc") && !ActorRef.HasKeywordString("actortypecreature") && ( ActorRef.GetActorValue("Morality") < 3 )) ||\
@@ -1098,7 +1098,7 @@ Endfunction
 Bool Function bIsHostile(Actor ActorRef)
 	If ActorRef
 		Return (( ActorRef != PlayerRef ) && !ActorRef.IsDead() &&\
-		!ActorRef.Isdisabled() && !ActorRef.IsCommandedActor() && !ActorRef.IsGuard() &&\
+		!ActorRef.IsDisabled() && !ActorRef.IsCommandedActor() && !ActorRef.IsGuard() &&\
 		!ActorRef.HasKeywordString("actortypeanimal") && !ActorRef.HasKeywordString("actortypeghost") &&\
 		(( ActorRef.HasKeywordString("actortypenpc") && !ActorRef.HasKeywordString("actortypecreature")) ||\
 		( Configmenu.bCreaturesCanSteal && ActorRef.HasKeywordString("actortypecreature") && !ActorRef.HasKeywordString("actortypedragon"))) &&\
@@ -1133,8 +1133,8 @@ Function DetectThiefNPC()
 		!(( HostileActor.GetReference() As Actor ).IsDead() ) &&\
 		!(( HostileActor.GetReference() As Actor ).GetActorBase().IsInvulnerable() )
 			Thief = HostileActor.GetReference() As Actor
-		ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Detected thief in phase 1: ( '" +\
-		Thief.GetActorBase().GetName() + "', "  + Thief + ", " + Thief.GetRace() + ", )" )
+			ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Detected thief in phase 1: ( '" +\
+			Thief.GetActorBase().GetName() + "', "  + Thief + ", " + Thief.GetRace() + ", )" )
 			Return
 		EndIf
 	EndIf
@@ -1144,8 +1144,8 @@ Function DetectThiefNPC()
 		If bCanSteal(RandomActor)
 			Thief = RandomActor
 			HostileActor.ForceRefTo(Thief)
-		ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Detected thief in phase 2: ( '" +\
-		Thief.GetActorBase().GetName() + "', "  + Thief + ", " + Thief.GetRace() + ", )" )
+			ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Detected thief in phase 2: ( '" +\
+			RandomActor.GetActorBase().GetName() + "', "  + RandomActor + ", " + RandomActor.GetRace() + ", )" )
 			Return
 		EndIf
 		Int i = 0
@@ -1156,8 +1156,8 @@ Function DetectThiefNPC()
 				If bCanSteal(RandomActor)
 					Thief = RandomActor
 					HostileActor.ForceRefTo(Thief)
-		ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Detected thief in phase 2: ( '" +\
-		Thief.GetActorBase().GetName() + "', "  + Thief + ", " + Thief.GetRace() + ", )" )
+					ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Detected thief in phase 2: ( '" +\
+					RandomActor.GetActorBase().GetName() + "', "  + RandomActor + ", " + RandomActor.GetRace() + ", )" )
 					Return
 				EndIf
 			EndIf
@@ -1634,7 +1634,7 @@ Function RevivePlayer(Bool bRevive)
 					iRemovableItems = Utility.RandomInt(1,4)
 				ElseIf ( iRemovableItems == 7 ) ;Random but lose something
 					iRemovableItems = Utility.RandomInt(1,5)
-				Elseif ( iRemovableItems == 6 ) ;Random but not everything
+				ElseIf ( iRemovableItems == 6 ) ;Random but not everything
 					iRemovableItems = Utility.RandomInt(0,4)
 				EndIf
 				If ConfigMenu.bLoseForever && (ConfigMenu.iRemovableItems != 0)
@@ -1660,10 +1660,10 @@ Function RevivePlayer(Bool bRevive)
 					EquippedQuestItems = New Form[34]
 					If iRemovableItems == 1
 						RemoveTradbleItems(PlayerRef)
-					Elseif iRemovableItems == 2
+					ElseIf iRemovableItems == 2
 						RemoveTradbleItems(PlayerRef)
 						RemoveUnequippedItems(PlayerRef)
-					Elseif iRemovableItems == 3 ; unequipped but not tradables
+					ElseIf iRemovableItems == 3 ; unequipped but not tradables
 						iSeptimCount = PlayerRef.GetItemCount(Gold001)
 						iArkayMarkCount = PlayerRef.GetItemCount(MarkOfArkay) 
 						iBSoulGemCount = PlayerRef.GetItemCount(BlackFilledGem)
@@ -1686,14 +1686,14 @@ Function RevivePlayer(Bool bRevive)
 							PlayerRef.ModActorValue("DragonSouls", -fDragonSoulCount)
 							fLostSouls += fDragonSoulCount
 						EndIf
-					Elseif iRemovableItems == 4  ; Everything except tradables
+					ElseIf iRemovableItems == 4  ; Everything except tradables
 						iSeptimCount = PlayerRef.GetItemCount(Gold001)
 						iArkayMarkCount = PlayerRef.GetItemCount(MarkOfArkay) 
 						iBSoulGemCount = PlayerRef.GetItemCount(BlackFilledGem)
 						iGSoulGemCount = PlayerRef.GetItemCount(GrandFilledGem)
 						fDragonSoulCount = PlayerRef.GetActorValue("DragonSouls")
 						PlayerRef.RemoveAllItems(LostItemsChest, True)
-						TransferItemsByType(LostItemsChest,PlayerRef As ObjectReference,45,IgnoreItem) ;Return Keys
+						TransferItemsByType(LostItemsChest,PlayerRef As ObjectReference,45,"zzzmoa_ignoreitem") ;Return Keys
 						If ( iSeptimCount > 0 ) && ConfigMenu.bIsGoldEnabled
 							LostItemsChest.RemoveItem(Gold001, iSeptimCount, True, PlayerRef)
 						EndIf
@@ -1710,13 +1710,13 @@ Function RevivePlayer(Bool bRevive)
 							PlayerRef.ModActorValue("DragonSouls", -fDragonSoulCount)
 							fLostSouls += fDragonSoulCount
 						EndIf
-					Elseif iRemovableItems == 5
+					ElseIf iRemovableItems == 5
 						RemoveTradbleItems(PlayerRef)
 						PlayerRef.RemoveAllItems(LostItemsChest, True)
-						TransferItemsByType(LostItemsChest,PlayerRef As ObjectReference,45,IgnoreItem) ;Return Keys
-					Elseif iRemovableItems == 10
+						TransferItemsByType(LostItemsChest,PlayerRef As ObjectReference,45,"zzzmoa_ignoreitem") ;Return Keys
+					ElseIf iRemovableItems == 10
 						RemoveValuableItems(PlayerRef)
-					Elseif iRemovableItems == 11
+					ElseIf iRemovableItems == 11
 						RemoveValuableItemsGreedy(PlayerRef)
 					EndIf
 					If ( ConfigMenu.iRemovableItems == 7 ) ;Remove All if nothing is removed
@@ -2622,7 +2622,7 @@ Function RemoveUnequippedItems(Actor ActorRef)
 	ValuableItemsChest.RemoveAllItems()
 	ActorRef.RemoveAllItems(ValuableItemsChest, True,False)
 	TransferItems(Equipment,ValuableItemsChest,ActorRef As ObjectReference)
-	TransferItemsByType(ValuableItemsChest,ActorRef As ObjectReference,45,IgnoreItem) ;Return Keys
+	TransferItemsByType(ValuableItemsChest,ActorRef As ObjectReference,45,"zzzmoa_ignoreitem") ;Return Keys
 	If !ConfigMenu.bRespawnNaked
 		If RightHand 
 			If	ActorRef.GetItemCount(RightHandEquipedItem) > 0 && !ActorRef.IsEquipped(RightHandEquipedItem)
@@ -3137,7 +3137,7 @@ Bool Function bIsTypeLegit( Form akItem)
 	If akItem
 		Int iType = akItem.GetType()
 		If ( ( iType == 26 ) || ( iType == 42 ) || ( iType == 27 ) || ( iType == 46 ) || ( iType == 30 ) || ( iType == 32 ) || ( iType == 23 ) || ( iType == 52 ) || ( iType == 41 ) )
-			If (!akItem.HasKeyword(IgnoreItem) && !akItem.HasKeywordString("vendornosale") && !akItem.HasKeywordString("magicdisallowenchanting") && !akItem.HasKeywordString("sos_underwear"))
+			If (!akItem.HasKeywordString("zzzmoa_ignoreitem") && !akItem.HasKeywordString("vendornosale") && !akItem.HasKeywordString("magicdisallowenchanting") && !akItem.HasKeywordString("sos_underwear"))
 				If akItem.GetWeight() > 0.0
 					Return True
 				EndIf
@@ -3187,7 +3187,7 @@ Function TransferItems(Form[] ItemList, ObjectReference akFrom, ObjectReference 
 	EndWhile
 EndFunction
 
-Function TransferItemsbyTypeArr(ObjectReference akFrom, ObjectReference akTo,Int[] iTypeArr,Keyword[] keywordArr = None)
+Function TransferItemsbyTypeArr(ObjectReference akFrom, ObjectReference akTo,Int[] iTypeArr,String[] strKeywordArr = None)
 	Int iIndex = akFrom.GetNumItems()
 	Form kItem
 	While ( iIndex > 0 ) 
@@ -3196,13 +3196,13 @@ Function TransferItemsbyTypeArr(ObjectReference akFrom, ObjectReference akTo,Int
 		If kItem
 			If ( iTypeArr.Find(kItem.GetType()) > -1 )
 				akFrom.RemoveItem(kItem, akFrom.GetItemCount(kItem), True, akTo )	
-			ElseIf keywordArr
+			ElseIf strKeywordArr
 				Bool bBreak = False
-				Int i = keywordArr.Length
+				Int i = strKeywordArr.Length
 				While ( i > 0 ) && !bBreak
 					i -= 1
-					If keywordArr[i]
-						If kItem.HasKeyword(keywordArr[i])
+					If strKeywordArr[i]
+						If kItem.HasKeywordString(strKeywordArr[i])
 							akFrom.RemoveItem(kItem, akFrom.GetItemCount(kItem), True, akTo )	
 							bBreak = True
 						EndIf
@@ -3213,14 +3213,14 @@ Function TransferItemsbyTypeArr(ObjectReference akFrom, ObjectReference akTo,Int
 	EndWhile	
 Endfunction
 
-Function TransferItemsByType(ObjectReference akFrom, ObjectReference akTo,Int iType,Keyword aKeyword = None)
+Function TransferItemsByType(ObjectReference akFrom, ObjectReference akTo,Int iType,String strKeyword = "")
 	Int iIndex = akFrom.GetNumItems()
 	Form kItem
 	While ( iIndex > 0 ) 
 		iIndex -= 1
 		kItem = akFrom.GetNthForm( iIndex )
 		If kItem
-			If (( kItem.GetType() == iType ) || ( aKeyword && kItem.HasKeyword(aKeyword)))
+			If (( kItem.GetType() == iType ) || ( strKeyword && kItem.HasKeywordString(strKeyword)))
 				akFrom.RemoveItem(kItem, akFrom.GetItemCount(kItem), True, akTo )	
 			EndIf 
 		EndIf
@@ -3272,8 +3272,8 @@ Bool Function bGuardCanSendToJail()
 			If (( CrimeFaction != CrimeFactionReach ) || bCanSendToCidhna )
 				Guard = GuardNPC.GetReference() As Actor
 				moaGuardDetector.Stop()
-						ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Detected guard NPC In Phase 2: ( '" +\
-						Guard.GetActorBase().GetName() + "', " + Guard + ", " + Guard.GetRace() + ", )" )
+				ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Detected guard NPC In Phase 2: ( '" +\
+				Guard.GetActorBase().GetName() + "', " + Guard + ", " + Guard.GetRace() + ", )" )
 				Return True
 			EndIf
 		EndIf
@@ -3293,8 +3293,8 @@ Bool Function bGuardCanSendToJail()
 						If ( CrimeFaction && ( CrimeFaction.GetCrimeGold() > 0 ))
 							If (( CrimeFaction != CrimeFactionReach ) || bCanSendToCidhna )
 								Guard = RandomActor
-						ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Detected guard NPC In Phase 3: ( '" +\
-						Guard.GetActorBase().GetName() + "', " + Guard + ", " + Guard.GetRace() + ", )" )
+								ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Detected guard NPC In Phase 3: ( '" +\
+								Guard.GetActorBase().GetName() + "', " + Guard + ", " + Guard.GetRace() + ", )" )
 								Return True
 							EndIf
 						EndIf

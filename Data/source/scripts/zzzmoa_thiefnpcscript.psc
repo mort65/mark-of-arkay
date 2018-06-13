@@ -5,10 +5,17 @@ zzzmoaReviveMCM Property ConfigMenu Auto
 Event OnDeath(Actor akKiller)
 	If (( GetReference() As Actor ) && ( ConfigMenu.moaBleedoutHandlerState.GetValue() == 0 ))
 		If Configmenu.bIsLoggingEnabled
-			Debug.Trace( "MarkofArkay: ( '" + ( GetReference() As Actor ).GetActorBase().GetName() +\
-			"', " + ( GetReference() As Actor ) + ", " + ( GetReference() As Actor ).GetRace() +\
-			", ) who stoled player's items is killed by ( '" + akKiller.GetActorBase().GetName() + "', " +\
-			akKiller + ", " + akKiller.GetRace() + ", )." )
+			If akKiller
+				Debug.Trace( "MarkofArkay: ( '" + ( GetReference() As Actor ).GetActorBase().GetName() +\
+				"', " + ( GetReference() As Actor ) + ", " + ( GetReference() As Actor ).GetRace() +\
+				", ) who stoled player's items is killed by ( '" + akKiller.GetActorBase().GetName() + "', " +\
+				akKiller + ", " + akKiller.GetRace() + ", )." )
+			Else
+				Debug.Trace( "MarkofArkay: ( '" + ( GetReference() As Actor ).GetActorBase().GetName() +\
+				"', " + ( GetReference() As Actor ) + ", " + ( GetReference() As Actor ).GetRace() +\
+				", ) who stoled player's items is dead." )
+			EndIf
+
 		EndIf
 		If !(( GetReference() As Actor ).GetParentCell().IsAttached() )
 			If GetOwningQuest().IsRunning()

@@ -41,6 +41,8 @@ Spell Property MoveCustomMarker Auto
 Spell Property RecallMarker Auto
 Spell Property ArkayCurse Auto
 Spell Property ArkayCurseAlt Auto
+Spell Property ArkayCurseTemp Auto
+Spell Property ArkayCurseTempAlt Auto
 Spell Property MassHealing Auto
 Spell Property MassRevival Auto
 Keyword Property IgnoreItem Auto
@@ -1429,33 +1431,37 @@ Function RevivePlayer(Bool bRevive)
 		PlayerRef.ResetHealthAndLimbs()
 		PlayerRef.RestoreActorValue("Health",9999)
 		Debug.SetGodMode(False)
-		If !bHasAutoReviveEffect && ( PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt) )
-			PlayerRef.RemoveSpell(ArkayCurse)
-			PlayerRef.RemoveSpell(ArkayCurseAlt)
-			If !bIsItemsRemoved
-				If moaSoulMark01.IsRunning()
-					moaSoulMark01.Stop()
-					LostItemsMarker.MoveToMyEditorLocation()
-					LostItemsMarker.Disable()
-				EndIf
-				If moaRetrieveLostItems.IsRunning()
-					moaRetrieveLostItems.SetStage(20)
-				EndIf
-				If moaRetrieveLostItems01.IsRunning()
-					moaRetrieveLostItems01.SetStage(20)
-				EndIf
-				If moaThiefNPC01.IsRunning()
-					If ( ThiefNPC.GetReference() As Actor )
-						( ThiefNPC.GetReference() As Actor ).RemoveItem(StolenItemsMisc,(ThiefNPC.GetReference() As Actor ).GetItemCount(StolenItemsMisc))
+		If !bHasAutoReviveEffect
+			PlayerRef.DispelSpell(ArkayCurseTemp)
+			PlayerRef.DispelSpell(ArkayCurseTempAlt)
+			If ( PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt) )
+				PlayerRef.RemoveSpell(ArkayCurse)
+				PlayerRef.RemoveSpell(ArkayCurseAlt)
+				If !bIsItemsRemoved
+					If moaSoulMark01.IsRunning()
+						moaSoulMark01.Stop()
+						LostItemsMarker.MoveToMyEditorLocation()
+						LostItemsMarker.Disable()
 					EndIf
-					(ThiefNPC.GetReference() As Actor).RemoveFromFaction(PlayerEnemyFaction)
-					moaThiefNPC01.Stop()
+					If moaRetrieveLostItems.IsRunning()
+						moaRetrieveLostItems.SetStage(20)
+					EndIf
+					If moaRetrieveLostItems01.IsRunning()
+						moaRetrieveLostItems01.SetStage(20)
+					EndIf
+					If moaThiefNPC01.IsRunning()
+						If ( ThiefNPC.GetReference() As Actor )
+							( ThiefNPC.GetReference() As Actor ).RemoveItem(StolenItemsMisc,(ThiefNPC.GetReference() As Actor ).GetItemCount(StolenItemsMisc))
+						EndIf
+						(ThiefNPC.GetReference() As Actor).RemoveFromFaction(PlayerEnemyFaction)
+						moaThiefNPC01.Stop()
+					EndIf
+					If Thief
+						Thief.RemoveItem(StolenItemsMisc,Thief.GetItemCount(StolenItemsMisc))
+						Thief.RemoveFromFaction(PlayerEnemyFaction)
+					EndIf
+					playerRef.RemoveItem(StolenItemsMisc, PlayerRef.GetItemCount(StolenItemsMisc), abSilent = True)
 				EndIf
-				If Thief
-					Thief.RemoveItem(StolenItemsMisc,Thief.GetItemCount(StolenItemsMisc))
-					Thief.RemoveFromFaction(PlayerEnemyFaction)
-				EndIf
-				playerRef.RemoveItem(StolenItemsMisc, PlayerRef.GetItemCount(StolenItemsMisc), abSilent = True)
 			EndIf
 		EndIf
 		If Configmenu.bFollowerProtectPlayer
@@ -1566,7 +1572,7 @@ Function RevivePlayer(Bool bRevive)
 				If ( ConfigMenu.bNPCStealItems ) 
 					If moaSoulMark01.IsRunning()
 						If (( ConfigMenu.bLoseForever && ( ConfigMenu.iRemovableItems != 0 )) &&\
-						( !Configmenu.bArkayCurse && !PlayerRef.HasSpell(ArkayCurse) && !PlayerRef.HasSpell(ArkayCurseAlt) ))
+						(( !Configmenu.bArkayCurse || Configmenu.bIsArkayCurseTemporary ) && !PlayerRef.HasSpell(ArkayCurse) && !PlayerRef.HasSpell(ArkayCurseAlt) ))
 							moaSoulMark01.Stop()
 							LostItemsMarker.MoveToMyEditorLocation()
 							LostItemsMarker.Disable()
@@ -1746,8 +1752,8 @@ Function RevivePlayer(Bool bRevive)
 					EndIf
 				EndIf
 				If ( PlayerRef.GetParentCell() != DefaultCell )
-					If ((( LostItemsChest.GetNumItems() > 0 ) || ( fLostSouls > 0.0 )) || PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt) || Configmenu.bArkayCurse )
-						If ( bSoulMark || (( ConfigMenu.bArkayCurse || PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt) ) && !moaThiefNPC01.IsRunning() ))
+					If ((( LostItemsChest.GetNumItems() > 0 ) || ( fLostSouls > 0.0 )) || PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt) || ( Configmenu.bArkayCurse && !Configmenu.bIsArkayCurseTemporary ))
+						If ( bSoulMark || ((( ConfigMenu.bArkayCurse && !Configmenu.bIsArkayCurseTemporary ) || PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt) ) && !moaThiefNPC01.IsRunning() ))
 							LostItemsMarker.Enable()
 							If ( !ConfigMenu.bSoulMarkStay || ( LostItemsMarker.GetParentCell() == DefaultCell ) )
 								ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Moving soul mark to player's location...")
@@ -1853,7 +1859,9 @@ Function RevivePlayer(Bool bRevive)
 				If ( ConfigMenu.bRespawnNaked && !bInBeastForm() )
 					PlayerRef.UnequipAll()
 				EndIf
-				If ConfigMenu.bArkayCurse && ( moaThiefNPC01.IsRunning() || ( moaSoulMark01.IsRunning() ))
+				If (( ConfigMenu.bArkayCurse && !Configmenu.bIsArkayCurseTemporary ) && ( moaThiefNPC01.IsRunning() || ( moaSoulMark01.IsRunning() )))
+					PlayerRef.DispelSpell(ArkayCurseTemp)
+					PlayerRef.DispelSpell(ArkayCurseTempAlt)
 					If ConfigMenu.iArkayCurse == 0
 						PlayerRef.AddSpell(ArkayCurse)
 					ElseIf ConfigMenu.iArkayCurse == 1
@@ -1861,6 +1869,15 @@ Function RevivePlayer(Bool bRevive)
 					Else
 						PlayerRef.AddSpell(ArkayCurse)
 						PlayerRef.AddSpell(ArkayCurseAlt)
+					EndIf
+				ElseIf (( ConfigMenu.bArkayCurse && Configmenu.bIsArkayCurseTemporary ) && ( !PlayerRef.HasSpell(ArkayCurse) && !PlayerRef.HasSpell(ArkayCurseAlt)))
+					If ConfigMenu.iArkayCurse == 0
+						ArkayCurseTemp.Cast(PlayerRef)
+					ElseIf ConfigMenu.iArkayCurse == 1
+						ArkayCurseTempAlt.Cast(PlayerRef)
+					Else
+						ArkayCurseTemp.Cast(PlayerRef)
+						ArkayCurseTempAlt.Cast(PlayerRef)
 					EndIf
 				EndIf
 				If ConfigMenu.bFadeToBlack

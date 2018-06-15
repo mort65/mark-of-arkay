@@ -15,7 +15,6 @@ Event OnDeath(Actor akKiller)
 				"', " + ( GetReference() As Actor ) + ", " + ( GetReference() As Actor ).GetRace() +\
 				", ) who stoled player's items is dead." )
 			EndIf
-
 		EndIf
 		If !(( GetReference() As Actor ).GetParentCell().IsAttached() )
 			If GetOwningQuest().IsRunning()

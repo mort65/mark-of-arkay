@@ -40,6 +40,7 @@ Int oidShiftBack
 Int oidShiftBackRespawn
 Int oidSoulMarkStay
 Int oidArkayCurse
+Int oidTempArkayCurse
 Int oidFollowerProtectPlayer
 Int oidInvisibility
 Int flags
@@ -110,6 +111,7 @@ Bool Property bRecallByArkayMark = False Auto Hidden ;
 Bool Property bIsMarkEnabled = True Auto Hidden
 Bool Property bIsMenuEnabled = True Auto Hidden
 Bool Property bArkayCurse = False Auto Hidden
+Bool Property bIsArkayCurseTemporary = False Auto Hidden
 Bool Property bIsRagdollEnabled = False Auto Hidden
 Bool Property bIsNotificationEnabled = False Auto Hidden
 Bool Property bIsLoggingEnabled = False Auto Hidden
@@ -158,6 +160,8 @@ Spell Property MoveCustomMarker Auto
 Spell Property RecallMarker Auto
 Spell Property ArkayCurse Auto
 Spell Property ArkayCurseAlt Auto
+Spell Property ArkayCurseTemp Auto
+Spell Property ArkayCurseTempAlt Auto
 Spell Property ArkayBlessing Auto
 Bool Property bShiftBack = False Auto Hidden
 Bool Property bShiftBackRespawn = True Auto Hidden
@@ -376,45 +380,57 @@ Event OnPageReset(String page)
 		EndIf
 		oidArkayCurse = AddToggleOption("$mrt_MarkofArkay_ArkayCurse", bArkayCurse, flags)
 		SetCursorPosition(16)
-		oidHealActors = AddToggleOption("$mrt_MarkofArkay_HealActors",bHealActors,flags)
+		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bArkayCurse)
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidTempArkayCurse = AddToggleOption("$mrt_MarkofArkay_TempArkayCurse",bIsArkayCurseTemporary, flags)
 		SetCursorPosition(18)
-		oidResurrectActors = AddToggleOption("$mrt_MarkofArkay_ResurrectActors",bResurrectActors,flags)
+		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1))
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidHealActors = AddToggleOption("$mrt_MarkofArkay_HealActors",bHealActors,flags)
 		SetCursorPosition(20)
+		oidResurrectActors = AddToggleOption("$mrt_MarkofArkay_ResurrectActors",bResurrectActors,flags)
+		SetCursorPosition(22)
 		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && ( iRemovableItems != 0 ))
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidLoseforever = AddToggleOption("$mrt_MarkofArkay_Loseforever",bLoseForever, flags)
-		SetCursorPosition(22)
+		SetCursorPosition(24)
 		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && (( iRemovableItems != 0 ) || bArkayCurse ))
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidSoulMarkStay = AddToggleOption("$mrt_MarkofArkay_SoulMarkStay",bSoulMarkStay,flags)
-		SetCursorPosition(24)
+		SetCursorPosition(26)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidLostItemQuest = AddToggleOption("$mrt_MarkofArkay_LostItemQuest",bLostItemQuest,flags)
-		SetCursorPosition(26)
+		SetCursorPosition(28)
 		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1)) && !bNPCStealItems
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidHostileNPC =  AddToggleOption("$mrt_MarkofArkay_HostileNPC",bHostileNPC,flags)
-		SetCursorPosition(28)
+		SetCursorPosition(30)
 		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1)) && !bHostileNPC
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidNPCStealItems = AddToggleOption("$mrt_MarkofArkay_NPCStealItems",bNPCStealItems,flags)
-		SetCursorPosition(30)
+		SetCursorPosition(32)
 		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1)) && ( bHostileNPC || bNPCStealItems )
 			flags =	OPTION_FLAG_NONE
 		Else
@@ -866,13 +882,17 @@ Event OnOptionSelect(Int option)
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
-		SetOptionFlags(oidArkayCurses_M, flags,True)
+		SetOptionFlags(oidArkayCurses_M,flags,True)
+		SetOptionFlags(oidTempArkayCurse,flags,True)
 		If  ( bIsRevivalEnabled ) && ( iNotTradingAftermath == 1) && ( bArkayCurse || ( iRemovableItems != 0 ))
 			flags = OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		SetOptionFlags(oidSoulMarkStay, flags)
+	ElseIf (option == oidTempArkayCurse)
+		bIsArkayCurseTemporary = !bIsArkayCurseTemporary
+		SetToggleOptionValue(oidTempArkayCurse, bIsArkayCurseTemporary)	
 	ElseIf (option == oidLoseforever)
 		bLoseForever = !bLoseForever
 		SetToggleOptionValue(oidLoseforever, bLoseForever)
@@ -1038,6 +1058,7 @@ Event OnOptionSelect(Int option)
 		SetOptionFlags(oidHealActors,flags,True)
 		SetOptionFlags(oidResurrectActors,flags,True)
 		SetOptionFlags(oidArkayCurse,flags,True)
+		SetOptionFlags(oidTempArkayCurse,flags,True)
 		SetOptionFlags(oidArkayCurses_M,flags,True)
 		SetOptionFlags(oidLoseforever,flags,True)
 		SetOptionFlags(oidLostItemQuest,flags,True)
@@ -1117,6 +1138,7 @@ Event OnOptionSelect(Int option)
 		SetOptionFlags(oidHealActors,flags,True)
 		SetOptionFlags(oidResurrectActors,flags,True)
 		SetOptionFlags(oidArkayCurse,flags,True)
+		SetOptionFlags(oidTempArkayCurse,flags,True)
 		SetOptionFlags(oidArkayCurses_M,flags,True)
 		SetOptionFlags(oidLoseforever,flags,True)
 		SetOptionFlags(oidLostItemQuest,flags,True)
@@ -1392,6 +1414,12 @@ Event OnOptionMenuAccept(Int option, Int index)
 		SetOptionFlags(oidResurrectActors,flags,True)
 		SetOptionFlags(oidArkayCurse,flags,True)
 		SetOptionFlags(oidRemovableItems_M,flags,True)
+		If bIsRevivalEnabled && (iNotTradingAftermath == 1) && bArkayCurse
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		SetOptionFlags(oidTempArkayCurse,flags,True)
 		If bIsRevivalEnabled && (iNotTradingAftermath == 1) && (iRemovableItems != 0) && !bHostileNPC
 			flags =	OPTION_FLAG_NONE
 		Else
@@ -1619,12 +1647,16 @@ Event OnOptionDefault(Int option)
 		SetToggleOptionValue(oidArkayCurse,bArkayCurse)
 		flags = OPTION_FLAG_DISABLED
 		SetOptionFlags(oidArkayCurses_M, flags,True)
+		SetOptionFlags(oidTempArkayCurse, flags,True)
 		If  (( bIsRevivalEnabled ) && ( iNotTradingAftermath == 1 ) && ( iRemovableItems != 0 ))
 			flags = OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		SetOptionFlags(oidSoulMarkStay, flags)
+	ElseIf (option == oidTempArkayCurse)
+		bIsArkayCurseTemporary = False
+		SetToggleOptionValue(oidTempArkayCurse,bIsArkayCurseTemporary)
 	ElseIf (option == oidNPCStealItems)
 		bNPCStealItems = False
 		SetToggleOptionValue(oidNPCStealItems,bNPCStealItems)
@@ -1713,6 +1745,7 @@ Event OnOptionDefault(Int option)
 		SetOptionFlags(oidHealActors,flags,True)
 		SetOptionFlags(oidResurrectActors,flags,True)
 		SetOptionFlags(oidArkayCurse,flags,True)
+		SetOptionFlags(oidTempArkayCurse,flags,True)
 		SetOptionFlags(oidNPCStealItems,flags,True)
 		SetOptionFlags(oidHostileNPC,flags,True)
 		SetOptionFlags(oidCreaturesCanSteal,flags,True)
@@ -1899,6 +1932,8 @@ Event OnOptionHighlight(Int option)
 		SetInfoText("$mrt_MarkofArkay_DESC_ResurrectActors")
 	ElseIf (option == oidArkayCurse)
 		SetInfoText("$mrt_MarkofArkay_DESC_ArkayCurse")
+	ElseIf (option == oidTempArkayCurse)
+		SetInfoText("$mrt_MarkofArkay_DESC_TempArkayCurse")
 	ElseIf (option == oidNPCStealItems)
 		SetInfoText("$mrt_MarkofArkay_DESC_NPCStealItems")
 	ElseIf (option == oidCreaturesCanSteal )
@@ -2017,6 +2052,8 @@ Function moaStop()
 		PlayerRef.RemoveSpell(RevivalPower)
 		PlayerRef.RemoveSpell(ArkayCurse)
 		PlayerRef.RemoveSpell(ArkayCurseAlt)
+		PlayerRef.RemoveSpell(ArkayCurseTemp)
+		PlayerRef.RemoveSpell(ArkayCurseTempAlt)
 		PlayerRef.RemoveSpell(MoveCustomMarker)
 		PlayerRef.RemoveSpell(RecallMarker)
 		DetachMarker1.MoveToMyEditorLocation()

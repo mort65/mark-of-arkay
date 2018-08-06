@@ -8,6 +8,10 @@ Quest Property moaGuardDetector Auto
 Quest Property moaThiefNPC01 Auto
 Quest Property moaSoulMark01 Auto
 Message Property moaReviveMenu1 Auto
+Message Property moaRespawnMenu0 Auto
+Message Property moaRespawnMenu1 Auto
+Message Property moaRespawnMenu13 Auto
+Message Property moaRespawnMenu13_Alt Auto
 GlobalVariable Property moaState Auto
 GlobalVariable Property moaArkayMarkRevive  Auto
 GlobalVariable Property moaDragonSoulRevive  Auto
@@ -16,6 +20,7 @@ GlobalVariable Property moaGSoulGemRevive  Auto
 GlobalVariable Property moaSeptimRevive  Auto
 GlobalVariable Property moaBleedoutHandlerState Auto
 GlobalVariable Property moaBleedouAnimation Auto
+GlobalVariable Property moaERPCount Auto
 zzzmoaReviveMCM Property ConfigMenu Auto
 MiscObject Property Gold001 Auto
 MiscObject Property MarkOfArkay Auto
@@ -90,6 +95,7 @@ Int Property iRevivesByRevivalSpell = 0 Auto Hidden;
 Int Property iRevivesBySacrificeSpell = 0 Auto Hidden;
 Int Property iRevivesByPotion = 0 Auto Hidden;
 Int Property iDestroyedItems = 0 Auto Hidden;
+Float Property fRPMinDistance = 2500.0 Auto Hidden
 Form[] Property Equipment Auto Hidden
 Form[] Property EquippedQuestItems Auto Hidden
 ObjectReference[] Property ExcludedMarkerList Auto Hidden
@@ -1296,7 +1302,7 @@ Bool Function FollowerCanProtectPlayer()
 				i -= 1
 				If bIsFollower(FollowerArr[i])
 					If ( FollowerArr[i].Is3DLoaded() && !FollowerArr[i].IsDead() && !FollowerArr[i].IsBleedingOut() && !FollowerArr[i].IsHostileToActor(PlayerRef) )
-						If (( FollowerArr[i].GetCombatState() == 1 ) && ( FollowerArr[i].GetDistance(PlayerRef) <= 2500.0 ))
+						If (( FollowerArr[i].GetCombatState() == 1 ) && ( FollowerArr[i].GetDistance(PlayerRef) <= 3000.0 ))
 							bInCombat = True
 						ElseIf (( Attacker != FollowerArr[i] ) && ( Attacker.GetDistance(PlayerRef) <= 10000.0 ) && ( Attacker.IsDead() || Attacker.IsBleedingOut() ))
 							If ConfigMenu.bIsNotificationEnabled
@@ -1315,7 +1321,7 @@ Bool Function FollowerCanProtectPlayer()
 					i -= 1
 					If bIsFollower(FollowerArr[i])
 						If ( FollowerArr[i].Is3DLoaded() && !FollowerArr[i].IsDead() && !FollowerArr[i].IsBleedingOut() && !FollowerArr[i].IsHostileToActor(PlayerRef) )
-							If (( FollowerArr[i].GetCombatState() == 1 ) && ( FollowerArr[i].GetDistance(PlayerRef) <= 2500.0 ))
+							If (( FollowerArr[i].GetCombatState() == 1 ) && ( FollowerArr[i].GetDistance(PlayerRef) <= 3000.0 ))
 								If ConfigMenu.bIsNotificationEnabled
 									Debug.Notification("$mrt_MarkofArkay_Notification_Follower_In_Combat")
 								EndIf
@@ -1365,6 +1371,7 @@ Function ReleaseFollowers()
 		While i > 0
 			i -= 1
 			If FollowerArr[i]
+				FollowerArr[i].RestoreActorValue("Health",9999)
 				FollowerArr[i].MoveToMyEditorLocation()
 			EndIf
 		Endwhile
@@ -1377,6 +1384,7 @@ Function RespawnFollowers()
 		While i > 0
 			i -= 1
 			If FollowerArr[i]
+				FollowerArr[i].RestoreActorValue("Health",9999)
 				FollowerArr[i].MoveTo(PlayerRef)
 			EndIf
 		Endwhile
@@ -1995,6 +2003,7 @@ Function SetVars()
 	bGSoulGemRevive = ((iGSoulGemCount >= ConfigMenu.fValueGSoulGemSlider) && ConfigMenu.bIsGSoulGemEnabled) 
 	bArkayMarkRevive = ((iArkayMarkCount >= ConfigMenu.fValueMarkSlider) && ConfigMenu.bIsMarkEnabled)
 	bPotionRevive = ConfigMenu.bIsPotionEnabled
+	fRPMinDistance = ConfigMenu.fRPMinDistanceSlider
 	If VItemArr.Length != 20
 		VItemArr = New Form[20]
 	EndIf
@@ -2151,7 +2160,7 @@ Bool Function bIsArrived(ObjectReference Marker)
 	PlayerRef.MoveTo(Marker)
 	Utility.Wait(0.5)
 	If (PlayerRef.GetDistance(Marker) <= 500.0)
-		If (PlayerRef.GetDistance(PlayerMarker) >= 2000.0)
+		If (PlayerRef.GetDistance(PlayerMarker) >= (fRPMinDistance - 500.0))
 			Return True
 		EndIf
 	EndIf
@@ -2164,24 +2173,38 @@ Bool Function bSoulMark()
 Endfunction
 
 Function Teleport()
+	Int iTeleportLocation = ConfigMenu.iTeleportLocation
+	Int iExternalIndex = ConfigMenu.iExternalIndex
+	If ( ConfigMenu.bRespawnMenu )
+		moaERPCount.SetValue(ExternalMarkerList.GetSize())
+		iTeleportLocation = RespawnMenu()
+		If (( iTeleportLocation == -1 ) || ( iTeleportLocation > ( ConfigMenu.sRespawnPoints.Length - 1 )))
+			If ( iTeleportLocation == -1 )
+				iExternalIndex = iTeleportLocation
+			Else
+				iExternalIndex = ( iTeleportLocation - ( ConfigMenu.sRespawnPoints.Length ))
+			EndIf
+			iTeleportLocation = ( ConfigMenu.sRespawnPoints.Length - 2 )
+		EndIf
+	EndIf
 	PlayerMarker.Enable()
 	PlayerMarker.MoveTo(playerRef)
 	PlayerMarker.SetPosition(PlayerRef.GetPositionx(), PlayerRef.GetPositiony(), PlayerRef.GetPositionz())
 	PlayerMarker.SetAngle(0.0, 0.0, PlayerRef.GetAnglez())
-	If (ConfigMenu.iTeleportLocation < (ConfigMenu.sRespawnPoints.Length - 5))
-		If (PlayerRef.GetDistance(MarkerList.GetAt(ConfigMenu.iTeleportLocation) As Objectreference) >= 2500.0)
-			If !bIsArrived(MarkerList.GetAt(ConfigMenu.iTeleportLocation) As Objectreference)
+	If (iTeleportLocation < (ConfigMenu.sRespawnPoints.Length - 5))
+		If (PlayerRef.GetDistance(MarkerList.GetAt(iTeleportLocation) As Objectreference) >= fRPMinDistance)
+			If !bIsArrived(MarkerList.GetAt(iTeleportLocation) As Objectreference)
 				SendToAnotherLocation()
 			EndIf 
 		Else
 			 SendToAnotherLocation()
 		EndIf
-	ElseIf (ConfigMenu.iTeleportLocation == (ConfigMenu.sRespawnPoints.Length - 5))
+	ElseIf (iTeleportLocation == (ConfigMenu.sRespawnPoints.Length - 5))
 		RandomTeleport()
-	ElseIf (ConfigMenu.iTeleportLocation == (ConfigMenu.sRespawnPoints.Length - 4))
-		If ( bCanTeleportToDynMarker(SleepMarker) && (PlayerRef.GetDistance(SleepMarker) >= 2500.0))
+	ElseIf (iTeleportLocation == (ConfigMenu.sRespawnPoints.Length - 4))
+		If ( bCanTeleportToDynMarker(SleepMarker) && (PlayerRef.GetDistance(SleepMarker) >= fRPMinDistance))
 			If !bIsArrived(SleepMarker)
-				If ( bCanTeleportToDynMarker(CustomMarker) && ( CustomMarker.GetDistance(PlayerMarker) >= 2500.0 ) )
+				If ( bCanTeleportToDynMarker(CustomMarker) && ( CustomMarker.GetDistance(PlayerMarker) >= fRPMinDistance ) )
 					If !bIsArrived(CustomMarker)
 						SendToAnotherLocation()
 					EndIf
@@ -2189,17 +2212,17 @@ Function Teleport()
 					SendToAnotherLocation()
 				EndIf
 			EndIf
-		ElseIf ((PlayerRef.GetDistance(CustomMarker) >= 2500.0 ) && bCanTeleportToDynMarker(CustomMarker) )
+		ElseIf ((PlayerRef.GetDistance(CustomMarker) >= fRPMinDistance ) && bCanTeleportToDynMarker(CustomMarker) )
 			If !bIsArrived(CustomMarker)
 				SendToAnotherLocation()
 			EndIf	
 		Else
 			 SendToAnotherLocation()
 		EndIf
-	ElseIf (ConfigMenu.iTeleportLocation == (ConfigMenu.sRespawnPoints.Length - 3))
-		If ((PlayerRef.GetDistance(CustomMarker) >= 2500.0) && bCanTeleportToDynMarker(CustomMarker))
+	ElseIf (iTeleportLocation == (ConfigMenu.sRespawnPoints.Length - 3))
+		If ((PlayerRef.GetDistance(CustomMarker) >= fRPMinDistance) && bCanTeleportToDynMarker(CustomMarker))
 			If !bIsArrived(CustomMarker)
-				If (bCanTeleportToDynMarker(SleepMarker) && ( SleepMarker.GetDistance(PlayerMarker) >= 2500.0 ))
+				If (bCanTeleportToDynMarker(SleepMarker) && ( SleepMarker.GetDistance(PlayerMarker) >= fRPMinDistance ))
 					If !bIsArrived(SleepMarker)
 						SendToAnotherLocation()
 					EndIf
@@ -2207,22 +2230,22 @@ Function Teleport()
 					SendToAnotherLocation()
 				EndIf
 			EndIf
-		ElseIf (bCanTeleportToDynMarker(SleepMarker) && (PlayerRef.GetDistance(SleepMarker) >= 2500.0))
+		ElseIf (bCanTeleportToDynMarker(SleepMarker) && (PlayerRef.GetDistance(SleepMarker) >= fRPMinDistance))
 			If !bIsArrived(SleepMarker)
 				SendToAnotherLocation()
 			EndIf
 		Else
 			 SendToAnotherLocation()
 		EndIf
-	ElseIf (ConfigMenu.iTeleportLocation == (ConfigMenu.sRespawnPoints.Length - 2))
+	ElseIf (iTeleportLocation == (ConfigMenu.sRespawnPoints.Length - 2))
 		If ExternalMarkerList.GetSize() > 0
-			If ( ExternalMarkerList.GetSize() > 1 ) && ( ConfigMenu.iExternalIndex == -1 || ( ConfigMenu.iExternalIndex >= ExternalMarkerList.GetSize() ) || ( !bCanTeleportToExtMarker( ExternalMarkerList.GetAt( ConfigMenu.iExternalIndex ) As ObjectReference ) || (PlayerRef.GetDistance(ExternalMarkerList.GetAt( ConfigMenu.iExternalIndex ) As ObjectReference) < 2500.0) || ( ExternalMarkerList.GetAt( ConfigMenu.iExternalIndex ).GetType() != 61 ) ) )
+			If ( ExternalMarkerList.GetSize() > 1 ) && ( iExternalIndex == -1 || ( iExternalIndex >= ExternalMarkerList.GetSize() ) || ( !bCanTeleportToExtMarker( ExternalMarkerList.GetAt( iExternalIndex ) As ObjectReference ) || (PlayerRef.GetDistance(ExternalMarkerList.GetAt( iExternalIndex ) As ObjectReference) < fRPMinDistance) || ( ExternalMarkerList.GetAt( iExternalIndex ).GetType() != 61 ) ) )
 				Int iMarkerIndex = iGetRandomRefFromListWithExclusions( 0, ExternalMarkerList.GetSize() - 1, ExternalMarkerList )
 				If iMarkerIndex != -1
 					If !bIsArrived(ExternalMarkerList.GetAt( iMarkerIndex ) As ObjectReference)
-						If ((PlayerMarker.GetDistance(CustomMarker) >= 2500.0) && bCanTeleportToDynMarker(CustomMarker))
+						If ((PlayerMarker.GetDistance(CustomMarker) >= fRPMinDistance) && bCanTeleportToDynMarker(CustomMarker))
 							If !bIsArrived(CustomMarker)
-								If (bCanTeleportToDynMarker(SleepMarker) && (PlayerMarker.GetDistance(SleepMarker) >= 2500.0))
+								If (bCanTeleportToDynMarker(SleepMarker) && (PlayerMarker.GetDistance(SleepMarker) >= fRPMinDistance))
 									If !bIsArrived(SleepMarker)
 										SendToAnotherLocation()
 									EndIf
@@ -2230,7 +2253,7 @@ Function Teleport()
 									SendToAnotherLocation()
 								EndIf
 							EndIf
-						ElseIf (bCanTeleportToDynMarker(SleepMarker) && (PlayerMarker.GetDistance(SleepMarker) >= 2500.0))
+						ElseIf (bCanTeleportToDynMarker(SleepMarker) && (PlayerMarker.GetDistance(SleepMarker) >= fRPMinDistance))
 							If !bIsArrived(SleepMarker)
 								SendToAnotherLocation()
 							EndIf
@@ -2238,9 +2261,9 @@ Function Teleport()
 							SendToAnotherLocation()
 						EndIf
 					EndIf
-				ElseIf ((PlayerRef.GetDistance(CustomMarker) >= 2500.0 ) && bCanTeleportToDynMarker(CustomMarker))
+				ElseIf ((PlayerRef.GetDistance(CustomMarker) >= fRPMinDistance ) && bCanTeleportToDynMarker(CustomMarker))
 					If !bIsArrived(CustomMarker)
-						If (bCanTeleportToDynMarker(SleepMarker) && (PlayerMarker.GetDistance(SleepMarker) >= 2500.0))
+						If (bCanTeleportToDynMarker(SleepMarker) && (PlayerMarker.GetDistance(SleepMarker) >= fRPMinDistance))
 							If !bIsArrived(SleepMarker)
 								SendToAnotherLocation()
 							EndIf
@@ -2248,18 +2271,18 @@ Function Teleport()
 							SendToAnotherLocation()
 						EndIf
 					EndIf
-				ElseIf (bCanTeleportToDynMarker(SleepMarker) && (PlayerRef.GetDistance(SleepMarker) >= 2500.0))
+				ElseIf (bCanTeleportToDynMarker(SleepMarker) && (PlayerRef.GetDistance(SleepMarker) >= fRPMinDistance))
 					If !bIsArrived(SleepMarker)
 						SendToAnotherLocation()
 					EndIf
 				Else
 					SendToAnotherLocation()
 				EndIf
-			ElseIf ( bCanTeleportToExtMarker( ExternalMarkerList.GetAt( ConfigMenu.iExternalIndex ) As ObjectReference ) &&  (PlayerRef.GetDistance(ExternalMarkerList.GetAt( ConfigMenu.iExternalIndex ) As ObjectReference) >= 2500.0) && ( ExternalMarkerList.GetAt( ConfigMenu.iExternalIndex ).GetType() == 61 ) )
-				If !bIsArrived(ExternalMarkerList.GetAt( ConfigMenu.iExternalIndex ) As ObjectReference)
-					If ((PlayerRef.GetDistance(CustomMarker) >= 2500.0) && bCanTeleportToDynMarker(CustomMarker))
+			ElseIf ( bCanTeleportToExtMarker( ExternalMarkerList.GetAt( iExternalIndex ) As ObjectReference ) &&  (PlayerRef.GetDistance(ExternalMarkerList.GetAt( iExternalIndex ) As ObjectReference) >= fRPMinDistance) && ( ExternalMarkerList.GetAt( iExternalIndex ).GetType() == 61 ) )
+				If !bIsArrived(ExternalMarkerList.GetAt( iExternalIndex ) As ObjectReference)
+					If ((PlayerRef.GetDistance(CustomMarker) >= fRPMinDistance) && bCanTeleportToDynMarker(CustomMarker))
 						If !bIsArrived(CustomMarker)
-							If (bCanTeleportToDynMarker(SleepMarker) && (PlayerMarker.GetDistance(SleepMarker) >= 2500.0))
+							If (bCanTeleportToDynMarker(SleepMarker) && (PlayerMarker.GetDistance(SleepMarker) >= fRPMinDistance))
 								If !bIsArrived(SleepMarker)
 									SendToAnotherLocation()
 								EndIf
@@ -2267,7 +2290,7 @@ Function Teleport()
 								SendToAnotherLocation()
 							EndIf
 						EndIf
-					ElseIf (bCanTeleportToDynMarker(SleepMarker) && (PlayerMarker.GetDistance(SleepMarker) >= 2500.0))
+					ElseIf (bCanTeleportToDynMarker(SleepMarker) && (PlayerMarker.GetDistance(SleepMarker) >= fRPMinDistance))
 						If !bIsArrived(SleepMarker)
 							SendToAnotherLocation()
 						EndIf
@@ -2275,9 +2298,9 @@ Function Teleport()
 						SendToAnotherLocation()
 					EndIf
 				EndIf
-			ElseIf ((PlayerRef.GetDistance(CustomMarker) >= 2500.0) && bCanTeleportToDynMarker(CustomMarker))
+			ElseIf ((PlayerRef.GetDistance(CustomMarker) >= fRPMinDistance) && bCanTeleportToDynMarker(CustomMarker))
 				If !bIsArrived(CustomMarker)
-					If (bCanTeleportToDynMarker(SleepMarker) && (PlayerMarker.GetDistance(SleepMarker) >= 2500.0))
+					If (bCanTeleportToDynMarker(SleepMarker) && (PlayerMarker.GetDistance(SleepMarker) >= fRPMinDistance))
 						If !bIsArrived(SleepMarker)
 							SendToAnotherLocation()
 						EndIf
@@ -2285,16 +2308,16 @@ Function Teleport()
 						SendToAnotherLocation()
 					EndIf
 				EndIf
-			ElseIf (bCanTeleportToDynMarker(SleepMarker) && (PlayerRef.GetDistance(SleepMarker) >= 2500.0))
+			ElseIf (bCanTeleportToDynMarker(SleepMarker) && (PlayerRef.GetDistance(SleepMarker) >= fRPMinDistance))
 				If !bIsArrived(SleepMarker)
 					SendToAnotherLocation()
 				EndIf
 			Else
 				SendToAnotherLocation()
 			EndIf
-		ElseIf ((PlayerRef.GetDistance(CustomMarker) >= 2500.0) && bCanTeleportToDynMarker(CustomMarker))
+		ElseIf ((PlayerRef.GetDistance(CustomMarker) >= fRPMinDistance) && bCanTeleportToDynMarker(CustomMarker))
 			If !bIsArrived(CustomMarker)
-				If (bCanTeleportToDynMarker(SleepMarker) && (PlayerMarker.GetDistance(SleepMarker) >= 2500.0))
+				If (bCanTeleportToDynMarker(SleepMarker) && (PlayerMarker.GetDistance(SleepMarker) >= fRPMinDistance))
 					If !bIsArrived(SleepMarker)
 						SendToAnotherLocation()
 					EndIf
@@ -2302,7 +2325,7 @@ Function Teleport()
 					SendToAnotherLocation()
 				EndIf
 			EndIf
-		ElseIf (bCanTeleportToDynMarker(SleepMarker)&& (PlayerRef.GetDistance(SleepMarker) >= 2500.0))
+		ElseIf (bCanTeleportToDynMarker(SleepMarker)&& (PlayerRef.GetDistance(SleepMarker) >= fRPMinDistance))
 			If !bIsArrived(SleepMarker)
 				SendToAnotherLocation()
 			EndIf
@@ -2542,7 +2565,7 @@ Bool Function BIsRefInCurrentCell ( ObjectReference MarkerRef)
 EndFunction
 
 Function RandomTeleport()
-	PlayerRef.MoveTo( MarkerList.GetAt( iGetRandomWithExclusionArray( 0, ( MarkerList.GetSize() - 1 ), ConfigMenu.bRespawnPointsFlags )) As Objectreference, abMatchRotation = true )
+	bIsArrived( MarkerList.GetAt( iGetRandomWithExclusionArray( 0, ( MarkerList.GetSize() - 1 ), ConfigMenu.bRespawnPointsFlags )) As Objectreference )
 EndFunction
 
 Function SendToAnotherLocation()
@@ -2552,7 +2575,7 @@ Function SendToAnotherLocation()
 		If (iIndex == 3)
 			If bInSameLocation(LocationsList.GetAt(iIndex) As Location) ;|| bInSameLocation(DLC1HunterHQLocation) ;Riften or Dayspring Canyon
 				If ConfigMenu.bRespawnPointsFlags[iIndex]
-					If ( PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference) >= 2500.0 )
+					If ( PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference) >= fRPMinDistance )
 						If bIsArrived(MarkerList.GetAt(iIndex) As ObjectReference)
 							Return
 						EndIf
@@ -2562,7 +2585,7 @@ Function SendToAnotherLocation()
 		ElseIf ( iIndex == 4 )
 			If bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(HjaalmarchHoldLocation) ;|| bInSameLocation(DLC1VampireCastleLocation) ;Solitude or Morthal or Castle Volkihar
 				If ConfigMenu.bRespawnPointsFlags[iIndex]
-					If ( PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference) >= 2500.0 )
+					If ( PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference) >= fRPMinDistance )
 						If bIsArrived(MarkerList.GetAt(iIndex) As ObjectReference)
 							Return
 						EndIf
@@ -2572,7 +2595,7 @@ Function SendToAnotherLocation()
 		ElseIf ( iIndex == 6 )
 			If ( bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(PaleHoldLocation) ) ;Winterhold or Dawnstar
 				If ConfigMenu.bRespawnPointsFlags[iIndex]
-					If ( PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference) >= 2500.0 )
+					If ( PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference) >= fRPMinDistance )
 						If bIsArrived(MarkerList.GetAt(iIndex) As ObjectReference)
 							Return
 						EndIf
@@ -2581,7 +2604,7 @@ Function SendToAnotherLocation()
 			EndIf
 		ElseIf bInSameLocation(LocationsList.GetAt(iIndex) As Location)
 			If ConfigMenu.bRespawnPointsFlags[iIndex]
-				If ( PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference) >= 2500.0 )
+				If ( PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference) >= fRPMinDistance )
 					If bIsArrived(MarkerList.GetAt(iIndex) As ObjectReference)
 						Return
 					EndIf
@@ -3761,55 +3784,55 @@ EndFunction
 Function InitializeExcludedMarkers()
 	 ExcludedMarkerList = New ObjectReference[128]
 	Int i
-	If ( !bCanTeleportToDynMarker(DetachMarker1) || ( PlayerMarker.GetDistance(DetachMarker1) < 2500.0 ))
+	If ( !bCanTeleportToDynMarker(DetachMarker1) || ( PlayerMarker.GetDistance(DetachMarker1) < fRPMinDistance ))
 		i = ExcludedMarkerList.Find(None)
 		If i > -1
 			ExcludedMarkerList[i] = DetachMarker1
 		EndIf
 	EndIf
-	If ( !bCanTeleportToDynMarker(DetachMarker2) || ( PlayerMarker.GetDistance(DetachMarker2) < 2500.0 ))
+	If ( !bCanTeleportToDynMarker(DetachMarker2) || ( PlayerMarker.GetDistance(DetachMarker2) < fRPMinDistance ))
 		i = ExcludedMarkerList.Find(None)
 		If i > -1
 			ExcludedMarkerList[i] = DetachMarker2
 		EndIf
 	EndIf
-	If ( !bCanTeleportToDynMarker(DetachMarker3) || ( PlayerMarker.GetDistance(DetachMarker3) < 2500.0 ))
+	If ( !bCanTeleportToDynMarker(DetachMarker3) || ( PlayerMarker.GetDistance(DetachMarker3) < fRPMinDistance ))
 		i = ExcludedMarkerList.Find(None)
 		If i > -1
 			ExcludedMarkerList[i] = DetachMarker3
 		EndIf
 	EndIf
-	If ( !bCanTeleportToDynMarker(CellLoadMarker) || ( PlayerMarker.GetDistance(CellLoadMarker) < 2500.0 ))
+	If ( !bCanTeleportToDynMarker(CellLoadMarker) || ( PlayerMarker.GetDistance(CellLoadMarker) < fRPMinDistance ))
 		i = ExcludedMarkerList.Find(None)
 		If i > -1
 			ExcludedMarkerList[i] = CellLoadMarker
 		EndIf
 	EndIf
-	If ( !bCanTeleportToDynMarker(CellLoadMarker2) || ( PlayerMarker.GetDistance(CellLoadMarker2) < 2500.0 ))
+	If ( !bCanTeleportToDynMarker(CellLoadMarker2) || ( PlayerMarker.GetDistance(CellLoadMarker2) < fRPMinDistance ))
 		i = ExcludedMarkerList.Find(None)
 		If i > -1
 			ExcludedMarkerList[i] = CellLoadMarker2
 		EndIf
 	EndIf
-	If ( !bCanTeleportToDynMarker(LocationMarker) || ( PlayerMarker.GetDistance(LocationMarker) < 2500.0 ))
+	If ( !bCanTeleportToDynMarker(LocationMarker) || ( PlayerMarker.GetDistance(LocationMarker) < fRPMinDistance ))
 		i = ExcludedMarkerList.Find(None)
 		If i > -1
 			ExcludedMarkerList[i] = LocationMarker
 		EndIf
 	EndIf
-	If ( !bCanTeleportToDynMarker(LocationMarker2) || ( PlayerMarker.GetDistance(LocationMarker2) < 2500.0 ))
+	If ( !bCanTeleportToDynMarker(LocationMarker2) || ( PlayerMarker.GetDistance(LocationMarker2) < fRPMinDistance ))
 		i = ExcludedMarkerList.Find(None)
 		If i > -1
 			ExcludedMarkerList[i] = LocationMarker2
 		EndIf
 	EndIf
-	If ( !bCanTeleportToDynMarker(CustomMarker) || ( PlayerMarker.GetDistance(CustomMarker) < 2500.0 ))
+	If ( !bCanTeleportToDynMarker(CustomMarker) || ( PlayerMarker.GetDistance(CustomMarker) < fRPMinDistance ))
 		i = ExcludedMarkerList.Find(None)
 		If i > -1
 			ExcludedMarkerList[i] = CustomMarker
 		EndIf
 	EndIf
-	If ( !bCanTeleportToDynMarker(SleepMarker) || ( PlayerMarker.GetDistance(SleepMarker) < 2500.0 ))
+	If ( !bCanTeleportToDynMarker(SleepMarker) || ( PlayerMarker.GetDistance(SleepMarker) < fRPMinDistance ))
 		i = ExcludedMarkerList.Find(None)
 		If i > -1
 			ExcludedMarkerList[i] = SleepMarker
@@ -3818,7 +3841,7 @@ Function InitializeExcludedMarkers()
 	Int j = MarkerList.GetSize()
 	While j > 0
 		j -= 1
-		If ( PlayerMarker.GetDistance( MarkerList.GetAt( j ) As ObjectReference ) < 2500.0 )
+		If ( PlayerMarker.GetDistance( MarkerList.GetAt( j ) As ObjectReference ) < fRPMinDistance )
 			i = ExcludedMarkerList.Find(None)
 			If i > -1
 				ExcludedMarkerList[i] = ( MarkerList.GetAt( j ) As ObjectReference )
@@ -3831,7 +3854,7 @@ Function InitializeExcludedMarkers()
 			j -= 1
 			If ( ( ExternalMarkerList.GetAt( j ).GetType() != 61 ) ||\
 			!bCanTeleportToExtMarker( ExternalMarkerList.GetAt( j ) As ObjectReference ) ||\
-			( PlayerMarker.GetDistance( ExternalMarkerList.GetAt( j ) As ObjectReference ) < 2500.0 ))
+			( PlayerMarker.GetDistance( ExternalMarkerList.GetAt( j ) As ObjectReference ) < fRPMinDistance ))
 				i = ExcludedMarkerList.Find(None)
 				If i > -1
 					ExcludedMarkerList[i] = ExternalMarkerList.GetAt( j ) As ObjectReference 
@@ -3864,4 +3887,69 @@ Function SendToNearestLocation()
 			EndIf
 		EndIf
 	EndIf
+EndFunction
+
+Int Function RespawnMenu(Int aiMessage = 0, Int aiButton = 0)
+	Int iIndex = 1
+	While True
+		If aiButton == -1 ; Can prevent problems if recycling aiButton
+		ElseIf aiMessage == 0
+			aiButton = moaRespawnMenu0.Show()
+			If aiButton == -1
+			ElseIf aiButton < ( ConfigMenu.sRespawnPoints.Length - 5 ) ;Whiterun,...,Winterhold
+				Return aiButton
+			ElseIf aiButton == ( ConfigMenu.sRespawnPoints.Length - 5 ) ;More
+				aiMessage = 1
+			EndIf
+		ElseIf aiMessage == 1
+			aiButton = moaRespawnMenu1.Show()
+			If aiButton == -1
+			ElseIf aiButton == 3
+				aiMessage = 2
+			ElseIf aiButton < 5 ;Random,...,Nearby
+				Return ( aiButton + ( ConfigMenu.sRespawnPoints.Length - 5 ))
+			ElseIf aiButton == 5 ;Less
+				aiMessage = 0
+			EndIf
+		ElseIf aiMessage == 2
+			If ExternalMarkerList.GetSize() > 8
+				aiButton = moaRespawnMenu13_Alt.Show(iIndex)
+				If aiButton == -1
+				ElseIf aiButton == 0 ;Prev
+					iIndex = ichangeVar(iIndex,1,ExternalMarkerList.GetSize(),-1)
+				ElseIf aiButton == 1 ;Next
+					iIndex = ichangeVar(iIndex,1,ExternalMarkerList.GetSize(),1)
+				ElseIf aiButton == 2 ;OK
+					Return ( iIndex + ( ConfigMenu.sRespawnPoints.Length - 1 ))
+				ElseIf aiButton == 3 ;External(Random)
+					Return -1
+				ElseIf aiButton == 4 ;Back
+					aiMessage = 1
+				EndIf
+			Else
+				aiButton = moaRespawnMenu13.Show()
+				If aiButton == -1
+				ElseIf aiButton < 8 ;External(1,...,8)
+					Return ( aiButton + ( ConfigMenu.sRespawnPoints.Length ))
+				ElseIf aiButton == 8 ;External(Random)
+					Return -1
+				ElseIf aiButton == 9 ;Back
+					aiMessage = 1
+				EndIf
+			EndIf
+		EndIf
+	EndWhile
+EndFunction
+
+Int Function ichangeVar(Int iVar,Int iMin,Int iMax, Int iAmount )
+	If !(( iVar % iAmount ) == 0 )
+		iVar = ( iVar - ( iVar % iAmount ))
+	EndIf
+	iVar = ( iVar + iAmount )
+	If ( iVar > iMax )
+		iVar = iMin
+	ElseIf ( iVar < iMin )
+		iVar = iMax
+	EndIf
+	Return iVar
 EndFunction

@@ -25,6 +25,7 @@ Int oidStatus
 Int oidReset
 int oidLootChanceSlider
 int oidScrollChanceSlider
+Int oidRPMinDistanceSlider
 Int oidNotification
 Int oidLogging
 Int oidLoseforever
@@ -43,6 +44,8 @@ Int oidArkayCurse
 Int oidTempArkayCurse
 Int oidFollowerProtectPlayer
 Int oidInvisibility
+Int oidRespawnMenu
+Int oidTeleportMenu
 Int flags
 Int oidRespawnPoint0
 Int oidRespawnPoint1
@@ -110,6 +113,8 @@ Bool Property bFollowerProtectPlayer = False Auto Hidden
 Bool Property bRecallByArkayMark = False Auto Hidden ;
 Bool Property bIsMarkEnabled = True Auto Hidden
 Bool Property bIsMenuEnabled = True Auto Hidden
+Bool Property bRespawnMenu = False Auto Hidden
+Bool Property bTeleportMenu = False Auto Hidden
 Bool Property bArkayCurse = False Auto Hidden
 Bool Property bIsArkayCurseTemporary = False Auto Hidden
 Bool Property bIsRagdollEnabled = False Auto Hidden
@@ -152,7 +157,8 @@ Float Property fLootChanceSlider = 50.0 Auto Hidden
 Float Property fScrollChanceSlider = 25.0 Auto Hidden
 Float Property fRecallCastSlider = 0.0 Auto Hidden
 Float Property fMarkCastSlider = 0.0 Auto Hidden
-Float Property fRespawnTimeSlider = 0.0 Auto Hidden ;
+Float Property fRespawnTimeSlider = 0.0 Auto Hidden
+Float Property fRPMinDistanceSlider = 2500.0 Auto Hidden
 Int Property iExternalIndex = -1 Auto Hidden
 Spell Property RevivalPower Auto
 Spell Property SacrificePower Auto
@@ -366,71 +372,85 @@ Event OnPageReset(String page)
 		EndIf
 		oidJail = AddToggleOption("$mrt_MarkofArkay_Jail",bSendToJail,flags)
 		SetCursorPosition(12)
-		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled
+		If ( moaState.getValue() == 1 )
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
-		oidFollowerProtectPlayer = AddToggleOption("$mrt_MarkofArkay_FollowerProtectPlayer", bFollowerProtectPlayer, flags)
+		oidTeleportMenu = AddToggleOption("$mrt_MarkofArkay_TeleportMenu", bTeleportMenu, flags)
 		SetCursorPosition(14)
 		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1))
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
-		oidArkayCurse = AddToggleOption("$mrt_MarkofArkay_ArkayCurse", bArkayCurse, flags)
+		oidRespawnMenu = AddToggleOption("$mrt_MarkofArkay_RespawnMenu", bRespawnMenu, flags)
 		SetCursorPosition(16)
-		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bArkayCurse)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
-		oidTempArkayCurse = AddToggleOption("$mrt_MarkofArkay_TempArkayCurse",bIsArkayCurseTemporary, flags)
+		oidFollowerProtectPlayer = AddToggleOption("$mrt_MarkofArkay_FollowerProtectPlayer", bFollowerProtectPlayer, flags)
 		SetCursorPosition(18)
 		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1))
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
-		oidHealActors = AddToggleOption("$mrt_MarkofArkay_HealActors",bHealActors,flags)
+		oidArkayCurse = AddToggleOption("$mrt_MarkofArkay_ArkayCurse", bArkayCurse, flags)
 		SetCursorPosition(20)
-		oidResurrectActors = AddToggleOption("$mrt_MarkofArkay_ResurrectActors",bResurrectActors,flags)
+		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bArkayCurse)
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidTempArkayCurse = AddToggleOption("$mrt_MarkofArkay_TempArkayCurse",bIsArkayCurseTemporary, flags)
 		SetCursorPosition(22)
+		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1))
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidHealActors = AddToggleOption("$mrt_MarkofArkay_HealActors",bHealActors,flags)
+		SetCursorPosition(24)
+		oidResurrectActors = AddToggleOption("$mrt_MarkofArkay_ResurrectActors",bResurrectActors,flags)
+		SetCursorPosition(26)
 		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && ( iRemovableItems != 0 ))
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidLoseforever = AddToggleOption("$mrt_MarkofArkay_Loseforever",bLoseForever, flags)
-		SetCursorPosition(24)
+		SetCursorPosition(28)
 		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && (( iRemovableItems != 0 ) || bArkayCurse ))
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidSoulMarkStay = AddToggleOption("$mrt_MarkofArkay_SoulMarkStay",bSoulMarkStay,flags)
-		SetCursorPosition(26)
+		SetCursorPosition(30)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidLostItemQuest = AddToggleOption("$mrt_MarkofArkay_LostItemQuest",bLostItemQuest,flags)
-		SetCursorPosition(28)
+		SetCursorPosition(32)
 		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1)) && !bNPCStealItems
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidHostileNPC =  AddToggleOption("$mrt_MarkofArkay_HostileNPC",bHostileNPC,flags)
-		SetCursorPosition(30)
+		SetCursorPosition(34)
 		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1)) && !bHostileNPC
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidNPCStealItems = AddToggleOption("$mrt_MarkofArkay_NPCStealItems",bNPCStealItems,flags)
-		SetCursorPosition(32)
+		SetCursorPosition(36)
 		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1)) && ( bHostileNPC || bNPCStealItems )
 			flags =	OPTION_FLAG_NONE
 		Else
@@ -438,14 +458,14 @@ Event OnPageReset(String page)
 		EndIf
 		oidCreaturesCanSteal  = AddToggleOption("$mrt_MarkofArkay_CreaturesCanSteal",bCreaturesCanSteal,flags)
 		SetCursorPosition(3)
-		If ( moaState.getValue() == 1 )
+		If (( moaState.getValue() == 1 ) && ( !bRespawnMenu || !bTeleportMenu ))
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidTeleportLocation_M = AddMenuOption("$mrt_MarkofArkay_TeleportLocation_M", sRespawnPoints[iTeleportLocation], flags)
 		SetCursorPosition(5)
-		If (( moaState.getValue() == 1 ) && ( iTeleportLocation == (sRespawnPoints.Length - 2) ) && ExternalMarkerList.GetSize() > 1 )
+		If (( moaState.getValue() == 1 ) && ( iTeleportLocation == ( sRespawnPoints.Length - 2 )) && ( ExternalMarkerList.GetSize() > 1 ) && ( !bRespawnMenu || !bTeleportMenu ))
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
@@ -458,6 +478,13 @@ Event OnPageReset(String page)
 		Else
 			oidExternalTeleportLocation = AddTextOption("$mrt_MarkofArkay_ExternalTeleportLocation", ( (iExternalIndex + 1) As String ), flags)
 		EndIf
+		SetCursorPosition(7)
+		If ( moaState.getValue() == 1 )
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidRPMinDistanceSlider = AddSliderOption("$mrt_MarkofArkay_RPMinDistanceSlider_1", fRPMinDistanceSlider, "$mrt_MarkofArkay_RPMinDistanceSlider_2", flags)
 		SetCursorPosition(9)
 		If ( moaState.getValue() == 1 )
 			flags =	OPTION_FLAG_NONE
@@ -865,6 +892,36 @@ Event OnOptionSelect(Int option)
 	ElseIf (option == oidRespawnNaked)
 		bRespawnNaked = !bRespawnNaked
 		SetToggleOptionValue(oidRespawnNaked, bRespawnNaked)
+	ElseIf (option == oidRespawnMenu)
+		bRespawnMenu = !bRespawnMenu
+		SetToggleOptionValue(oidRespawnMenu, bRespawnMenu)
+		If ( !bTeleportMenu || !bRespawnMenu )
+			flags = OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		SetOptionFlags(oidTeleportLocation_M,flags,True)
+		If (( iTeleportLocation == ( sRespawnPoints.Length - 2 )) && ( ExternalMarkerList.GetSize() > 1 ) && ( !bRespawnMenu || !bTeleportMenu ))
+			flags = OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		SetOptionFlags(oidExternalTeleportLocation,flags)
+	ElseIf (option == oidTeleportMenu)
+		bTeleportMenu = !bTeleportMenu
+		SetToggleOptionValue(oidTeleportMenu, bTeleportMenu)
+		If ( !bTeleportMenu || !bRespawnMenu )
+			flags = OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		SetOptionFlags(oidTeleportLocation_M,flags,True)
+		If (( iTeleportLocation == ( sRespawnPoints.Length - 2 )) && ( ExternalMarkerList.GetSize() > 1 ) && ( !bRespawnMenu || !bTeleportMenu ))
+			flags = OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		SetOptionFlags(oidExternalTeleportLocation,flags)
 	ElseIf (option == oidJail)
 		bSendToJail = !bSendToJail
 		SetToggleOptionValue(oidJail, bSendToJail)
@@ -1033,6 +1090,7 @@ Event OnOptionSelect(Int option)
 		SetOptionFlags(oidBSoulGemPSlider, flags, True)
 		SetOptionFlags(oidGoldPSlider, flags, True)
 		SetOptionFlags(oidRecoveryTime,flags,True)
+		SetOptionFlags(oidRPMinDistanceSlider,flags,True)
 		SetOptionFlags(oidBleedoutTime,flags,True)
 		SetOptionFlags(oidRecallCost,flags,True)
 		SetOptionFlags(oidMarkCost,flags,True)
@@ -1054,6 +1112,8 @@ Event OnOptionSelect(Int option)
 		SetOptionFlags(oidScrollChanceSlider,flags,True)
 		SetOptionFlags(oidTeleportLocation_M,flags,True)
 		SetOptionFlags(oidRespawnNaked,flags,True)
+		SetOptionFlags(oidRespawnMenu,flags,True)
+		SetOptionFlags(oidTeleportMenu,flags,True)
 		SetOptionFlags(oidJail,flags,True)
 		SetOptionFlags(oidHealActors,flags,True)
 		SetOptionFlags(oidResurrectActors,flags,True)
@@ -1113,6 +1173,7 @@ Event OnOptionSelect(Int option)
 		SetOptionFlags(oidBSoulGemPSlider, flags, True)
 		SetOptionFlags(oidGoldPSlider, flags, True)
 		SetOptionFlags(oidRecoveryTime,flags,True)
+		SetOptionFlags(oidRPMinDistanceSlider,flags,True)
 		SetOptionFlags(oidBleedoutTime,flags,True)
 		SetOptionFlags(oidRecallCost,flags,True)
 		SetOptionFlags(oidMarkCost,flags,True)
@@ -1134,6 +1195,8 @@ Event OnOptionSelect(Int option)
 		SetOptionFlags(oidScrollChanceSlider,flags,True)
 		SetOptionFlags(oidTeleportLocation_M,flags,True)
 		SetOptionFlags(oidRespawnNaked,flags,True)
+		SetOptionFlags(oidRespawnMenu,flags,True)
+		SetOptionFlags(oidTeleportMenu,flags,True)
 		SetOptionFlags(oidJail,flags,True)
 		SetOptionFlags(oidHealActors,flags,True)
 		SetOptionFlags(oidResurrectActors,flags,True)
@@ -1256,6 +1319,11 @@ Event OnOptionSliderOpen(Int option)
 		SetSliderDialogDefaultValue(0.0)
 		SetSliderDialogRange(0.0, 100.0)
 		SetSliderDialogInterval(1.0)
+	ElseIf(option == oidRPMinDistanceSlider)
+		SetSliderDialogStartValue(fRPMinDistanceSlider)
+		SetSliderDialogDefaultValue(2500.0)
+		SetSliderDialogRange(1000.0, 10000.0)
+		SetSliderDialogInterval(250.0)
 	EndIf
 EndEvent
 
@@ -1311,6 +1379,9 @@ Event OnOptionSliderAccept(int option, Float value)
 	ElseIf (option == oidMarkCost)
 		fMarkCastSlider = value
 		SetSliderOptionValue(oidMarkCost, fMarkCastSlider, "$mrt_MarkofArkay_MarkSlider_2")
+	ElseIf (option == oidRPMinDistanceSlider)
+		fRPMinDistanceSlider = value
+		SetSliderOptionValue(oidRPMinDistanceSlider, fRPMinDistanceSlider, "$mrt_MarkofArkay_RPMinDistanceSlider_2")
 	EndIf
 EndEvent
 
@@ -1409,6 +1480,7 @@ Event OnOptionMenuAccept(Int option, Int index)
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		SetOptionFlags(oidRespawnNaked,flags,True)
+		SetOptionFlags(oidRespawnMenu,flags,True)
 		SetOptionFlags(oidJail,flags,True)
 		SetOptionFlags(oidHealActors,flags,True)
 		SetOptionFlags(oidResurrectActors,flags,True)
@@ -1571,6 +1643,9 @@ Event OnOptionDefault(Int option)
 	ElseIf (option == oidRecoveryTime)
 		fRecoveryTimeSlider = 1.0
 		SetSliderOptionValue(oidRecoveryTime, fRecoveryTimeSlider, "$mrt_MarkofArkay_RecoveryTime_2")
+	ElseIf (option == oidRPMinDistanceSlider)
+		fRPMinDistanceSlider = 2500.0
+		SetSliderOptionValue(oidRPMinDistanceSlider, fRPMinDistanceSlider, "$mrt_MarkofArkay_RPMinDistanceSlider_2")
 	ElseIf (option == oidBleedoutTime)
 		fBleedoutTimeSlider = 6.0
 		SetSliderOptionValue(oidBleedoutTime, fBleedoutTimeSlider, "$mrt_MarkofArkay_RecoveryTime_2")	
@@ -1633,6 +1708,28 @@ Event OnOptionDefault(Int option)
 	ElseIf (option == oidRespawnNaked)
 		bRespawnNaked = False
 		SetToggleOptionValue(oidRespawnNaked,bRespawnNaked)
+	ElseIf (option == oidRespawnMenu)
+		bRespawnMenu = False
+		SetToggleOptionValue(oidRespawnMenu,bRespawnMenu)
+		flags = OPTION_FLAG_NONE
+		SetOptionFlags(oidTeleportLocation_M,flags,True)
+		If ( ( moaState.getValue() == 1 ) && ( iTeleportLocation == (sRespawnPoints.Length - 2 ) ) && ExternalMarkerList.GetSize() > 1 )
+			flags = OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		SetOptionFlags(oidExternalTeleportLocation,flags)
+	ElseIf (option == oidTeleportMenu)
+		bTeleportMenu = False
+		SetToggleOptionValue(oidTeleportMenu,bTeleportMenu)
+		flags = OPTION_FLAG_NONE
+		SetOptionFlags(oidTeleportLocation_M,flags,True)
+		If ( ( moaState.getValue() == 1 ) && ( iTeleportLocation == (sRespawnPoints.Length - 2 ) ) && ExternalMarkerList.GetSize() > 1 )
+			flags = OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		SetOptionFlags(oidExternalTeleportLocation,flags)
 	ElseIf (option == oidJail)
 		bSendToJail = False
 		SetToggleOptionValue(oidJail,bSendToJail)
@@ -1741,6 +1838,7 @@ Event OnOptionDefault(Int option)
 		SetMenuOptionValue(oidNoTradingAftermath_M, sAftermathOptions[iNotTradingAftermath])
 		flags = OPTION_FLAG_DISABLED
 		SetOptionFlags(oidRespawnNaked,flags,True)
+		SetOptionFlags(oidRespawnMenu,flags,True)
 		SetOptionFlags(oidJail,flags,True)
 		SetOptionFlags(oidHealActors,flags,True)
 		SetOptionFlags(oidResurrectActors,flags,True)
@@ -1872,6 +1970,8 @@ Event OnOptionHighlight(Int option)
 		SetInfoText("$mrt_MarkofArkay_DESC_GoldPSlider")
 	ElseIf (option == oidRecoveryTime)
 		SetInfoText("$mrt_MarkofArkay_DESC_RecoveryTime")
+	ElseIf (option == oidRPMinDistanceSlider)
+		SetInfoText("$mrt_MarkofArkay_DESC_RPMinDistanceSlider")
 	ElseIf (option == oidBleedoutTime)
 		SetInfoText("$mrt_MarkofArkay_DESC_BleedoutTime")
 	ElseIf (option == oidLootChanceSlider)
@@ -1924,6 +2024,10 @@ Event OnOptionHighlight(Int option)
 	;	SetInfoText("$mrt_MarkofArkay_DESC_RespawnPoint7")
 	ElseIf (option == oidRespawnNaked)
 		SetInfoText("$mrt_MarkofArkay_DESC_RespawnNaked")
+	ElseIf (option == oidRespawnMenu)
+		SetInfoText("$mrt_MarkofArkay_DESC_RespawnMenu")
+	ElseIf (option == oidTeleportMenu)
+		SetInfoText("$mrt_MarkofArkay_DESC_TeleportMenu")
 	ElseIf (option == oidJail)
 		SetInfoText("$mrt_MarkofArkay_DESC_Jail")
 	ElseIf (option == oidHealActors)

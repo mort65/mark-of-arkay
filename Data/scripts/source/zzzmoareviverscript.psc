@@ -98,6 +98,7 @@ Int Property iDestroyedItems = 0 Auto Hidden;
 Float Property fRPMinDistance = 2500.0 Auto Hidden
 Form[] Property Equipment Auto Hidden
 Form[] Property EquippedQuestItems Auto Hidden
+ObjectReference[] Property DynamicMarkerList Auto Hidden
 ObjectReference[] Property ExcludedMarkerList Auto Hidden
 Location Property PaleHoldLocation  Auto
 Location Property HjaalmarchHoldLocation  Auto
@@ -3388,78 +3389,18 @@ EndFunction
 ObjectReference Function FindMarkerByDistance()
 	Float fDistance
 	ObjectReference Marker
-	If ( ExcludedMarkerList.find(DetachMarker1) < 0 )
-		If ( !PlayerMarker.IsInInterior() || ( PlayerMarker.GetParentCell() == DetachMarker1.GetParentCell() ) )
-			If ( !fDistance || ( fDistance > PlayerMarker.GetDistance(DetachMarker1) ) ) 
-				fDistance = PlayerMarker.GetDistance(DetachMarker1)
-				Marker = DetachMarker1
+	Int iIndex = DynamicMarkerList.Length
+	While iIndex > 0
+		iIndex -= 1
+		If ( ExcludedMarkerList.find(DynamicMarkerList[iIndex]) < 0 )
+			If ( !PlayerMarker.IsInInterior() || ( PlayerMarker.GetParentCell() == DynamicMarkerList[iIndex].GetParentCell() ) )
+				If ( !fDistance || ( fDistance > PlayerMarker.GetDistance(DynamicMarkerList[iIndex]) ) ) 
+					fDistance = PlayerMarker.GetDistance(DynamicMarkerList[iIndex])
+					Marker = DynamicMarkerList[iIndex]
+				EndIf
 			EndIf
-		EndIf
-	EndIf
-	If ( ExcludedMarkerList.find(DetachMarker2) < 0 )
-		If ( !PlayerMarker.IsInInterior() || ( PlayerMarker.GetParentCell() == DetachMarker2.GetParentCell() ) )
-			If ( !fDistance || ( fDistance > PlayerMarker.GetDistance(DetachMarker2) ) ) 
-				fDistance = PlayerMarker.GetDistance(DetachMarker2)
-				Marker = DetachMarker2
-			EndIf
-		EndIf
-	EndIf
-	If ( ExcludedMarkerList.find(DetachMarker3) < 0 )
-		If ( !PlayerMarker.IsInInterior() || ( PlayerMarker.GetParentCell() == DetachMarker3.GetParentCell() ) )
-			If ( !fDistance || ( fDistance > PlayerMarker.GetDistance(DetachMarker3) ) ) 
-				fDistance = PlayerMarker.GetDistance(DetachMarker3)
-				Marker = DetachMarker3
-			EndIf
-		EndIf
-	EndIf
-	If ( ExcludedMarkerList.find(LocationMarker) < 0 )
-		If ( !PlayerMarker.IsInInterior() || ( PlayerMarker.GetParentCell() == LocationMarker.GetParentCell() ) )
-			If ( !fDistance || ( fDistance > PlayerMarker.GetDistance(LocationMarker) ) ) 
-				fDistance = PlayerMarker.GetDistance(LocationMarker)
-				Marker = LocationMarker
-			EndIf
-		EndIf
-	EndIf
-	If ( ExcludedMarkerList.find(CellLoadMarker) < 0 )
-		If ( !PlayerMarker.IsInInterior() || ( PlayerMarker.GetParentCell() == CellLoadMarker.GetParentCell() ) )
-			If ( !fDistance || ( fDistance > PlayerMarker.GetDistance(CellLoadMarker) ) ) 
-				fDistance = PlayerMarker.GetDistance(CellLoadMarker)
-				Marker = CellLoadMarker
-			EndIf
-		EndIf
-	EndIf
-	If ( ExcludedMarkerList.find(LocationMarker2) < 0 )
-		If ( !PlayerMarker.IsInInterior() || ( PlayerMarker.GetParentCell() == LocationMarker2.GetParentCell() ) )
-			If ( !fDistance || ( fDistance > PlayerMarker.GetDistance(LocationMarker2) ) ) 
-				fDistance = PlayerMarker.GetDistance(LocationMarker2)
-				Marker = LocationMarker2
-			EndIf
-		EndIf
-	EndIf
-	If ( ExcludedMarkerList.find(CellLoadMarker2) < 0 )
-		If ( !PlayerMarker.IsInInterior() || ( PlayerMarker.GetParentCell() == CellLoadMarker2.GetParentCell() ) )
-			If ( !fDistance || ( fDistance > PlayerMarker.GetDistance(CellLoadMarker2) ) ) 
-				fDistance = PlayerMarker.GetDistance(CellLoadMarker2)
-				Marker = CellLoadMarker2
-			EndIf
-		EndIf
-	EndIf
-	If ( ExcludedMarkerList.find(CustomMarker) < 0 )
-		If ( !PlayerMarker.IsInInterior() || ( PlayerMarker.GetParentCell() == CustomMarker.GetParentCell() ) )
-			If ( !fDistance || ( fDistance > PlayerMarker.GetDistance(CustomMarker) ) )
-				fDistance = PlayerMarker.GetDistance(CustomMarker)
-				Marker = CustomMarker
-			EndIf
-		EndIf
-	EndIf
-	If ( ExcludedMarkerList.find(SleepMarker) < 0 )
-		If ( !PlayerMarker.IsInInterior() || ( PlayerMarker.GetParentCell() == SleepMarker.GetParentCell() ) )
-			If ( !fDistance || ( fDistance > PlayerMarker.GetDistance(SleepMarker) ) ) 
-				fDistance = PlayerMarker.GetDistance(SleepMarker)
-				Marker = SleepMarker
-			EndIf
-		EndIf
-	EndIf
+		EndIf			
+	Endwhile
 	If ( Marker && fDistance && fDistance <= 50000.0 )
 		Return Marker
 	EndIf
@@ -3516,52 +3457,23 @@ ObjectReference Function FindCityMarkerByDistance()
 Endfunction
 
 ObjectReference Function FindMarkerByLocation()
-	If ( ExcludedMarkerList.find(DetachMarker2) < 0 )
-		If ( bInSameLocation( DetachMarker2.GetCurrentLocation() ) || ( IsInInteriorActual(PlayerMarker) != IsInInteriorActual(DetachMarker2) ) ) 
-			Return DetachMarker2
+	Int iIndex = DynamicMarkerList.Length
+	While iIndex > 0
+		iIndex -= 1
+		If ( ExcludedMarkerList.find(DynamicMarkerList[iIndex]) < 0 )
+			If ( iIndex >= ( DynamicMarkerList.Length - 2 )) ;DetachMarker2 or DetachMarker1
+				If ( bInSameLocation( DynamicMarkerList[iIndex].GetCurrentLocation() ) ||\
+				( IsInInteriorActual(PlayerMarker) != IsInInteriorActual(DynamicMarkerList[iIndex]) ) ) 
+					Return DynamicMarkerList[iIndex]
+				EndIf
+			Else
+				If bInSameLocation( DynamicMarkerList[iIndex].GetCurrentLocation() )
+					Return DynamicMarkerList[iIndex]
+				EndIf
+			EndIf
 		EndIf
-	EndIf
-	If ( ExcludedMarkerList.find(DetachMarker1) < 0 )
-		If ( bInSameLocation( DetachMarker1.GetCurrentLocation() ) || ( IsInInteriorActual(PlayerMarker) != IsInInteriorActual(DetachMarker1) ) )
-			Return DetachMarker1
-		EndIf
-	EndIf
-	If ( ExcludedMarkerList.find(LocationMarker) < 0 )
-		If bInSameLocation( LocationMarker.GetCurrentLocation() )
-			Return LocationMarker
-		EndIf
-	EndIf
-	If ( ExcludedMarkerList.find(CellLoadMarker) < 0 )
-		If bInSameLocation( CellLoadMarker.GetCurrentLocation() )
-			Return CellLoadMarker
-		EndIf
-	EndIf
-	If ( ExcludedMarkerList.find(CustomMarker) < 0 )
-		If bInSameLocation( CustomMarker.GetCurrentLocation() )
-			Return CustomMarker
-		EndIf
-	EndIf
-	If ( ExcludedMarkerList.find(SleepMarker) < 0 )
-		If bInSameLocation( SleepMarker.GetCurrentLocation() )
-			Return SleepMarker
-		EndIf
-	EndIf
-	If ( ExcludedMarkerList.find(LocationMarker2) < 0 )
-		If bInSameLocation( LocationMarker2.GetCurrentLocation() )
-			Return LocationMarker2
-		EndIf
-	EndIf
-	If ( ExcludedMarkerList.find(DetachMarker3) < 0 )
-		If bInSameLocation( DetachMarker3.GetCurrentLocation() )
-			Return DetachMarker3
-		EndIf
-	EndIf
-	If ( ExcludedMarkerList.find(CellLoadMarker2) < 0 )
-		If bInSameLocation( CellLoadMarker2.GetCurrentLocation() )
-			Return CellLoadMarker2
-		EndIf
-	EndIf
-	Int iIndex = LocationsList.GetSize()
+	Endwhile
+	iIndex = LocationsList.GetSize()
 	While ( iIndex > 0 )
 		iIndex -= 1
 		If ( ExcludedMarkerList.find(MarkerList.GetAt(iIndex) As ObjectReference) < 0 )
@@ -3785,61 +3697,18 @@ EndFunction
 Function InitializeExcludedMarkers()
 	 ExcludedMarkerList = New ObjectReference[128]
 	Int i
-	If ( !bCanTeleportToDynMarker(DetachMarker1) || ( PlayerMarker.GetDistance(DetachMarker1) < fRPMinDistance ))
-		i = ExcludedMarkerList.Find(None)
-		If i > -1
-			ExcludedMarkerList[i] = DetachMarker1
+	int j = DynamicMarkerList.Length
+	While j > 0
+		j -= 1
+		If ( !bCanTeleportToDynMarker(DynamicMarkerList[j]) ||\
+		( PlayerMarker.GetDistance(DynamicMarkerList[j]) < fRPMinDistance ))
+			i = ExcludedMarkerList.Find(None)
+			If i > -1
+				ExcludedMarkerList[i] = DynamicMarkerList[j]
+			EndIf
 		EndIf
-	EndIf
-	If ( !bCanTeleportToDynMarker(DetachMarker2) || ( PlayerMarker.GetDistance(DetachMarker2) < fRPMinDistance ))
-		i = ExcludedMarkerList.Find(None)
-		If i > -1
-			ExcludedMarkerList[i] = DetachMarker2
-		EndIf
-	EndIf
-	If ( !bCanTeleportToDynMarker(DetachMarker3) || ( PlayerMarker.GetDistance(DetachMarker3) < fRPMinDistance ))
-		i = ExcludedMarkerList.Find(None)
-		If i > -1
-			ExcludedMarkerList[i] = DetachMarker3
-		EndIf
-	EndIf
-	If ( !bCanTeleportToDynMarker(CellLoadMarker) || ( PlayerMarker.GetDistance(CellLoadMarker) < fRPMinDistance ))
-		i = ExcludedMarkerList.Find(None)
-		If i > -1
-			ExcludedMarkerList[i] = CellLoadMarker
-		EndIf
-	EndIf
-	If ( !bCanTeleportToDynMarker(CellLoadMarker2) || ( PlayerMarker.GetDistance(CellLoadMarker2) < fRPMinDistance ))
-		i = ExcludedMarkerList.Find(None)
-		If i > -1
-			ExcludedMarkerList[i] = CellLoadMarker2
-		EndIf
-	EndIf
-	If ( !bCanTeleportToDynMarker(LocationMarker) || ( PlayerMarker.GetDistance(LocationMarker) < fRPMinDistance ))
-		i = ExcludedMarkerList.Find(None)
-		If i > -1
-			ExcludedMarkerList[i] = LocationMarker
-		EndIf
-	EndIf
-	If ( !bCanTeleportToDynMarker(LocationMarker2) || ( PlayerMarker.GetDistance(LocationMarker2) < fRPMinDistance ))
-		i = ExcludedMarkerList.Find(None)
-		If i > -1
-			ExcludedMarkerList[i] = LocationMarker2
-		EndIf
-	EndIf
-	If ( !bCanTeleportToDynMarker(CustomMarker) || ( PlayerMarker.GetDistance(CustomMarker) < fRPMinDistance ))
-		i = ExcludedMarkerList.Find(None)
-		If i > -1
-			ExcludedMarkerList[i] = CustomMarker
-		EndIf
-	EndIf
-	If ( !bCanTeleportToDynMarker(SleepMarker) || ( PlayerMarker.GetDistance(SleepMarker) < fRPMinDistance ))
-		i = ExcludedMarkerList.Find(None)
-		If i > -1
-			ExcludedMarkerList[i] = SleepMarker
-		EndIf
-	EndIf
-	Int j = MarkerList.GetSize()
+	Endwhile
+	j = MarkerList.GetSize()
 	While j > 0
 		j -= 1
 		If ( PlayerMarker.GetDistance( MarkerList.GetAt( j ) As ObjectReference ) < fRPMinDistance )
@@ -3865,7 +3734,21 @@ Function InitializeExcludedMarkers()
 	EndIf		
 Endfunction
 
+Function InitializeDynamicMarkers()
+	DynamicMarkerList = New ObjectReference[9]
+	DynamicMarkerList[0] = CellLoadMarker2
+	DynamicMarkerList[1] = DetachMarker3
+	DynamicMarkerList[2] = LocationMarker2
+	DynamicMarkerList[3] = SleepMarker
+	DynamicMarkerList[4] = CustomMarker
+	DynamicMarkerList[5] = CellLoadMarker
+	DynamicMarkerList[6] = LocationMarker
+	DynamicMarkerList[7] = DetachMarker1
+	DynamicMarkerList[8] = DetachMarker2
+EndFunction
+
 Function SendToNearestLocation()
+	InitializeDynamicMarkers()
 	InitializeExcludedMarkers()
 	If !TryToMoveByDistanceNear()
 		If !TryToMoveByLocation()
@@ -3943,9 +3826,6 @@ Int Function RespawnMenu(Int aiMessage = 0, Int aiButton = 0)
 EndFunction
 
 Int Function ichangeVar(Int iVar,Int iMin,Int iMax, Int iAmount )
-	If !(( iVar % iAmount ) == 0 )
-		iVar = ( iVar - ( iVar % iAmount ))
-	EndIf
 	iVar = ( iVar + iAmount )
 	If ( iVar > iMax )
 		iVar = iMin

@@ -20,6 +20,7 @@ ObjectReference Property DetachMarker3 Auto
 Objectreference Property CellLoadMarker Auto
 Objectreference Property CellLoadMarker2 Auto
 ObjectReference Property LocationMarker2 Auto
+ObjectReference[] Property DynamicMarkerList Auto Hidden
 Message Property moaTeleportMenu0 Auto
 Message Property moaTeleportMenu1 Auto
 Message Property moaTeleportMenu13 Auto
@@ -188,111 +189,45 @@ EndFunction
 Function SendToNearestLocation()
 	Float fDistance
 	ObjectReference Marker
-	If ( !DetachMarker1.IsDisabled() && ( DetachMarker1.GetParentCell() != ReviveScript.DefaultCell ) )
-		If ( Caster.GetDistance(DetachMarker1) >= ConfigMenu.fRPMinDistanceSlider )
-			If ( !Caster.IsInInterior() || ( Caster.GetParentCell() == DetachMarker1.GetParentCell() ) )
-				If ( !fDistance || ( fDistance > Caster.GetDistance(DetachMarker1) ) )
-					fDistance = Caster.GetDistance(DetachMarker1)
-					Marker = DetachMarker1
+	DynamicMarkerList = New ObjectReference[9]
+	DynamicMarkerList[0] = CellLoadMarker2
+	DynamicMarkerList[1] = DetachMarker3
+	DynamicMarkerList[2] = LocationMarker2
+	DynamicMarkerList[3] = SleepMarker
+	DynamicMarkerList[4] = CustomMarker
+	DynamicMarkerList[5] = CellLoadMarker
+	DynamicMarkerList[6] = LocationMarker
+	DynamicMarkerList[7] = DetachMarker1
+	DynamicMarkerList[8] = DetachMarker2
+	Int iIndex = DynamicMarkerList.Length
+	While iIndex > 0
+		iIndex -= 1
+		If ( !DynamicMarkerList[iIndex].IsDisabled() && ( DynamicMarkerList[iIndex].GetParentCell() != ReviveScript.DefaultCell ))
+			If ( Caster.GetDistance(DynamicMarkerList[iIndex]) >= ConfigMenu.fRPMinDistanceSlider )
+				If ( !Caster.IsInInterior() || ( Caster.GetParentCell() == DynamicMarkerList[iIndex].GetParentCell() ))
+					If ( !fDistance || ( fDistance > Caster.GetDistance(DynamicMarkerList[iIndex]) ))
+						fDistance = Caster.GetDistance(DynamicMarkerList[iIndex])
+						Marker = DynamicMarkerList[iIndex]
+					EndIf
 				EndIf
 			EndIf
 		EndIf
-	EndIf
-	If ( !DetachMarker2.IsDisabled() && ( DetachMarker2.GetParentCell() != ReviveScript.DefaultCell ) )
-		If ( Caster.GetDistance(DetachMarker2) >= ConfigMenu.fRPMinDistanceSlider )
-			If ( !Caster.IsInInterior() || ( Caster.GetParentCell() == DetachMarker2.GetParentCell() ) )
-				If ( !fDistance || ( fDistance > Caster.GetDistance(DetachMarker2) ) )
-					fDistance = Caster.GetDistance(DetachMarker2)
-					Marker = DetachMarker2
-				EndIf
-			EndIf			
-		EndIf
-	EndIf
-	If ( !DetachMarker3.IsDisabled() && ( DetachMarker3.GetParentCell() != ReviveScript.DefaultCell ) )
-		If ( Caster.GetDistance(DetachMarker3) >= ConfigMenu.fRPMinDistanceSlider )
-			If ( !Caster.IsInInterior() || ( Caster.GetParentCell() == DetachMarker3.GetParentCell() ) )
-				If ( !fDistance || ( fDistance > Caster.GetDistance(DetachMarker3) ) )
-					fDistance = Caster.GetDistance(DetachMarker3)
-					Marker = DetachMarker3
-				EndIf
-			EndIf			
-		EndIf
-	EndIf
-	If ( !LocationMarker.IsDisabled() && ( LocationMarker.GetParentCell() != ReviveScript.DefaultCell ) )
-		If ( Caster.GetDistance(LocationMarker) >= ConfigMenu.fRPMinDistanceSlider )
-			If ( !LocationMarker.IsInInterior() || ( LocationMarker.GetParentCell() == LocationMarker.GetParentCell() ) )
-				If ( !fDistance || ( fDistance > Caster.GetDistance(LocationMarker) ) )
-					fDistance = Caster.GetDistance(LocationMarker)
-					Marker = LocationMarker
-				EndIf
-			EndIf
-		EndIf
-	EndIf
-	If ( !CellLoadMarker.IsDisabled() && ( CellLoadMarker.GetParentCell() != ReviveScript.DefaultCell ) )
-		If ( Caster.GetDistance(CellLoadMarker) >= ConfigMenu.fRPMinDistanceSlider )
-			If ( !Caster.IsInInterior() || ( Caster.GetParentCell() == CellLoadMarker.GetParentCell() ) )
-				If ( !fDistance || ( fDistance > Caster.GetDistance(CellLoadMarker) ) )
-					fDistance = Caster.GetDistance(CellLoadMarker)
-					Marker = CellLoadMarker
-				EndIf
-			EndIf			
-		EndIf
-	EndIf
-	If ( !LocationMarker2.IsDisabled() && ( LocationMarker2.GetParentCell() != ReviveScript.DefaultCell ) )
-		If ( Caster.GetDistance(LocationMarker2) >= ConfigMenu.fRPMinDistanceSlider )
-			If ( !LocationMarker2.IsInInterior() || ( LocationMarker2.GetParentCell() == LocationMarker2.GetParentCell() ) )
-				If ( !fDistance || ( fDistance > Caster.GetDistance(LocationMarker2) ) )
-					fDistance = Caster.GetDistance(LocationMarker2)
-					Marker = LocationMarker2
-				EndIf
-			EndIf
-		EndIf
-	EndIf
-	If ( !CellLoadMarker2.IsDisabled() && ( CellLoadMarker2.GetParentCell() != ReviveScript.DefaultCell ) )
-		If ( Caster.GetDistance(CellLoadMarker2) >= ConfigMenu.fRPMinDistanceSlider )
-			If ( !Caster.IsInInterior() || ( Caster.GetParentCell() == CellLoadMarker2.GetParentCell() ) )
-				If ( !fDistance || ( fDistance > Caster.GetDistance(CellLoadMarker2) ) )
-					fDistance = Caster.GetDistance(CellLoadMarker2)
-					Marker = CellLoadMarker2
-				EndIf
-			EndIf			
-		EndIf
-	EndIf
-	If ( !CustomMarker.IsDisabled() && ( CustomMarker.GetParentCell() != ReviveScript.DefaultCell ) )
-		If ( Caster.GetDistance(CustomMarker) >= ConfigMenu.fRPMinDistanceSlider )
-			If ( !Caster.IsInInterior() || ( Caster.GetParentCell() == CustomMarker.GetParentCell() ) )
-				If ( !fDistance || ( fDistance > Caster.GetDistance(CustomMarker) ) )
-					fDistance = Caster.GetDistance(CustomMarker)
-					Marker = CustomMarker
-				EndIf
-			EndIf
-		EndIf
-	EndIf
-	If ( !SleepMarker.IsDisabled() && ( SleepMarker.GetParentCell() != ReviveScript.DefaultCell ) )
-		If ( Caster.GetDistance(SleepMarker) >= ConfigMenu.fRPMinDistanceSlider )
-			If ( !Caster.IsInInterior() || ( Caster.GetParentCell() == SleepMarker.GetParentCell() ) )
-				If ( !fDistance || ( fDistance > Caster.GetDistance(SleepMarker) ) )
-					fDistance = Caster.GetDistance(SleepMarker)
-					Marker = SleepMarker
-				EndIf
-			EndIf
-		EndIf
-	EndIf
+	EndWhile
 	If ( Marker && fDistance < 999999999.0 )
 		Caster.MoveTo( Marker )
 		return
 	EndIf
 	If ExternalMarkerList.GetSize() > 0
-		Int jIndex = ReviveScript.iMin(100,ExternalMarkerList.GetSize())
-		While jIndex > 0
-			jIndex -= 1
-			If ( ExternalMarkerList.GetAt( jIndex ).GetType() == 61 ) 
-				If ReviveScript.bCanTeleportToExtMarker( ExternalMarkerList.GetAt( jIndex ) As ObjectReference )
-					If ( Caster.GetParentCell() == ( ExternalMarkerList.GetAt( jIndex ) As ObjectReference ).GetParentCell() )
-						If ( !fDistance || ( fDistance > Caster.GetDistance( ExternalMarkerList.GetAt( jIndex ) As ObjectReference ) ) )
-							If ( Caster.GetDistance(ExternalMarkerList.GetAt( jIndex ) As ObjectReference) >= ConfigMenu.fRPMinDistanceSlider )
-								fDistance = Caster.GetDistance( ExternalMarkerList.GetAt( jIndex ) As ObjectReference )
-								Marker = ExternalMarkerList.GetAt( jIndex ) As ObjectReference
+		iIndex = ReviveScript.iMin(100,ExternalMarkerList.GetSize())
+		While iIndex > 0
+			iIndex -= 1
+			If ( ExternalMarkerList.GetAt( iIndex ).GetType() == 61 ) 
+				If ReviveScript.bCanTeleportToExtMarker( ExternalMarkerList.GetAt( iIndex ) As ObjectReference )
+					If ( Caster.GetParentCell() == ( ExternalMarkerList.GetAt( iIndex ) As ObjectReference ).GetParentCell() )
+						If ( !fDistance || ( fDistance > Caster.GetDistance( ExternalMarkerList.GetAt( iIndex ) As ObjectReference ) ) )
+							If ( Caster.GetDistance(ExternalMarkerList.GetAt( iIndex ) As ObjectReference) >= ConfigMenu.fRPMinDistanceSlider )
+								fDistance = Caster.GetDistance( ExternalMarkerList.GetAt( iIndex ) As ObjectReference )
+								Marker = ExternalMarkerList.GetAt( iIndex ) As ObjectReference
 							EndIf
 						EndIf
 					EndIf
@@ -301,7 +236,7 @@ Function SendToNearestLocation()
 		EndWhile	
 	EndIf
 	If !Caster.IsInInterior()
-		Int iIndex = CityMarkersList.GetSize()
+		iIndex = CityMarkersList.GetSize()
 		While ( iIndex > 0 )
 			iIndex -= 1
 			If ConfigMenu.bRespawnPointsFlags[iIndex]
@@ -316,87 +251,27 @@ Function SendToNearestLocation()
 		Caster.MoveTo( Marker )
 		return
 	EndIf
-	If ( Caster.GetDistance(DetachMarker2) >= ConfigMenu.fRPMinDistanceSlider )
-		If ( !DetachMarker2.IsDisabled() && ( DetachMarker2.GetParentCell() != ReviveScript.DefaultCell ) )
-			If ( bInSameLocation( DetachMarker2.GetCurrentLocation() ) || ( ReviveScript.IsInInteriorActual(Caster) && !ReviveScript.IsInInteriorActual(DetachMarker2) ) )
-				Caster.MoveTo( DetachMarker2 )
-				Return	
+	iIndex = DynamicMarkerList.Length
+	While iIndex > 0
+		iIndex -= 1
+		If ( Caster.GetDistance(DynamicMarkerList[iIndex]) >= ConfigMenu.fRPMinDistanceSlider )
+			If ( !DynamicMarkerList[iIndex].IsDisabled() && ( DynamicMarkerList[iIndex].GetParentCell() != ReviveScript.DefaultCell ) )
+				If ( bInSameLocation( DynamicMarkerList[iIndex].GetCurrentLocation() ) || ( ReviveScript.IsInInteriorActual(Caster) && !ReviveScript.IsInInteriorActual(DynamicMarkerList[iIndex]) ) )
+					Caster.MoveTo( DynamicMarkerList[iIndex] )
+					Return	
+				EndIf
 			EndIf
 		EndIf
-	EndIf
-	If ( Caster.GetDistance(DetachMarker1) >= ConfigMenu.fRPMinDistanceSlider )
-		If ( !DetachMarker1.IsDisabled() && ( DetachMarker1.GetParentCell() != ReviveScript.DefaultCell ) )
-			If ( bInSameLocation( DetachMarker1.GetCurrentLocation() ) || ( ReviveScript.IsInInteriorActual(Caster) && !ReviveScript.IsInInteriorActual(DetachMarker1) ) )
-				Caster.MoveTo( DetachMarker1 )
-				Return	
-			EndIf
-		EndIf
-	EndIf
-	If ( Caster.GetDistance(LocationMarker) >= ConfigMenu.fRPMinDistanceSlider )
-		If ( !LocationMarker.IsDisabled() && ( LocationMarker.GetParentCell() != ReviveScript.DefaultCell ) )
-			If bInSameLocation( LocationMarker.GetCurrentLocation() )
-				Caster.MoveTo( LocationMarker )
-				Return
-			EndIf
-		EndIf
-	EndIf
-	If ( Caster.GetDistance(CellLoadMarker) >= ConfigMenu.fRPMinDistanceSlider )
-		If ( !CellLoadMarker.IsDisabled() && ( CellLoadMarker.GetParentCell() != ReviveScript.DefaultCell ) )
-			If bInSameLocation( CellLoadMarker.GetCurrentLocation() )
-				Caster.MoveTo( CellLoadMarker )
-				Return	
-			EndIf
-		EndIf
-	EndIf
-	If ( Caster.GetDistance(CustomMarker) >= ConfigMenu.fRPMinDistanceSlider )
-		If ( !CustomMarker.IsDisabled() && ( CustomMarker.GetParentCell() != ReviveScript.DefaultCell ) )
-			If bInSameLocation( CustomMarker.GetCurrentLocation() )
-				Caster.MoveTo( CustomMarker )
-				Return	
-			EndIf
-		EndIf
-	EndIf
-	If ( Caster.GetDistance(SleepMarker) >= ConfigMenu.fRPMinDistanceSlider )
-		If ( !SleepMarker.IsDisabled() && ( SleepMarker.GetParentCell() != ReviveScript.DefaultCell ) )
-			If bInSameLocation( SleepMarker.GetCurrentLocation() )
-				Caster.MoveTo( SleepMarker )
-				Return
-			EndIf
-		EndIf
-	EndIf
-	If ( Caster.GetDistance(LocationMarker2) >= ConfigMenu.fRPMinDistanceSlider )
-		If ( !LocationMarker2.IsDisabled() && ( LocationMarker2.GetParentCell() != ReviveScript.DefaultCell ) )
-			If bInSameLocation( LocationMarker2.GetCurrentLocation() )
-				Caster.MoveTo( LocationMarker2 )
-				Return
-			EndIf
-		EndIf
-	EndIf
-	If ( Caster.GetDistance(DetachMarker3) >= ConfigMenu.fRPMinDistanceSlider )
-		If ( !DetachMarker3.IsDisabled() && ( DetachMarker3.GetParentCell() != ReviveScript.DefaultCell ) )
-			If bInSameLocation( DetachMarker3.GetCurrentLocation() )
-				Caster.MoveTo( DetachMarker3 )
-				Return	
-			EndIf
-		EndIf
-	EndIf
-	If ( Caster.GetDistance(CellLoadMarker2) >= ConfigMenu.fRPMinDistanceSlider )
-		If ( !CellLoadMarker2.IsDisabled() && ( CellLoadMarker2.GetParentCell() != ReviveScript.DefaultCell ) )
-			If bInSameLocation( CellLoadMarker2.GetCurrentLocation() )
-				Caster.MoveTo( CellLoadMarker2 )
-				Return	
-			EndIf
-		EndIf
-	EndIf
+	EndWhile
 	If ExternalMarkerList.GetSize() > 0
-		Int jIndex = ReviveScript.iMin(100,ExternalMarkerList.GetSize())
-		While jIndex > 0
-			jIndex -= 1
-			If ( ExternalMarkerList.GetAt( jIndex ).GetType() == 61 ) 
-				If ReviveScript.bCanTeleportToExtMarker( ExternalMarkerList.GetAt( jIndex ) As ObjectReference )
-					If bInSameLocation( ( ExternalMarkerList.GetAt( jIndex ) As ObjectReference ).GetCurrentLocation() )
-						If ( Caster.GetDistance( ExternalMarkerList.GetAt( jIndex ) As ObjectReference) >= ConfigMenu.fRPMinDistanceSlider )
-							Caster.MoveTo( ExternalMarkerList.GetAt( jIndex ) As ObjectReference )
+		iIndex = ReviveScript.iMin(100,ExternalMarkerList.GetSize())
+		While iIndex > 0
+			iIndex -= 1
+			If ( ExternalMarkerList.GetAt( iIndex ).GetType() == 61 ) 
+				If ReviveScript.bCanTeleportToExtMarker( ExternalMarkerList.GetAt( iIndex ) As ObjectReference )
+					If bInSameLocation( ( ExternalMarkerList.GetAt( iIndex ) As ObjectReference ).GetCurrentLocation() )
+						If ( Caster.GetDistance( ExternalMarkerList.GetAt( iIndex ) As ObjectReference) >= ConfigMenu.fRPMinDistanceSlider )
+							Caster.MoveTo( ExternalMarkerList.GetAt( iIndex ) As ObjectReference )
 							Return
 						EndIf
 					EndIf
@@ -404,7 +279,7 @@ Function SendToNearestLocation()
 			EndIf
 		EndWhile	
 	EndIf
-	Int iIndex = LocationsList.GetSize()
+	iIndex = LocationsList.GetSize()
 	While ( iIndex > 0 )
 		iIndex -= 1
 		If ( iIndex == 3 )
@@ -443,48 +318,16 @@ Function SendToNearestLocation()
 			EndIf
 		EndIf
 	EndWhile
-	If ( Caster.GetDistance(DetachMarker2) >= ConfigMenu.fRPMinDistanceSlider )
-		If ( !DetachMarker2.IsDisabled() && ( DetachMarker2.GetParentCell() != ReviveScript.DefaultCell ) )
-			Caster.MoveTo(DetachMarker2)
-			Return
+	iIndex = DynamicMarkerList.Length
+	While iIndex > 0
+		iIndex -= 1
+		If ( Caster.GetDistance(DynamicMarkerList[iIndex]) >= ConfigMenu.fRPMinDistanceSlider )
+			If ( !DynamicMarkerList[iIndex].IsDisabled() && ( DynamicMarkerList[iIndex].GetParentCell() != ReviveScript.DefaultCell ) )
+				Caster.MoveTo(DynamicMarkerList[iIndex])
+				Return
+			EndIf
 		EndIf
-	EndIf
-	If ( Caster.GetDistance(DetachMarker1) >= ConfigMenu.fRPMinDistanceSlider )
-		If ( !DetachMarker1.IsDisabled() && ( DetachMarker1.GetParentCell() != ReviveScript.DefaultCell ) )
-			Caster.MoveTo(DetachMarker1)
-			Return
-		EndIf
-	EndIf
-	If ( Caster.GetDistance(LocationMarker) >= ConfigMenu.fRPMinDistanceSlider )
-		If ( !LocationMarker.IsDisabled() && ( LocationMarker.GetParentCell() != ReviveScript.DefaultCell ) )
-			Caster.MoveTo(LocationMarker)
-			Return
-		EndIf
-	EndIf
-	If ( Caster.GetDistance(CellLoadMarker) >= ConfigMenu.fRPMinDistanceSlider )
-		If ( !CellLoadMarker.IsDisabled() && ( CellLoadMarker.GetParentCell() != ReviveScript.DefaultCell ) )
-			Caster.MoveTo(CellLoadMarker)
-			Return
-		EndIf
-	EndIf
-	If ( Caster.GetDistance(LocationMarker2) >= ConfigMenu.fRPMinDistanceSlider )
-		If ( !LocationMarker2.IsDisabled() && ( LocationMarker2.GetParentCell() != ReviveScript.DefaultCell ) )
-			Caster.MoveTo(LocationMarker2)
-			Return
-		EndIf
-	EndIf
-	If ( Caster.GetDistance(DetachMarker3) >= ConfigMenu.fRPMinDistanceSlider )
-		If ( !DetachMarker3.IsDisabled() && ( DetachMarker3.GetParentCell() != ReviveScript.DefaultCell ) )
-			Caster.MoveTo(DetachMarker3)
-			Return
-		EndIf
-	EndIf
-	If ( Caster.GetDistance(CellLoadMarker2) >= ConfigMenu.fRPMinDistanceSlider )
-		If ( !CellLoadMarker2.IsDisabled() && ( CellLoadMarker2.GetParentCell() != ReviveScript.DefaultCell ) )
-			Caster.MoveTo(CellLoadMarker2)
-			Return
-		EndIf
-	EndIf
+	EndWhile
 	RandomTeleport()
 EndFunction
 
@@ -509,7 +352,7 @@ Int Function TeleportMenu(Int aiMessage = 0, Int aiButton = 0)
 		ElseIf aiMessage == 0
 			aiButton = moaTeleportMenu0.Show()
 			If aiButton == -1
-			ElseIf aiButton < ( ConfigMenu.sRespawnPoints.Length - 5 ) ;Whiterun,...,Winterhold
+			ElseIf aiButton < ( ConfigMenu.sRespawnPoints.Length - 5 ) ;Whiterun,...,Raven Rock
 				Return aiButton
 			ElseIf aiButton == ( ConfigMenu.sRespawnPoints.Length - 5 ) ;More
 				aiMessage = 1

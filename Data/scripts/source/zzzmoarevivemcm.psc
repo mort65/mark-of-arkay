@@ -17,6 +17,7 @@ Int oidMenuEnabled
 Int oidGoldSlider
 Int oidMarkSlider
 Int oidMarkPSlider
+Int oidSnoozeSlider
 Int oidDragonSoulPSlider
 Int oidBSoulGemPSlider
 Int oidGSoulGemPSlider
@@ -93,6 +94,7 @@ GlobalVariable Property moaBleedoutHandlerState Auto
 GlobalVariable Property moaBleedouAnimation Auto
 GlobalVariable Property moaPraytoSave Auto
 GlobalVariable Property moaCreaturesCanSteal Auto
+GlobalVariable Property moaSnoozeState Auto
 Quest Property moaReviverQuest Auto
 Quest Property moaRetrieveLostItems Auto
 Quest Property moaRetrieveLostItems01 Auto
@@ -146,6 +148,7 @@ Float Property fValueGoldSlider = 1000.0 Auto Hidden
 Float Property fValueBSoulGemSlider = 1.0 Auto Hidden
 Float Property fValueGSoulGemSlider = 1.0 Auto Hidden
 Float Property fValueMarkSlider = 1.0 Auto Hidden
+Float Property fValueSnoozeSlider = 0.0 Auto Hidden
 Float Property fBSoulgemPSlider = 1.0 Auto Hidden
 Float Property fGSoulgemPSlider = 2.0 Auto Hidden
 Float Property fMarkPSlider = 5.0 Auto Hidden
@@ -216,6 +219,13 @@ Event OnPageReset(String page)
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidRevivalEnabled = AddToggleOption("$mrt_MarkofArkay_RevivalEnabled", bIsRevivalEnabled, flags )
+		SetCursorPosition(3)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( bIsMenuEnabled )
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidSnoozeSlider = AddSliderOption("$mrt_MarkofArkay_SnoozeSoulSlider_1", fValueSnoozeSlider, "$mrt_MarkofArkay_RecoveryTime_2", flags)
 		SetCursorPosition(6)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled
 			flags =	OPTION_FLAG_NONE
@@ -484,7 +494,7 @@ Event OnPageReset(String page)
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
-		oidRPMinDistanceSlider = AddSliderOption("$mrt_MarkofArkay_RPMinDistanceSlider_1", fRPMinDistanceSlider, "$mrt_MarkofArkay_RPMinDistanceSlider_2", flags)
+		oidRPMinDistanceSlider = AddSliderOption("$mrt_MarkofArkay_RPMinDistanceSlider_1", fRPMinDistanceSlider, "{0}", flags)
 		SetCursorPosition(9)
 		If ( moaState.getValue() == 1 )
 			flags =	OPTION_FLAG_NONE
@@ -1086,6 +1096,7 @@ Event OnOptionSelect(Int option)
 		SetOptionFlags(oidBSoulGemRevivalEnabled, flags, True)
 		SetOptionFlags(oidBSoulGemSlider, flags, True) 
 		SetOptionFlags(oidMarkPSlider, flags, True)
+		SetOptionFlags(oidSnoozeSlider, flags, True)
 		SetOptionFlags(oidDragonSoulPSlider, flags, True)
 		SetOptionFlags(oidBSoulGemPSlider, flags, True)
 		SetOptionFlags(oidGoldPSlider, flags, True)
@@ -1169,6 +1180,7 @@ Event OnOptionSelect(Int option)
 		SetOptionFlags(oidBSoulGemRevivalEnabled, flags, True)
 		SetOptionFlags(oidBSoulGemSlider, flags, True) 
 		SetOptionFlags(oidMarkPSlider, flags, True)
+		SetOptionFlags(oidSnoozeSlider, flags, True)
 		SetOptionFlags(oidDragonSoulPSlider, flags, True)
 		SetOptionFlags(oidBSoulGemPSlider, flags, True)
 		SetOptionFlags(oidGoldPSlider, flags, True)
@@ -1324,6 +1336,11 @@ Event OnOptionSliderOpen(Int option)
 		SetSliderDialogDefaultValue(2500.0)
 		SetSliderDialogRange(1000.0, 10000.0)
 		SetSliderDialogInterval(250.0)
+	ElseIf (option == oidSnoozeSlider)
+		SetSliderDialogStartValue(fValueSnoozeSlider)
+		SetSliderDialogDefaultValue(0.0)
+		SetSliderDialogRange(0.0, 60.0)
+		SetSliderDialogInterval(5.0)
 	EndIf
 EndEvent
 
@@ -1350,6 +1367,14 @@ Event OnOptionSliderAccept(int option, Float value)
 	ElseIf (option == oidMarkPSlider)
 		fMarkPSlider = value
 		SetSliderOptionValue(oidMarkPSlider, fMarkPSlider, "{0}")
+	ElseIf (option == oidSnoozeSlider)
+		fValueSnoozeSlider = value
+		SetSliderOptionValue(oidSnoozeSlider, fValueSnoozeSlider, "$mrt_MarkofArkay_RecoveryTime_2")
+		If fValueSnoozeSlider > 0
+			moaSnoozeState.SetValue(1.0)
+		Else
+			moaSnoozeState.SetValue(0.0)
+		EndIf
 	ElseIf (option == oidDragonSoulPSlider)
 		fDragonSoulPSlider = value
 		SetSliderOptionValue(oidDragonSoulPSlider, fDragonSoulPSlider, "{0}")
@@ -1640,6 +1665,10 @@ Event OnOptionDefault(Int option)
 	ElseIf (option == oidMarkPSlider)
 		fMarkPSlider = 5.0
 		SetSliderOptionValue(oidMarkPSlider, fMarkPSlider, "{0}")
+	ElseIf (option == oidSnoozeSlider)
+		fValueSnoozeSlider = 0.0
+		moaSnoozeState.SetValue(0.0)
+		SetSliderOptionValue(oidSnoozeSlider, fValueSnoozeSlider, "$mrt_MarkofArkay_RecoveryTime_2")
 	ElseIf (option == oidRecoveryTime)
 		fRecoveryTimeSlider = 1.0
 		SetSliderOptionValue(oidRecoveryTime, fRecoveryTimeSlider, "$mrt_MarkofArkay_RecoveryTime_2")
@@ -1964,6 +1993,8 @@ Event OnOptionHighlight(Int option)
 		SetInfoText("$mrt_MarkofArkay_DESC_BSoulGemPSlider")
 	ElseIf (option == oidGSoulGemPSlider)
 		SetInfoText("$mrt_MarkofArkay_DESC_GSoulGemPSlider")
+	ElseIf (option == oidSnoozeSlider)
+		SetInfoText("$mrt_MarkofArkay_DESC_SnoozeSlider")
 	ElseIf (option == oidMarkPSlider)
 		SetInfoText("$mrt_MarkofArkay_DESC_MarkPSlider")
 	ElseIf (option == oidGoldPSlider)

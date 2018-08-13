@@ -14,15 +14,16 @@ Event OnActivate(ObjectReference akActionRef)
 		If ReviveScript.bIsItemsRemoved || PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt)
 			Self.MoveToMyEditorLocation()
 			If (ReviveScript.ThiefNPC.GetReference() As Actor)
-				(ReviveScript.ThiefNPC.GetReference() As Actor).RemoveItem(ReviveScript.StolenItemsMisc,(ReviveScript.ThiefNPC.GetReference() As Actor ).GetItemCount(ReviveScript.StolenItemsMisc))
+				ReviveScript.RemoveStolenItemMarkers(ReviveScript.ThiefNPC.GetReference() As Actor)
 				(ReviveScript.ThiefNPC.GetReference() As Actor).RemoveFromFaction(ReviveScript.PlayerEnemyFaction)
 			EndIf
 			If ReviveScript.Thief
-				ReviveScript.Thief.RemoveItem(ReviveScript.StolenItemsMisc,ReviveScript.Thief.GetItemCount(ReviveScript.StolenItemsMisc))
+				ReviveScript.RemoveStolenItemMarkers(ReviveScript.Thief)
 				ReviveScript.Thief.RemoveFromFaction(ReviveScript.PlayerEnemyFaction)
 			EndIf
-			PlayerRef.RemoveItem(ReviveScript.StolenItemsMisc,PlayerRef.GetItemCount(ReviveScript.StolenItemsMisc),abSilent = True)
+			ReviveScript.RemoveStolenItemMarkers(PlayerRef)
 			ReviveScript.Thief = None
+			ReviveScript.bStealSoul = False
 			PlayerRef.RemoveSpell(ArkayCurse)
 			PlayerRef.RemoveSpell(ArkayCurseAlt)
 			If ReviveScript.bIsItemsRemoved 

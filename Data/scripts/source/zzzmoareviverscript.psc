@@ -3512,8 +3512,8 @@ Bool Function bGuardCanSendToJail()
 				EndIf
 			EndIf
 		Else ;No NPC is around the player
-			Return False
 			ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: No NPC is around.")
+			Return False
 		EndIf
 	EndWhile
 	ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Player won't go to jail.")

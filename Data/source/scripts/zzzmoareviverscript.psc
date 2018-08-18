@@ -943,7 +943,6 @@ Int Function RemoveItemByMenu(String curState) ;trade by using menu
 			strRemovedItem = "Septim"
 		ElseIf (iChoice == 5) ;Snooze
 			Utility.Wait(ConfigMenu.fValueSnoozeSlider)
-			SetVars()
 			If (GetState() != curState)
 				iRevive = -1
 				bBreak = True
@@ -978,6 +977,8 @@ Int Function RemoveItemByMenu(String curState) ;trade by using menu
 				iRevive = -1
 				bBreak = True
 				GoToState("")
+			Else
+				SetVars()
 			EndIf
 		ElseIf (iChoice == 6) ;Nothing
 			iRevive = 0
@@ -2332,7 +2333,10 @@ Function Teleport()
 		EndIf
 	ElseIf (iTeleportLocation == (ConfigMenu.sRespawnPoints.Length - 2))
 		If ExternalMarkerList.GetSize() > 0
-			If ( ExternalMarkerList.GetSize() > 1 ) && ( iExternalIndex == -1 || ( iExternalIndex >= ExternalMarkerList.GetSize() ) || ( !bCanTeleportToExtMarker( ExternalMarkerList.GetAt( iExternalIndex ) As ObjectReference ) || (PlayerRef.GetDistance(ExternalMarkerList.GetAt( iExternalIndex ) As ObjectReference) < fRPMinDistance) || ( ExternalMarkerList.GetAt( iExternalIndex ).GetType() != 61 ) ) )
+			If ( ExternalMarkerList.GetSize() > 1 ) && ( iExternalIndex == -1 || ( iExternalIndex >= ExternalMarkerList.GetSize() ) ||\
+			( !bCanTeleportToExtMarker( ExternalMarkerList.GetAt( iExternalIndex ) As ObjectReference ) ||\
+			(PlayerRef.GetDistance(ExternalMarkerList.GetAt( iExternalIndex ) As ObjectReference) < fRPMinDistance) ||\
+			( ExternalMarkerList.GetAt( iExternalIndex ).GetType() != 61 ) ) )
 				Int iMarkerIndex = iGetRandomRefFromListWithExclusions( 0, ExternalMarkerList.GetSize() - 1, ExternalMarkerList )
 				If iMarkerIndex != -1
 					If !bIsArrived(ExternalMarkerList.GetAt( iMarkerIndex ) As ObjectReference)
@@ -2371,7 +2375,9 @@ Function Teleport()
 				Else
 					SendToAnotherLocation()
 				EndIf
-			ElseIf ( bCanTeleportToExtMarker( ExternalMarkerList.GetAt( iExternalIndex ) As ObjectReference ) &&  (PlayerRef.GetDistance(ExternalMarkerList.GetAt( iExternalIndex ) As ObjectReference) >= fRPMinDistance) && ( ExternalMarkerList.GetAt( iExternalIndex ).GetType() == 61 ) )
+			ElseIf ( bCanTeleportToExtMarker( ExternalMarkerList.GetAt( iExternalIndex ) As ObjectReference ) &&\
+			(PlayerRef.GetDistance(ExternalMarkerList.GetAt( iExternalIndex ) As ObjectReference) >= fRPMinDistance) &&\
+			( ExternalMarkerList.GetAt( iExternalIndex ).GetType() == 61 ) )
 				If !bIsArrived(ExternalMarkerList.GetAt( iExternalIndex ) As ObjectReference)
 					If ((PlayerRef.GetDistance(CustomMarker) >= fRPMinDistance) && bCanTeleportToDynMarker(CustomMarker))
 						If !bIsArrived(CustomMarker)

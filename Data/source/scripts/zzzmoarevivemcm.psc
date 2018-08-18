@@ -1406,7 +1406,7 @@ Event OnOptionSliderAccept(int option, Float value)
 		SetSliderOptionValue(oidMarkCost, fMarkCastSlider, "$mrt_MarkofArkay_MarkSlider_2")
 	ElseIf (option == oidRPMinDistanceSlider)
 		fRPMinDistanceSlider = value
-		SetSliderOptionValue(oidRPMinDistanceSlider, fRPMinDistanceSlider, "$mrt_MarkofArkay_RPMinDistanceSlider_2")
+		SetSliderOptionValue(oidRPMinDistanceSlider, fRPMinDistanceSlider, "{0}")
 	EndIf
 EndEvent
 
@@ -1674,7 +1674,7 @@ Event OnOptionDefault(Int option)
 		SetSliderOptionValue(oidRecoveryTime, fRecoveryTimeSlider, "$mrt_MarkofArkay_RecoveryTime_2")
 	ElseIf (option == oidRPMinDistanceSlider)
 		fRPMinDistanceSlider = 2500.0
-		SetSliderOptionValue(oidRPMinDistanceSlider, fRPMinDistanceSlider, "$mrt_MarkofArkay_RPMinDistanceSlider_2")
+		SetSliderOptionValue(oidRPMinDistanceSlider, fRPMinDistanceSlider, "{0}")
 	ElseIf (option == oidBleedoutTime)
 		fBleedoutTimeSlider = 6.0
 		SetSliderOptionValue(oidBleedoutTime, fBleedoutTimeSlider, "$mrt_MarkofArkay_RecoveryTime_2")	

@@ -2255,6 +2255,10 @@ Event OnConfigInit()
 	setPages()
 EndEvent
 
+Event OnConfigRegister()
+	RegisterForSingleUpdate(3.0)
+EndEvent
+
 Function setPages()
 	Pages = new String[4]
 	pages[0] = "$General"
@@ -2333,11 +2337,6 @@ Event OnVersionUpdate(int a_version)
 	Endif
 	If (a_version >= 8 && CurrentVersion < 8)
 		Debug.Trace(self + ": Updating script to version " + 8)
-		If bIsRagdollEnabled
-			moaBleedouAnimation.SetValue(2)
-		Else
-			moaBleedouAnimation.SetValue(0)
-		EndIf
 		If bLostItemQuest && ( ReviveScript.bIsItemsRemoved || PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt) )
 			moaRetrieveLostItems.start()
 			moaRetrieveLostItems.SetStage(1)
@@ -2347,9 +2346,6 @@ Event OnVersionUpdate(int a_version)
 	EndIf
 	If (a_version >= 12 && CurrentVersion < 12)
 		Debug.Trace(self + ": Updating script to version "  + 12)
-		If moaBleedouAnimation.GetValue() == 4
-			bIsRagdollEnabled = False
-		EndIf
 	EndIf
 	If (a_version >= 14 && CurrentVersion < 14)
 		Debug.Trace(self + ": Updating script to version "  + 14)
@@ -2401,6 +2397,12 @@ Event OnVersionUpdate(int a_version)
 	EndIf
 	setArrays()
 	ForcePageReset()
+EndEvent
+
+Event OnUpdate()
+	If moaState.GetValue() == 1
+		Debug.notification("$mrt_MarkofArkay_Notification_Init")
+	EndIf
 EndEvent
 
 Function setRespawnPoints()

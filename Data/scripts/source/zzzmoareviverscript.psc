@@ -214,9 +214,6 @@ State Bleedout2
 EndState
 
 Event OnInit()
-	If !moaReviveMCMscript.IsRunning()
-		moaReviveMCMscript.Start()
-	EndIf
 	moaState.SetValue(1)
 	PlayerRef.GetActorBase().SetEssential(True)
 	PlayerRef.SetNoBleedoutRecovery(True)
@@ -234,7 +231,6 @@ Event OnInit()
 		Runil.AddToFaction(RunilMerchantFaction)
 		Runil.GetActorBase().SetEssential(True)
 	EndIf
-	Debug.notification("$mrt_MarkofArkay_Notification_Init")
 EndEvent
 
 Event OnPlayerLoadGame()
@@ -544,7 +540,8 @@ Function BleedoutHandler(String CurrentState)
 			Utility.Wait(ConfigMenu.fBleedoutTimeSlider)
 		Else
 			If bWasSwimming
-				Game.EnablePlayerControls(abMovement = False, abFighting = False, abCamSwitch = False, abLooking = False, abSneaking = False, abMenu = True, abActivate = False, abJournalTabs = False)
+				Game.EnablePlayerControls(abMovement = False, abFighting = False, abCamSwitch = False, abLooking = False, abSneaking = False,\
+				abMenu = True, abActivate = False, abJournalTabs = False)
 			Else
 				Game.EnablePlayerControls()
 				Debug.SetGodMode(False)
@@ -781,14 +778,17 @@ Function SortPriorityArray() ;sort priority so higher priority and those items t
 	Int Index1
 	Int Index2 = PriorityArray.Length - 1
 	Bool bIsIndex1 = False 
-	Bool bIsIndex2 = False 
+	Bool bIsIndex2 = False
+	Int Swapped = 0
 	While (Index2 > 0)
 		Index1 = 0
+		Swapped = 0
 		While (Index1 < Index2)
 			If (((PriorityArray [Index1] As Int) % 10) > (((PriorityArray [Index1 + 1] As Int) % 10))) ;ones are priorities tens are for being distinguishable after sort
 				Float SwapDummy = PriorityArray [Index1]
 				PriorityArray [Index1] = PriorityArray [Index1 + 1]
 				PriorityArray [Index1 + 1] = SwapDummy
+				Swapped = 1
 			ElseIf (((PriorityArray [Index1] As Int) % 10) == (((PriorityArray [Index1 + 1] As Int) % 10))) ; when two item has the same priority
 				If (PriorityArray[Index1]>50) && bGSoulGemRevive
 					bIsIndex1 = True ;  Item at index 1 is tradable
@@ -815,13 +815,17 @@ Function SortPriorityArray() ;sort priority so higher priority and those items t
 				If (bIsIndex1 == True) && (bIsIndex2 == False) ;tradable items should have lower index in the array after sort
 					Float SwapDummy = PriorityArray [Index1]
 					PriorityArray [Index1] = PriorityArray [Index1 + 1]
-					PriorityArray [Index1 + 1] = SwapDummy 
+					PriorityArray [Index1 + 1] = SwapDummy
+					Swapped = 1
 				EndIf
 				bIsIndex1 = False 
 				bIsIndex2 = False
 			EndIf
 			Index1 += 1
 		EndWhile
+		If (Swapped == 0)
+			Return
+		EndIf
 		Index2 -= 1
 	EndWhile
 EndFunction
@@ -1824,8 +1828,10 @@ Function RevivePlayer(Bool bRevive)
 					EndIf
 				EndIf
 				If ( PlayerRef.GetParentCell() != DefaultCell )
-					If ((( LostItemsChest.GetNumItems() > 0 ) || ( fLostSouls > 0.0 )) || PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt) || ( Configmenu.bArkayCurse && !Configmenu.bIsArkayCurseTemporary ))
-						If ( bSoulMark || ((( ConfigMenu.bArkayCurse && !Configmenu.bIsArkayCurseTemporary ) || PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt) ) && !moaThiefNPC01.IsRunning() ))
+					If ((( LostItemsChest.GetNumItems() > 0 ) || ( fLostSouls > 0.0 )) || PlayerRef.HasSpell(ArkayCurse) ||\
+					PlayerRef.HasSpell(ArkayCurseAlt) || ( Configmenu.bArkayCurse && !Configmenu.bIsArkayCurseTemporary ))
+						If ( bSoulMark || ((( ConfigMenu.bArkayCurse && !Configmenu.bIsArkayCurseTemporary ) ||\
+						PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt) ) && !moaThiefNPC01.IsRunning() ))
 							LostItemsMarker.Enable()
 							If ( !ConfigMenu.bSoulMarkStay || ( LostItemsMarker.GetParentCell() == DefaultCell ) )
 								ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Moving soul mark to player's location...")
@@ -1937,7 +1943,8 @@ Function RevivePlayer(Bool bRevive)
 				If ( ConfigMenu.bRespawnNaked && !bInBeastForm() )
 					PlayerRef.UnequipAll()
 				EndIf
-				If (( ConfigMenu.bArkayCurse && !Configmenu.bIsArkayCurseTemporary ) && ( moaThiefNPC01.IsRunning() || ( moaSoulMark01.IsRunning() )))
+				If (( ConfigMenu.bArkayCurse && !Configmenu.bIsArkayCurseTemporary ) &&\
+				( moaThiefNPC01.IsRunning() || ( moaSoulMark01.IsRunning() )))
 					PlayerRef.DispelSpell(ArkayCurseTemp)
 					PlayerRef.DispelSpell(ArkayCurseTempAlt)
 					If ConfigMenu.iArkayCurse == 0
@@ -1948,7 +1955,8 @@ Function RevivePlayer(Bool bRevive)
 						PlayerRef.AddSpell(ArkayCurse)
 						PlayerRef.AddSpell(ArkayCurseAlt)
 					EndIf
-				ElseIf (( ConfigMenu.bArkayCurse && Configmenu.bIsArkayCurseTemporary ) && ( !PlayerRef.HasSpell(ArkayCurse) && !PlayerRef.HasSpell(ArkayCurseAlt)))
+				ElseIf (( ConfigMenu.bArkayCurse && Configmenu.bIsArkayCurseTemporary ) &&\
+				( !PlayerRef.HasSpell(ArkayCurse) && !PlayerRef.HasSpell(ArkayCurseAlt)))
 					If ConfigMenu.iArkayCurse == 0
 						ArkayCurseTemp.Cast(PlayerRef)
 					ElseIf ConfigMenu.iArkayCurse == 1
@@ -1980,7 +1988,8 @@ Function RevivePlayer(Bool bRevive)
 					Utility.Wait(0.5)
 				EndIf
 				If ConfigMenu.bLostItemQuest
-					If  (( bIsItemsRemoved && (( LostItemsChest.GetNumItems() > 0 ) || ( fLostSouls > 0.0 ))) || PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt) )
+					If  (( bIsItemsRemoved && (( LostItemsChest.GetNumItems() > 0 ) || ( fLostSouls > 0.0 ))) ||\
+					PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt) )
 						If moaSoulMark01.IsRunning()
 							moaRetrieveLostItems.Start()
 							moaRetrieveLostItems.SetStage(1)
@@ -2113,6 +2122,10 @@ EndFunction
 
 Function SetGameVars()
 	If (moaState.GetValue() == 1 )
+		If !PlayerRef.IsEssential()
+			PlayerRef.GetActorBase().SetEssential(True)
+			PlayerRef.SetNoBleedoutRecovery(True)
+		EndIf
 		ConfigMenu.ToggleFallDamage(ConfigMenu.bIsNoFallDamageEnabled) ;SKSE
 	Else
 		ConfigMenu.ToggleFallDamage(False)

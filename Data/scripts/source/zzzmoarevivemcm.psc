@@ -1,6 +1,7 @@
 Scriptname zzzmoaReviveMCM extends SKI_ConfigBase  
 
-import Game
+Import Game
+Import FISSFactory
 
 Int oidRevivalEnabled
 Int oidDragonSoulRevivalEnabled
@@ -79,7 +80,14 @@ Int oidResurrectActors
 Int oidNPCStealItems
 Int oidFadeToBlack
 Int oidHostileNPC
-Int oidCreaturesCanSteal 
+Int oidCreaturesCanSteal
+Int oidLoadPreset1
+Int oidSavePreset1
+Int oidLoadPreset2
+Int oidSavePreset2
+Int oidLoadPreset3
+Int oidSavePreset3
+Int oidLoadDefaultPreset
 String[] Property sRespawnPoints Auto
 String[] Property sLoseOptions Auto
 String[] Property sAftermathOptions Auto
@@ -764,6 +772,29 @@ Event OnPageReset(String page)
 		Else
 			AddTextOption("$mrt_MarkofArkay_Destroyed_Items", "$Disabled", flags)
 		EndIf
+	ElseIf (page == "$Presets")
+		Int iFissIndex = GetModByName("FISS.esp")
+		SetCursorPosition(0)
+		AddHeaderOption("$Presets")
+		SetCursorPosition(2)
+		If moaState.getValue() == 1 && ( 0 < iFissIndex && iFissIndex < 255 )
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidLoadPreset1 = AddTextOption("$mrt_MarkofArkay_Load_Preset1", "", flags)
+		SetCursorPosition(4)
+		oidSavePreset1 = AddTextOption("$mrt_MarkofArkay_Save_Preset1", "", flags)
+		SetCursorPosition(8)
+		oidLoadPreset2 = AddTextOption("$mrt_MarkofArkay_Load_Preset2", "", flags)
+		SetCursorPosition(10)
+		oidSavePreset2 = AddTextOption("$mrt_MarkofArkay_Save_Preset2", "", flags)
+		SetCursorPosition(14)
+		oidLoadPreset3 = AddTextOption("$mrt_MarkofArkay_Load_Preset3", "", flags)
+		SetCursorPosition(16)
+		oidSavePreset3 = AddTextOption("$mrt_MarkofArkay_Save_Preset3", "", flags)
+		SetCursorPosition(20)
+		oidLoadDefaultPreset = AddTextOption("$mrt_MarkofArkay_Load_Default_Preset", "", flags)
 	EndIf
 EndEvent
 
@@ -1079,6 +1110,77 @@ Event OnOptionSelect(Int option)
 			iDestroyedItems = 0
 			ForcePageReset()
 		EndIf
+	ElseIf (option == oidLoadPreset1)
+		If ShowMessage("$mrt_MarkofArkay_MESG_Load_Preset", True, "$Yes", "$No")
+			If bLoadUserSettings("MarkofArkayUserSettings1.xml")
+				ShowMessage("$mrt_MarkofArkay_MESG_Load_Preset_Success", false)
+			Else
+				ShowMessage("$mrt_MarkofArkay_MESG_Load_Preset_Failure", false)
+			EndIf
+		EndIf
+	ElseIf (option == oidSavePreset1)
+		FISSInterface fiss = FISSFactory.getFISS()
+		fiss.beginLoad("MarkofArkayUserSettings1.xml")
+		If fiss.endLoad() == ""
+			If !ShowMessage("$mrt_MarkofArkay_MESG_Already_Preset", true)
+				Return
+			EndIf
+		EndIf
+		If bSaveUserSettings("MarkofArkayUserSettings1.xml")
+			ShowMessage("$mrt_MarkofArkay_MESG_Save_Preset_Success", false)
+		Else
+			ShowMessage("$mrt_MarkofArkay_MESG_Save_Preset_Failure", false)
+		EndIf
+		ForcePageReset()
+	ElseIf (option == oidLoadPreset2)
+		If ShowMessage("$mrt_MarkofArkay_MESG_Load_Preset", True, "$Yes", "$No")
+			If bLoadUserSettings("MarkofArkayUserSettings2.xml")
+				ShowMessage("$mrt_MarkofArkay_MESG_Load_Preset_Success", false)
+			Else
+				ShowMessage("$mrt_MarkofArkay_MESG_Load_Preset_Failure", false)
+			EndIf
+		EndIf
+	ElseIf (option == oidSavePreset2)
+		FISSInterface fiss = FISSFactory.getFISS()
+		fiss.beginLoad("MarkofArkayUserSettings2.xml")
+		If fiss.endLoad() == ""
+			If !ShowMessage("$mrt_MarkofArkay_MESG_Already_Preset", true)
+				Return
+			EndIf
+		EndIf
+		If bSaveUserSettings("MarkofArkayUserSettings2.xml")
+			ShowMessage("$mrt_MarkofArkay_MESG_Save_Preset_Success", false)
+		Else
+			ShowMessage("$mrt_MarkofArkay_MESG_Save_Preset_Failure", false)
+		EndIf
+		ForcePageReset()
+	ElseIf (option == oidLoadPreset3)
+		If ShowMessage("$mrt_MarkofArkay_MESG_Load_Preset", True, "$Yes", "$No")
+			If bLoadUserSettings("MarkofArkayUserSettings3.xml")
+				ShowMessage("$mrt_MarkofArkay_MESG_Load_Preset_Success", false)
+			Else
+				ShowMessage("$mrt_MarkofArkay_MESG_Load_Preset_Failure", false)
+			EndIf
+		EndIf
+	ElseIf (option == oidSavePreset3)
+		FISSInterface fiss = FISSFactory.getFISS()
+		fiss.beginLoad("MarkofArkayUserSettings3.xml")
+		If fiss.endLoad() == ""
+			If !ShowMessage("$mrt_MarkofArkay_MESG_Already_Preset", true)
+				Return
+			EndIf
+		EndIf
+		If bSaveUserSettings("MarkofArkayUserSettings3.xml")
+			ShowMessage("$mrt_MarkofArkay_MESG_Save_Preset_Success", false)
+		Else
+			ShowMessage("$mrt_MarkofArkay_MESG_Save_Preset_Failure", false)
+		EndIf
+		ForcePageReset()
+	ElseIf (option == oidLoadDefaultPreset)
+		If ShowMessage("$mrt_MarkofArkay_MESG_Load_Default_Preset", True, "$Yes", "$No")
+			LoadDefaultSettings()
+			ShowMessage("$mrt_MarkofArkay_MESG_Load_Default_Preset_Finish", false)
+		EndIf			
 	ElseIf (option == oidStatus)
 		SetTextOptionValue(option, "$mrt_MarkofArkay_Status_Busy",True)
 		bToggling = True
@@ -1909,7 +2011,7 @@ Event OnOptionDefault(Int option)
 		iSaveOption = 1
 		SetMenuOptionValue(oidEnableSave_M, sSaveOptions[iSaveOption])
 		moaPraytoSave.SetValue(0.0)
-		Game.SetInChargen(False,False,False)
+		SetInChargen(False,False,False)
 	EndIf
 EndEvent
 
@@ -2110,7 +2212,21 @@ Event OnOptionHighlight(Int option)
 	ElseIf (option == oidArkayCurses_M)
 	    setInfotext("$mrt_MarkofArkay_DESC_ArkayCurses_M")
 	ElseIf (option == oidEnableSave_M)
-	    setInfotext("$mrt_MarkofArkay_DESC_EnableSave_M")	
+	    setInfotext("$mrt_MarkofArkay_DESC_EnableSave_M")
+	ElseIf (option == oidLoadPreset1)
+		SetInfoText("$mrt_MarkofArkay_DESC_Load_Preset")
+	ElseIf (option == oidSavePreset1)
+		SetInfoText("$mrt_MarkofArkay_DESC_Save_Preset")
+	ElseIf (option == oidLoadPreset2)
+		SetInfoText("$mrt_MarkofArkay_DESC_Load_Preset")
+	ElseIf (option == oidSavePreset2)
+		SetInfoText("$mrt_MarkofArkay_DESC_Save_Preset")
+	ElseIf (option == oidLoadPreset3)
+		SetInfoText("$mrt_MarkofArkay_DESC_Load_Preset")
+	ElseIf (option == oidSavePreset3)
+		SetInfoText("$mrt_MarkofArkay_DESC_Save_Preset")
+	ElseIf (option == oidLoadDefaultPreset)
+		SetInfoText("$mrt_MarkofArkay_DESC_Load_Default_Preset")
 	EndIf
 EndEvent
 
@@ -2208,7 +2324,7 @@ Function moaStop()
 		Debug.SetGodMode(False)
 		moaLootChance.SetValue(100.0)
 		moaScrollChance.SetValue(100.0)
-		Game.SetInChargen(False,False,False)
+		SetInChargen(False,False,False)
 		moaPraytoSave.SetValue(0.0)
 		Utility.Wait(1.0)
 		Debug.notification("$mrt_MarkofArkay_Notification_Stopped")
@@ -2239,14 +2355,14 @@ EndFunction
 
 Function SetSavingOption(Int iIndex)
 	PlayerRef.DispelSpell(ArkayBlessing)
-	Game.SetInChargen(False,False,False)
+	SetInChargen(False,False,False)
 	If ( iIndex == 3 || iIndex == 4 ) ;PrayToSave
-		Game.SetInChargen(abDisableSaving = True, abDisableWaiting = False, abShowControlsDisabledMessage = True)
+		SetInChargen(abDisableSaving = True, abDisableWaiting = False, abShowControlsDisabledMessage = True)
 		moaPraytoSave.SetValue(1.0)
 	Else
 		moaPraytoSave.SetValue(0.0)
 		If ( iIndex == 2 );After Sleep
-			Game.SetInChargen(abDisableSaving = True, abDisableWaiting = False, abShowControlsDisabledMessage = True)
+			SetInChargen(abDisableSaving = True, abDisableWaiting = False, abShowControlsDisabledMessage = True)
 		EndIf
 	EndIf
 EndFunction
@@ -2260,15 +2376,16 @@ Event OnConfigRegister()
 EndEvent
 
 Function setPages()
-	Pages = new String[4]
+	Pages = new String[5]
 	pages[0] = "$General"
 	pages[1] = "$Extra"
 	pages[2] = "$Aftermath"
 	pages[3] = "$Debug"
+	pages[4] = "$Presets"
 EndFunction
 
 Int Function GetVersion()
-	Return 32
+	Return 34
 EndFunction
 
 Event OnVersionUpdate(int a_version)
@@ -2395,6 +2512,9 @@ Event OnVersionUpdate(int a_version)
 			ReviveScript.moaSoulMark01.Start()
 		EndIf
 	EndIf
+	If (a_version >= 34 && CurrentVersion < 34)
+		Debug.Trace(self + ": Updating script to version "  + 34)
+	EndIf
 	setArrays()
 	ForcePageReset()
 EndEvent
@@ -2473,4 +2593,249 @@ Int Function iGetRespawnPointsCount()
 	EndWhile
 	Return iCount
 EndFunction
- 
+
+Bool function bLoadUserSettings(String sFileName)
+	FISSInterface fiss = FISSFactory.getFISS()
+	fiss.beginLoad(sFileName)
+	bIsRevivalEnabled = fiss.loadBool("bIsRevivalEnabled")
+	fValueSnoozeSlider = fiss.loadFloat("fValueSnoozeSlider")
+	bIsMarkEnabled = fiss.loadBool("bIsMarkEnabled")
+	bIsGSoulGemEnabled = fiss.loadBool("bIsGSoulGemEnabled")
+	bIsBSoulGemEnabled = fiss.loadBool("bIsBSoulGemEnabled")
+	bIsDragonSoulEnabled = fiss.loadBool("bIsDragonSoulEnabled")
+	bIsGoldEnabled = fiss.loadBool("bIsGoldEnabled")
+	fValueMarkSlider = fiss.loadFloat("fValueMarkSlider")
+	fValueGSoulGemSlider = fiss.loadFloat("fValueGSoulGemSlider")
+	fValueBSoulGemSlider = fiss.loadFloat("fValueBSoulGemSlider")
+	fValueSoulSlider = fiss.loadFloat("fValueSoulSlider")
+	fValueGoldSlider = fiss.loadFloat("fValueGoldSlider")
+	iSaveOption = fiss.loadInt("iSaveOption")
+	SetSavingOption(iSaveOption)
+	bIsNoFallDamageEnabled = fiss.loadBool("bIsNoFallDamageEnabled")
+	ToggleFallDamage(!bIsNoFallDamageEnabled)
+	bIsEffectEnabled = fiss.loadBool("bIsEffectEnabled")
+	bIsPotionEnabled = fiss.loadBool("bIsPotionEnabled")
+	bAutoDrinkPotion = fiss.loadBool("bAutoDrinkPotion")
+	bShiftBackRespawn = fiss.loadBool("bShiftBackRespawn")
+	bIsRecallRestricted = fiss.loadBool("bIsRecallRestricted")
+	bAutoSwitchRP = fiss.loadBool("bAutoSwitchRP")
+	fMarkCastSlider = fiss.loadFloat("fMarkCastSlider")
+	fRecallCastSlider = fiss.loadFloat("fRecallCastSlider")
+	bIsMenuEnabled = fiss.loadBool("bIsMenuEnabled")
+	fMarkPSlider = fiss.loadFloat("fMarkPSlider")
+	fGoldPSlider = fiss.loadFloat("fGoldPSlider")
+	fDragonSoulPSlider = fiss.loadFloat("fDragonSoulPSlider")
+	fGSoulgemPSlider = fiss.loadFloat("fGSoulgemPSlider")
+	fBSoulgemPSlider = fiss.loadFloat("fBSoulgemPSlider")
+	fBleedoutTimeSlider = fiss.loadFloat("fBleedoutTimeSlider")
+	fRecoveryTimeSlider = fiss.loadFloat("fRecoveryTimeSlider")
+	fLootChanceSlider = fiss.loadFloat("fLootChanceSlider")
+	moaLootChance.SetValue(100.0 -  fLootChanceSlider)
+	fScrollChanceSlider = fiss.loadFloat("fScrollChanceSlider")
+	moaScrollChance.SetValue(100.0 -  fScrollChanceSlider)
+	iNotTradingAftermath = fiss.loadInt("iNotTradingAftermath")
+	iRemovableItems = fiss.loadInt("iRemovableItems")
+	iArkayCurse = fiss.loadInt("iArkayCurse")
+	bRespawnNaked = fiss.loadBool("bRespawnNaked")
+	bSendToJail = fiss.loadBool("bSendToJail")
+	bTeleportMenu = fiss.loadBool("bTeleportMenu")
+	bRespawnMenu = fiss.loadBool("bRespawnMenu")
+	bFollowerProtectPlayer = fiss.loadBool("bFollowerProtectPlayer")
+	bArkayCurse = fiss.loadBool("bArkayCurse")
+	bIsArkayCurseTemporary = fiss.loadBool("bIsArkayCurseTemporary")
+	bHealActors = fiss.loadBool("bHealActors")
+	bResurrectActors = fiss.loadBool("bResurrectActors")
+	bLoseForever = fiss.loadBool("bLoseForever")
+	bSoulMarkStay = fiss.loadBool("bSoulMarkStay")
+	;bLostItemQuest = fiss.loadBool("bLostItemQuest")
+	bHostileNPC = fiss.loadBool("bHostileNPC")
+	If bHostileNPC
+		bNPCStealItems = False
+	EndIf
+	bNPCStealItems = fiss.loadBool("bNPCStealItems")
+	If bNPCStealItems
+		bHostileNPC = False
+	EndIf
+	bCreaturesCanSteal = fiss.loadBool("bCreaturesCanSteal")
+	moaCreaturesCanSteal.SetValue(bCreaturesCanSteal As Int)
+	iTeleportLocation = fiss.loadInt("iTeleportLocation")
+	iExternalIndex = fiss.loadInt("iExternalIndex")
+	fRPMinDistanceSlider = fiss.loadFloat("fRPMinDistanceSlider")
+	bRespawnPointsFlags[0] = fiss.loadBool("bRespawnPointsFlags0")
+	bRespawnPointsFlags[1] = fiss.loadBool("bRespawnPointsFlags1")
+	bRespawnPointsFlags[2] = fiss.loadBool("bRespawnPointsFlags2")
+	bRespawnPointsFlags[3] = fiss.loadBool("bRespawnPointsFlags3")
+	bRespawnPointsFlags[4] = fiss.loadBool("bRespawnPointsFlags4")
+	bRespawnPointsFlags[5] = fiss.loadBool("bRespawnPointsFlags5")
+	bRespawnPointsFlags[6] = fiss.loadBool("bRespawnPointsFlags6")
+	;bRespawnPointsFlags[7] = fiss.loadBool("bRespawnPointsFlags7")
+	bIsLoggingEnabled = fiss.loadBool("bIsLoggingEnabled")
+	bIsInfoEnabled = fiss.loadBool("bIsInfoEnabled")
+	bIsNotificationEnabled = fiss.loadBool("bIsNotificationEnabled")
+	bFadeToBlack = fiss.loadBool("bFadeToBlack")
+	bInvisibility = fiss.loadBool("bInvisibility")
+	String Result = fiss.endLoad()
+	if Result != ""
+		Debug.Trace("Mark of Arkay: Error loading user settings: " + Result)
+		Return False
+	EndIf
+	Return True
+EndFunction
+
+bool function bSaveUserSettings(String sFileName)
+	FISSInterface fiss = FISSFactory.getFISS()
+	fiss.beginSave(sFileName, "Mark of Arkay")
+	fiss.saveBool("bIsRevivalEnabled", bIsRevivalEnabled)
+	fiss.saveFloat("fValueSnoozeSlider", fValueSnoozeSlider)
+	fiss.saveBool("bIsMarkEnabled", bIsMarkEnabled)
+	fiss.saveBool("bIsGSoulGemEnabled", bIsGSoulGemEnabled)
+	fiss.saveBool("bIsBSoulGemEnabled", bIsBSoulGemEnabled)
+	fiss.saveBool("bIsDragonSoulEnabled", bIsDragonSoulEnabled)
+	fiss.saveBool("bIsGoldEnabled", bIsGoldEnabled)
+	fiss.saveFloat("fValueMarkSlider", fValueMarkSlider)
+	fiss.saveFloat("fValueGSoulGemSlider", fValueGSoulGemSlider)
+	fiss.saveFloat("fValueBSoulGemSlider", fValueBSoulGemSlider)
+	fiss.saveFloat("fValueSoulSlider", fValueSoulSlider)
+	fiss.saveFloat("fValueGoldSlider", fValueGoldSlider)
+	fiss.saveInt("iSaveOption", iSaveOption)
+	fiss.saveBool("bIsNoFallDamageEnabled", bIsNoFallDamageEnabled)
+	fiss.saveBool("bIsEffectEnabled", bIsEffectEnabled)
+	fiss.saveBool("bIsPotionEnabled", bIsPotionEnabled)
+	fiss.saveBool("bAutoDrinkPotion", bAutoDrinkPotion)
+	fiss.saveBool("bIsRevivalRequiresBlessing", bIsRevivalRequiresBlessing)
+	fiss.saveBool("bShiftBackRespawn", bShiftBackRespawn)
+	fiss.saveBool("bIsRecallRestricted", bIsRecallRestricted)
+	fiss.saveBool("bAutoSwitchRP", bAutoSwitchRP)
+	fiss.saveFloat("fMarkCastSlider", fMarkCastSlider)
+	fiss.saveFloat("fRecallCastSlider", fRecallCastSlider)
+	fiss.saveBool("bIsMenuEnabled", bIsMenuEnabled)
+	fiss.saveFloat("fMarkPSlider", fMarkPSlider)
+	fiss.saveFloat("fGoldPSlider", fGoldPSlider)
+	fiss.saveFloat("fDragonSoulPSlider", fDragonSoulPSlider)
+	fiss.saveFloat("fGSoulgemPSlider", fGSoulgemPSlider)
+	fiss.saveFloat("fBSoulgemPSlider", fBSoulgemPSlider)
+	fiss.saveFloat("fBleedoutTimeSlider", fBleedoutTimeSlider)
+	fiss.saveFloat("fRecoveryTimeSlider", fRecoveryTimeSlider)
+	fiss.saveFloat("fLootChanceSlider", fLootChanceSlider)
+	fiss.saveFloat("fScrollChanceSlider", fScrollChanceSlider)
+	fiss.saveInt("iNotTradingAftermath", iNotTradingAftermath)
+	fiss.saveInt("iRemovableItems", iRemovableItems)
+	fiss.saveInt("iArkayCurse", iArkayCurse)
+	fiss.saveBool("bRespawnNaked", bRespawnNaked)
+	fiss.saveBool("bSendToJail", bSendToJail)
+	fiss.saveBool("bTeleportMenu", bTeleportMenu)
+	fiss.saveBool("bRespawnMenu", bRespawnMenu)
+	fiss.saveBool("bFollowerProtectPlayer", bFollowerProtectPlayer)
+	fiss.saveBool("bArkayCurse", bArkayCurse)
+	fiss.saveBool("bIsArkayCurseTemporary", bIsArkayCurseTemporary)
+	fiss.saveBool("bHealActors", bHealActors)
+	fiss.saveBool("bResurrectActors", bResurrectActors)
+	fiss.saveBool("bLoseForever", bLoseForever)
+	fiss.saveBool("bSoulMarkStay", bSoulMarkStay)
+	;fiss.saveBool("bLostItemQuest", bLostItemQuest)
+	fiss.saveBool("bHostileNPC", bHostileNPC)
+	fiss.saveBool("bNPCStealItems", bNPCStealItems)
+	fiss.saveBool("bCreaturesCanSteal", bCreaturesCanSteal)
+	fiss.saveInt("iTeleportLocation", iTeleportLocation)
+	fiss.saveInt("iExternalIndex", iExternalIndex)
+	fiss.saveFloat("fRPMinDistanceSlider", fRPMinDistanceSlider)
+	fiss.saveBool("bRespawnPointsFlags0", bRespawnPointsFlags[0])
+	fiss.saveBool("bRespawnPointsFlags1", bRespawnPointsFlags[1])
+	fiss.saveBool("bRespawnPointsFlags2", bRespawnPointsFlags[2])
+	fiss.saveBool("bRespawnPointsFlags3", bRespawnPointsFlags[3])
+	fiss.saveBool("bRespawnPointsFlags4", bRespawnPointsFlags[4])
+	fiss.saveBool("bRespawnPointsFlags5", bRespawnPointsFlags[5])
+	fiss.saveBool("bRespawnPointsFlags6", bRespawnPointsFlags[6])
+	;fiss.saveBool("bRespawnPointsFlags7", bRespawnPointsFlags[7])
+	fiss.saveBool("bIsLoggingEnabled", bIsLoggingEnabled)
+	fiss.saveBool("bIsInfoEnabled", bIsInfoEnabled)
+	fiss.saveBool("bIsNotificationEnabled", bIsNotificationEnabled)
+	fiss.saveBool("bFadeToBlack", bFadeToBlack)
+	fiss.saveBool("bInvisibility", bInvisibility)
+	String Result = fiss.endSave()
+	If Result != ""
+		Debug.Trace("Mark of Arkay: Error saving user settings: " + Result)
+		Return False
+	EndIf
+	Return True
+EndFunction
+
+function LoadDefaultSettings()
+	bIsRevivalEnabled = True
+	fValueSnoozeSlider = 0.0
+	bIsMarkEnabled = True
+	bIsGSoulGemEnabled = True
+	bIsBSoulGemEnabled = True
+	bIsDragonSoulEnabled = True
+	bIsGoldEnabled = True
+	fValueMarkSlider = 1.0
+	fValueGSoulGemSlider = 1.0
+	fValueBSoulGemSlider = 1.0
+	fValueSoulSlider = 1.0
+	fValueGoldSlider = 1000.0
+	iSaveOption = 1
+	SetSavingOption(iSaveOption)
+	bIsNoFallDamageEnabled = False
+	ToggleFallDamage(!bIsNoFallDamageEnabled)
+	bIsEffectEnabled = False
+	bIsPotionEnabled = False
+	bAutoDrinkPotion = False
+	bShiftBackRespawn = True
+	bIsRecallRestricted = True
+	bAutoSwitchRP = False
+	fMarkCastSlider = 0.0
+	fRecallCastSlider = 0.0
+	bIsMenuEnabled = True
+	fMarkPSlider = 5.0
+	fGoldPSlider = 4.0
+	fDragonSoulPSlider = 3.0
+	fGSoulgemPSlider = 2.0
+	fBSoulgemPSlider = 1.0
+	fBleedoutTimeSlider = 6.0
+	fRecoveryTimeSlider = 1.0
+	fLootChanceSlider = 50.0
+	moaLootChance.SetValue(100.0 -  fLootChanceSlider)
+	fScrollChanceSlider = 25.0
+	moaScrollChance.SetValue(100.0 -  fScrollChanceSlider)
+	iNotTradingAftermath = 0
+	iRemovableItems = 0
+	iArkayCurse = 0
+	bRespawnNaked = False
+	bSendToJail = False
+	bTeleportMenu = False
+	bRespawnMenu = False
+	bFollowerProtectPlayer = False
+	bArkayCurse = False
+	bIsArkayCurseTemporary = False
+	bHealActors = False
+	bResurrectActors = False
+	bLoseForever = False
+	bSoulMarkStay = False
+	bLostItemQuest = True
+	bHostileNPC = False
+	If bHostileNPC
+		bNPCStealItems = False
+	EndIf
+	bNPCStealItems = False
+	If bNPCStealItems
+		bHostileNPC = False
+	EndIf
+	bCreaturesCanSteal = False
+	moaCreaturesCanSteal.SetValue(bCreaturesCanSteal As Int)
+	iTeleportLocation = 0
+	iExternalIndex = -1
+	fRPMinDistanceSlider = 2500.0
+	bRespawnPointsFlags[0] = True
+	bRespawnPointsFlags[1] = True
+	bRespawnPointsFlags[2] = True
+	bRespawnPointsFlags[3] = True
+	bRespawnPointsFlags[4] = True
+	bRespawnPointsFlags[5] = True
+	bRespawnPointsFlags[6] = True
+	;bRespawnPointsFlags[7] = True
+	bIsLoggingEnabled = False
+	bIsInfoEnabled = False
+	bIsNotificationEnabled = False
+	bFadeToBlack = True
+	bInvisibility = False
+EndFunction

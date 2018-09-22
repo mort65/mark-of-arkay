@@ -2677,6 +2677,7 @@ Bool function bLoadUserSettings(String sFileName)
 	String Result = fiss.endLoad()
 	if Result != ""
 		Debug.Trace("Mark of Arkay: Error loading user settings: " + Result)
+		LoadDefaultSettings()
 		Return False
 	EndIf
 	Return True

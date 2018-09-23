@@ -87,6 +87,8 @@ Int oidLoadPreset2
 Int oidSavePreset2
 Int oidLoadPreset3
 Int oidSavePreset3
+Int oidLoadPreset4
+Int oidSavePreset4
 Int oidLoadDefaultPreset
 String[] Property sRespawnPoints Auto
 String[] Property sLoseOptions Auto
@@ -783,6 +785,8 @@ Event OnPageReset(String page)
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidLoadPreset1 = AddTextOption("$mrt_MarkofArkay_Load_Preset1", "", flags)
+		SetCursorPosition(3)
+		oidLoadDefaultPreset = AddTextOption("$mrt_MarkofArkay_Load_Default_Preset", "", flags)
 		SetCursorPosition(4)
 		oidSavePreset1 = AddTextOption("$mrt_MarkofArkay_Save_Preset1", "", flags)
 		SetCursorPosition(8)
@@ -794,7 +798,9 @@ Event OnPageReset(String page)
 		SetCursorPosition(16)
 		oidSavePreset3 = AddTextOption("$mrt_MarkofArkay_Save_Preset3", "", flags)
 		SetCursorPosition(20)
-		oidLoadDefaultPreset = AddTextOption("$mrt_MarkofArkay_Load_Default_Preset", "", flags)
+		oidLoadPreset4 = AddTextOption("$mrt_MarkofArkay_Load_Preset4", "", flags)
+		SetCursorPosition(22)
+		oidSavePreset4 = AddTextOption("$mrt_MarkofArkay_Save_Preset4", "", flags)
 	EndIf
 EndEvent
 
@@ -1111,75 +1117,129 @@ Event OnOptionSelect(Int option)
 			ForcePageReset()
 		EndIf
 	ElseIf (option == oidLoadPreset1)
+		If !FISSFactory.getFISS()
+			ShowMessage("$mrt_MarkofArkay_MESG_FISS_Error", False)
+			Return
+		EndIf
 		If ShowMessage("$mrt_MarkofArkay_MESG_Load_Preset", True, "$Yes", "$No")
 			If bLoadUserSettings("MarkofArkayUserSettings1.xml")
-				ShowMessage("$mrt_MarkofArkay_MESG_Load_Preset_Success", false)
+				ShowMessage("$mrt_MarkofArkay_MESG_Load_Preset_Success", False)
 			Else
-				ShowMessage("$mrt_MarkofArkay_MESG_Load_Preset_Failure", false)
+				ShowMessage("$mrt_MarkofArkay_MESG_Load_Preset_Failure", False)
 			EndIf
 		EndIf
 	ElseIf (option == oidSavePreset1)
 		FISSInterface fiss = FISSFactory.getFISS()
+		If !fiss
+			ShowMessage("$mrt_MarkofArkay_MESG_FISS_Error", False)
+			Return
+		EndIf
 		fiss.beginLoad("MarkofArkayUserSettings1.xml")
 		If fiss.endLoad() == ""
-			If !ShowMessage("$mrt_MarkofArkay_MESG_Already_Preset", true)
+			If !ShowMessage("$mrt_MarkofArkay_MESG_Already_Preset", True, "$Yes", "$No")
 				Return
 			EndIf
 		EndIf
 		If bSaveUserSettings("MarkofArkayUserSettings1.xml")
-			ShowMessage("$mrt_MarkofArkay_MESG_Save_Preset_Success", false)
+			ShowMessage("$mrt_MarkofArkay_MESG_Save_Preset_Success", False)
 		Else
-			ShowMessage("$mrt_MarkofArkay_MESG_Save_Preset_Failure", false)
+			ShowMessage("$mrt_MarkofArkay_MESG_Save_Preset_Failure", False)
 		EndIf
 		ForcePageReset()
 	ElseIf (option == oidLoadPreset2)
+		If !FISSFactory.getFISS()
+			ShowMessage("$mrt_MarkofArkay_MESG_FISS_Error", False)
+			Return
+		EndIf
 		If ShowMessage("$mrt_MarkofArkay_MESG_Load_Preset", True, "$Yes", "$No")
 			If bLoadUserSettings("MarkofArkayUserSettings2.xml")
-				ShowMessage("$mrt_MarkofArkay_MESG_Load_Preset_Success", false)
+				ShowMessage("$mrt_MarkofArkay_MESG_Load_Preset_Success", False)
 			Else
-				ShowMessage("$mrt_MarkofArkay_MESG_Load_Preset_Failure", false)
+				ShowMessage("$mrt_MarkofArkay_MESG_Load_Preset_Failure", False)
 			EndIf
 		EndIf
 	ElseIf (option == oidSavePreset2)
 		FISSInterface fiss = FISSFactory.getFISS()
+		If !fiss
+			ShowMessage("$mrt_MarkofArkay_MESG_FISS_Error", False)
+			Return
+		EndIf
 		fiss.beginLoad("MarkofArkayUserSettings2.xml")
 		If fiss.endLoad() == ""
-			If !ShowMessage("$mrt_MarkofArkay_MESG_Already_Preset", true)
+			If !ShowMessage("$mrt_MarkofArkay_MESG_Already_Preset", True, "$Yes", "$No")
 				Return
 			EndIf
 		EndIf
 		If bSaveUserSettings("MarkofArkayUserSettings2.xml")
-			ShowMessage("$mrt_MarkofArkay_MESG_Save_Preset_Success", false)
+			ShowMessage("$mrt_MarkofArkay_MESG_Save_Preset_Success", False)
 		Else
-			ShowMessage("$mrt_MarkofArkay_MESG_Save_Preset_Failure", false)
+			ShowMessage("$mrt_MarkofArkay_MESG_Save_Preset_Failure", False)
 		EndIf
 		ForcePageReset()
 	ElseIf (option == oidLoadPreset3)
+		If !FISSFactory.getFISS()
+			ShowMessage("$mrt_MarkofArkay_MESG_FISS_Error", False)
+			Return
+		EndIf
 		If ShowMessage("$mrt_MarkofArkay_MESG_Load_Preset", True, "$Yes", "$No")
 			If bLoadUserSettings("MarkofArkayUserSettings3.xml")
-				ShowMessage("$mrt_MarkofArkay_MESG_Load_Preset_Success", false)
+				ShowMessage("$mrt_MarkofArkay_MESG_Load_Preset_Success", False)
 			Else
-				ShowMessage("$mrt_MarkofArkay_MESG_Load_Preset_Failure", false)
+				ShowMessage("$mrt_MarkofArkay_MESG_Load_Preset_Failure", False)
 			EndIf
 		EndIf
 	ElseIf (option == oidSavePreset3)
 		FISSInterface fiss = FISSFactory.getFISS()
+		If !fiss
+			ShowMessage("$mrt_MarkofArkay_MESG_FISS_Error", False)
+			Return
+		EndIf
 		fiss.beginLoad("MarkofArkayUserSettings3.xml")
 		If fiss.endLoad() == ""
-			If !ShowMessage("$mrt_MarkofArkay_MESG_Already_Preset", true)
+			If !ShowMessage("$mrt_MarkofArkay_MESG_Already_Preset", True, "$Yes", "$No")
 				Return
 			EndIf
 		EndIf
 		If bSaveUserSettings("MarkofArkayUserSettings3.xml")
-			ShowMessage("$mrt_MarkofArkay_MESG_Save_Preset_Success", false)
+			ShowMessage("$mrt_MarkofArkay_MESG_Save_Preset_Success", False)
 		Else
-			ShowMessage("$mrt_MarkofArkay_MESG_Save_Preset_Failure", false)
+			ShowMessage("$mrt_MarkofArkay_MESG_Save_Preset_Failure", False)
+		EndIf
+		ForcePageReset()
+	ElseIf (option == oidLoadPreset4)
+		If !FISSFactory.getFISS()
+			ShowMessage("$mrt_MarkofArkay_MESG_FISS_Error", False)
+			Return
+		EndIf
+		If ShowMessage("$mrt_MarkofArkay_MESG_Load_Preset", True, "$Yes", "$No")
+			If bLoadUserSettings("MarkofArkayUserSettings4.xml")
+				ShowMessage("$mrt_MarkofArkay_MESG_Load_Preset_Success", False)
+			Else
+				ShowMessage("$mrt_MarkofArkay_MESG_Load_Preset_Failure", False)
+			EndIf
+		EndIf
+	ElseIf (option == oidSavePreset4)
+		FISSInterface fiss = FISSFactory.getFISS()
+		If !fiss
+			ShowMessage("$mrt_MarkofArkay_MESG_FISS_Error", False)
+			Return
+		EndIf
+		fiss.beginLoad("MarkofArkayUserSettings4.xml")
+		If fiss.endLoad() == ""
+			If !ShowMessage("$mrt_MarkofArkay_MESG_Already_Preset", True, "$Yes", "$No")
+				Return
+			EndIf
+		EndIf
+		If bSaveUserSettings("MarkofArkayUserSettings4.xml")
+			ShowMessage("$mrt_MarkofArkay_MESG_Save_Preset_Success", False)
+		Else
+			ShowMessage("$mrt_MarkofArkay_MESG_Save_Preset_Failure", False)
 		EndIf
 		ForcePageReset()
 	ElseIf (option == oidLoadDefaultPreset)
 		If ShowMessage("$mrt_MarkofArkay_MESG_Load_Default_Preset", True, "$Yes", "$No")
 			LoadDefaultSettings()
-			ShowMessage("$mrt_MarkofArkay_MESG_Load_Default_Preset_Finish", false)
+			ShowMessage("$mrt_MarkofArkay_MESG_Load_Default_Preset_Finish", False)
 		EndIf			
 	ElseIf (option == oidStatus)
 		SetTextOptionValue(option, "$mrt_MarkofArkay_Status_Busy",True)
@@ -2225,6 +2285,10 @@ Event OnOptionHighlight(Int option)
 		SetInfoText("$mrt_MarkofArkay_DESC_Load_Preset")
 	ElseIf (option == oidSavePreset3)
 		SetInfoText("$mrt_MarkofArkay_DESC_Save_Preset")
+	ElseIf (option == oidLoadPreset4)
+		SetInfoText("$mrt_MarkofArkay_DESC_Load_Preset")
+	ElseIf (option == oidSavePreset4)
+		SetInfoText("$mrt_MarkofArkay_DESC_Save_Preset")
 	ElseIf (option == oidLoadDefaultPreset)
 		SetInfoText("$mrt_MarkofArkay_DESC_Load_Default_Preset")
 	EndIf
@@ -2596,6 +2660,13 @@ EndFunction
 
 Bool function bLoadUserSettings(String sFileName)
 	FISSInterface fiss = FISSFactory.getFISS()
+	If !fiss
+		Debug.Trace("Mark of Arkay: Error saving user settings -> FISS not installed. Loading disabled.")
+		Return False
+	EndIf
+	If !bCheckPreset(fiss,sFileName)
+		Return False
+	EndIf
 	fiss.beginLoad(sFileName)
 	bIsRevivalEnabled = fiss.loadBool("bIsRevivalEnabled")
 	fValueSnoozeSlider = fiss.loadFloat("fValueSnoozeSlider")
@@ -2676,8 +2747,18 @@ Bool function bLoadUserSettings(String sFileName)
 	bInvisibility = fiss.loadBool("bInvisibility")
 	String Result = fiss.endLoad()
 	if Result != ""
-		Debug.Trace("Mark of Arkay: Error loading user settings: " + Result)
+		Debug.Trace("Mark of Arkay: Error loading user settings -> " + Result)
 		LoadDefaultSettings()
+		Return False
+	EndIf
+	Return True
+EndFunction
+
+Bool Function bCheckPreset(FISSInterface fiss, String sFileName)
+	fiss.beginLoad(sFileName)
+	String Result = fiss.endLoad()
+	If Result != ""
+		Debug.Trace("Mark of Arkay: Error loading user settings -> " + Result)
 		Return False
 	EndIf
 	Return True
@@ -2685,6 +2766,10 @@ EndFunction
 
 bool function bSaveUserSettings(String sFileName)
 	FISSInterface fiss = FISSFactory.getFISS()
+	If !fiss
+		Debug.Trace("Mark of Arkay: Error saving user settings -> FISS not installed. Saving disabled.")
+		Return False
+	EndIf
 	fiss.beginSave(sFileName, "Mark of Arkay")
 	fiss.saveBool("bIsRevivalEnabled", bIsRevivalEnabled)
 	fiss.saveFloat("fValueSnoozeSlider", fValueSnoozeSlider)
@@ -2755,7 +2840,7 @@ bool function bSaveUserSettings(String sFileName)
 	fiss.saveBool("bInvisibility", bInvisibility)
 	String Result = fiss.endSave()
 	If Result != ""
-		Debug.Trace("Mark of Arkay: Error saving user settings: " + Result)
+		Debug.Trace("Mark of Arkay: Error saving user settings -> " + Result)
 		Return False
 	EndIf
 	Return True

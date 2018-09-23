@@ -90,6 +90,7 @@ Int oidSavePreset3
 Int oidLoadPreset4
 Int oidSavePreset4
 Int oidLoadDefaultPreset
+Bool Property bInit = False Auto Hidden
 String[] Property sRespawnPoints Auto
 String[] Property sLoseOptions Auto
 String[] Property sAftermathOptions Auto
@@ -786,8 +787,18 @@ Event OnPageReset(String page)
 		EndIf
 		oidLoadPreset1 = AddTextOption("$mrt_MarkofArkay_Load_Preset1", "", flags)
 		SetCursorPosition(3)
+		If moaState.getValue()
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
 		oidLoadDefaultPreset = AddTextOption("$mrt_MarkofArkay_Load_Default_Preset", "", flags)
 		SetCursorPosition(4)
+		If moaState.getValue() == 1 && ( 0 < iFissIndex && iFissIndex < 255 )
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
 		oidSavePreset1 = AddTextOption("$mrt_MarkofArkay_Save_Preset1", "", flags)
 		SetCursorPosition(8)
 		oidLoadPreset2 = AddTextOption("$mrt_MarkofArkay_Load_Preset2", "", flags)
@@ -2432,6 +2443,10 @@ Function SetSavingOption(Int iIndex)
 EndFunction
 
 Event OnConfigInit()
+	If bInit
+		Return
+	EndIf
+	bInit = True
 	setPages()
 EndEvent
 
@@ -2584,6 +2599,7 @@ Event OnVersionUpdate(int a_version)
 EndEvent
 
 Event OnUpdate()
+	bInit = False
 	If moaState.GetValue() == 1
 		Debug.notification("$mrt_MarkofArkay_Notification_Init")
 	EndIf

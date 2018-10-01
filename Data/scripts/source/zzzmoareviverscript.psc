@@ -2854,10 +2854,10 @@ Function RemoveUnequippedItems(Actor ActorRef)
 				Utility.Wait(0.2)
 			EndIf
 		EndIf
-		;If LeftHand
-		;	ActorRef.EquipItemEx(LeftHandEquippedItem,2,False,True) ;CTD?
-		;	Utility.Wait(0.2)
-		;EndIf
+		If LeftHand
+			ActorRef.EquipItemEx(LeftHandEquippedItem,2,False,True)
+			Utility.Wait(0.2)
+		EndIf
 		Int i = Equipment.length
 		While i > 0
 			i -= 1
@@ -3098,10 +3098,10 @@ Function RemoveValuableItems(Actor ActorRef)
 				Utility.Wait(0.2)
 			EndIf
 		EndIf
-		;If LeftHand && ActorRef.GetItemCount(LeftHandEquippedItem) > 0
-		;	ActorRef.EquipItemEx(LeftHandEquippedItem, 2, False, True)
-		;	Utility.Wait(0.2)
-		;EndIf
+		If LeftHand && ActorRef.GetItemCount(LeftHandEquippedItem) > 0
+			ActorRef.EquipItemEx(LeftHandEquippedItem, 2, False, True)
+			Utility.Wait(0.2)
+		EndIf
 		Int itemIndex = Equipment.Length
 		While itemIndex > 0
 			itemIndex -= 1
@@ -3344,10 +3344,10 @@ Function RemoveValuableItemsGreedy(Actor ActorRef)
 				Utility.Wait(0.2)
 			EndIf
 		EndIf
-		;If LeftHand && ActorRef.GetItemCount(LeftHandEquippedItem) > 0
-		;	ActorRef.EquipItemEx(LeftHandEquippedItem, 2, False, True)
-		;	Utility.Wait(0.2)
-		;EndIf
+		If LeftHand && ActorRef.GetItemCount(LeftHandEquippedItem) > 0
+			ActorRef.EquipItemEx(LeftHandEquippedItem, 2, False, True)
+			Utility.Wait(0.2)
+		EndIf
 		Int itemIndex = Equipment.Length
 		While itemIndex > 0
 			itemIndex -= 1

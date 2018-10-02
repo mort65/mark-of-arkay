@@ -3983,7 +3983,7 @@ Function EquipItems(Actor ActorRef, Bool RightHand, Bool LeftHand)
 			EndIf
 		EndIf
 		If LeftHand && !bLW && ActorRef.GetItemCount(LeftHandEquippedItem) > 0
-			ActorRef.EquipItemEx(LeftHandEquippedItem,2,False,True)
+			ActorRef.EquipItemEx(LeftHandEquippedItem, 2)
 			Utility.Wait(0.2)
 		EndIf
 		Int i = Equipment.length

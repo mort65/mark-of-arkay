@@ -149,6 +149,8 @@ Faction Property CreatureFaction Auto
 Race Property WereWolfBeastRace Auto
 Race Property DLC1VampireBeastRace Auto
 GlobalVariable Property TimeScale Auto
+Bool Property bSKSEOK Auto Hidden
+Bool Property bSKSELoaded Auto Hidden
 Float Property DefaultTimeScale = 20.0 Auto Hidden
 Topic Property DeathTopic Auto
 Form Property LeftHandEquippedItem Auto Hidden
@@ -181,6 +183,7 @@ Int iRemovableItems
 
 State Bleedout1
 	Event OnPlayerLoadGame()
+		SetGameVars()
 	EndEvent
 	
 	Event OnObjectUnequipped(Form akBaseObject, ObjectReference akReference)
@@ -198,6 +201,7 @@ EndState
 
 State Bleedout2
 	Event OnPlayerLoadGame()
+		SetGameVars()
 	EndEvent
 	
 	Event OnObjectUnequipped(Form akBaseObject, ObjectReference akReference)
@@ -2121,6 +2125,7 @@ Function SetVars()
 EndFunction
 
 Function SetGameVars()
+	bSKSEOK = bCheckSKSE()
 	If (moaState.GetValue() == 1 )
 		If !PlayerRef.IsEssential()
 			PlayerRef.GetActorBase().SetEssential(True)
@@ -2844,31 +2849,7 @@ Function RemoveUnequippedItems(Actor ActorRef)
 	TransferItems(Equipment,ValuableItemsChest,ActorRef As ObjectReference)
 	TransferItemsByType(ValuableItemsChest,ActorRef As ObjectReference,45,"zzzmoa_ignoreitem") ;Return Keys
 	If !ConfigMenu.bRespawnNaked
-		If RightHand 
-			If	ActorRef.GetItemCount(RightHandEquipedItem) > 0 && !ActorRef.IsEquipped(RightHandEquipedItem)
-				ActorRef.EquipItem(RightHandEquipedItem, False, True)
-				Utility.Wait(0.2)
-			EndIf
-		ElseIf LeftHand && !(RightHandEquipedItem As Spell)
-			If	ActorRef.GetItemCount(LeftHandEquippedItem) > 0 && !ActorRef.IsEquipped(LeftHandEquippedItem)
-				ActorRef.EquipItem(LeftHandEquippedItem, False, True)
-				Utility.Wait(0.2)
-			EndIf
-		EndIf
-		If LeftHand
-			ActorRef.EquipItemEx(LeftHandEquippedItem,2,False,True)
-			Utility.Wait(0.2)
-		EndIf
-		Int i = Equipment.length
-		While i > 0
-			i -= 1
-			If Equipment[i] As Armor
-				If ActorRef.GetItemCount(Equipment[i]) > 0 && !ActorRef.IsEquipped(Equipment[i])
-					ActorRef.EquipItem(Equipment[i],False, True)
-					Utility.Wait(0.2)
-				EndIf
-			EndIf
-		EndWhile
+		EquipItems(ActorRef, RightHand, LeftHand)
 	EndIf
 EndFunction
 
@@ -3088,31 +3069,7 @@ Function RemoveValuableItems(Actor ActorRef)
 	EndIf
 	Utility.Wait(0.1)
 	If !ConfigMenu.bRespawnNaked
-		If RightHand 
-			If	ActorRef.GetItemCount(RightHandEquipedItem) > 0 && !ActorRef.IsEquipped(RightHandEquipedItem)
-				ActorRef.EquipItem(RightHandEquipedItem, False, True)
-				Utility.Wait(0.2)
-			EndIf
-		ElseIf LeftHand && !(RightHandEquipedItem As Spell)
-			If	ActorRef.GetItemCount(LeftHandEquippedItem) > 0 && !ActorRef.IsEquipped(LeftHandEquippedItem)
-				ActorRef.EquipItem(LeftHandEquippedItem, False, True)
-				Utility.Wait(0.2)
-			EndIf
-		EndIf
-		If LeftHand && ActorRef.GetItemCount(LeftHandEquippedItem) > 0
-			ActorRef.EquipItemEx(LeftHandEquippedItem, 2, False, True)
-			Utility.Wait(0.2)
-		EndIf
-		Int itemIndex = Equipment.Length
-		While itemIndex > 0
-			itemIndex -= 1
-			If Equipment[itemIndex] As Armor
-				If ActorRef.GetItemCount(Equipment[itemIndex]) > 0 && !ActorRef.IsEquipped(Equipment[itemIndex])
-					ActorRef.EquipItem(Equipment[itemIndex],False, True)
-					Utility.Wait(0.2)
-				EndIf
-			EndIf
-		EndWhile
+		EquipItems(ActorRef, RightHand, LeftHand)
 	EndIf
 EndFunction
 
@@ -3334,31 +3291,7 @@ Function RemoveValuableItemsGreedy(Actor ActorRef)
 	EndIf
 	Utility.Wait(0.1)
 	If !ConfigMenu.bRespawnNaked
-		If RightHand 
-			If	ActorRef.GetItemCount(RightHandEquipedItem) > 0 && !ActorRef.IsEquipped(RightHandEquipedItem)
-				ActorRef.EquipItem(RightHandEquipedItem, False, True)
-				Utility.Wait(0.2)
-			EndIf
-		ElseIf LeftHand && !(RightHandEquipedItem As Spell)
-			If	ActorRef.GetItemCount(LeftHandEquippedItem) > 0 && !ActorRef.IsEquipped(LeftHandEquippedItem)
-				ActorRef.EquipItem(LeftHandEquippedItem, False, True)
-				Utility.Wait(0.2)
-			EndIf
-		EndIf
-		If LeftHand && ActorRef.GetItemCount(LeftHandEquippedItem) > 0
-			ActorRef.EquipItemEx(LeftHandEquippedItem, 2, False, True)
-			Utility.Wait(0.2)
-		EndIf
-		Int itemIndex = Equipment.Length
-		While itemIndex > 0
-			itemIndex -= 1
-			If Equipment[itemIndex] As Armor
-				If ActorRef.GetItemCount(Equipment[itemIndex]) > 0 && !ActorRef.IsEquipped(Equipment[itemIndex])
-					ActorRef.EquipItem(Equipment[itemIndex],False, True)
-					Utility.Wait(0.2)
-				EndIf
-			EndIf
-		EndWhile
+		EquipItems(ActorRef, RightHand, LeftHand)
 	EndIf
 EndFunction
 
@@ -4021,4 +3954,69 @@ Int Function ichangeVar(Int iVar,Int iMin,Int iMax, Int iAmount )
 		iVar = iMax
 	EndIf
 	Return iVar
+EndFunction
+
+Bool Function bCheckSKSE()
+	bSKSELoaded = SKSE.GetVersion()
+	If bSKSELoaded
+		Return ( SKSE.GetVersion() == 1 && SKSE.GetVersionRelease() >= 43 ) || ( SKSE.GetVersion() == 2 && SKSE.GetVersionRelease() >= 54 )
+	Else
+		Debug.Notification("$mrt_MarkofArkay_Notification_SKSE_Error")
+		Debug.Trace("MarkofArkay: [Error] SKSE not found.")
+		Return False
+	EndIf
+EndFunction
+
+Function EquipItems(Actor ActorRef, Bool RightHand, Bool LeftHand)
+	If bSKSEOK	
+		Bool bLW = False
+		If RightHand 
+			If	ActorRef.GetItemCount(RightHandEquipedItem) > 0 && !ActorRef.IsEquipped(RightHandEquipedItem)
+				ActorRef.EquipItemEx(RightHandEquipedItem, 1)
+				Utility.Wait(0.2)
+			EndIf
+		ElseIf LeftHand && !(RightHandEquipedItem As Spell)
+			If	ActorRef.GetItemCount(LeftHandEquippedItem) > 0 && !ActorRef.IsEquipped(LeftHandEquippedItem)
+				ActorRef.EquipItemEx(LeftHandEquippedItem, 1)
+				bLW = True
+				Utility.Wait(0.2)
+			EndIf
+		EndIf
+		If LeftHand && !bLW && ActorRef.GetItemCount(LeftHandEquippedItem) > 0
+			ActorRef.EquipItemEx(LeftHandEquippedItem, 2)
+			Utility.Wait(0.2)
+		EndIf
+		Int i = Equipment.length
+		While i > 0
+			i -= 1
+			If Equipment[i] As Armor
+				If ActorRef.GetItemCount(Equipment[i]) > 0 && !ActorRef.IsEquipped(Equipment[i])
+					ActorRef.EquipItemEx(Equipment[i])
+					Utility.Wait(0.2)
+				EndIf
+			EndIf
+		EndWhile
+	Else
+		If RightHand 
+			If	ActorRef.GetItemCount(RightHandEquipedItem) > 0 && !ActorRef.IsEquipped(RightHandEquipedItem)
+				ActorRef.EquipItem(RightHandEquipedItem, False, True)
+				Utility.Wait(0.2)
+			EndIf
+		ElseIf LeftHand && !(RightHandEquipedItem As Spell)
+			If	ActorRef.GetItemCount(LeftHandEquippedItem) > 0 && !ActorRef.IsEquipped(LeftHandEquippedItem)
+				ActorRef.EquipItem(LeftHandEquippedItem, False, True)
+				Utility.Wait(0.2)
+			EndIf
+		EndIf
+		Int i = Equipment.length
+		While i > 0
+			i -= 1
+			If Equipment[i] As Armor
+				If ActorRef.GetItemCount(Equipment[i]) > 0 && !ActorRef.IsEquipped(Equipment[i])
+					ActorRef.EquipItem(Equipment[i],False, True)
+					Utility.Wait(0.2)
+				EndIf
+			EndIf
+		EndWhile
+	EndIf
 EndFunction

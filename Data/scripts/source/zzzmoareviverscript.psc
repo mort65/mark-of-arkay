@@ -1169,7 +1169,7 @@ Endfunction
 
 Function DetectThiefNPC()
 	ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Finding a thief (Phase 0)...")
-	If ( LostItemsChest.GetNumItems() > 0 && !ConfigMenu.bLoseForever && Thief && !Thief.IsDisabled() && !Thief.GetActorBase().IsInvulnerable() )
+	If ( LostItemsChest.GetNumItems() > 0 && Thief && !Thief.IsDisabled() && !Thief.GetActorBase().IsInvulnerable() && ( !ConfigMenu.bLoseForever || thief.IsDead() ))
 		If ( !bIsHostile(Thief) || PlayerRef.GetDistance(Thief) > 2000 )
 			iRemovableItems = 0
 		EndIf

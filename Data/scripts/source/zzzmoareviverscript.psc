@@ -142,6 +142,7 @@ Faction Property CrimeFactionWhiterun  Auto
 Faction Property CrimeFactionEastmarch  Auto
 Faction Property CrimeFactionWinterhold  Auto
 Faction Property PlayerEnemyFaction Auto
+Faction Property PlayerFollowerFaction Auto
 Faction Property DLC2CrimeRavenRockFaction Auto
 Faction Property CurrentFollowerFaction Auto
 Faction Property CurrentHireling Auto
@@ -1135,8 +1136,7 @@ EndFunction
 
 Bool Function bIsFollower(Actor ActorRef)
 	If ActorRef
-		Return ((ActorRef != PlayerRef) && !ActorRef.IsCommandedActor() &&\
-		ActorRef.IsPlayerTeammate() && ( ActorRef.IsInFaction(CurrentFollowerFaction) || ActorRef.IsInFaction(CurrentHireling)))
+		Return ((ActorRef != PlayerRef) && !ActorRef.IsCommandedActor() && (ActorRef.IsPlayerTeammate() || ActorRef.IsInFaction(PlayerFollowerFaction)))
 	EndIf
 	Return False
 Endfunction

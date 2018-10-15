@@ -1743,9 +1743,9 @@ Function RevivePlayer(Bool bRevive)
 					ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Removing items from the player...")
 					Equipment = New Form[34]
 					EquippedQuestItems = New Form[34]
-					If iRemovableItems == 1
+					If iRemovableItems == 1 ;Tradable Items
 						RemoveTradbleItems(PlayerRef,True)
-					ElseIf iRemovableItems == 2
+					ElseIf iRemovableItems == 2 ;Unequipped Items and Tradables
 						RemoveTradbleItems(PlayerRef)
 						RemoveUnequippedItems(PlayerRef)
 					ElseIf iRemovableItems == 3 ; unequipped but not tradables
@@ -1795,17 +1795,17 @@ Function RevivePlayer(Bool bRevive)
 							PlayerRef.ModActorValue("DragonSouls", -fDragonSoulCount)
 							fLostSouls += fDragonSoulCount
 						EndIf
-					ElseIf iRemovableItems == 5
+					ElseIf iRemovableItems == 5 ;Everything
 						RemoveTradbleItems(PlayerRef)
 						PlayerRef.RemoveAllItems(LostItemsChest, True)
 						TransferItemsByType(LostItemsChest,PlayerRef As ObjectReference,45,"zzzmoa_ignoreitem") ;Return Keys
-					ElseIf iRemovableItems == 10
+					ElseIf iRemovableItems == 10 ;Valuable
 						RemoveValuableItems(PlayerRef)
-					ElseIf iRemovableItems == 11
+					ElseIf iRemovableItems == 11 ;Valuables
 						RemoveValuableItemsGreedy(PlayerRef)
 					EndIf
 					If ( ConfigMenu.iRemovableItems == 7 ) ;Remove All if nothing is removed
-						If (( LostItemsChest.GetNumItems() == 0 ) && ( fLostSouls == 0 ) && ( iRemovableItems != 5 ))
+						If (( iRemovableItems != 5 ) && ( LostItemsChest.GetNumItems() == 0 ) && ( fLostSouls == 0 ))
 							PlayerRef.RemoveAllItems(LostItemsChest, True)
 							TransferInvalidItems(LostItemsChest,PlayerRef As ObjectReference)
 						EndIf
@@ -2848,6 +2848,7 @@ Function RemoveUnequippedItems(Actor ActorRef)
 	ActorRef.RemoveAllItems(ValuableItemsChest, True,False)
 	TransferItems(Equipment,ValuableItemsChest,ActorRef As ObjectReference)
 	TransferItemsByType(ValuableItemsChest,ActorRef As ObjectReference,45,"zzzmoa_ignoreitem") ;Return Keys
+	ValuableItemsChest.RemoveAllItems(LostItemsChest,True,True)
 	If !ConfigMenu.bRespawnNaked
 		EquipItems(ActorRef, RightHand, LeftHand)
 	EndIf

@@ -1936,6 +1936,9 @@ Function RevivePlayer(Bool bRevive)
 				EndIf
 				PlayerRef.DispelAllSpells()
 				PlayerRef.ClearExtraArrows()
+				If !(PlayerRef.IsSwimming() || bInBeastForm())
+					Debug.SendAnimationEvent(PlayerRef, "IdleForceDefaultState")
+				EndIf
 				If ( ConfigMenu.bFadeToBlack || Configmenu.bInvisibility )
 					Utility.Wait(5.0)
 				EndIf

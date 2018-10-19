@@ -872,7 +872,6 @@ Function LogCurrentState()
 		+ (( VampireLordQuest && VampireLordQuest.IsRunning() ) As Int ) + ", "\
 		+ ( PlayerRef.GetAnimationVariableBool("bIsSynced") As Int ) + ", "\
 		+ ( PlayerRef.GetAnimationVariableBool("IsStaggering") As Int ) + ", "\
-		+ ( PlayerRef.GetAnimationVariableBool("bIsInMT") As Int ) + ", "\
 		+ "[ " + ( Game.IsMovementControlsEnabled() As Int ) + ", "\
 		+ ( Game.IsFightingControlsEnabled() As Int ) + ", "\
 		+ ( Game.IsCamSwitchControlsEnabled() As Int ) + ", "\
@@ -1931,15 +1930,8 @@ Function RevivePlayer(Bool bRevive)
 				EndIf
 				Utility.Wait(0.5)
 				Attacker = None
+				ResetPlayer()
 				RequipSpells()
-				If PlayerRef.IsWeaponDrawn() ;If Player has a weapon drawn,
-					PlayerRef.SheatheWeapon() ;Sheathe the drawn weapon.
-				EndIf
-				PlayerRef.DispelAllSpells()
-				PlayerRef.ClearExtraArrows()
-				If !(PlayerRef.IsSwimming() || bInBeastForm())
-					Debug.SendAnimationEvent(PlayerRef, "IdleForceDefaultState")
-				EndIf
 				If ( ConfigMenu.bFadeToBlack || Configmenu.bInvisibility )
 					Utility.Wait(5.0)
 				EndIf
@@ -2068,11 +2060,10 @@ EndFunction
 
 Bool Function bIsConditionSafe()
 	ConfigMenu.bIsLoggingEnabled && LogCurrentState()
-	Return !( WerewolfQuest.IsRunning() ||\
-	PlayerRef.GetAnimationVariableBool("bIsSynced") ||\
-	PlayerRef.GetAnimationVariableBool("IsStaggering") ||\
-	PlayerRef.GetAnimationVariableBool("bIsInMT") ||\
-	PlayerRef.GetActorValue("paralysis"))
+	Return !( WerewolfQuest.IsRunning() || \
+	PlayerRef.GetActorValue("paralysis") || \
+	PlayerRef.GetAnimationVariableBool("bIsSynced") || \
+	PlayerRef.GetAnimationVariableBool("IsStaggering"))
 EndFunction
 
 Function SetVars()
@@ -2222,9 +2213,9 @@ EndFunction
 
 Bool Function bIsTeleportSafe()
 	ConfigMenu.bIsLoggingEnabled && LogCurrentState()
-	Return !( PlayerRef.GetAnimationVariableBool("bIsSynced") ||\
-	PlayerRef.GetAnimationVariableBool("IsStaggering") ||\
-	PlayerRef.GetActorValue("paralysis"))
+	Return !(PlayerRef.GetActorValue("paralysis") || \
+	PlayerRef.GetAnimationVariableBool("bIsSynced") || \
+	PlayerRef.GetAnimationVariableBool("IsStaggering"))
 EndFunction
 
 Bool Function bIsArrived(ObjectReference Marker)
@@ -3496,6 +3487,43 @@ Bool Function bInBeastForm()
 	EndIf
 	Return False
 Endfunction
+
+Int Function iInBeastForm()
+	If  WerewolfQuest.IsRunning() || ( PlayerRef.GetRace() == WereWolfBeastRace )
+		Return 1
+	ElseIf VampireLordQuest.IsRunning() || ( PlayerRef.GetRace() == DLC1VampireBeastRace )
+		Return 2
+	EndIf
+	Return 0
+Endfunction
+
+Function ResetPlayer()
+	Int iBeastForm = iInBeastForm()
+	If iBeastForm
+		If iBeastForm == 1
+			If PlayerRef.IsSwimming()
+				Debug.SendAnimationEvent(PlayerRef, "RESET_GRAPH")
+				Utility.Wait(1.0)
+				Debug.SendAnimationEvent(PlayerRef, "SwimStart")
+			Else
+				Debug.SendAnimationEvent(PlayerRef, "RESET_GRAPH")
+			EndIf
+		EndIf
+	Else
+		If PlayerRef.IsSwimming()
+			Debug.SendAnimationEvent(PlayerRef, "IdleForceDefaultState")
+			Utility.Wait(1.0)
+			Debug.SendAnimationEvent(PlayerRef, "SwimStart")
+		Else
+			Debug.SendAnimationEvent(PlayerRef, "IdleForceDefaultState")
+		EndIf
+	EndIf
+	PlayerRef.DispelAllSpells()
+	PlayerRef.ClearExtraArrows()
+	If PlayerRef.IsWeaponDrawn()
+		PlayerRef.SheatheWeapon()
+	EndIf
+EndFunction
 
 Bool Function bInSameLocation(Location Loc)
     If Loc

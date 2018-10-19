@@ -1930,7 +1930,6 @@ Function RevivePlayer(Bool bRevive)
 				Utility.Wait(0.5)
 				Attacker = None
 				ResetPlayer()
-				RequipSpells()
 				If ( ConfigMenu.bFadeToBlack || Configmenu.bInvisibility )
 					Utility.Wait(5.0)
 				EndIf
@@ -3522,6 +3521,7 @@ Function ResetPlayer()
 	If PlayerRef.IsWeaponDrawn()
 		PlayerRef.SheatheWeapon()
 	EndIf
+	RequipSpells()
 EndFunction
 
 Bool Function bInSameLocation(Location Loc)

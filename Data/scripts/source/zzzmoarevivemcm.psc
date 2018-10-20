@@ -89,6 +89,7 @@ Int oidLoadPreset3
 Int oidSavePreset3
 Int oidLoadPreset4
 Int oidSavePreset4
+Int oidAltEyeFix
 Int oidLoadDefaultPreset
 Bool Property bInit = False Auto Hidden
 String[] Property sRespawnPoints Auto
@@ -128,6 +129,7 @@ Bool Property bIsMarkEnabled = True Auto Hidden
 Bool Property bIsMenuEnabled = True Auto Hidden
 Bool Property bRespawnMenu = False Auto Hidden
 Bool Property bTeleportMenu = False Auto Hidden
+Bool Property bAltEyeFix = False Auto Hidden
 Bool Property bArkayCurse = False Auto Hidden
 Bool Property bIsArkayCurseTemporary = False Auto Hidden
 Bool Property bIsRagdollEnabled = False Auto Hidden
@@ -583,6 +585,8 @@ Event OnPageReset(String page)
 		oidFadeToBlack = AddToggleOption("$mrt_MarkofArkay_FadeToBlack", bFadeToBlack, flags )
 		SetCursorPosition(20)
 		oidInvisibility = AddToggleOption("$mrt_MarkofArkay_Invisibility", bInvisibility, flags)
+		SetCursorPosition(22)
+		oidAltEyeFix = AddToggleOption("$mrt_MarkofArkay_AltEyeFix", bAltEyeFix, flags)
 		SetCursorPosition(1)
 		AddHeaderOption("$Info")
 		SetCursorPosition(3)
@@ -869,6 +873,13 @@ Event OnOptionSelect(Int option)
 		SetToggleOptionValue(oidInvisibility, bInvisibility)
 		If !bInvisibility
 			PlayerRef.SetAlpha(1.0)
+		EndIf
+	ElseIf (option == oidAltEyeFix)
+		bAltEyeFix = !bAltEyeFix
+		SetToggleOptionValue(oidAltEyeFix,bAltEyeFix)
+		If bAltEyeFix
+			Utility.Wait(1.0)
+			ReviveScript.ExecuteCommand("player.say 0142b5")
 		EndIf
 	ElseIf (option == oidLogging)
 		bIsLoggingEnabled = !bIsLoggingEnabled
@@ -1281,6 +1292,7 @@ Event OnOptionSelect(Int option)
 		SetOptionFlags(oidNotification, flags,True)
 		SetOptionFlags(oidFadeToBlack, flags,True)
 		SetOptionFlags(oidInvisibility, flags,True)
+		SetOptionFlags(oidAltEyeFix, flags,True)
 		SetOptionFlags(oidLogging, flags,True)
 		SetOptionFlags(oidGSoulGemPSlider, flags,True)
 		SetOptionFlags(oidGSoulGemSlider, flags,True)
@@ -1365,6 +1377,7 @@ Event OnOptionSelect(Int option)
 		SetOptionFlags(oidNotification, flags,True)
 		SetOptionFlags(oidFadeToBlack, flags,True)
 		SetOptionFlags(oidInvisibility, flags,True)
+		SetOptionFlags(oidAltEyeFix, flags,True)
 		SetOptionFlags(oidLogging, flags,True)
 		SetOptionFlags(oidGSoulGemPSlider, flags,True)
 		SetOptionFlags(oidGSoulGemSlider, flags,True)
@@ -1799,6 +1812,9 @@ Event OnOptionDefault(Int option)
 		bInvisibility = False
 		SetToggleOptionValue(oidInvisibility, bInvisibility)
 		PlayerRef.SetAlpha(1.0)
+	ElseIf (option == oidAltEyeFix)
+		bAltEyeFix = False
+		SetToggleOptionValue(oidAltEyeFix,bAltEyeFix)
 	ElseIf (option == oidLogging)
 		bIsLoggingEnabled = False
 		SetToggleOptionValue(oidLogging, bIsLoggingEnabled)
@@ -2158,6 +2174,8 @@ Event OnOptionHighlight(Int option)
 		SetInfoText("$mrt_MarkofArkay_DESC_FadeToBlack")
 	ElseIf (option == oidInvisibility)
 		SetInfoText("$mrt_MarkofArkay_DESC_Invisibility")
+	ElseIf (option == oidAltEyeFix)
+		SetInfoText("$mrt_MarkofArkay_DESC_AltEyeFix")
 	ElseIf (option == oidLogging)
 		SetInfoText("$mrt_MarkofArkay_DESC_Logging")
 	ElseIf (option == oidDragonSoulPSlider)
@@ -2464,7 +2482,7 @@ Function setPages()
 EndFunction
 
 Int Function GetVersion()
-	Return 34
+	Return 36
 EndFunction
 
 Event OnVersionUpdate(int a_version)
@@ -2594,7 +2612,13 @@ Event OnVersionUpdate(int a_version)
 	If (a_version >= 34 && CurrentVersion < 34)
 		Debug.Trace(self + ": Updating script to version "  + 34)
 	EndIf
-	setArrays()
+	If (a_version >= 36 && CurrentVersion < 36)
+		Debug.Trace(self + ": Updating script to version "  + 36)
+		If iRemovableItems > 1
+			iRemovableItems += 1
+		EndIf
+		setArrays()
+	EndIf
 	ForcePageReset()
 EndEvent
 
@@ -2603,6 +2627,11 @@ Event OnUpdate()
 	If moaState.GetValue() == 1
 		Debug.notification("$mrt_MarkofArkay_Notification_Init")
 	EndIf
+EndEvent
+
+Event OnGameReload()
+	Parent.OnGameReload()
+	OnVersionUpdate(GetVersion())
 EndEvent
 
 Function setRespawnPoints()
@@ -2632,7 +2661,7 @@ EndFunction
 Function setArrays()
 	setPages()
 	setRespawnPoints()
-	sLoseOptions = New String[12]
+	sLoseOptions = New String[13]
 	sLoseOptions[0] = "$mrt_MarkofArkay_LoseOptions_0" 
 	sLoseOptions[1] = "$mrt_MarkofArkay_LoseOptions_1" 
 	sLoseOptions[2] = "$mrt_MarkofArkay_LoseOptions_2" 
@@ -2645,6 +2674,7 @@ Function setArrays()
 	sLoseOptions[9] = "$mrt_MarkofArkay_LoseOptions_9" 
 	sLoseOptions[10] = "$mrt_MarkofArkay_LoseOptions_10"
 	sLoseOptions[11] = "$mrt_MarkofArkay_LoseOptions_11"
+	sLoseOptions[12] = "$mrt_MarkofArkay_LoseOptions_12"
 	sAftermathOptions = New String[3]
 	sAftermathOptions[0] = "$mrt_MarkofArkay_AftermathOptions_0"
 	sAftermathOptions[1] = "$mrt_MarkofArkay_AftermathOptions_1"
@@ -2660,7 +2690,6 @@ Function setArrays()
 	sSaveOptions[3] = "$mrt_MarkofArkay_SaveOptions_3"
 	sSaveOptions[4] = "$mrt_MarkofArkay_SaveOptions_4"
 EndFunction
-
 
 Int Function iGetRespawnPointsCount()
 	int iIndex = 0

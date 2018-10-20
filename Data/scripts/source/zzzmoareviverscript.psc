@@ -239,6 +239,7 @@ Event OnInit()
 EndEvent
 
 Event OnPlayerLoadGame()
+	ConfigMenu.OnGameReload()
 	If ( ConfigMenu.iSaveOption > 1 )
 		Game.SetInChargen(abDisableSaving = True, abDisableWaiting = False, abShowControlsDisabledMessage = True)
 	EndIf
@@ -1704,21 +1705,21 @@ Function RevivePlayer(Bool bRevive)
 				EndIf
 				If (iRemovableItems != 0)
 					If bStealSoul
-						If (( iRemovableItems == 3 ) || ( iRemovableItems == 4 ))
+						If (( iRemovableItems == 4 ) || ( iRemovableItems == 5 ))
 							iRemovableItems = 0
 						Else
 							iRemovableItems = 1
 						EndIf
 					EndIf
 				EndIf
-				If ( iRemovableItems == 9 ) ;random
-					iRemovableItems = Utility.RandomInt(0,5)
-				ElseIf ( iRemovableItems == 8 ) ; Random but not everything or nothing
-					iRemovableItems = Utility.RandomInt(1,4)
-				ElseIf ( iRemovableItems == 7 ) ;Random but lose something
+				If ( iRemovableItems == 10 ) ;random
+					iRemovableItems = Utility.RandomInt(0,6)
+				ElseIf ( iRemovableItems == 9 ) ; Random but not everything or nothing
 					iRemovableItems = Utility.RandomInt(1,5)
-				ElseIf ( iRemovableItems == 6 ) ;Random but not everything
-					iRemovableItems = Utility.RandomInt(0,4)
+				ElseIf ( iRemovableItems == 8 ) ;Random but lose something
+					iRemovableItems = Utility.RandomInt(1,6)
+				ElseIf ( iRemovableItems == 7 ) ;Random but not everything
+					iRemovableItems = Utility.RandomInt(0,5)
 				EndIf
 				If ConfigMenu.bLoseForever && (ConfigMenu.iRemovableItems != 0)
 					ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Destroying previously lost items...")
@@ -1741,12 +1742,14 @@ Function RevivePlayer(Bool bRevive)
 					ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Removing items from the player...")
 					Equipment = New Form[34]
 					EquippedQuestItems = New Form[34]
-					If iRemovableItems == 1 ;Tradable Items
+					If iRemovableItems == 1 ;Tradable Items (Random)
 						RemoveTradbleItems(PlayerRef,True)
-					ElseIf iRemovableItems == 2 ;Unequipped Items and Tradables
+					ElseIf iRemovableItems == 2 ;Tradable Items (All)
+						RemoveTradbleItems(PlayerRef)
+					ElseIf iRemovableItems == 3 ;Unequipped Items and Tradables
 						RemoveTradbleItems(PlayerRef)
 						RemoveUnequippedItems(PlayerRef)
-					ElseIf iRemovableItems == 3 ; unequipped but not tradables
+					ElseIf iRemovableItems == 4 ; unequipped but not tradables
 						iSeptimCount = PlayerRef.GetItemCount(Gold001)
 						iArkayMarkCount = PlayerRef.GetItemCount(MarkOfArkay) 
 						iBSoulGemCount = PlayerRef.GetItemCount(BlackFilledGem)
@@ -1769,7 +1772,7 @@ Function RevivePlayer(Bool bRevive)
 							PlayerRef.ModActorValue("DragonSouls", -fDragonSoulCount)
 							fLostSouls += fDragonSoulCount
 						EndIf
-					ElseIf iRemovableItems == 4  ; Everything except tradables
+					ElseIf iRemovableItems == 5  ; Everything except tradables
 						iSeptimCount = PlayerRef.GetItemCount(Gold001)
 						iArkayMarkCount = PlayerRef.GetItemCount(MarkOfArkay) 
 						iBSoulGemCount = PlayerRef.GetItemCount(BlackFilledGem)
@@ -1793,17 +1796,17 @@ Function RevivePlayer(Bool bRevive)
 							PlayerRef.ModActorValue("DragonSouls", -fDragonSoulCount)
 							fLostSouls += fDragonSoulCount
 						EndIf
-					ElseIf iRemovableItems == 5 ;Everything
+					ElseIf iRemovableItems == 6 ;Everything
 						RemoveTradbleItems(PlayerRef)
 						PlayerRef.RemoveAllItems(LostItemsChest, True)
 						TransferItemsByType(LostItemsChest,PlayerRef As ObjectReference,45,"zzzmoa_ignoreitem") ;Return Keys
-					ElseIf iRemovableItems == 10 ;Valuable
+					ElseIf iRemovableItems == 11 ;Valuable
 						RemoveValuableItems(PlayerRef)
-					ElseIf iRemovableItems == 11 ;Valuables
+					ElseIf iRemovableItems == 12 ;Valuables
 						RemoveValuableItemsGreedy(PlayerRef)
 					EndIf
-					If ( ConfigMenu.iRemovableItems == 7 ) ;Remove All if nothing is removed
-						If (( iRemovableItems != 5 ) && ( LostItemsChest.GetNumItems() == 0 ) && ( fLostSouls == 0 ))
+					If ( ConfigMenu.iRemovableItems == 8 ) ;Remove All if nothing is removed
+						If (( iRemovableItems != 6 ) && ( LostItemsChest.GetNumItems() == 0 ) && ( fLostSouls == 0 ))
 							PlayerRef.RemoveAllItems(LostItemsChest, True)
 							TransferInvalidItems(LostItemsChest,PlayerRef As ObjectReference)
 						EndIf
@@ -2009,6 +2012,9 @@ Function RevivePlayer(Bool bRevive)
 				Debug.SetGodMode(False)
 				If !bIsCameraStateSafe()
 					Game.ForceThirdPerson()
+				EndIf
+				If ConfigMenu.bAltEyeFix
+					ExecuteCommand("player.say 0142b5")
 				EndIf
 				Game.EnablePlayerControls()
 				Game.EnableFastTravel(True)
@@ -2616,6 +2622,19 @@ Function RefreshFace()	;for closed eye bug
 	; Restoring facegen
 	If ( oldUseFaceGen )
 		Utility.SetINIBool( "bUseFaceGenPreprocessedHeads:General", True )
+	EndIf
+EndFunction
+
+Function ExecuteCommand(String strCMD) ;Requires Autorun Console Commands
+	Int Handle = ModEvent.Create("ARCC_RunCommand")
+	If (Handle)
+		ModEvent.PushForm(Handle,PlayerRef) ;sender
+		ModEvent.PushString(Handle,"Mark of Arkay") ;strModName
+		ModEvent.PushString(Handle, strCMD) ;strCommand
+		ModEvent.PushInt(Handle, 1) ;aiSilent
+		ModEvent.PushInt(Handle, 0) ;aiFadeOut
+		ModEvent.PushInt(Handle, 1) ;aiHideMenu
+		ModEvent.Send(Handle)
 	EndIf
 EndFunction
 

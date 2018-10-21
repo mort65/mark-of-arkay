@@ -431,7 +431,7 @@ Function BleedoutHandler(String CurrentState)
 	EndIf
 	bIsConditionSafe = bIsConditionSafe()
 	If ( ConfigMenu.bIsRevivalEnabled && PlayerRef.IsSwimming()) ;SKSE
-		If bIsConditionSafe
+		If bIsConditionSafe && ConfigMenu.bDeathEffect && (ConfigMenu.bInvisibility || ConfigMenu.bFadeToBlack)
 			PlayerRef.PushActorAway(PlayerRef,0)
 		EndIf
 		bWasSwimming = True
@@ -1497,6 +1497,9 @@ Function RevivePlayer(Bool bRevive)
 		EndIf
 		PlayerRef.ResetHealthAndLimbs()
 		PlayerRef.RestoreActorValue("Health",9999)
+		If !bIsCameraStateSafe()
+			Game.ForceThirdPerson()
+		EndIf
 		Debug.SetGodMode(False)
 		If !bHasAutoReviveEffect
 			PlayerRef.DispelSpell(ArkayCurseTemp)
@@ -1606,11 +1609,15 @@ Function RevivePlayer(Bool bRevive)
 				EndIf
 				If ( !bWasSwimming && bIsConditionSafe )
 					If ( ConfigMenu.bInvisibility || ConfigMenu.bFadeToBlack )
+						If ConfigMenu.bDeathEffect
 							PlayerRef.ResetHealthAndLimbs()
 							PlayerRef.PushActorAway(PlayerRef,0)
 							Utility.Wait(0.1)
 							PlayerRef.Say(DeathTopic)
+						EndIf
+						If !bIsCameraStateSafe()
 							Game.ForceThirdPerson()
+						EndIf
 						If ConfigMenu.bFadeToBlack
 							FastFadeOut.Apply()
 							Utility.Wait(1.0)
@@ -2067,6 +2074,7 @@ Bool Function bIsConditionSafe()
 	ConfigMenu.bIsLoggingEnabled && LogCurrentState()
 	Return !( WerewolfQuest.IsRunning() || \
 	PlayerRef.GetActorValue("paralysis") || \
+	PlayerRef.GetAnimationVariableBool("bIsInMT") || \
 	PlayerRef.GetAnimationVariableBool("bIsSynced") || \
 	PlayerRef.GetAnimationVariableBool("IsStaggering"))
 EndFunction
@@ -2225,7 +2233,7 @@ EndFunction
 
 Bool Function bIsArrived(ObjectReference Marker)
 	PlayerRef.DispelAllSpells()
-	If ( PlayerRef.IsBleedingOut() || ( PlayerRef.GetActorValue("Health") < PlayerRef.GetBaseActorValue("Health") ))
+	If (PlayerRef.IsBleedingOut() || (PlayerRef.GetActorValue("Health") < PlayerRef.GetBaseActorValue("Health")))
 		PlayerRef.ResetHealthAndLimbs()
 		PlayerRef.RestoreActorValue("Health",9999)
 	EndIf
@@ -2637,6 +2645,35 @@ Function ExecuteCommand(String strCMD) ;Requires Autorun Console Commands
 		ModEvent.PushInt(Handle, 1) ;aiHideMenu
 		ModEvent.Send(Handle)
 	EndIf
+EndFunction
+
+Function ResetPlayer()
+	Int iBeastForm = iInBeastForm()
+	If iBeastForm
+		If iBeastForm == 1
+			If PlayerRef.IsSwimming()
+				Debug.SendAnimationEvent(PlayerRef, "RESET_GRAPH")
+				Utility.Wait(1.0)
+				Debug.SendAnimationEvent(PlayerRef, "SwimStart")
+			Else
+				Debug.SendAnimationEvent(PlayerRef, "RESET_GRAPH")
+			EndIf
+		EndIf
+	Else
+		If PlayerRef.IsSwimming()
+			Debug.SendAnimationEvent(PlayerRef, "IdleForceDefaultState")
+			Utility.Wait(1.0)
+			Debug.SendAnimationEvent(PlayerRef, "SwimStart")
+		Else
+			Debug.SendAnimationEvent(PlayerRef, "IdleForceDefaultState")
+		EndIf
+	EndIf
+	PlayerRef.DispelAllSpells()
+	PlayerRef.ClearExtraArrows()
+	If PlayerRef.IsWeaponDrawn()
+		PlayerRef.SheatheWeapon()
+	EndIf
+	RequipSpells()
 EndFunction
 
 Bool Function IsInInteriorActual(ObjectReference akObjectReference)
@@ -3514,35 +3551,6 @@ Int Function iInBeastForm()
 	EndIf
 	Return 0
 Endfunction
-
-Function ResetPlayer()
-	Int iBeastForm = iInBeastForm()
-	If iBeastForm
-		If iBeastForm == 1
-			If PlayerRef.IsSwimming()
-				Debug.SendAnimationEvent(PlayerRef, "RESET_GRAPH")
-				Utility.Wait(1.0)
-				Debug.SendAnimationEvent(PlayerRef, "SwimStart")
-			Else
-				Debug.SendAnimationEvent(PlayerRef, "RESET_GRAPH")
-			EndIf
-		EndIf
-	Else
-		If PlayerRef.IsSwimming()
-			Debug.SendAnimationEvent(PlayerRef, "IdleForceDefaultState")
-			Utility.Wait(1.0)
-			Debug.SendAnimationEvent(PlayerRef, "SwimStart")
-		Else
-			Debug.SendAnimationEvent(PlayerRef, "IdleForceDefaultState")
-		EndIf
-	EndIf
-	PlayerRef.DispelAllSpells()
-	PlayerRef.ClearExtraArrows()
-	If PlayerRef.IsWeaponDrawn()
-		PlayerRef.SheatheWeapon()
-	EndIf
-	RequipSpells()
-EndFunction
 
 Bool Function bInSameLocation(Location Loc)
     If Loc

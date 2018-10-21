@@ -46,6 +46,7 @@ Int oidArkayCurse
 Int oidTempArkayCurse
 Int oidFollowerProtectPlayer
 Int oidInvisibility
+Int oidDeathEffect
 Int oidRespawnMenu
 Int oidTeleportMenu
 Int flags
@@ -148,6 +149,7 @@ Int Property iNotTradingAftermath = 0 Auto Hidden
 Int Property iRemovableItems = 0 Auto Hidden
 Int Property iArkayCurse = 0 Auto Hidden
 Bool Property bLoseForever = False Auto Hidden
+Bool Property bDeathEffect = True Auto Hidden
 Bool Property bSoulMarkStay = False Auto Hidden
 Bool Property bIsInfoEnabled = False Auto Hidden
 Bool Property bIsHistoryEnabled = False Auto Hidden
@@ -586,6 +588,18 @@ Event OnPageReset(String page)
 		SetCursorPosition(20)
 		oidInvisibility = AddToggleOption("$mrt_MarkofArkay_Invisibility", bInvisibility, flags)
 		SetCursorPosition(22)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && (bFadeToBlack || bInvisibility)
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidDeathEffect = AddToggleOption("$mrt_MarkofArkay_DeathEffect", bDeathEffect,flags)
+		SetCursorPosition(24)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
 		oidAltEyeFix = AddToggleOption("$mrt_MarkofArkay_AltEyeFix", bAltEyeFix, flags)
 		SetCursorPosition(1)
 		AddHeaderOption("$Info")
@@ -862,6 +876,12 @@ Event OnOptionSelect(Int option)
 	ElseIf (option == oidFadeToBlack)
 		bFadeToBlack = !bFadeToBlack
 		SetToggleOptionValue(oidFadeToBlack, bFadeToBlack)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && (bFadeToBlack || bInvisibility)
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		SetOptionFlags(oidDeathEffect,flags)
 		If !bFadeToBlack
 			ReviveScript.Fadeout.Remove()
 			ReviveScript.FastFadeOut.Remove()
@@ -871,9 +891,18 @@ Event OnOptionSelect(Int option)
 	ElseIf (option == oidInvisibility)
 		bInvisibility = !bInvisibility
 		SetToggleOptionValue(oidInvisibility, bInvisibility)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && (bFadeToBlack || bInvisibility)
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		SetOptionFlags(oidDeathEffect,flags)
 		If !bInvisibility
 			PlayerRef.SetAlpha(1.0)
 		EndIf
+	ElseIf (option == oidDeathEffect)
+		bDeathEffect = !bDeathEffect
+		SetToggleOptionValue(oidDeathEffect, bDeathEffect)
 	ElseIf (option == oidAltEyeFix)
 		bAltEyeFix = !bAltEyeFix
 		SetToggleOptionValue(oidAltEyeFix,bAltEyeFix)
@@ -1292,6 +1321,7 @@ Event OnOptionSelect(Int option)
 		SetOptionFlags(oidNotification, flags,True)
 		SetOptionFlags(oidFadeToBlack, flags,True)
 		SetOptionFlags(oidInvisibility, flags,True)
+		SetOptionFlags(oidDeathEffect, flags,True)
 		SetOptionFlags(oidAltEyeFix, flags,True)
 		SetOptionFlags(oidLogging, flags,True)
 		SetOptionFlags(oidGSoulGemPSlider, flags,True)
@@ -1377,6 +1407,7 @@ Event OnOptionSelect(Int option)
 		SetOptionFlags(oidNotification, flags,True)
 		SetOptionFlags(oidFadeToBlack, flags,True)
 		SetOptionFlags(oidInvisibility, flags,True)
+		SetOptionFlags(oidDeathEffect, flags,True)
 		SetOptionFlags(oidAltEyeFix, flags,True)
 		SetOptionFlags(oidLogging, flags,True)
 		SetOptionFlags(oidGSoulGemPSlider, flags,True)
@@ -1808,10 +1839,25 @@ Event OnOptionDefault(Int option)
 	ElseIf (option == oidFadeToBlack)
 		bFadeToBlack = True
 		SetToggleOptionValue(oidFadeToBlack, bFadeToBlack)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		SetOptionFlags(oidDeathEffect,flags)
 	ElseIf (option == oidInvisibility)
 		bInvisibility = False
 		SetToggleOptionValue(oidInvisibility, bInvisibility)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && bFadeToBlack
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		SetOptionFlags(oidDeathEffect,flags)
 		PlayerRef.SetAlpha(1.0)
+	ElseIf (option == oidDeathEffect)
+		bDeathEffect = True
+		SetToggleOptionValue(oidDeathEffect, bDeathEffect)
 	ElseIf (option == oidAltEyeFix)
 		bAltEyeFix = False
 		SetToggleOptionValue(oidAltEyeFix,bAltEyeFix)
@@ -2174,6 +2220,8 @@ Event OnOptionHighlight(Int option)
 		SetInfoText("$mrt_MarkofArkay_DESC_FadeToBlack")
 	ElseIf (option == oidInvisibility)
 		SetInfoText("$mrt_MarkofArkay_DESC_Invisibility")
+	ElseIf (option == oidDeathEffect)
+		SetInfoText("$mrt_MarkofArkay_DESC_DeathEffect")
 	ElseIf (option == oidAltEyeFix)
 		SetInfoText("$mrt_MarkofArkay_DESC_AltEyeFix")
 	ElseIf (option == oidLogging)

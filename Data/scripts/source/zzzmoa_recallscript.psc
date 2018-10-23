@@ -6,6 +6,7 @@ FormList property MarkerList Auto
 Formlist property ExternalMarkerList Auto
 Formlist Property CityMarkersList Auto
 FormList Property LocationsList Auto
+Formlist Property Destinations Auto
 ObjectReference Property CustomMarker Auto
 ObjectReference Property SleepMarker Auto
 ObjectReference Property LocationMarker Auto
@@ -44,15 +45,15 @@ Event OnEffectStart(Actor akTarget, Actor akCaster)
 					Else
 						iExternalIndex = ( iTeleportLocation - ( ConfigMenu.sRespawnPoints.Length ))
 					EndIf
-					iTeleportLocation = ( ConfigMenu.sRespawnPoints.Length - 2 )
+					iTeleportLocation = ( ConfigMenu.sRespawnPoints.Length - 3 )
 				EndIf
 			EndIf
 			If iTeleportLocation > -1
-				If (iTeleportLocation < (ConfigMenu.sRespawnPoints.Length - 5))
+				If (iTeleportLocation < (ConfigMenu.sRespawnPoints.Length - 6))
 					Caster.MoveTo( MarkerList.GetAt( iTeleportLocation ) As Objectreference, abMatchRotation = true)
-				ElseIf (iTeleportLocation == (ConfigMenu.sRespawnPoints.Length - 5))
+				ElseIf (iTeleportLocation == (ConfigMenu.sRespawnPoints.Length - 6))
 					RandomTeleport()
-				ElseIf (iTeleportLocation == (ConfigMenu.sRespawnPoints.Length - 4))
+				ElseIf (iTeleportLocation == (ConfigMenu.sRespawnPoints.Length - 5))
 					If !SleepMarker.Isdisabled() && ( SleepMarker.GetParentCell() != ReviveScript.DefaultCell )
 						Caster.MoveTo(SleepMarker, abMatchRotation = true)
 					ElseIf ( !CustomMarker.IsDisabled() && ( CustomMarker.GetParentCell() != ReviveScript.DefaultCell ) )
@@ -60,7 +61,7 @@ Event OnEffectStart(Actor akTarget, Actor akCaster)
 					Else
 						 SendToAnotherLocation()
 					EndIf
-				ElseIf (iTeleportLocation == (ConfigMenu.sRespawnPoints.Length - 3))
+				ElseIf (iTeleportLocation == (ConfigMenu.sRespawnPoints.Length - 4))
 					If ( !CustomMarker.IsDisabled() && ( CustomMarker.GetParentCell() != ReviveScript.DefaultCell ) )
 						Caster.MoveTo(CustomMarker, abMatchRotation = true)
 					ElseIf !SleepMarker.Isdisabled() && ( SleepMarker.GetParentCell() != ReviveScript.DefaultCell )
@@ -68,7 +69,7 @@ Event OnEffectStart(Actor akTarget, Actor akCaster)
 					Else
 						 SendToAnotherLocation()
 					EndIf
-				ElseIf (iTeleportLocation == (ConfigMenu.sRespawnPoints.Length - 2))
+				ElseIf (iTeleportLocation == (ConfigMenu.sRespawnPoints.Length - 3))
 					If ExternalMarkerList.GetSize() > 0
 						If ExternalMarkerList.GetSize() > 1  && ( iExternalIndex == -1 || ( iExternalIndex >= ExternalMarkerList.GetSize() ) || ( !ReviveScript.bCanTeleportToExtMarker( ExternalMarkerList.GetAt( iExternalIndex ) As ObjectReference ) || ( ExternalMarkerList.GetAt( iExternalIndex ).GetType() != 61 ) ) )
 							iMarkerIndex = ReviveScript.iGetRandomRefFromListWithExclusions(0, ExternalMarkerList.GetSize() - 1, ExternalMarkerList)
@@ -97,8 +98,10 @@ Event OnEffectStart(Actor akTarget, Actor akCaster)
 					Else
 						 SendToAnotherLocation()
 					EndIf
-				Else
+				ElseIf (iTeleportLocation == (ConfigMenu.sRespawnPoints.Length - 2))
 					SendToNearestLocation()
+				Else
+					RandomTeleportAlt()
 				EndIf
 				If ConfigMenu.fRecallCastSlider > 0.0	
 					Caster.RemoveItem(MarkOfArkay,ConfigMenu.fRecallCastSlider As Int,False)
@@ -141,6 +144,58 @@ EndFunction
 
 Function RandomTeleport()
 	Caster.MoveTo( MarkerList.GetAt( iGetRandomWithExclusionArray( 0, (MarkerList.GetSize() - 1), ConfigMenu.bRespawnPointsFlags) ) As Objectreference, abMatchRotation = true )
+EndFunction
+
+Function RandomTeleportAlt()
+	Destinations.Revert()
+	int iIndex = 0
+	Int iRandom = 0
+	While iIndex < ConfigMenu.bRespawnPointsFlags.Length
+		If ConfigMenu.bRespawnPointsFlags[iIndex] && Caster.GetDistance(MarkerList.GetAt(iIndex) As Objectreference) >= ConfigMenu.fRPMinDistanceSlider
+			Destinations.AddForm(MarkerList.GetAt(iIndex) As Objectreference)
+		EndIf
+		iIndex += 1
+	Endwhile
+	If !SleepMarker.Isdisabled() && ( SleepMarker.GetParentCell() != ReviveScript.DefaultCell ) && Caster.GetDistance(SleepMarker) >= ConfigMenu.fRPMinDistanceSlider
+		Destinations.AddForm(SleepMarker)
+	EndIf
+	If !CustomMarker.IsDisabled() && ( CustomMarker.GetParentCell() != ReviveScript.DefaultCell ) && Caster.GetDistance(CustomMarker) >= ConfigMenu.fRPMinDistanceSlider
+		Destinations.AddForm(CustomMarker)
+	EndIf
+	If ExternalMarkerList.GetSize() > 0
+		iIndex = ExternalMarkerList.GetSize()
+		While iIndex > 0
+			iIndex -= 1
+			If !(( ExternalMarkerList.GetAt( iIndex ).GetType() != 61 ) || \
+			!ReviveScript.bCanTeleportToExtMarker( ExternalMarkerList.GetAt( iIndex ) As ObjectReference ) || \
+			( Caster.GetDistance( ExternalMarkerList.GetAt( iIndex ) As ObjectReference ) < ConfigMenu.fRPMinDistanceSlider ))
+				Destinations.AddForm(ExternalMarkerList.GetAt( iIndex ) As ObjectReference)
+			EndIf
+		EndWhile
+	EndIf
+	If !CellLoadMarker2.Isdisabled() && ( CellLoadMarker2.GetParentCell() != ReviveScript.DefaultCell ) && Caster.GetDistance(CellLoadMarker2) >= ConfigMenu.fRPMinDistanceSlider
+		Destinations.AddForm(CellLoadMarker2)
+	EndIf
+	If !DetachMarker3.Isdisabled() && ( DetachMarker3.GetParentCell() != ReviveScript.DefaultCell ) && Caster.GetDistance(DetachMarker3) >= ConfigMenu.fRPMinDistanceSlider
+		Destinations.AddForm(DetachMarker3)
+	EndIf
+	If !LocationMarker2.Isdisabled() && ( LocationMarker2.GetParentCell() != ReviveScript.DefaultCell ) && Caster.GetDistance(LocationMarker2) >= ConfigMenu.fRPMinDistanceSlider
+		Destinations.AddForm(LocationMarker2)
+	EndIf
+	If CellLoadMarker.Isdisabled() && ( CellLoadMarker.GetParentCell() != ReviveScript.DefaultCell ) && Caster.GetDistance(CellLoadMarker) >= ConfigMenu.fRPMinDistanceSlider
+		Destinations.AddForm(CellLoadMarker)
+	EndIf
+	If LocationMarker.Isdisabled() && ( LocationMarker.GetParentCell() != ReviveScript.DefaultCell ) && Caster.GetDistance(LocationMarker) >= ConfigMenu.fRPMinDistanceSlider
+		Destinations.AddForm(LocationMarker)
+	EndIf
+	If DetachMarker1.Isdisabled() && ( DetachMarker1.GetParentCell() != ReviveScript.DefaultCell ) && Caster.GetDistance(DetachMarker1) >= ConfigMenu.fRPMinDistanceSlider
+		Destinations.AddForm(DetachMarker1)
+	EndIf
+	If DetachMarker2.Isdisabled() && ( DetachMarker2.GetParentCell() != ReviveScript.DefaultCell ) && Caster.GetDistance(DetachMarker2) >= ConfigMenu.fRPMinDistanceSlider
+		Destinations.AddForm(DetachMarker2)
+	EndIf
+	iRandom = Utility.RandomInt(0, Destinations.GetSize() - 1)
+	Caster.MoveTo(Destinations.GetAt(iRandom) As ObjectReference)
 EndFunction
 
 Function SendToAnotherLocation()
@@ -352,11 +407,11 @@ Int Function TeleportMenu(Int aiMessage = 0, Int aiButton = 0)
 		ElseIf aiMessage == 0
 			aiButton = moaTeleportMenu0.Show()
 			If aiButton == -1
-			ElseIf aiButton < ( ConfigMenu.sRespawnPoints.Length - 5 ) ;Whiterun,...,Raven Rock
+			ElseIf aiButton < ( ConfigMenu.sRespawnPoints.Length - 6 ) ;Whiterun,...,Raven Rock
 				Return aiButton
-			ElseIf aiButton == ( ConfigMenu.sRespawnPoints.Length - 5 ) ;More
+			ElseIf aiButton == ( ConfigMenu.sRespawnPoints.Length - 6 ) ;More
 				aiMessage = 1
-			ElseIf aiButton == ( ConfigMenu.sRespawnPoints.Length - 4 ) ;Cancel
+			ElseIf aiButton == ( ConfigMenu.sRespawnPoints.Length - 5 ) ;Cancel
 				Return -2
 			EndIf
 		ElseIf aiMessage == 1
@@ -364,9 +419,9 @@ Int Function TeleportMenu(Int aiMessage = 0, Int aiButton = 0)
 			If aiButton == -1
 			ElseIf aiButton == 3
 				aiMessage = 2
-			ElseIf aiButton < 5 ;Random,...,Nearby
-				Return ( aiButton + ( ConfigMenu.sRespawnPoints.Length - 5 ))
-			ElseIf aiButton == 5 ;Less
+			ElseIf aiButton < 6 ;Random City,...,Random
+				Return ( aiButton + ( ConfigMenu.sRespawnPoints.Length - 6 ))
+			ElseIf aiButton == 6 ;Less
 				aiMessage = 0
 			EndIf
 		ElseIf aiMessage == 2

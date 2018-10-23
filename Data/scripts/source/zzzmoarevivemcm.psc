@@ -82,6 +82,8 @@ Int oidNPCStealItems
 Int oidFadeToBlack
 Int oidHostileNPC
 Int oidCreaturesCanSteal
+Int oidSavePreset_M
+Int oidLoadPreset_M
 Int oidLoadPreset1
 Int oidSavePreset1
 Int oidLoadPreset2
@@ -90,6 +92,7 @@ Int oidLoadPreset3
 Int oidSavePreset3
 Int oidLoadPreset4
 Int oidSavePreset4
+Int oidTradeEnabled
 Int oidAltEyeFix
 Int oidLoadDefaultPreset
 Bool Property bInit = False Auto Hidden
@@ -99,6 +102,7 @@ String[] Property sAftermathOptions Auto
 Bool[] Property bRespawnPointsFlags Auto
 String[] Property sArkayCurses Auto
 String[] Property sSaveOptions Auto
+String[] Property sPresets Auto Hidden
 Actor Property PlayerRef Auto
 GlobalVariable Property moaState Auto
 GlobalVariable Property moaLootChance Auto
@@ -124,6 +128,7 @@ Bool Property bIsGSoulGemEnabled = True Auto Hidden
 Bool Property bIsPotionEnabled = False Auto Hidden
 Bool Property bAutoDrinkPotion = False Auto Hidden
 Bool Property bIsGoldEnabled = True Auto Hidden
+Bool Property bIsTradeEnabled = True Auto Hidden
 Bool Property bFollowerProtectPlayer = False Auto Hidden
 Bool Property bRecallByArkayMark = False Auto Hidden ;
 Bool Property bIsMarkEnabled = True Auto Hidden
@@ -158,6 +163,8 @@ Bool property bResurrectActors = False Auto Hidden
 Bool Property bSendToJail = False Auto Hidden
 Int Property iTeleportLocation = 0 Auto Hidden
 Int Property iSaveOption = 1 Auto Hidden
+Int Property iLoadPreset = 0 Auto Hidden
+Int Property iSavePreset = 0 Auto Hidden
 Float Property fValueSoulSlider = 1.0 Auto Hidden
 Float Property fValueGoldSlider = 1000.0 Auto Hidden
 Float Property fValueBSoulGemSlider = 1.0 Auto Hidden
@@ -247,24 +254,31 @@ Event OnPageReset(String page)
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
-		oidMarkOfArkayRevivalEnabled = AddToggleOption("$mrt_MarkofArkay_MarkOfArkayRevivalEnabled", bIsMarkEnabled, flags )
+		oidTradeEnabled = AddToggleOption("$mrt_MarkofArkay_TradeEnabled", bIsTradeEnabled, flags )
 		SetCursorPosition(8)
-		oidGSoulGemRevivalEnabled = AddToggleOption("$mrt_MarkofArkay_GSoulGemRevivalEnabled", bIsGSoulGemEnabled, flags )
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidMarkOfArkayRevivalEnabled = AddToggleOption("$mrt_MarkofArkay_MarkOfArkayRevivalEnabled", bIsMarkEnabled, flags )
 		SetCursorPosition(10)
-		oidBSoulGemRevivalEnabled = AddToggleOption("$mrt_MarkofArkay_BSoulGemRevivalEnabled", bIsBSoulGemEnabled, flags )
+		oidGSoulGemRevivalEnabled = AddToggleOption("$mrt_MarkofArkay_GSoulGemRevivalEnabled", bIsGSoulGemEnabled, flags )
 		SetCursorPosition(12)
-		oidDragonSoulRevivalEnabled = AddToggleOption("$mrt_MarkofArkay_DragonSoulRevivalEnabled", bIsDragonSoulEnabled, flags )
+		oidBSoulGemRevivalEnabled = AddToggleOption("$mrt_MarkofArkay_BSoulGemRevivalEnabled", bIsBSoulGemEnabled, flags )
 		SetCursorPosition(14)
+		oidDragonSoulRevivalEnabled = AddToggleOption("$mrt_MarkofArkay_DragonSoulRevivalEnabled", bIsDragonSoulEnabled, flags )
+		SetCursorPosition(16)
 		oidGoldRevivalEnabled = AddToggleOption("$mrt_MarkofArkay_GoldRevivalEnabled", bIsGoldEnabled, flags )
-		SetCursorPosition(7)
-		oidMarkSlider = AddSliderOption("$mrt_MarkofArkay_MarkSlider_1", fValueMarkSlider, "$mrt_MarkofArkay_MarkSlider_2", flags)
 		SetCursorPosition(9)
-		oidGSoulGemSlider = AddSliderOption("$mrt_MarkofArkay_GSoulGemSlider_1", fValueGSoulGemSlider, "$mrt_MarkofArkay_GSoulGemSlider_2", flags)
+		oidMarkSlider = AddSliderOption("$mrt_MarkofArkay_MarkSlider_1", fValueMarkSlider, "$mrt_MarkofArkay_MarkSlider_2", flags)
 		SetCursorPosition(11)
-		oidBSoulGemSlider = AddSliderOption("$mrt_MarkofArkay_BSoulGemSlider_1", fValueBSoulGemSlider, "$mrt_MarkofArkay_BSoulGemSlider_2", flags)
+		oidGSoulGemSlider = AddSliderOption("$mrt_MarkofArkay_GSoulGemSlider_1", fValueGSoulGemSlider, "$mrt_MarkofArkay_GSoulGemSlider_2", flags)
 		SetCursorPosition(13)
-		oidDragonSoulSlider = AddSliderOption("$mrt_MarkofArkay_DragonSoulSlider_1", fValueSoulSlider, "$mrt_MarkofArkay_DragonSoulSlider_2", flags)
+		oidBSoulGemSlider = AddSliderOption("$mrt_MarkofArkay_BSoulGemSlider_1", fValueBSoulGemSlider, "$mrt_MarkofArkay_BSoulGemSlider_2", flags)
 		SetCursorPosition(15)
+		oidDragonSoulSlider = AddSliderOption("$mrt_MarkofArkay_DragonSoulSlider_1", fValueSoulSlider, "$mrt_MarkofArkay_DragonSoulSlider_2", flags)
+		SetCursorPosition(17)
 		oidGoldSlider = AddSliderOption("$mrt_MarkofArkay_GoldSlider_1", fValueGoldSlider, "$mrt_MarkofArkay_GoldSlider_2", flags)
 	ElseIf (page == "$Extra")
 		SetCursorPosition(0)
@@ -490,7 +504,7 @@ Event OnPageReset(String page)
 		EndIf
 		oidTeleportLocation_M = AddMenuOption("$mrt_MarkofArkay_TeleportLocation_M", sRespawnPoints[iTeleportLocation], flags)
 		SetCursorPosition(5)
-		If (( moaState.getValue() == 1 ) && ( iTeleportLocation == ( sRespawnPoints.Length - 2 )) && ( ExternalMarkerList.GetSize() > 1 ) && ( !bRespawnMenu || !bTeleportMenu ))
+		If (( moaState.getValue() == 1 ) && ( iTeleportLocation == ( sRespawnPoints.Length - 3 )) && ( ExternalMarkerList.GetSize() > 1 ) && ( !bRespawnMenu || !bTeleportMenu ))
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
@@ -620,7 +634,7 @@ Event OnPageReset(String page)
 		EndIf
 		SetCursorPosition(5)
 		If ( moaState.getValue() == 1 ) && bIsInfoEnabled
-			If iTeleportLocation < sRespawnPoints.Length - 5
+			If iTeleportLocation < sRespawnPoints.Length - 6
 				If (MarkerList.GetAt(iTeleportLocation) As Objectreference)
 					Float fDistance = PlayerRef.GetDistance(MarkerList.GetAt(iTeleportLocation) As Objectreference)
 					If fDistance
@@ -635,7 +649,7 @@ Event OnPageReset(String page)
 				Else
 					AddTextOption("$mrt_MarkofArkay_Dis_From_Respawn", "$Unknown", flags)
 				EndIf
-			ElseIf (iTeleportLocation == sRespawnPoints.Length - 4)
+			ElseIf (iTeleportLocation == sRespawnPoints.Length - 5)
 				If ( SleepMarker && !SleepMarker.Isdisabled() )
 					Float fDistance = PlayerRef.GetDistance(SleepMarker)
 					If fDistance
@@ -650,7 +664,7 @@ Event OnPageReset(String page)
 				Else
 					AddTextOption("$mrt_MarkofArkay_Dis_From_Respawn", "$Unknown", flags)
 				EndIf
-			ElseIf (iTeleportLocation == sRespawnPoints.Length - 3)
+			ElseIf (iTeleportLocation == sRespawnPoints.Length - 4)
 				If ( CustomMarker && !CustomMarker.Isdisabled() )
 					Float fDistance = PlayerRef.GetDistance(CustomMarker)
 					If fDistance
@@ -665,7 +679,7 @@ Event OnPageReset(String page)
 				Else
 					AddTextOption("$mrt_MarkofArkay_Dis_From_Respawn", "$Unknown", flags)
 				EndIf
-			ElseIf (iTeleportLocation == sRespawnPoints.Length - 2) && (ExternalMarkerList.GetSize() > 1) && (iExternalIndex != -1)
+			ElseIf (iTeleportLocation == sRespawnPoints.Length - 3) && (ExternalMarkerList.GetSize() > 1) && (iExternalIndex != -1)
 				ObjectReference ExtMarker = ExternalMarkerList.GetAt(iExternalIndex) As ObjectReference
 				If ( ExtMarker && !ExtMarker.Isdisabled() )
 					Float fDistance = PlayerRef.GetDistance(ExtMarker)
@@ -681,7 +695,7 @@ Event OnPageReset(String page)
 				Else
 					AddTextOption("$mrt_MarkofArkay_Dis_From_Respawn", "$Unknown", flags)
 				EndIf
-			ElseIf (iTeleportLocation == sRespawnPoints.Length - 2) && (ExternalMarkerList.GetSize() == 1)
+			ElseIf (iTeleportLocation == sRespawnPoints.Length - 3) && (ExternalMarkerList.GetSize() == 1)
 				ObjectReference ExtMarker = ExternalMarkerList.GetAt(0) As ObjectReference
 				If ( ExtMarker && !ExtMarker.Isdisabled() )
 					Float fDistance = PlayerRef.GetDistance(ExtMarker)
@@ -803,33 +817,20 @@ Event OnPageReset(String page)
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
-		oidLoadPreset1 = AddTextOption("$mrt_MarkofArkay_Load_Preset1", "", flags)
+		oidLoadPreset_M = AddMenuOption("$mrt_MarkofArkay_Preset_M", sPresets[iLoadPreset], flags)
 		SetCursorPosition(3)
+		oidSavePreset_M = AddMenuOption("$mrt_MarkofArkay_Preset_M", sPresets[iSavePreset], flags)
+		SetCursorPosition(4)
+		oidLoadPreset1 = AddTextOption("$mrt_MarkofArkay_Load_Preset", "", flags)
+		SetCursorPosition(5)
+		oidSavePreset1 = AddTextOption("$mrt_MarkofArkay_Save_Preset", "", flags)
+		SetCursorPosition(8)
 		If moaState.getValue()
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidLoadDefaultPreset = AddTextOption("$mrt_MarkofArkay_Load_Default_Preset", "", flags)
-		SetCursorPosition(4)
-		If moaState.getValue() == 1 && ( 0 < iFissIndex && iFissIndex < 255 )
-			flags =	OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		oidSavePreset1 = AddTextOption("$mrt_MarkofArkay_Save_Preset1", "", flags)
-		SetCursorPosition(8)
-		oidLoadPreset2 = AddTextOption("$mrt_MarkofArkay_Load_Preset2", "", flags)
-		SetCursorPosition(10)
-		oidSavePreset2 = AddTextOption("$mrt_MarkofArkay_Save_Preset2", "", flags)
-		SetCursorPosition(14)
-		oidLoadPreset3 = AddTextOption("$mrt_MarkofArkay_Load_Preset3", "", flags)
-		SetCursorPosition(16)
-		oidSavePreset3 = AddTextOption("$mrt_MarkofArkay_Save_Preset3", "", flags)
-		SetCursorPosition(20)
-		oidLoadPreset4 = AddTextOption("$mrt_MarkofArkay_Load_Preset4", "", flags)
-		SetCursorPosition(22)
-		oidSavePreset4 = AddTextOption("$mrt_MarkofArkay_Save_Preset4", "", flags)
 	EndIf
 EndEvent
 
@@ -864,6 +865,9 @@ Event OnOptionSelect(Int option)
 	ElseIf (option == oidGSoulGemRevivalEnabled)
 		bIsGSoulGemEnabled = !bIsGSoulGemEnabled
 		SetToggleOptionValue(oidGSoulGemRevivalEnabled, bIsGSoulGemEnabled)
+	ElseIf (option == oidTradeEnabled)
+		bIsTradeEnabled = !bIsTradeEnabled
+		SetToggleOptionValue(oidTradeEnabled, bIsTradeEnabled)
 	ElseIf (option == oidGoldRevivalEnabled)
 		bIsGoldEnabled = !bIsGoldEnabled
 		SetToggleOptionValue(oidGoldRevivalEnabled, bIsGoldEnabled)
@@ -999,7 +1003,7 @@ Event OnOptionSelect(Int option)
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		SetOptionFlags(oidTeleportLocation_M,flags,True)
-		If (( iTeleportLocation == ( sRespawnPoints.Length - 2 )) && ( ExternalMarkerList.GetSize() > 1 ) && ( !bRespawnMenu || !bTeleportMenu ))
+		If (( iTeleportLocation == ( sRespawnPoints.Length - 3 )) && ( ExternalMarkerList.GetSize() > 1 ) && ( !bRespawnMenu || !bTeleportMenu ))
 			flags = OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
@@ -1014,7 +1018,7 @@ Event OnOptionSelect(Int option)
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		SetOptionFlags(oidTeleportLocation_M,flags,True)
-		If (( iTeleportLocation == ( sRespawnPoints.Length - 2 )) && ( ExternalMarkerList.GetSize() > 1 ) && ( !bRespawnMenu || !bTeleportMenu ))
+		If (( iTeleportLocation == ( sRespawnPoints.Length - 3 )) && ( ExternalMarkerList.GetSize() > 1 ) && ( !bRespawnMenu || !bTeleportMenu ))
 			flags = OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
@@ -1079,7 +1083,7 @@ Event OnOptionSelect(Int option)
 				EndIf
 			EndIf
 		EndIf
-	ElSeIf (option == oidAutoSwitchRP)
+	ElseIf (option == oidAutoSwitchRP)
 		bAutoSwitchRP = !bAutoSwitchRP
 		SetToggleOptionValue(oidAutoSwitchRP,bAutoSwitchRP)
 	ElseIf (option == oidSoulMarkStay)
@@ -1172,8 +1176,9 @@ Event OnOptionSelect(Int option)
 			ShowMessage("$mrt_MarkofArkay_MESG_FISS_Error", False)
 			Return
 		EndIf
+		String fName = "MarkofArkayUserSettings" + (iLoadPreset + 1) + ".xml"
 		If ShowMessage("$mrt_MarkofArkay_MESG_Load_Preset", True, "$Yes", "$No")
-			If bLoadUserSettings("MarkofArkayUserSettings1.xml")
+			If bLoadUserSettings(fName)
 				ShowMessage("$mrt_MarkofArkay_MESG_Load_Preset_Success", False)
 			Else
 				ShowMessage("$mrt_MarkofArkay_MESG_Load_Preset_Failure", False)
@@ -1185,103 +1190,14 @@ Event OnOptionSelect(Int option)
 			ShowMessage("$mrt_MarkofArkay_MESG_FISS_Error", False)
 			Return
 		EndIf
-		fiss.beginLoad("MarkofArkayUserSettings1.xml")
+		String fName = "MarkofArkayUserSettings" + (iSavePreset + 1) + ".xml"
+		fiss.beginLoad(fName)
 		If fiss.endLoad() == ""
 			If !ShowMessage("$mrt_MarkofArkay_MESG_Already_Preset", True, "$Yes", "$No")
 				Return
 			EndIf
 		EndIf
-		If bSaveUserSettings("MarkofArkayUserSettings1.xml")
-			ShowMessage("$mrt_MarkofArkay_MESG_Save_Preset_Success", False)
-		Else
-			ShowMessage("$mrt_MarkofArkay_MESG_Save_Preset_Failure", False)
-		EndIf
-		ForcePageReset()
-	ElseIf (option == oidLoadPreset2)
-		If !FISSFactory.getFISS()
-			ShowMessage("$mrt_MarkofArkay_MESG_FISS_Error", False)
-			Return
-		EndIf
-		If ShowMessage("$mrt_MarkofArkay_MESG_Load_Preset", True, "$Yes", "$No")
-			If bLoadUserSettings("MarkofArkayUserSettings2.xml")
-				ShowMessage("$mrt_MarkofArkay_MESG_Load_Preset_Success", False)
-			Else
-				ShowMessage("$mrt_MarkofArkay_MESG_Load_Preset_Failure", False)
-			EndIf
-		EndIf
-	ElseIf (option == oidSavePreset2)
-		FISSInterface fiss = FISSFactory.getFISS()
-		If !fiss
-			ShowMessage("$mrt_MarkofArkay_MESG_FISS_Error", False)
-			Return
-		EndIf
-		fiss.beginLoad("MarkofArkayUserSettings2.xml")
-		If fiss.endLoad() == ""
-			If !ShowMessage("$mrt_MarkofArkay_MESG_Already_Preset", True, "$Yes", "$No")
-				Return
-			EndIf
-		EndIf
-		If bSaveUserSettings("MarkofArkayUserSettings2.xml")
-			ShowMessage("$mrt_MarkofArkay_MESG_Save_Preset_Success", False)
-		Else
-			ShowMessage("$mrt_MarkofArkay_MESG_Save_Preset_Failure", False)
-		EndIf
-		ForcePageReset()
-	ElseIf (option == oidLoadPreset3)
-		If !FISSFactory.getFISS()
-			ShowMessage("$mrt_MarkofArkay_MESG_FISS_Error", False)
-			Return
-		EndIf
-		If ShowMessage("$mrt_MarkofArkay_MESG_Load_Preset", True, "$Yes", "$No")
-			If bLoadUserSettings("MarkofArkayUserSettings3.xml")
-				ShowMessage("$mrt_MarkofArkay_MESG_Load_Preset_Success", False)
-			Else
-				ShowMessage("$mrt_MarkofArkay_MESG_Load_Preset_Failure", False)
-			EndIf
-		EndIf
-	ElseIf (option == oidSavePreset3)
-		FISSInterface fiss = FISSFactory.getFISS()
-		If !fiss
-			ShowMessage("$mrt_MarkofArkay_MESG_FISS_Error", False)
-			Return
-		EndIf
-		fiss.beginLoad("MarkofArkayUserSettings3.xml")
-		If fiss.endLoad() == ""
-			If !ShowMessage("$mrt_MarkofArkay_MESG_Already_Preset", True, "$Yes", "$No")
-				Return
-			EndIf
-		EndIf
-		If bSaveUserSettings("MarkofArkayUserSettings3.xml")
-			ShowMessage("$mrt_MarkofArkay_MESG_Save_Preset_Success", False)
-		Else
-			ShowMessage("$mrt_MarkofArkay_MESG_Save_Preset_Failure", False)
-		EndIf
-		ForcePageReset()
-	ElseIf (option == oidLoadPreset4)
-		If !FISSFactory.getFISS()
-			ShowMessage("$mrt_MarkofArkay_MESG_FISS_Error", False)
-			Return
-		EndIf
-		If ShowMessage("$mrt_MarkofArkay_MESG_Load_Preset", True, "$Yes", "$No")
-			If bLoadUserSettings("MarkofArkayUserSettings4.xml")
-				ShowMessage("$mrt_MarkofArkay_MESG_Load_Preset_Success", False)
-			Else
-				ShowMessage("$mrt_MarkofArkay_MESG_Load_Preset_Failure", False)
-			EndIf
-		EndIf
-	ElseIf (option == oidSavePreset4)
-		FISSInterface fiss = FISSFactory.getFISS()
-		If !fiss
-			ShowMessage("$mrt_MarkofArkay_MESG_FISS_Error", False)
-			Return
-		EndIf
-		fiss.beginLoad("MarkofArkayUserSettings4.xml")
-		If fiss.endLoad() == ""
-			If !ShowMessage("$mrt_MarkofArkay_MESG_Already_Preset", True, "$Yes", "$No")
-				Return
-			EndIf
-		EndIf
-		If bSaveUserSettings("MarkofArkayUserSettings4.xml")
+		If bSaveUserSettings(fName)
 			ShowMessage("$mrt_MarkofArkay_MESG_Save_Preset_Success", False)
 		Else
 			ShowMessage("$mrt_MarkofArkay_MESG_Save_Preset_Failure", False)
@@ -1327,6 +1243,7 @@ Event OnOptionSelect(Int option)
 		SetOptionFlags(oidGSoulGemPSlider, flags,True)
 		SetOptionFlags(oidGSoulGemSlider, flags,True)
 		SetOptionFlags(oidGSoulGemRevivalEnabled, flags,True)
+		SetOptionFlags(oidTradeEnabled, flags,True)
 		SetOptionFlags(oidEffect, flags,True)
 		SetOptionFlags(oidRevivalRequireBlessing,flags,True)
 		SetOptionFlags(oidRecallRestriction,flags,True)
@@ -1413,6 +1330,7 @@ Event OnOptionSelect(Int option)
 		SetOptionFlags(oidGSoulGemPSlider, flags,True)
 		SetOptionFlags(oidGSoulGemSlider, flags,True)
 		SetOptionFlags(oidGSoulGemRevivalEnabled, flags,True)
+		SetOptionFlags(oidTradeEnabled, flags,True)
 		SetOptionFlags(oidEffect, flags,True)
 		SetOptionFlags(oidRevivalRequireBlessing,flags,True)
 		SetOptionFlags(oidRecallRestriction,flags,True)
@@ -1647,7 +1565,15 @@ Event OnOptionMenuOpen(Int option)
 	ElseIf (option == oidEnableSave_M)
 		SetMenuDialogoptions(sSaveOptions)
 		SetMenuDialogStartIndex(iSaveOption)
-		SetMenuDialogDefaultIndex(1)	
+		SetMenuDialogDefaultIndex(1)
+	ElseIf (option == oidLoadPreset_M)
+		SetMenuDialogoptions(sPresets)
+		SetMenuDialogStartIndex(iLoadPreset)
+		SetMenuDialogDefaultIndex(0)
+	ElseIf (option == oidSavePreset_M)
+		SetMenuDialogoptions(sPresets)
+		SetMenuDialogStartIndex(iSavePreset)
+		SetMenuDialogDefaultIndex(0)
 	EndIf
 EndEvent
 
@@ -1655,7 +1581,7 @@ Event OnOptionMenuAccept(Int option, Int index)
 	If (option == oidTeleportLocation_M)
 		iTeleportLocation = index
 		SetMenuOptionValue(oidTeleportLocation_M, sRespawnPoints[iTeleportLocation])
-		If ( ( moaState.getValue() == 1 ) && ( iTeleportLocation == (sRespawnPoints.Length - 2 ) ) && ExternalMarkerList.GetSize() > 1 )
+		If ( ( moaState.getValue() == 1 ) && ( iTeleportLocation == (sRespawnPoints.Length - 3 ) ) && ExternalMarkerList.GetSize() > 1 )
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
@@ -1776,7 +1702,7 @@ Event OnOptionMenuAccept(Int option, Int index)
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		SetOptionFlags(oidLostItemQuest,flags,True)
-		If ( ( iTeleportLocation == (sRespawnPoints.Length - 2 ) ) && ExternalMarkerList.GetSize() > 1 )
+		If ( ( iTeleportLocation == (sRespawnPoints.Length - 3 ) ) && ExternalMarkerList.GetSize() > 1 )
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
@@ -1797,7 +1723,13 @@ Event OnOptionMenuAccept(Int option, Int index)
 	ElseIf (option == oidEnableSave_M)
 	    iSaveOption = index
 		SetSavingOption(iSaveOption)
-		SetMenuOptionValue(oidEnableSave_M, sSaveOptions[iSaveOption]) 
+		SetMenuOptionValue(oidEnableSave_M, sSaveOptions[iSaveOption])
+	ElseIf (option == oidLoadPreset_M)
+		iLoadPreset = index
+		SetMenuOptionValue(oidLoadPreset_M, sPresets[iLoadPreset])
+	ElseIf (option == oidSavePreset_M)
+		iSavePreset = index
+		SetMenuOptionValue(oidSavePreset_M, sPresets[iSavePreset])
 	EndIf
 EndEvent
 
@@ -1824,6 +1756,9 @@ Event OnOptionDefault(Int option)
 	ElseIf (option == oidGSoulGemRevivalEnabled)
 		bIsGSoulGemEnabled = True
 		SetToggleOptionValue(oidGSoulGemRevivalEnabled, bIsGSoulGemEnabled)
+	ElseIf (option == oidTradeEnabled)
+		bIsTradeEnabled = True
+		SetToggleOptionValue(oidTradeEnabled, bIsTradeEnabled)
 	ElseIf (option == oidGoldRevivalEnabled)
 		bIsGoldEnabled = True
 		SetToggleOptionValue(oidGoldRevivalEnabled, bIsGoldEnabled)
@@ -1867,7 +1802,7 @@ Event OnOptionDefault(Int option)
 	ElseIf (option == oidPotionRevivalEnabled)
 		bIsPotionEnabled = False
 		SetToggleOptionValue(oidPotionRevivalEnabled, bIsPotionEnabled)
-	ElSeIf (option == oidAutoDrinkPotion)
+	ElseIf (option == oidAutoDrinkPotion)
 		bAutoDrinkPotion = False
 		SetToggleOptionValue(oidAutoDrinkPotion, bAutoDrinkPotion) 
 	ElseIf (option == oidDragonSoulSlider)
@@ -1977,7 +1912,7 @@ Event OnOptionDefault(Int option)
 		SetToggleOptionValue(oidRespawnMenu,bRespawnMenu)
 		flags = OPTION_FLAG_NONE
 		SetOptionFlags(oidTeleportLocation_M,flags,True)
-		If ( ( moaState.getValue() == 1 ) && ( iTeleportLocation == (sRespawnPoints.Length - 2 ) ) && ExternalMarkerList.GetSize() > 1 )
+		If ( ( moaState.getValue() == 1 ) && ( iTeleportLocation == (sRespawnPoints.Length - 3 ) ) && ExternalMarkerList.GetSize() > 1 )
 			flags = OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
@@ -1988,7 +1923,7 @@ Event OnOptionDefault(Int option)
 		SetToggleOptionValue(oidTeleportMenu,bTeleportMenu)
 		flags = OPTION_FLAG_NONE
 		SetOptionFlags(oidTeleportLocation_M,flags,True)
-		If ( ( moaState.getValue() == 1 ) && ( iTeleportLocation == (sRespawnPoints.Length - 2 ) ) && ExternalMarkerList.GetSize() > 1 )
+		If ( ( moaState.getValue() == 1 ) && ( iTeleportLocation == (sRespawnPoints.Length - 3 ) ) && ExternalMarkerList.GetSize() > 1 )
 			flags = OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
@@ -2156,6 +2091,8 @@ Event OnOptionHighlight(Int option)
 		Else
 			SetInfoText("$mrt_MarkofArkay_DESC_RevivalEnabled_Off")
 		EndIf
+	ElseIf (option == oidTradeEnabled)
+		SetInfoText("$mrt_MarkofArkay_DESC_TradeEnabled")
 	ElseIf (option == oidDragonSoulSlider)
 		SetInfoText("$mrt_MarkofArkay_DESC_DragonSoulSlider") 
 	ElseIf (option == oidMenuEnabled)
@@ -2354,20 +2291,12 @@ Event OnOptionHighlight(Int option)
 		SetInfoText("$mrt_MarkofArkay_DESC_Load_Preset")
 	ElseIf (option == oidSavePreset1)
 		SetInfoText("$mrt_MarkofArkay_DESC_Save_Preset")
-	ElseIf (option == oidLoadPreset2)
-		SetInfoText("$mrt_MarkofArkay_DESC_Load_Preset")
-	ElseIf (option == oidSavePreset2)
-		SetInfoText("$mrt_MarkofArkay_DESC_Save_Preset")
-	ElseIf (option == oidLoadPreset3)
-		SetInfoText("$mrt_MarkofArkay_DESC_Load_Preset")
-	ElseIf (option == oidSavePreset3)
-		SetInfoText("$mrt_MarkofArkay_DESC_Save_Preset")
-	ElseIf (option == oidLoadPreset4)
-		SetInfoText("$mrt_MarkofArkay_DESC_Load_Preset")
-	ElseIf (option == oidSavePreset4)
-		SetInfoText("$mrt_MarkofArkay_DESC_Save_Preset")
 	ElseIf (option == oidLoadDefaultPreset)
 		SetInfoText("$mrt_MarkofArkay_DESC_Load_Default_Preset")
+	ElseIf (option == oidLoadPreset_M)
+		SetInfoText("$mrt_MarkofArkay_DESC_Load_Preset_M")
+	ElseIf (option == oidSavePreset_M)
+		SetInfoText("$mrt_MarkofArkay_DESC_Save_Preset_M")
 	EndIf
 EndEvent
 
@@ -2520,17 +2449,8 @@ Event OnConfigRegister()
 	RegisterForSingleUpdate(3.0)
 EndEvent
 
-Function setPages()
-	Pages = new String[5]
-	pages[0] = "$General"
-	pages[1] = "$Extra"
-	pages[2] = "$Aftermath"
-	pages[3] = "$Debug"
-	pages[4] = "$Presets"
-EndFunction
-
 Int Function GetVersion()
-	Return 37
+	Return 39
 EndFunction
 
 Event OnVersionUpdate(int a_version)
@@ -2618,7 +2538,7 @@ Event OnVersionUpdate(int a_version)
 	If (a_version >= 15 && CurrentVersion < 15)
 		Debug.Trace(self + ": Updating script to version "  + 15)
 		If iTeleportLocation >= sRespawnPoints.Length
-			iTeleportLocation = ( sRespawnPoints.Length - 5 )
+			iTeleportLocation = ( sRespawnPoints.Length - 6 )
 		EndIf
 	EndIf
 	If (a_version >= 17 && CurrentVersion < 17)
@@ -2690,6 +2610,9 @@ Event OnVersionUpdate(int a_version)
 		If iRemovableItems > 1
 			iRemovableItems += 1
 		EndIf
+	EndIf
+	If (a_version >= 39 && CurrentVersion < 39)
+		Debug.Trace(self + ": Updating script to version "  + 39)
 		setArrays()
 	EndIf
 	ForcePageReset()
@@ -2707,8 +2630,27 @@ Event OnGameReload()
 	OnVersionUpdate(GetVersion())
 EndEvent
 
+Function setArrays()
+	setPages()
+	setRespawnPoints()
+	setLoseOptions()
+	setAftermathOptions()
+	setArkayCurses()
+	setSaveOptions()
+	setPresets()
+EndFunction
+
+Function setPages()
+	Pages = new String[5]
+	pages[0] = "$General"
+	pages[1] = "$Extra"
+	pages[2] = "$Aftermath"
+	pages[3] = "$Debug"
+	pages[4] = "$Presets"
+EndFunction
+
 Function setRespawnPoints()
-	sRespawnPoints = New String[13]
+	sRespawnPoints = New String[14]
 	bRespawnPointsFlags = New Bool[8]
 	sRespawnPoints[0] = "$Whiterun"
 	sRespawnPoints[1] = "$Falkreath"
@@ -2718,11 +2660,12 @@ Function setRespawnPoints()
 	sRespawnPoints[5] = "$Windhelm"
 	sRespawnPoints[6] = "$Winterhold"
 	sRespawnPoints[7] = "$RavenRock"
-	sRespawnPoints[8] = "$Random"
+	sRespawnPoints[8] = "$RandomCity"
 	sRespawnPoints[9] = "$LastSleepLocation"
 	sRespawnPoints[10] = "$Custom"
 	sRespawnPoints[11] = "$External"
 	sRespawnPoints[12] = "$Nearby"
+	sRespawnPoints[13] = "$Random"
 	bRespawnPointsFlags[0] = True
 	bRespawnPointsFlags[1] = True
 	bRespawnPointsFlags[2] = True
@@ -2733,10 +2676,8 @@ Function setRespawnPoints()
 	bRespawnPointsFlags[7] = True
 EndFunction
 
-Function setArrays()
-	setPages()
-	setRespawnPoints()
-	sLoseOptions = New String[13]
+Function setLoseOptions()
+	sLoseOptions = New String[14]
 	sLoseOptions[0] = "$mrt_MarkofArkay_LoseOptions_0" 
 	sLoseOptions[1] = "$mrt_MarkofArkay_LoseOptions_1" 
 	sLoseOptions[2] = "$mrt_MarkofArkay_LoseOptions_2" 
@@ -2750,14 +2691,24 @@ Function setArrays()
 	sLoseOptions[10] = "$mrt_MarkofArkay_LoseOptions_10"
 	sLoseOptions[11] = "$mrt_MarkofArkay_LoseOptions_11"
 	sLoseOptions[12] = "$mrt_MarkofArkay_LoseOptions_12"
+	sLoseOptions[13] = "$mrt_MarkofArkay_LoseOptions_13"
+EndFunction
+
+Function setAftermathOptions()
 	sAftermathOptions = New String[3]
 	sAftermathOptions[0] = "$mrt_MarkofArkay_AftermathOptions_0"
 	sAftermathOptions[1] = "$mrt_MarkofArkay_AftermathOptions_1"
 	sAftermathOptions[2] = "$mrt_MarkofArkay_AftermathOptions_2"
+EndFunction
+
+Function setArkayCurses()
 	sArkayCurses = New String[3]
 	sArkayCurses[0] = "$mrt_MarkofArkay_ArkayCurses_0"
 	sArkayCurses[1] = "$mrt_MarkofArkay_ArkayCurses_1"
 	sArkayCurses[2] = "$mrt_MarkofArkay_ArkayCurses_2"
+EndFunction
+
+Function setSaveOptions()
 	sSaveOptions = new String[5]
 	sSaveOptions[0] = "$mrt_MarkofArkay_SaveOptions_0"
 	sSaveOptions[1] = "$mrt_MarkofArkay_SaveOptions_1"
@@ -2766,11 +2717,24 @@ Function setArrays()
 	sSaveOptions[4] = "$mrt_MarkofArkay_SaveOptions_4"
 EndFunction
 
+Function setPresets()
+	sPresets = New String[10]
+	sPresets[0] = "$Preset1"
+	sPresets[1] = "$Preset2"
+	sPresets[2] = "$Preset3"
+	sPresets[3] = "$Preset4"
+	sPresets[4] = "$Preset5"
+	sPresets[5] = "$Preset6"
+	sPresets[6] = "$Preset7"
+	sPresets[7] = "$Preset8"
+	sPresets[8] = "$Preset9"
+	sPresets[9] = "$Preset10"
+EndFunction
 
 Int Function iGetRespawnPointsCount()
 	int iIndex = 0
 	Int iCount = 0
-	while( iIndex < ( sRespawnPoints.Length - 5 ))
+	while( iIndex < ( sRespawnPoints.Length - 6 ))
 		If bRespawnPointsFlags[iIndex]
 			iCount += 1
 		EndIf
@@ -2866,10 +2830,19 @@ Bool function bLoadUserSettings(String sFileName)
 	bIsNotificationEnabled = fiss.loadBool("bIsNotificationEnabled")
 	bFadeToBlack = fiss.loadBool("bFadeToBlack")
 	bInvisibility = fiss.loadBool("bInvisibility")
+	bIsTradeEnabled = fiss.loadBool("bIsTradeEnabled")
+	bDeathEffect = fiss.loadBool("bDeathEffect")
+	bAltEyeFix = fiss.loadBool("bAltEyeFix")
 	String Result = fiss.endLoad()
 	if Result != ""
 		Debug.Trace("Mark of Arkay: Error loading user settings -> " + Result)
-		LoadDefaultSettings()
+		If Result == "Element bIsTradeEnabled not found\nElement bDeathEffect not found\nElement bAltEyeFix not found\n" ;added in version 38/39
+			bIsTradeEnabled = True
+			bDeathEffect = True
+			bAltEyeFix = False
+			bSaveUserSettings(sFileName)
+			Return True
+		EndIf
 		Return False
 	EndIf
 	Return True
@@ -2959,6 +2932,9 @@ bool function bSaveUserSettings(String sFileName)
 	fiss.saveBool("bIsNotificationEnabled", bIsNotificationEnabled)
 	fiss.saveBool("bFadeToBlack", bFadeToBlack)
 	fiss.saveBool("bInvisibility", bInvisibility)
+	fiss.saveBool("bIsTradeEnabled", bIsTradeEnabled)
+	fiss.saveBool("bDeathEffect", bDeathEffect)
+	fiss.saveBool("bAltEyeFix", bAltEyeFix)
 	String Result = fiss.endSave()
 	If Result != ""
 		Debug.Trace("Mark of Arkay: Error saving user settings -> " + Result)
@@ -3045,4 +3021,7 @@ function LoadDefaultSettings()
 	bIsNotificationEnabled = False
 	bFadeToBlack = True
 	bInvisibility = False
+	bIsTradeEnabled = True
+	bDeathEffect = True
+	bAltEyeFix = False
 EndFunction

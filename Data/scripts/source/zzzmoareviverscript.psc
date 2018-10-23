@@ -83,6 +83,7 @@ Quest Property moaRetrieveLostItems Auto
 Quest Property moaRetrieveLostItems01 Auto
 FormList property WorldspacesInterior auto
 Formlist property ExternalMarkerList Auto
+Formlist Property Destinations Auto
 Quest Property WerewolfQuest Auto
 ;Quest Property VampireLordQuest Auto
 Formlist Property PotionList Auto
@@ -98,6 +99,8 @@ Int Property iRevivesByPotion = 0 Auto Hidden;
 Int Property iDestroyedItems = 0 Auto Hidden;
 Float Property fRPMinDistance = 2500.0 Auto Hidden
 Form[] Property Equipment Auto Hidden
+Int Property iTeleportLocation Auto Hidden
+Int Property iExternalIndex Auto Hidden
 Form[] Property EquippedQuestItems Auto Hidden
 ObjectReference[] Property DynamicMarkerList Auto Hidden
 ObjectReference[] Property ExcludedMarkerList Auto Hidden
@@ -268,7 +271,7 @@ Event OnSleepStart(float afSleepStartTime, float afDesiredSleepEndTime)
 		SleepMarker.SetPosition(PlayerRef.GetPositionx(), PlayerRef.GetPositiony(), PlayerRef.GetPositionz())
 		SleepMarker.SetAngle(0.0, 0.0, PlayerRef.GetAnglez())
 		If ConfigMenu.bAutoSwitchRP
-			ConfigMenu.iTeleportLocation = ( ConfigMenu.sRespawnPoints.Length - 4 )
+			ConfigMenu.iTeleportLocation = ( ConfigMenu.sRespawnPoints.Length - 5 )
 		EndIf
 	EndIf
 EndEvent
@@ -1598,6 +1601,20 @@ Function RevivePlayer(Bool bRevive)
 				GoToState("")
 			ElseIf ( ConfigMenu.iNotTradingAftermath == 1)
 				ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Respawning the player...")
+				iTeleportLocation = ConfigMenu.iTeleportLocation
+				iExternalIndex = ConfigMenu.iExternalIndex
+				If ( ConfigMenu.bRespawnMenu )
+					moaERPCount.SetValue(ExternalMarkerList.GetSize())
+					iTeleportLocation = RespawnMenu()
+					If (( iTeleportLocation == -1 ) || ( iTeleportLocation > ( ConfigMenu.sRespawnPoints.Length - 1 )))
+						If ( iTeleportLocation == -1 )
+							iExternalIndex = iTeleportLocation
+						Else
+							iExternalIndex = ( iTeleportLocation - ( ConfigMenu.sRespawnPoints.Length ))
+						EndIf
+						iTeleportLocation = ( ConfigMenu.sRespawnPoints.Length - 3 )
+					EndIf
+				EndIf
 				Game.DisablePlayerControls()
 				Debug.SetGodMode(True)
 				If ConfigMenu.bIsEffectEnabled
@@ -1630,13 +1647,13 @@ Function RevivePlayer(Bool bRevive)
 					EndIf
 				Else
 					Game.ForceThirdPerson()
-					If ConfigMenu.bInvisibility
-						PlayerRef.SetAlpha(0.0)
-					EndIf
 					If ConfigMenu.bFadeToBlack
 						FastFadeOut.Apply()
 						Utility.Wait(1.0)
 						FastFadeOut.PopTo(BlackScreen)
+					EndIf
+					If ConfigMenu.bInvisibility
+						PlayerRef.SetAlpha(0.0)
 					EndIf
 				EndIf
 				iRemovableItems = ConfigMenu.iRemovableItems
@@ -1717,6 +1734,20 @@ Function RevivePlayer(Bool bRevive)
 						Else
 							iRemovableItems = 1
 						EndIf
+					EndIf
+				EndIf
+				If ( iRemovableItems == 13 ) ;~ 6% 12% 17%
+					iRemovableItems = Utility.RandomInt(0,8)
+					If ( iRemovableItems == 0 ) || ( iRemovableItems == 5 ) || ( iRemovableItems == 6 ) ;Nothig,Everything-Tradables,Everything
+						iRemovableItems = Utility.RandomInt(0,8)
+					EndIf
+					If ( iRemovableItems == 2 ) || ( iRemovableItems == 3 ) || ( iRemovableItems == 4 ) || ( iRemovableItems == 8 ) ;Tradable Items(All),Unequipped Items+Tradables,Unequipped Items-Tradables,Valuables
+						If Utility.RandomInt(0,1)
+							iRemovableItems = Utility.RandomInt(0,8)
+						EndIf
+					EndIf
+					If ( iRemovableItems > 6 )
+						iRemovableItems += 4
 					EndIf
 				EndIf
 				If ( iRemovableItems == 10 ) ;random
@@ -2144,19 +2175,20 @@ Function SetGameVars()
 EndFunction
 
 Bool Function bIsRevivable() ;if player can be revived by trading
-	If ( bArkayMarkRevive || bBSoulGemRevive || bGSoulGemRevive || bDragonSoulRevive || bSeptimRevive )
-		If ConfigMenu.bIsRevivalRequiresBlessing
-			If ( PlayerRef.HasMagicEffect(FortifyHealthFFSelf) || bIsEquipedFromFormlist(ArkayAmulets) );player has magiceffect from a shrine of arkay or wearing one of 2 amulets of arkay
-				Return True
+	If ConfigMenu.bIsTradeEnabled
+		If ( bArkayMarkRevive || bBSoulGemRevive || bGSoulGemRevive || bDragonSoulRevive || bSeptimRevive )
+			If ConfigMenu.bIsRevivalRequiresBlessing
+				If ( PlayerRef.HasMagicEffect(FortifyHealthFFSelf) || bIsEquipedFromFormlist(ArkayAmulets) );player has magiceffect from a shrine of arkay or wearing one of 2 amulets of arkay
+					Return True
+				Else
+					Return False
+				EndIf
 			Else
-				Return False
+				Return True
 			EndIf
-		Else
-			Return True
 		EndIf
-	Else
-		Return False
 	EndIf
+	Return False
 EndFunction
 
 Bool Function bIsEquipedFromFormlist(FormList ItemList)
@@ -2204,6 +2236,68 @@ Int Function iGetRandomWithExclusionArray( Int iFrom, Int iTo, Bool[] iFlagArray
 		iIndex += 1
 	EndWhile
 	Return iRandom
+EndFunction
+
+Function RandomTeleportAlt()
+	Destinations.Revert()
+	int iIndex = 0
+	Int iRandom = 0
+	While iIndex < ConfigMenu.bRespawnPointsFlags.Length
+		If ConfigMenu.bRespawnPointsFlags[iIndex] && PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As Objectreference) >= fRPMinDistance
+			Destinations.AddForm(MarkerList.GetAt(iIndex) As Objectreference)
+		EndIf
+		iIndex += 1
+	Endwhile
+	If bCanTeleportToDynMarker(SleepMarker) && PlayerMarker.GetDistance(SleepMarker) >= fRPMinDistance
+		Destinations.AddForm(SleepMarker)
+	EndIf
+	If bCanTeleportToDynMarker(CustomMarker) && PlayerMarker.GetDistance(CustomMarker) >= fRPMinDistance
+		Destinations.AddForm(CustomMarker)
+	EndIf
+	If ExternalMarkerList.GetSize() > 0
+		iIndex = ExternalMarkerList.GetSize()
+		While iIndex > 0
+			iIndex -= 1
+			If !(( ExternalMarkerList.GetAt( iIndex ).GetType() != 61 ) || \
+			!bCanTeleportToExtMarker( ExternalMarkerList.GetAt( iIndex ) As ObjectReference ) || \
+			( PlayerMarker.GetDistance( ExternalMarkerList.GetAt( iIndex ) As ObjectReference ) < fRPMinDistance ))
+				Destinations.AddForm(ExternalMarkerList.GetAt( iIndex ) As ObjectReference)
+			EndIf
+		EndWhile
+	EndIf
+	If bCanTeleportToDynMarker(CellLoadMarker2) && PlayerMarker.GetDistance(CellLoadMarker2) >= fRPMinDistance
+		Destinations.AddForm(CellLoadMarker2)
+	EndIf
+	If bCanTeleportToDynMarker(DetachMarker3) && PlayerMarker.GetDistance(DetachMarker3) >= fRPMinDistance
+		Destinations.AddForm(DetachMarker3)
+	EndIf
+	If bCanTeleportToDynMarker(LocationMarker2) && PlayerMarker.GetDistance(LocationMarker2) >= fRPMinDistance
+		Destinations.AddForm(LocationMarker2)
+	EndIf
+	If bCanTeleportToDynMarker(CellLoadMarker) && PlayerMarker.GetDistance(CellLoadMarker) >= fRPMinDistance
+		Destinations.AddForm(CellLoadMarker)
+	EndIf
+	If bCanTeleportToDynMarker(LocationMarker) && PlayerMarker.GetDistance(LocationMarker) >= fRPMinDistance
+		Destinations.AddForm(LocationMarker)
+	EndIf
+	If bCanTeleportToDynMarker(DetachMarker1) && PlayerMarker.GetDistance(DetachMarker1) >= fRPMinDistance
+		Destinations.AddForm(DetachMarker1)
+	EndIf
+	If bCanTeleportToDynMarker(DetachMarker2) && PlayerMarker.GetDistance(DetachMarker2) >= fRPMinDistance
+		Destinations.AddForm(DetachMarker2)
+	EndIf
+	iIndex = Destinations.GetSize()
+	Bool bBreak = False
+	While !bBreak && iIndex > 0
+		iRandom = Utility.RandomInt(0, Destinations.GetSize() - 1)
+		If bIsArrived(Destinations.GetAt(iRandom) As ObjectReference)
+			bBreak = True
+		Else
+			Destinations.RemoveAddedForm(Destinations.GetAt(iRandom))
+			bBreak = False
+		EndIf
+		iIndex -= 1
+	EndWhile
 EndFunction
 
 Function PassTime(Float fGameHours,Float fRealSecs)
@@ -2291,25 +2385,11 @@ Bool Function bStealSoul(Actor ActorRef)
 EndFunction
 
 Function Teleport()
-	Int iTeleportLocation = ConfigMenu.iTeleportLocation
-	Int iExternalIndex = ConfigMenu.iExternalIndex
-	If ( ConfigMenu.bRespawnMenu )
-		moaERPCount.SetValue(ExternalMarkerList.GetSize())
-		iTeleportLocation = RespawnMenu()
-		If (( iTeleportLocation == -1 ) || ( iTeleportLocation > ( ConfigMenu.sRespawnPoints.Length - 1 )))
-			If ( iTeleportLocation == -1 )
-				iExternalIndex = iTeleportLocation
-			Else
-				iExternalIndex = ( iTeleportLocation - ( ConfigMenu.sRespawnPoints.Length ))
-			EndIf
-			iTeleportLocation = ( ConfigMenu.sRespawnPoints.Length - 2 )
-		EndIf
-	EndIf
 	PlayerMarker.Enable()
 	PlayerMarker.MoveTo(playerRef)
 	PlayerMarker.SetPosition(PlayerRef.GetPositionx(), PlayerRef.GetPositiony(), PlayerRef.GetPositionz())
 	PlayerMarker.SetAngle(0.0, 0.0, PlayerRef.GetAnglez())
-	If (iTeleportLocation < (ConfigMenu.sRespawnPoints.Length - 5))
+	If (iTeleportLocation < (ConfigMenu.sRespawnPoints.Length - 6))
 		If (PlayerRef.GetDistance(MarkerList.GetAt(iTeleportLocation) As Objectreference) >= fRPMinDistance)
 			If !bIsArrived(MarkerList.GetAt(iTeleportLocation) As Objectreference)
 				SendToAnotherLocation()
@@ -2317,9 +2397,9 @@ Function Teleport()
 		Else
 			 SendToAnotherLocation()
 		EndIf
-	ElseIf (iTeleportLocation == (ConfigMenu.sRespawnPoints.Length - 5))
+	ElseIf (iTeleportLocation == (ConfigMenu.sRespawnPoints.Length - 6))
 		RandomTeleport()
-	ElseIf (iTeleportLocation == (ConfigMenu.sRespawnPoints.Length - 4))
+	ElseIf (iTeleportLocation == (ConfigMenu.sRespawnPoints.Length - 5))
 		If ( bCanTeleportToDynMarker(SleepMarker) && (PlayerRef.GetDistance(SleepMarker) >= fRPMinDistance))
 			If !bIsArrived(SleepMarker)
 				If ( bCanTeleportToDynMarker(CustomMarker) && ( CustomMarker.GetDistance(PlayerMarker) >= fRPMinDistance ) )
@@ -2337,7 +2417,7 @@ Function Teleport()
 		Else
 			 SendToAnotherLocation()
 		EndIf
-	ElseIf (iTeleportLocation == (ConfigMenu.sRespawnPoints.Length - 3))
+	ElseIf (iTeleportLocation == (ConfigMenu.sRespawnPoints.Length - 4))
 		If ((PlayerRef.GetDistance(CustomMarker) >= fRPMinDistance) && bCanTeleportToDynMarker(CustomMarker))
 			If !bIsArrived(CustomMarker)
 				If (bCanTeleportToDynMarker(SleepMarker) && ( SleepMarker.GetDistance(PlayerMarker) >= fRPMinDistance ))
@@ -2355,7 +2435,7 @@ Function Teleport()
 		Else
 			 SendToAnotherLocation()
 		EndIf
-	ElseIf (iTeleportLocation == (ConfigMenu.sRespawnPoints.Length - 2))
+	ElseIf (iTeleportLocation == (ConfigMenu.sRespawnPoints.Length - 3))
 		If ExternalMarkerList.GetSize() > 0
 			If ( ExternalMarkerList.GetSize() > 1 ) && ( iExternalIndex == -1 || ( iExternalIndex >= ExternalMarkerList.GetSize() ) ||\
 			( !bCanTeleportToExtMarker( ExternalMarkerList.GetAt( iExternalIndex ) As ObjectReference ) ||\
@@ -2455,8 +2535,10 @@ Function Teleport()
 		Else
 			SendToAnotherLocation()
 		EndIf
-	Else
+	ElseIf (iTeleportLocation == (ConfigMenu.sRespawnPoints.Length - 2))
 		SendToNearestLocation()
+	Else
+		RandomTeleportAlt()
 	EndIf
 	PlayerMarker.MoveToMyEditorLocation()
 	PlayerMarker.Disable()
@@ -2647,25 +2729,10 @@ Function ExecuteCommand(String strCMD) ;Requires Autorun Console Commands
 EndFunction
 
 Function ResetPlayer()
-	Int iBeastForm = iInBeastForm()
-	If iBeastForm
-		If iBeastForm == 1
-			If PlayerRef.IsSwimming()
-				Debug.SendAnimationEvent(PlayerRef, "RESET_GRAPH")
-				Utility.Wait(1.0)
-				Debug.SendAnimationEvent(PlayerRef, "SwimStart")
-			Else
-				Debug.SendAnimationEvent(PlayerRef, "RESET_GRAPH")
-			EndIf
-		EndIf
-	Else
-		If PlayerRef.IsSwimming()
-			Debug.SendAnimationEvent(PlayerRef, "IdleForceDefaultState")
-			Utility.Wait(1.0)
-			Debug.SendAnimationEvent(PlayerRef, "SwimStart")
-		Else
-			Debug.SendAnimationEvent(PlayerRef, "IdleForceDefaultState")
-		EndIf
+	If PlayerRef.IsSwimming()
+		Debug.SendAnimationEvent(PlayerRef, "SwimStart")
+	ElseIf bWasSwimming
+		Debug.SendAnimationEvent(PlayerRef, "SwimStop")
 	EndIf
 	PlayerRef.DispelAllSpells()
 	PlayerRef.ClearExtraArrows()
@@ -3959,9 +4026,9 @@ Int Function RespawnMenu(Int aiMessage = 0, Int aiButton = 0)
 		ElseIf aiMessage == 0
 			aiButton = moaRespawnMenu0.Show()
 			If aiButton == -1
-			ElseIf aiButton < ( ConfigMenu.sRespawnPoints.Length - 5 ) ;Whiterun,...,Raven Rock
+			ElseIf aiButton < ( ConfigMenu.sRespawnPoints.Length - 6 ) ;Whiterun,...,Raven Rock
 				Return aiButton
-			ElseIf aiButton == ( ConfigMenu.sRespawnPoints.Length - 5 ) ;More
+			ElseIf aiButton == ( ConfigMenu.sRespawnPoints.Length - 6 ) ;More
 				aiMessage = 1
 			EndIf
 		ElseIf aiMessage == 1
@@ -3969,9 +4036,9 @@ Int Function RespawnMenu(Int aiMessage = 0, Int aiButton = 0)
 			If aiButton == -1
 			ElseIf aiButton == 3
 				aiMessage = 2
-			ElseIf aiButton < 5 ;Random,...,Nearby
-				Return ( aiButton + ( ConfigMenu.sRespawnPoints.Length - 5 ))
-			ElseIf aiButton == 5 ;Less
+			ElseIf aiButton < 6 ;Random City,...,Random
+				Return ( aiButton + ( ConfigMenu.sRespawnPoints.Length - 6 ))
+			ElseIf aiButton == 6 ;Less
 				aiMessage = 0
 			EndIf
 		ElseIf aiMessage == 2

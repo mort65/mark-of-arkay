@@ -479,7 +479,7 @@ Function BleedoutHandler(String CurrentState)
 				Else
 					Debug.SetGodMode(False)
 				EndIf
-				If Configmenu.bFollowerProtectPlayer
+				If Configmenu.bPlayerProtectFollower
 					ResurrectFollowers()
 				EndIf
 				If ( moaThiefNPC01.IsRunning() )			
@@ -516,7 +516,7 @@ Function BleedoutHandler(String CurrentState)
 				If ConfigMenu.bIsEffectEnabled
 					BleedoutProtection.Cast(PlayerRef)
 				EndIf
-				If Configmenu.bFollowerProtectPlayer
+				If Configmenu.bPlayerProtectFollower
 					ResurrectFollowers()
 				EndIf
 				If ( moaThiefNPC01.IsRunning() )			
@@ -574,7 +574,7 @@ Function BleedoutHandler(String CurrentState)
 					Debug.SetGodMode(False)
 				EndIf
 			EndIf
-			If Configmenu.bFollowerProtectPlayer
+			If Configmenu.bPlayerProtectFollower
 				ResurrectFollowers()
 			EndIf
 			If ( moaThiefNPC01.IsRunning() )			
@@ -757,7 +757,7 @@ Function BleedoutHandler(String CurrentState)
 			Else
 				Debug.SetGodMode(False)
 			EndIf
-			If Configmenu.bFollowerProtectPlayer
+			If Configmenu.bPlayerProtectFollower
 				ResurrectFollowers()
 			EndIf
 			If ( moaThiefNPC01.IsRunning() )			
@@ -884,39 +884,6 @@ Function LogCurrentState()
 		+ ( Game.IsActivateControlsEnabled() As Int ) + ", "\
 		+ ( Game.IsJournalControlsEnabled() As Int ) + ", "\
 		+ ( Game.IsFastTravelEnabled() As Int ) + ", ],"\
-		+ "[ " + ( ConfigMenu.bIsRevivalEnabled As Int ) + ", "\
-		+ ( ConfigMenu.bIsMarkEnabled As Int ) + ", "\
-		+ ( ConfigMenu.bIsGSoulGemEnabled As Int ) + ", "\
-		+ ( ConfigMenu.bIsBSoulGemEnabled As Int ) + ", "\
-		+ ( ConfigMenu.bIsDragonSoulEnabled As Int ) + ", "\
-		+ ( ConfigMenu.bIsGoldEnabled As Int ) + ", "\
-		+ ConfigMenu.iSaveOption + ", "\
-		+ ( ConfigMenu.bIsNoFallDamageEnabled As Int ) + ", "\
-		+ ( ConfigMenu.bIsEffectEnabled As Int ) + ", "\
-		+ ( ConfigMenu.bIsPotionEnabled As Int ) + ", "\
-		+ ( ConfigMenu.bAutoDrinkPotion As Int ) + ", "\
-		+ ( ConfigMenu.bIsRevivalRequiresBlessing As Int ) + ", "\
-		+ ( ConfigMenu.bShiftBack As Int )+ ", "\
-		+ ( ConfigMenu.bShiftBackRespawn As Int ) + ", "\
-		+ ( ConfigMenu.bIsMenuEnabled As Int ) + ", "\
-		+ ConfigMenu.fBleedoutTimeSlider + ", "\
-		+ ConfigMenu.fRecoveryTimeSlider + ", "\
-		+ ConfigMenu.fValueSnoozeSlider + ", "\
-		+ ConfigMenu.fRPMinDistanceSlider+ ", "\
-		+ ConfigMenu.iNotTradingAftermath + ", "\
-		+ ConfigMenu.iTeleportLocation + ", "\
-		+ ConfigMenu.iExternalIndex + ", "\
-		+ ConfigMenu.iRemovableItems + ", "\
-		+ ( ConfigMenu.bRespawnNaked As Int ) + ", "\
-		+ ( ConfigMenu.bSendToJail As Int ) + ", "\
-		+ ( ConfigMenu.bFollowerProtectPlayer As Int ) + ", "\
-		+ ( ConfigMenu.bHealActors As Int ) + ", "\
-		+ ( ConfigMenu.bLoseForever As Int ) + ", "\
-		+ ( ConfigMenu.bSoulMarkStay As Int ) + ", "\
-		+ ( ConfigMenu.bHostileNPC As Int ) + ", "\
-		+ ( ConfigMenu.bNPCStealItems As Int ) + ", "\
-		+ ( ConfigMenu.bCreaturesCanSteal As Int ) + ", "\
-		+ ( ConfigMenu.bLostItemQuest As Int ) + ", ], "\
 		+ "[ " + ( LostItemsChest.GetNumItems() ) + ", "\
 		+ ( fLostSouls As Int ) + ", ], ]" )
 EndFunction
@@ -966,7 +933,7 @@ Int Function RemoveItemByMenu(String curState) ;trade by using menu
 				Else
 					Debug.SetGodMode(False)
 				EndIf
-				If Configmenu.bFollowerProtectPlayer
+				If Configmenu.bPlayerProtectFollower
 					ResurrectFollowers()
 				EndIf
 				If ( moaThiefNPC01.IsRunning() )			
@@ -1145,21 +1112,21 @@ Endfunction
 
 Bool Function bCanSteal(Actor ActorRef)
 	If ActorRef
-		Return (( ActorRef != PlayerRef ) && !ActorRef.IsDead() &&\
+		Return (( ActorRef != PlayerRef ) && !( ActorRef.IsDead() || ( ActorRef.GetActorValue("Health") <= 0 )) &&\
 		!ActorRef.IsDisabled() && !ActorRef.IsEssential() && !ActorRef.GetActorBase().IsProtected() &&\
 		!ActorRef.GetActorBase().IsInvulnerable() && !ActorRef.IsGhost() && !ActorRef.IsCommandedActor() &&\
 		!ActorRef.IsGuard() && !ActorRef.HasKeywordString("actortypeanimal") &&\
-		(( ActorRef.HasKeywordString("actortypenpc") && !ActorRef.HasKeywordString("actortypecreature") && ( ActorRef.GetActorValue("Morality") < 3 )) ||\
+		(( ActorRef.HasKeywordString("actortypenpc") && !ActorRef.HasKeywordString("actortypecreature") && ( !ConfigMenu.bMoralityMatters || ( ActorRef.GetActorValue("Morality") < 3 ))) ||\
 		( Configmenu.bCreaturesCanSteal && ActorRef.HasKeywordString("actortypecreature"))) &&\
-		(( ActorRef.GetFactionReaction(PlayerRef) == 1 ) || ActorRef.IsHostileToActor(PlayerRef) || ( ActorRef.GetRelationShipRank(PlayerRef) < 0 ))) &&\
-		( ActorRef.HasLOS(PlayerRef) || ( Attacker && ( Attacker == ActorRef )) || ( ActorRef.GetDistance(PlayerRef) <= 100.0 ))
+		(( Attacker && ( Attacker == ActorRef )) || ( ActorRef.GetFactionReaction(PlayerRef) == 1 ) || ActorRef.IsHostileToActor(PlayerRef) || ( ActorRef.GetRelationShipRank(PlayerRef) < 0 )) &&\
+		( ActorRef.HasLOS(PlayerRef) || ( Attacker && ( Attacker == ActorRef )) || ( ActorRef.GetDistance(PlayerRef) <= 100.0 )))
 	EndIf
 	Return False
 Endfunction
 
 Bool Function bIsHostile(Actor ActorRef)
 	If ActorRef
-		Return (( ActorRef != PlayerRef ) && !ActorRef.IsDead() &&\
+		Return (( ActorRef != PlayerRef ) && !( ActorRef.IsDead() || ( ActorRef.GetActorValue("Health") <= 0 )) &&\
 		!ActorRef.IsDisabled() && !ActorRef.IsCommandedActor() && !ActorRef.IsGuard() &&\
 		!ActorRef.HasKeywordString("actortypeanimal") &&\
 		(( ActorRef.HasKeywordString("actortypenpc") && !ActorRef.HasKeywordString("actortypecreature")) ||\
@@ -1171,8 +1138,9 @@ Bool Function bIsHostile(Actor ActorRef)
 Endfunction
 
 Function DetectThiefNPC()
+	Int i
 	ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Finding a thief (Phase 0)...")
-	If ( LostItemsChest.GetNumItems() > 0 && Thief && !Thief.IsDisabled() && !Thief.GetActorBase().IsInvulnerable() && ( !ConfigMenu.bLoseForever || thief.IsDead() ))
+	If LostItemsChest.GetNumItems() > 0 && Thief && !Thief.IsDisabled() && !Thief.GetActorBase().IsInvulnerable() && (!ConfigMenu.bLoseForever || ( thief.IsDead() || ( thief.GetActorValue("Health") <= 0 )))
 		If ( !bIsHostile(Thief) || PlayerRef.GetDistance(Thief) > 2000 )
 			iRemovableItems = 0
 		EndIf
@@ -1183,16 +1151,21 @@ Function DetectThiefNPC()
 	Thief = None
 	ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Finding a thief (Phase 1)...")
 	If moaHostileNPCDetector.IsRunning() && ( HostileActor.GetReference() As Actor ) &&\
-	!(( HostileActor.GetReference() As Actor ).IsDead() ) && !(( HostileActor.GetReference() As Actor ).GetActorBase().IsInvulnerable() )
+	!(( HostileActor.GetReference() As Actor ).IsDead() || (( HostileActor.GetReference() As Actor ).GetActorValue("Health") <= 0 )) && !(( HostileActor.GetReference() As Actor ).GetActorBase().IsInvulnerable() )
 		Thief = HostileActor.GetReference() As Actor
 		ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Detected thief in phase 1: ( '" +\
 		Thief.GetActorBase().GetName() + "', "  + Thief + ", " + Thief.GetRace() + ", )" )
 		Return
 	Else
 		moaHostileNPCDetector.Stop()
+		i = 0
+		While !moaHostileNPCDetector.IsStopped() && i < 30
+			Utility.Wait(0.1)
+			i += 1
+		EndWhile
 		moaHostileNPCDetector.Start()
 		If ( HostileActor.GetReference() As Actor ) &&\
-		!(( HostileActor.GetReference() As Actor ).IsDead() ) &&\
+		!(( HostileActor.GetReference() As Actor ).IsDead() || (( HostileActor.GetReference() As Actor ).GetActorValue("Health") <= 0 )) &&\
 		!(( HostileActor.GetReference() As Actor ).GetActorBase().IsInvulnerable() )
 			Thief = HostileActor.GetReference() As Actor
 			ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Detected thief in phase 1: ( '" +\
@@ -1210,7 +1183,7 @@ Function DetectThiefNPC()
 			RandomActor.GetActorBase().GetName() + "', "  + RandomActor + ", " + RandomActor.GetRace() + ", )" )
 			Return
 		EndIf
-		Int i = 0
+		i = 0
 		While ( i < 15 )
 			i += 1
 			RandomActor = Game.FindRandomActorFromRef(PlayerRef,2000)
@@ -1232,6 +1205,7 @@ Function DetectThiefNPC()
 Endfunction
 
 Bool Function bIsHostileNPCNearby()
+	Int i
 	ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Finding a hostile NPC (Phase 1)...")
 	If moaHostileNPCDetector01.IsRunning() && HostileActor01.GetReference() As Actor
 		bStealSoul = bStealSoul(HostileActor01.GetReference() As Actor)
@@ -1241,6 +1215,11 @@ Bool Function bIsHostileNPCNearby()
 		Return True
 	Else
 		moaHostileNPCDetector01.Stop()
+		i = 0
+		While !moaHostileNPCDetector01.IsStopped() && i < 30
+			Utility.Wait(0.1)
+			i += 1
+		EndWhile
 		moaHostileNPCDetector01.Start()
 		If HostileActor01.GetReference() As Actor
 			bStealSoul = bStealSoul(HostileActor01.GetReference() As Actor)
@@ -1259,7 +1238,7 @@ Bool Function bIsHostileNPCNearby()
 			RandomActor.GetActorBase().GetName() + "', " + RandomActor + ", " + RandomActor.GetRace() + ", )" )
 			Return True
 		EndIf
-		Int i = 0
+		i = 0
 		While ( i < 15 )
 			i += 1
 			RandomActor = Game.FindRandomActorFromRef(PlayerRef,2000)
@@ -1285,11 +1264,16 @@ EndFunction
 Function DetectFollowers()
 	ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Detecting followers...")
 	moaFollowerDetector.Stop()
+	Int i = 0
+	While !moaFollowerDetector.IsStopped() && i < 30
+		Utility.Wait(0.1)
+		i += 1
+	EndWhile
 	moaFollowerDetector.Start()
 	If FollowerArr.Length < 128
 		FollowerArr = New Actor[128]
 	EndIf
-	Int i = FollowerArr.Length
+	i = FollowerArr.Length
 	Int j
 	While i > 0
 		i -= 1
@@ -1362,10 +1346,10 @@ Bool Function FollowerCanProtectPlayer()
 			While i > 0 && !bInCombat
 				i -= 1
 				If bIsFollower(FollowerArr[i])
-					If ( FollowerArr[i].Is3DLoaded() && !FollowerArr[i].IsDead() && !FollowerArr[i].IsBleedingOut() && !FollowerArr[i].IsHostileToActor(PlayerRef) )
+					If ( FollowerArr[i].Is3DLoaded() && !FollowerArr[i].IsDead() && !(FollowerArr[i].GetActorValue("Health") <= 0) && !FollowerArr[i].IsBleedingOut() && !FollowerArr[i].IsHostileToActor(PlayerRef) )
 						If (( FollowerArr[i].GetCombatState() == 1 ) && ( FollowerArr[i].GetDistance(PlayerRef) <= 3000.0 ))
 							bInCombat = True
-						ElseIf (( Attacker != FollowerArr[i] ) && ( Attacker.GetDistance(PlayerRef) <= 10000.0 ) && ( Attacker.IsDead() || Attacker.IsBleedingOut() ))
+						ElseIf (( Attacker != FollowerArr[i] ) && ( Attacker.GetDistance(PlayerRef) <= 10000.0 ) && ( Attacker.IsDead() || ( Attacker.GetActorValue("Health") <= 0 ) || Attacker.IsBleedingOut() ))
 							If ConfigMenu.bIsNotificationEnabled
 								Debug.Notification("$mrt_MarkofArkay_Notification_Follower_Avenged")
 							EndIf
@@ -1381,14 +1365,14 @@ Bool Function FollowerCanProtectPlayer()
 				While i > 0
 					i -= 1
 					If bIsFollower(FollowerArr[i])
-						If ( FollowerArr[i].Is3DLoaded() && !FollowerArr[i].IsDead() && !FollowerArr[i].IsBleedingOut() && !FollowerArr[i].IsHostileToActor(PlayerRef) )
+						If ( FollowerArr[i].Is3DLoaded() && !FollowerArr[i].IsDead() && !( FollowerArr[i].GetActorValue("Health") <= 0 ) && !FollowerArr[i].IsBleedingOut() && !FollowerArr[i].IsHostileToActor(PlayerRef) )
 							If (( FollowerArr[i].GetCombatState() == 1 ) && ( FollowerArr[i].GetDistance(PlayerRef) <= 3000.0 ))
 								If ConfigMenu.bIsNotificationEnabled
 									Debug.Notification("$mrt_MarkofArkay_Notification_Follower_In_Combat")
 								EndIf
 								ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Followers are still fighting.")
 								Return True
-							ElseIf ( ( Attacker != FollowerArr[i] ) && ( Attacker.IsDead() || Attacker.IsBleedingOut() ) )
+							ElseIf ( ( Attacker != FollowerArr[i] ) && ( Attacker.IsDead() || ( Attacker.GetActorValue("Health") <= 0 ) || Attacker.IsBleedingOut() ) )
 								If ConfigMenu.bIsNotificationEnabled
 									Debug.Notification("$mrt_MarkofArkay_Notification_Follower_Avenged")
 								EndIf
@@ -1405,14 +1389,14 @@ Bool Function FollowerCanProtectPlayer()
 endFunction
 
 Function HoldFollowers()
-	If ConfigMenu.bFollowerProtectPlayer
+	If ConfigMenu.bPlayerProtectFollower
 		Int i = FollowerArr.Length
 		While i > 0
 			i -= 1
 			If FollowerArr[i]
-				If (( !FollowerArr[i].IsDead() ) || ( FollowerArr[i].IsDead() && ConfigMenu.bResurrectActors ))
+				If (( !FollowerArr[i].IsDead() ) || ( FollowerArr[i].IsDead() && ConfigMenu.bPlayerProtectFollower ))
 					If ( FollowerArr[i].IsDead() )
-						If ( ConfigMenu.bResurrectActors )
+						If ( ConfigMenu.bPlayerProtectFollower )
 							FollowerArr[i].Resurrect()
 						EndIf
 					EndIf
@@ -1427,7 +1411,7 @@ Function HoldFollowers()
 EndFunction
 
 Function ReleaseFollowers()
-	If ConfigMenu.bFollowerProtectPlayer
+	If ConfigMenu.bPlayerProtectFollower
 		Int i = FollowerArr.length
 		While i > 0
 			i -= 1
@@ -1440,7 +1424,7 @@ Function ReleaseFollowers()
 EndFunction
 
 Function RespawnFollowers()
-	If ConfigMenu.bFollowerProtectPlayer
+	If ConfigMenu.bPlayerProtectFollower
 		Int i = FollowerArr.Length
 		While i > 0
 			i -= 1
@@ -1465,11 +1449,11 @@ Function ResurrectFollowers()
 			EndIf
 		EndIf
 	Endwhile
-	ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Resurrecting followers finished.")
+	ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Resurrection of followers finished.")
 Endfunction
 
 Function ToggleFollower(Bool bEnable)
-	If ConfigMenu.bFollowerProtectPlayer
+	If ConfigMenu.bPlayerProtectFollower
 		Int i = FollowerArr.Length
 		While i > 0
 			i -= 1
@@ -1536,7 +1520,7 @@ Function RevivePlayer(Bool bRevive)
 				EndIf
 			EndIf
 		EndIf
-		If Configmenu.bFollowerProtectPlayer
+		If Configmenu.bPlayerProtectFollower
 			ResurrectFollowers()
 		EndIf
 		If ( moaThiefNPC01.IsRunning() )			
@@ -1900,6 +1884,9 @@ Function RevivePlayer(Bool bRevive)
 						EndIf
 					EndIf
 				EndIf
+				If ConfigMenu.bPlayerProtectFollower
+					ResurrectFollowers()
+				EndIf
 				If ConfigMenu.bResurrectActors
 					ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Resurrecting non-unique actors in player's location...")
 					If Attacker 
@@ -1909,7 +1896,6 @@ Function RevivePlayer(Bool bRevive)
 							EndIf
 						EndIf
 					EndIf
-					ResurrectFollowers()
 					MassRevival.Cast(PlayerRef)
 					ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Resurrection finished.")
 				EndIf
@@ -3543,6 +3529,11 @@ Bool Function bGuardCanSendToJail()
 	EndIf
 	ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Finding a guard NPC (Phase 2)...")
 	moaGuardDetector.Stop()
+	Int i = 0
+	While !moaGuardDetector.IsStopped() && i < 30
+		Utility.Wait(0.1)
+		i += 1
+	EndWhile
 	moaGuardDetector.Start()
 	If GuardNPC.GetReference() As Actor
 		CrimeFaction = ( GuardNPC.GetReference() As Actor ).GetCrimeFaction()
@@ -3558,7 +3549,7 @@ Bool Function bGuardCanSendToJail()
 	EndIf
 	moaGuardDetector.Stop()
 	ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Finding a guard NPC (Phase 3)...")
-	Int i = 0
+	i = 0
 	Actor RandomActor
 	While ( i < 15 )
 		i += 1

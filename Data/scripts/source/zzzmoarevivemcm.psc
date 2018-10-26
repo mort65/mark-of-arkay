@@ -95,6 +95,8 @@ Int oidSavePreset4
 Int oidTradeEnabled
 Int oidAltEyeFix
 Int oidLoadDefaultPreset
+Int oidMoralityMatters
+Int oidPlayerProtectFollower
 Bool Property bInit = False Auto Hidden
 String[] Property sRespawnPoints Auto
 String[] Property sLoseOptions Auto
@@ -112,6 +114,7 @@ GlobalVariable Property moaBleedouAnimation Auto
 GlobalVariable Property moaPraytoSave Auto
 GlobalVariable Property moaCreaturesCanSteal Auto
 GlobalVariable Property moaSnoozeState Auto
+GlobalVariable Property moaMoralityMatters Auto
 Quest Property moaReviverQuest Auto
 Quest Property moaRetrieveLostItems Auto
 Quest Property moaRetrieveLostItems01 Auto
@@ -161,6 +164,8 @@ Bool Property bIsHistoryEnabled = False Auto Hidden
 Bool property bHealActors = False Auto Hidden
 Bool property bResurrectActors = False Auto Hidden
 Bool Property bSendToJail = False Auto Hidden
+Bool Property bPlayerProtectFollower = False Auto Hidden
+Bool Property bMoralityMatters = True Auto Hidden
 Int Property iTeleportLocation = 0 Auto Hidden
 Int Property iSaveOption = 1 Auto Hidden
 Int Property iLoadPreset = 0 Auto Hidden
@@ -389,54 +394,22 @@ Event OnPageReset(String page)
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidRemovableItems_M = AddMenuOption("$mrt_MarkofArkay_RemovableItems_M", sLoseOptions[iRemovableItems], flags)
-		SetCursorPosition(6)
-		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bArkayCurse )
-			flags =	OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		oidArkayCurses_M = AddMenuOption("$mrt_MarkofArkay_ArkayCurses_M", sArkayCurses[iArkayCurse], flags)
 		SetCursorPosition(8)
-		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1))
-			flags =	OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		oidRespawnNaked = AddToggleOption("$mrt_MarkofArkay_RespawnNaked", bRespawnNaked, flags)
+		AddHeaderOption("$Respawn")
 		SetCursorPosition(10)
 		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1))
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
-		oidJail = AddToggleOption("$mrt_MarkofArkay_Jail",bSendToJail,flags)
+		oidRespawnNaked = AddToggleOption("$mrt_MarkofArkay_RespawnNaked", bRespawnNaked, flags)
 		SetCursorPosition(12)
-		If ( moaState.getValue() == 1 )
-			flags =	OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		oidTeleportMenu = AddToggleOption("$mrt_MarkofArkay_TeleportMenu", bTeleportMenu, flags)
+		oidJail = AddToggleOption("$mrt_MarkofArkay_Jail",bSendToJail,flags)
 		SetCursorPosition(14)
-		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1))
-			flags =	OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		oidRespawnMenu = AddToggleOption("$mrt_MarkofArkay_RespawnMenu", bRespawnMenu, flags)
+		oidHealActors = AddToggleOption("$mrt_MarkofArkay_HealActors",bHealActors,flags)
 		SetCursorPosition(16)
-		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled
-			flags =	OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		oidFollowerProtectPlayer = AddToggleOption("$mrt_MarkofArkay_FollowerProtectPlayer", bFollowerProtectPlayer, flags)
+		oidResurrectActors = AddToggleOption("$mrt_MarkofArkay_ResurrectActors",bResurrectActors,flags)
 		SetCursorPosition(18)
-		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1))
-			flags =	OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
 		oidArkayCurse = AddToggleOption("$mrt_MarkofArkay_ArkayCurse", bArkayCurse, flags)
 		SetCursorPosition(20)
 		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bArkayCurse)
@@ -446,64 +419,89 @@ Event OnPageReset(String page)
 		EndIf
 		oidTempArkayCurse = AddToggleOption("$mrt_MarkofArkay_TempArkayCurse",bIsArkayCurseTemporary, flags)
 		SetCursorPosition(22)
-		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1))
+		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bArkayCurse )
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
-		oidHealActors = AddToggleOption("$mrt_MarkofArkay_HealActors",bHealActors,flags)
-		SetCursorPosition(24)
-		oidResurrectActors = AddToggleOption("$mrt_MarkofArkay_ResurrectActors",bResurrectActors,flags)
+		oidArkayCurses_M = AddMenuOption("$mrt_MarkofArkay_ArkayCurses_M", sArkayCurses[iArkayCurse], flags)
 		SetCursorPosition(26)
-		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && ( iRemovableItems != 0 ))
-			flags =	OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		oidLoseforever = AddToggleOption("$mrt_MarkofArkay_Loseforever",bLoseForever, flags)
+		AddHeaderOption("$Lost_Item")
 		SetCursorPosition(28)
-		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && (( iRemovableItems != 0 ) || bArkayCurse ))
-			flags =	OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		oidSoulMarkStay = AddToggleOption("$mrt_MarkofArkay_SoulMarkStay",bSoulMarkStay,flags)
-		SetCursorPosition(30)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidLostItemQuest = AddToggleOption("$mrt_MarkofArkay_LostItemQuest",bLostItemQuest,flags)
+		SetCursorPosition(30)
+		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && (( iRemovableItems != 0 ) || bArkayCurse ))
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidSoulMarkStay = AddToggleOption("$mrt_MarkofArkay_SoulMarkStay",bSoulMarkStay,flags)
 		SetCursorPosition(32)
-		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1)) && !bNPCStealItems
+		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && ( iRemovableItems != 0 ))
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidLoseforever = AddToggleOption("$mrt_MarkofArkay_Loseforever",bLoseForever, flags)
+		SetCursorPosition(36)
+		AddHeaderOption("$Hostile_NPC")
+		SetCursorPosition(38)
+		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1)) && ( iRemovableItems != 0 )
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidHostileNPC =  AddToggleOption("$mrt_MarkofArkay_HostileNPC",bHostileNPC,flags)
-		SetCursorPosition(34)
-		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1)) && !bHostileNPC
+		SetCursorPosition(40)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && ( iRemovableItems != 0 )
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidNPCStealItems = AddToggleOption("$mrt_MarkofArkay_NPCStealItems",bNPCStealItems,flags)
-		SetCursorPosition(36)
-		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1)) && ( bHostileNPC || bNPCStealItems )
+		SetCursorPosition(42)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && ( iRemovableItems != 0 ) && ( bNPCStealItems )
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidMoralityMatters = AddToggleOption("$mrt_MarkofArkay_MoralityMatters", bMoralityMatters,flags)
+		SetCursorPosition(44)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && ( iRemovableItems != 0 ) && ( bHostileNPC || bNPCStealItems )
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidCreaturesCanSteal  = AddToggleOption("$mrt_MarkofArkay_CreaturesCanSteal",bCreaturesCanSteal,flags)
+		SetCursorPosition(1)
+		AddHeaderOption("$Destination")
 		SetCursorPosition(3)
+		If ( moaState.getValue() == 1 )
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidTeleportMenu = AddToggleOption("$mrt_MarkofArkay_TeleportMenu", bTeleportMenu, flags)
+		SetCursorPosition(5)
+		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1))
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidRespawnMenu = AddToggleOption("$mrt_MarkofArkay_RespawnMenu", bRespawnMenu, flags)
+		SetCursorPosition(7)
 		If (( moaState.getValue() == 1 ) && ( !bRespawnMenu || !bTeleportMenu ))
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidTeleportLocation_M = AddMenuOption("$mrt_MarkofArkay_TeleportLocation_M", sRespawnPoints[iTeleportLocation], flags)
-		SetCursorPosition(5)
+		SetCursorPosition(9)
 		If (( moaState.getValue() == 1 ) && ( iTeleportLocation == ( sRespawnPoints.Length - 3 )) && ( ExternalMarkerList.GetSize() > 1 ) && ( !bRespawnMenu || !bTeleportMenu ))
 			flags =	OPTION_FLAG_NONE
 		Else
@@ -517,34 +515,47 @@ Event OnPageReset(String page)
 		Else
 			oidExternalTeleportLocation = AddTextOption("$mrt_MarkofArkay_ExternalTeleportLocation", ( (iExternalIndex + 1) As String ), flags)
 		EndIf
-		SetCursorPosition(7)
+		SetCursorPosition(11)
 		If ( moaState.getValue() == 1 )
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidRPMinDistanceSlider = AddSliderOption("$mrt_MarkofArkay_RPMinDistanceSlider_1", fRPMinDistanceSlider, "{0}", flags)
-		SetCursorPosition(9)
+		SetCursorPosition(15)
+		AddHeaderOption("$City")
+		SetCursorPosition(17)
 		If ( moaState.getValue() == 1 )
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidRespawnPoint0 = AddToggleOption(sRespawnPoints[0], bRespawnPointsFlags[0], flags )
-		SetCursorPosition(11)
-		oidRespawnPoint1 = AddToggleOption(sRespawnPoints[1], bRespawnPointsFlags[1], flags )
-		SetCursorPosition(13)
-		oidRespawnPoint2 = AddToggleOption(sRespawnPoints[2], bRespawnPointsFlags[2], flags )
-		SetCursorPosition(15)
-		oidRespawnPoint3 = AddToggleOption(sRespawnPoints[3], bRespawnPointsFlags[3], flags )
-		SetCursorPosition(17)
-		oidRespawnPoint4 = AddToggleOption(sRespawnPoints[4], bRespawnPointsFlags[4], flags )
 		SetCursorPosition(19)
-		oidRespawnPoint5 = AddToggleOption(sRespawnPoints[5], bRespawnPointsFlags[5], flags )
+		oidRespawnPoint1 = AddToggleOption(sRespawnPoints[1], bRespawnPointsFlags[1], flags )
 		SetCursorPosition(21)
+		oidRespawnPoint2 = AddToggleOption(sRespawnPoints[2], bRespawnPointsFlags[2], flags )
+		SetCursorPosition(23)
+		oidRespawnPoint3 = AddToggleOption(sRespawnPoints[3], bRespawnPointsFlags[3], flags )
+		SetCursorPosition(25)
+		oidRespawnPoint4 = AddToggleOption(sRespawnPoints[4], bRespawnPointsFlags[4], flags )
+		SetCursorPosition(27)
+		oidRespawnPoint5 = AddToggleOption(sRespawnPoints[5], bRespawnPointsFlags[5], flags )
+		SetCursorPosition(29)
 		oidRespawnPoint6 = AddToggleOption(sRespawnPoints[6], bRespawnPointsFlags[6], flags )
-		;SetCursorPosition(23)
+		;SetCursorPosition(31)
 		;oidRespawnPoint7 = AddToggleOption(sRespawnPoints[7], bRespawnPointsFlags[7], flags )
+		SetCursorPosition(35)
+		AddHeaderOption("$Follower")
+		SetCursorPosition(37)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidPlayerProtectFollower = AddToggleOption("$mrt_MarkofArkay_PlayerProtectFollower", bPlayerProtectFollower, flags)
+		SetCursorPosition(39)
+		oidFollowerProtectPlayer = AddToggleOption("$mrt_MarkofArkay_FollowerProtectPlayer", bFollowerProtectPlayer, flags)
 	ElseIf (page == "$Debug")
 		SetCursorPosition(0)
 		AddHeaderOption("$Debug")
@@ -874,6 +885,9 @@ Event OnOptionSelect(Int option)
 	ElseIf (option == oidFollowerProtectPlayer)
 		bFollowerProtectPlayer = !bFollowerProtectPlayer
 		SetToggleOptionValue(oidFollowerProtectPlayer, bFollowerProtectPlayer)
+	ElseIf (option == oidPlayerProtectFollower)
+		bPlayerProtectFollower = !bPlayerProtectFollower
+		SetToggleOptionValue(oidPlayerProtectFollower, bPlayerProtectFollower)
 	ElseIf (option == oidNotification)
 		bIsNotificationEnabled = !bIsNotificationEnabled
 		SetToggleOptionValue(oidNotification, bIsNotificationEnabled)
@@ -1096,13 +1110,13 @@ Event OnOptionSelect(Int option)
 			bHostileNPC = False
 		EndIf
 		SetToggleOptionValue(oidHostileNPC,bHostileNPC)
-		If bIsRevivalEnabled && ( iNotTradingAftermath == 1) && !bNPCStealItems
+		If bIsRevivalEnabled && ( iNotTradingAftermath == 1 ) && ( iRemovableItems != 0 ) && bNPCStealItems
 			flags = OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
-		SetOptionFlags(oidHostileNPC, flags,True)
-		If bIsRevivalEnabled && ( iNotTradingAftermath == 1) && ( bHostileNPC || bNPCStealItems )
+		SetOptionFlags(oidMoralityMatters, flags, True)
+		If bIsRevivalEnabled && ( iNotTradingAftermath == 1) && ( iRemovableItems != 0 ) && ( bHostileNPC || bNPCStealItems )
 			flags = OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
@@ -1115,13 +1129,13 @@ Event OnOptionSelect(Int option)
 			bNPCStealItems = False
 		EndIf
 		SetToggleOptionValue(oidNPCStealItems,bNPCStealItems)
-		If bIsRevivalEnabled && ( iNotTradingAftermath == 1) && !bHostileNPC
+		If bIsRevivalEnabled && ( iNotTradingAftermath == 1 ) && ( iRemovableItems != 0 ) && bNPCStealItems
 			flags = OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
-		SetOptionFlags(oidNPCStealItems, flags,True)
-		If bIsRevivalEnabled && ( iNotTradingAftermath == 1) && ( bHostileNPC || bNPCStealItems )
+		SetOptionFlags(oidMoralityMatters, flags, True)
+		If bIsRevivalEnabled && ( iNotTradingAftermath == 1) && ( iRemovableItems != 0 ) && ( bHostileNPC || bNPCStealItems )
 			flags = OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
@@ -1131,6 +1145,10 @@ Event OnOptionSelect(Int option)
 		bCreaturesCanSteal = !bCreaturesCanSteal
 		moaCreaturesCanSteal.SetValue(bCreaturesCanSteal As Int)
 		SetToggleOptionValue(oidCreaturesCanSteal,bCreaturesCanSteal)
+	ElseIf (option == oidMoralityMatters)
+		bMoralityMatters = !bMoralityMatters
+		moaMoralityMatters.SetValue(bMoralityMatters As Int)
+		SetToggleOptionValue(oidMoralityMatters,bMoralityMatters)
 	ElseIf (option == oidInformation)
 		bIsInfoEnabled = !bIsInfoEnabled
 		SetToggleOptionValue(oidInformation,bIsInfoEnabled)
@@ -1218,6 +1236,7 @@ Event OnOptionSelect(Int option)
 		SetOptionFlags(oidDragonSoulSlider, flags, True)
 		SetOptionFlags(oidGoldRevivalEnabled, flags, True)
 		SetOptionFlags(oidFollowerProtectPlayer, flags, True)
+		SetOptionFlags(oidPlayerProtectFollower, flags, True)
 		SetOptionFlags(oidNoFallDamageEnabled, flags, True)	
 		SetOptionFlags(oidGoldSlider, flags, True)
 		SetOptionFlags(oidMarkOfArkayRevivalEnabled, flags, True)
@@ -1270,6 +1289,7 @@ Event OnOptionSelect(Int option)
 		SetOptionFlags(oidNPCStealItems,flags,True)
 		SetOptionFlags(oidHostileNPC,flags,True)
 		SetOptionFlags(oidCreaturesCanSteal,flags,True)
+		SetOptionFlags(oidMoralityMatters,flags,True)
 		SetOptionFlags(oidRemovableItems_M,flags,True)
 		SetOptionFlags(oidExternalTeleportLocation,flags,True)
 		SetOptionFlags(oidShiftBack,flags,True)
@@ -1305,6 +1325,7 @@ Event OnOptionSelect(Int option)
 		SetOptionFlags(oidDragonSoulSlider, flags, True)
 		SetOptionFlags(oidGoldRevivalEnabled, flags, True)
 		SetOptionFlags(oidFollowerProtectPlayer, flags, True)
+		SetOptionFlags(oidPlayerProtectFollower, flags, True)
 		SetOptionFlags(oidNoFallDamageEnabled, flags, True)	
 		SetOptionFlags(oidGoldSlider, flags, True)
 		SetOptionFlags(oidMarkOfArkayRevivalEnabled, flags, True)
@@ -1356,6 +1377,7 @@ Event OnOptionSelect(Int option)
 		SetOptionFlags(oidNPCStealItems,flags,True)
 		SetOptionFlags(oidHostileNPC,flags,True)
 		SetOptionFlags(oidCreaturesCanSteal,flags,True)
+		SetOptionFlags(oidMoralityMatters,flags,True)
 		SetOptionFlags(oidRemovableItems_M,flags,True)
 		SetOptionFlags(oidExternalTeleportLocation,flags,True)
 		SetOptionFlags(oidAutoSwitchRP,flags,True)
@@ -1621,6 +1643,12 @@ Event OnOptionMenuAccept(Int option, Int index)
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		SetOptionFlags(oidHostileNPC,flags,True)
+		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && ( iRemovableItems != 0 ) && bNPCStealItems )
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		SetOptionFlags(oidMoralityMatters,flags,True)
 		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && ( iRemovableItems != 0 ) && ( bNPCStealItems || bHostileNPC ))
 			flags =	OPTION_FLAG_NONE
 		Else
@@ -1672,6 +1700,12 @@ Event OnOptionMenuAccept(Int option, Int index)
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		SetOptionFlags(oidHostileNPC, Flags,True)
+		If bIsRevivalEnabled && (iNotTradingAftermath == 1) && (iRemovableItems != 0) && bNPCStealItems
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		SetOptionFlags(oidMoralityMatters, Flags,True)
 		If bIsRevivalEnabled && (iNotTradingAftermath == 1) && (iRemovableItems != 0) && (bNPCStealItems || bHostileNPC)
 			flags =	OPTION_FLAG_NONE
 		Else
@@ -1765,6 +1799,9 @@ Event OnOptionDefault(Int option)
 	ElseIf (option == oidFollowerProtectPlayer)
 		bFollowerProtectPlayer = False
 		SetToggleOptionValue(oidFollowerProtectPlayer, bFollowerProtectPlayer)
+	ElseIf (option == oidPlayerProtectFollower)
+		bPlayerProtectFollower = False
+		SetToggleOptionValue(oidPlayerProtectFollower, bPlayerProtectFollower)
 	ElseIf (option == oidNoFallDamageEnabled)
 		ToggleFallDamage(False)
 		SetToggleOptionValue(oidNoFallDamageEnabled, bIsNoFallDamageEnabled)
@@ -1956,37 +1993,31 @@ Event OnOptionDefault(Int option)
 	ElseIf (option == oidNPCStealItems)
 		bNPCStealItems = False
 		SetToggleOptionValue(oidNPCStealItems,bNPCStealItems)
-		If bIsRevivalEnabled && ( iNotTradingAftermath == 1)
+		If bIsRevivalEnabled && ( iNotTradingAftermath == 1 ) && ( iRemovableItems != 0 ) && bHostileNPC
 			flags = OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
-		SetOptionFlags(oidHostileNPC, flags,True)
-		If bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bHostileNPC
-			flags = OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		SetOptionFlags(oidCreaturesCanSteal , flags)
+		SetOptionFlags(oidCreaturesCanSteal , flags, True)
+		SetOptionFlags(oidMoralityMatters , OPTION_FLAG_DISABLED)
 	ElseIf (option == oidHostileNPC)
 		bHostileNPC = False
 		SetToggleOptionValue(oidHostileNPC,bHostileNPC)
-		If bIsRevivalEnabled && ( iNotTradingAftermath == 1)
+		If bIsRevivalEnabled && ( iNotTradingAftermath == 1) && ( iRemovableItems != 0 ) && bNPCStealItems
 			flags = OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
-		SetOptionFlags(oidNPCStealItems, flags,True)
-		If bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bNPCStealItems
-			flags = OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
+		SetOptionFlags(oidMoralityMatters, flags, True)
 		SetOptionFlags(oidCreaturesCanSteal , flags)
 	ElseIf (option == oidCreaturesCanSteal )
 		bCreaturesCanSteal = False
 		moaCreaturesCanSteal.SetValue(bCreaturesCanSteal As Int)
 		SetToggleOptionValue(oidCreaturesCanSteal ,bCreaturesCanSteal)
+	ElseIf (option == oidMoralityMatters )
+		bMoralityMatters = True
+		moaMoralityMatters.SetValue(bMoralityMatters As Int)
+		SetToggleOptionValue(oidMoralityMatters ,bMoralityMatters)
 	ElseIf (option == oidLoseforever)
 		bLoseForever = False
 		SetToggleOptionValue(oidLoseforever,bLoseForever)
@@ -2045,6 +2076,7 @@ Event OnOptionDefault(Int option)
 		SetOptionFlags(oidTempArkayCurse,flags,True)
 		SetOptionFlags(oidNPCStealItems,flags,True)
 		SetOptionFlags(oidHostileNPC,flags,True)
+		SetOptionFlags(oidMoralityMatters,flags,True)
 		SetOptionFlags(oidCreaturesCanSteal,flags,True)
 		SetOptionFlags(oidArkayCurses_M,flags,True)
 		SetOptionFlags(oidLoseforever,flags,True)
@@ -2057,6 +2089,7 @@ Event OnOptionDefault(Int option)
 		SetOptionFlags(oidLoseforever, flags,True)
 		SetOptionFlags(oidNPCStealItems,flags,True)
 		SetOptionFlags(oidHostileNPC,flags,True)
+		SetOptionFlags(oidMoralityMatters,flags,True)
 		SetOptionFlags(oidCreaturesCanSteal,flags,True)
 		If ( !bArkayCurse )
 			flags = OPTION_FLAG_DISABLED
@@ -2141,6 +2174,8 @@ Event OnOptionHighlight(Int option)
 		EndIf
 	ElseIf (option == oidFollowerProtectPlayer)
 			SetInfoText("$mrt_MarkofArkay_DESC_FollowerProtectPlayer")
+	ElseIf (option == oidPlayerProtectFollower)
+			SetInfoText("$mrt_MarkofArkay_DESC_PlayerProtectFollower")
 	ElseIf (option == oidNoFallDamageEnabled)
 		If bIsNoFallDamageEnabled
 			SetInfoText("$mrt_MarkofArkay_DESC_NoFallDamageEnabled_On")
@@ -2249,6 +2284,8 @@ Event OnOptionHighlight(Int option)
 		SetInfoText("$mrt_MarkofArkay_DESC_NPCStealItems")
 	ElseIf (option == oidCreaturesCanSteal )
 		SetInfoText("$mrt_MarkofArkay_DESC_CreaturesCanSteal")
+	ElseIf (option == oidMoralityMatters )
+		SetInfoText("$mrt_MarkofArkay_DESC_MoralityMatters")
 	ElseIf (option == oidHostileNPC)
 		SetInfoText("$mrt_MarkofArkay_DESC_HostileNPC")
 	ElseIf (option == oidRemovableItems_M)
@@ -2806,13 +2843,25 @@ Bool function bLoadUserSettings(String sFileName)
 	bIsTradeEnabled = fiss.loadBool("bIsTradeEnabled")
 	bDeathEffect = fiss.loadBool("bDeathEffect")
 	bAltEyeFix = fiss.loadBool("bAltEyeFix")
+	bPlayerProtectFollower = fiss.loadBool("bPlayerProtectFollower")
+	bMoralityMatters = fiss.loadBool("bMoralityMatters")
+	moaMoralityMatters.SetValue(bMoralityMatters As Int)
 	String Result = fiss.endLoad()
 	if Result != ""
 		Debug.Trace("Mark of Arkay: Error loading user settings -> " + Result)
-		If Result == "Element bIsTradeEnabled not found\nElement bDeathEffect not found\nElement bAltEyeFix not found\n" ;added in version 38/39
+		If Result == "Element bPlayerProtectFollower not found\nElement bMoralityMatters not found\n"
+			bPlayerProtectFollower = False
+			bMoralityMatters = True
+			moaMoralityMatters.SetValue(bMoralityMatters As Int)
+			bSaveUserSettings(sFileName)
+			Return True
+		ElseIf Result == "Element bIsTradeEnabled not found\nElement bDeathEffect not found\nElement bAltEyeFix not found\nElement bPlayerProtectFollower not found\nElement bMoralityMatters not found\n"
 			bIsTradeEnabled = True
 			bDeathEffect = True
 			bAltEyeFix = False
+			bPlayerProtectFollower = False
+			bMoralityMatters = True
+			moaMoralityMatters.SetValue(bMoralityMatters As Int)
 			bSaveUserSettings(sFileName)
 			Return True
 		EndIf
@@ -2879,6 +2928,7 @@ bool function bSaveUserSettings(String sFileName)
 	fiss.saveBool("bTeleportMenu", bTeleportMenu)
 	fiss.saveBool("bRespawnMenu", bRespawnMenu)
 	fiss.saveBool("bFollowerProtectPlayer", bFollowerProtectPlayer)
+	fiss.saveBool("bPlayerProtectFollower", bPlayerProtectFollower)
 	fiss.saveBool("bArkayCurse", bArkayCurse)
 	fiss.saveBool("bIsArkayCurseTemporary", bIsArkayCurseTemporary)
 	fiss.saveBool("bHealActors", bHealActors)
@@ -2889,6 +2939,7 @@ bool function bSaveUserSettings(String sFileName)
 	fiss.saveBool("bHostileNPC", bHostileNPC)
 	fiss.saveBool("bNPCStealItems", bNPCStealItems)
 	fiss.saveBool("bCreaturesCanSteal", bCreaturesCanSteal)
+	fiss.saveBool("bMoralityMatters", bMoralityMatters)
 	fiss.saveInt("iTeleportLocation", iTeleportLocation)
 	fiss.saveInt("iExternalIndex", iExternalIndex)
 	fiss.saveFloat("fRPMinDistanceSlider", fRPMinDistanceSlider)
@@ -2899,7 +2950,7 @@ bool function bSaveUserSettings(String sFileName)
 	fiss.saveBool("bRespawnPointsFlags4", bRespawnPointsFlags[4])
 	fiss.saveBool("bRespawnPointsFlags5", bRespawnPointsFlags[5])
 	fiss.saveBool("bRespawnPointsFlags6", bRespawnPointsFlags[6])
-	fiss.saveBool("bRespawnPointsFlags7", False)
+	;fiss.saveBool("bRespawnPointsFlags7", bRespawnPointsFlags[7])
 	fiss.saveBool("bIsLoggingEnabled", bIsLoggingEnabled)
 	fiss.saveBool("bIsInfoEnabled", bIsInfoEnabled)
 	fiss.saveBool("bIsNotificationEnabled", bIsNotificationEnabled)
@@ -2961,6 +3012,7 @@ function LoadDefaultSettings()
 	bTeleportMenu = False
 	bRespawnMenu = False
 	bFollowerProtectPlayer = False
+	bPlayerProtectFollower = False
 	bArkayCurse = False
 	bIsArkayCurseTemporary = False
 	bHealActors = False
@@ -2978,6 +3030,8 @@ function LoadDefaultSettings()
 	EndIf
 	bCreaturesCanSteal = False
 	moaCreaturesCanSteal.SetValue(bCreaturesCanSteal As Int)
+	bMoralityMatters = True
+	moaMoralityMatters.SetValue(bMoralityMatters As Int)
 	iTeleportLocation = 0
 	iExternalIndex = -1
 	fRPMinDistanceSlider = 2500.0

@@ -885,39 +885,6 @@ Function LogCurrentState()
 		+ ( Game.IsActivateControlsEnabled() As Int ) + ", "\
 		+ ( Game.IsJournalControlsEnabled() As Int ) + ", "\
 		+ ( Game.IsFastTravelEnabled() As Int ) + ", ],"\
-		+ "[ " + ( ConfigMenu.bIsRevivalEnabled As Int ) + ", "\
-		+ ( ConfigMenu.bIsMarkEnabled As Int ) + ", "\
-		+ ( ConfigMenu.bIsGSoulGemEnabled As Int ) + ", "\
-		+ ( ConfigMenu.bIsBSoulGemEnabled As Int ) + ", "\
-		+ ( ConfigMenu.bIsDragonSoulEnabled As Int ) + ", "\
-		+ ( ConfigMenu.bIsGoldEnabled As Int ) + ", "\
-		+ ConfigMenu.iSaveOption + ", "\
-		+ ( ConfigMenu.bIsNoFallDamageEnabled As Int ) + ", "\
-		+ ( ConfigMenu.bIsEffectEnabled As Int ) + ", "\
-		+ ( ConfigMenu.bIsPotionEnabled As Int ) + ", "\
-		+ ( ConfigMenu.bAutoDrinkPotion As Int ) + ", "\
-		+ ( ConfigMenu.bIsRevivalRequiresBlessing As Int ) + ", "\
-		+ ( ConfigMenu.bShiftBack As Int )+ ", "\
-		+ ( ConfigMenu.bShiftBackRespawn As Int ) + ", "\
-		+ ( ConfigMenu.bIsMenuEnabled As Int ) + ", "\
-		+ ConfigMenu.fBleedoutTimeSlider + ", "\
-		+ ConfigMenu.fRecoveryTimeSlider + ", "\
-		+ ConfigMenu.fValueSnoozeSlider + ", "\
-		+ ConfigMenu.fRPMinDistanceSlider+ ", "\
-		+ ConfigMenu.iNotTradingAftermath + ", "\
-		+ ConfigMenu.iTeleportLocation + ", "\
-		+ ConfigMenu.iExternalIndex + ", "\
-		+ ConfigMenu.iRemovableItems + ", "\
-		+ ( ConfigMenu.bRespawnNaked As Int ) + ", "\
-		+ ( ConfigMenu.bSendToJail As Int ) + ", "\
-		+ ( ConfigMenu.bFollowerProtectPlayer As Int ) + ", "\
-		+ ( ConfigMenu.bHealActors As Int ) + ", "\
-		+ ( ConfigMenu.bLoseForever As Int ) + ", "\
-		+ ( ConfigMenu.bSoulMarkStay As Int ) + ", "\
-		+ ( ConfigMenu.bHostileNPC As Int ) + ", "\
-		+ ( ConfigMenu.bNPCStealItems As Int ) + ", "\
-		+ ( ConfigMenu.bCreaturesCanSteal As Int ) + ", "\
-		+ ( ConfigMenu.bLostItemQuest As Int ) + ", ], "\
 		+ "[ " + ( LostItemsChest.GetNumItems() ) + ", "\
 		+ ( fLostSouls As Int ) + ", ], ]" )
 EndFunction

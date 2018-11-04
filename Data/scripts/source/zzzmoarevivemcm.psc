@@ -133,7 +133,7 @@ Quest Property moaGuardDetector Auto
 Float Property fJumpFallHeightMinDefault = 600.00 Auto Hidden
 Float Property fSkillReduceMinValSlider = 0.0 Auto Hidden
 Float Property fSkillReduceMaxValSlider = 1.0 Auto Hidden
-Float Property fSkillReduceValSlider = 1.0 Auto Hidden
+Float Property fSkillReduceValSlider = 10.0 Auto Hidden
 Bool Property bIsRevivalEnabled = True Auto Hidden
 Bool Property bIsEffectEnabled = False Auto Hidden
 Bool Property bIsDragonSoulEnabled = True Auto Hidden
@@ -459,7 +459,7 @@ Event OnPageReset(String page)
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
-		oidSkillReduceValSlider = AddSliderOption("$mrt_MarkofArkay_SkillReduceValSlider_1", fSkillReduceValSlider, "{0}", flags)
+		oidSkillReduceValSlider = AddSliderOption("$mrt_MarkofArkay_SkillReduceValSlider_1", fSkillReduceValSlider, "$mrt_MarkofArkay_SkillReduceValSlider_2", flags)
 		SetCursorPosition(38)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1 ) && (iReducedSkill != 0)
 			flags =	OPTION_FLAG_NONE
@@ -1589,7 +1589,7 @@ Event OnOptionSliderOpen(Int option)
 		SetSliderDialogInterval(5.0)
 	ElseIf (option == oidSkillReduceValSlider)
 		SetSliderDialogStartValue(fSkillReduceValSlider)
-		SetSliderDialogDefaultValue(1.0)
+		SetSliderDialogDefaultValue(10.0)
 		SetSliderDialogRange(1.0, 100.0)
 		SetSliderDialogInterval(1.0)
 	ElseIf (option == oidSkillReduceMaxValSlider)
@@ -1670,7 +1670,7 @@ Event OnOptionSliderAccept(int option, Float value)
 		SetSliderOptionValue(oidRPMinDistanceSlider, fRPMinDistanceSlider, "{0}")
 	ElseIf (option == oidSkillReduceValSlider)
 		fSkillReduceValSlider = value
-		SetSliderOptionValue(oidSkillReduceValSlider, fSkillReduceValSlider, "{0}")	
+		SetSliderOptionValue(oidSkillReduceValSlider, fSkillReduceValSlider, "$mrt_MarkofArkay_SkillReduceValSlider_2")	
 	ElseIf (option == oidSkillReduceMaxValSlider)
 		fSkillReduceMaxValSlider = value
 		SetSliderOptionValue(oidSkillReduceMaxValSlider, fSkillReduceMaxValSlider, "{0}")
@@ -3092,7 +3092,7 @@ Bool Function bCheckFissErrors(String strErrors)
 		ElseIf strError == "Element bSkillReduceRandomVal not found"
 			bSkillReduceRandomVal = False
 		ElseIf strError == "Element fSkillReduceValSlider not found"
-			fSkillReduceValSlider = 1.0
+			fSkillReduceValSlider = 10.0
 		ElseIf strError == "Element fSkillReduceMinValSlider not found"
 			fSkillReduceMinValSlider = 0.0
 		ElseIf strError == "Element fSkillReduceMaxValSlider not found"
@@ -3301,7 +3301,7 @@ function LoadDefaultSettings()
 	bAltEyeFix = False
 	iReducedSkill = 0
 	bSkillReduceRandomVal = False
-	fSkillReduceValSlider = 1.0
+	fSkillReduceValSlider = 10.0
 	fSkillReduceMinValSlider = 0.0
 	fSkillReduceMaxValSlider = 1.0
 	bShowRaceMenu = False

@@ -4241,7 +4241,7 @@ Int Function RandomIntWithExclusionArray( Int iFrom, Int iTo, Bool[] iFlagArray)
 EndFunction
 
 
-Function ReduceSkills(String Skill = "Random",Int Amount = -1, Int  MinAmount = 1, Int MaxAmount = 1)
+Function ReduceSkills(String Skill = "Random",Int Percent = -1, Int  MinAmount = 1, Int MaxAmount = 1)
 	ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Reducing skills...")
 	Int _amount
 	Int Min = 0
@@ -4288,7 +4288,7 @@ Function ReduceSkills(String Skill = "Random",Int Amount = -1, Int  MinAmount = 
 			While i > 0
 				i -= 1
 				If SkillsFlags[i]
-					ReduceSkill(Skills[i],Amount,MinAmount,MaxAmount)
+					ReduceSkill(Skills[i],Percent,MinAmount,MaxAmount)
 				EndIf
 			Endwhile
 		ElseIf Skill == "Highest_All"
@@ -4297,13 +4297,13 @@ Function ReduceSkills(String Skill = "Random",Int Amount = -1, Int  MinAmount = 
 				While i > 0
 					i -= 1
 					If (PlayerRef.GetBaseActorValue(Skills[i]) As Int) == Max
-						ReduceSkill(Skills[i],Amount,MinAmount,MaxAmount)
+						ReduceSkill(Skills[i],Percent,MinAmount,MaxAmount)
 					EndIf	
 				Endwhile
 			EndIf
 		ElseIf Skill == "Highest"
 			If maxIndex > -1
-				ReduceSkill(Skills[maxIndex],Amount,MinAmount,MaxAmount)
+				ReduceSkill(Skills[maxIndex],Percent,MinAmount,MaxAmount)
 			EndIf
 		ElseIf Skill == "Lowest_All"
 			If Min 
@@ -4311,33 +4311,38 @@ Function ReduceSkills(String Skill = "Random",Int Amount = -1, Int  MinAmount = 
 				While i > 0
 					i -= 1
 					If (PlayerRef.GetBaseActorValue(Skills[i]) As Int) == Min
-						ReduceSkill(Skills[i],Amount,MinAmount,MaxAmount)
+						ReduceSkill(Skills[i],Percent,MinAmount,MaxAmount)
 					EndIf	
 				Endwhile
 			EndIf
 		ElseIf Skill == "Lowest"
 			If minIndex > -1
-				ReduceSkill(Skills[minIndex],Amount,MinAmount,MaxAmount)
+				ReduceSkill(Skills[minIndex],Percent,MinAmount,MaxAmount)
 			EndIf
 		Else
 			i = Skills.Find(Skill)
 			If (i > -1) && SkillsFlags[i]
-				ReduceSkill(Skill,Amount,MinAmount,MaxAmount)
+				ReduceSkill(Skill,Percent,MinAmount,MaxAmount)
 			EndIf
 		EndIf
 	Else
 		i = RandomIntWithExclusionArray(0,Skills.Length - 1, SkillsFlags)
 		If i > -1
-			ReduceSkill(Skills[i],Amount,MinAmount,MaxAmount)
+			ReduceSkill(Skills[i],Percent,MinAmount,MaxAmount)
 		EndIf
 	EndIf
 	ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Reducing skills finished.")
 EndFunction
 
-Function ReduceSkill(String Skill ,Int Amount = -1, Int  MinAmount = 1, Int MaxAmount = 1)
-		Int _amount
-		If Amount >= 0
-			_amount = iMin(Amount,PlayerRef.GetBaseActorValue(Skill) As Int)
+Function ReduceSkill(String Skill ,Int Percent = -1, Int  MinAmount = 1, Int MaxAmount = 1)
+		Int _amount = 0
+		If Percent >= 0
+			If (PlayerRef.GetBaseActorValue(Skill) As Int) > 0
+				_amount = (( Percent * ( PlayerRef.GetBaseActorValue(Skill) As Int ) ) / 100 ) As Int
+				If _amount < 1
+					_amount = 1
+				EndIf
+			EndIf
 		Else
 			If MaxAmount && (MaxAmount > 0)
 				If MaxAmount < MinAmount

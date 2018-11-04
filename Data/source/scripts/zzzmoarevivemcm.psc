@@ -1148,7 +1148,7 @@ Event OnOptionSelect(Int option)
 		SetToggleOptionValue(oidLostItemQuest, bLostItemQuest)
 		If bLostItemQuest 
 			If ( ( LostItemsChest.GetNumItems() > 0 ) || ( ReviveScript.fLostSouls > 0.0 ) || \
-			PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt) || ( !bLoseSkillForever && ReviveScript.bSkillReduced() ) )
+			PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt) || ReviveScript.bSkillReduced() )
 				If ( ReviveScript.bSoulMark() )
 					If ReviveScript.moaSoulMark01.IsRunning()
 						moaRetrieveLostItems.start()
@@ -2182,7 +2182,7 @@ Event OnOptionDefault(Int option)
 		bLostItemQuest = True
 		SetToggleOptionValue(oidLostItemQuest,bLostItemQuest)
 		If ( ( LostItemsChest.GetNumItems() > 0 ) || ( ReviveScript.fLostSouls > 0.0 ) || \
-		PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt) || (!bLoseSkillForever && ReviveScript.bSkillReduced()))
+		PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt) || ReviveScript.bSkillReduced())
 			If ( ReviveScript.bSoulMark() )
 				If ReviveScript.moaSoulMark01.IsRunning()
 					moaRetrieveLostItems.start()

@@ -4395,16 +4395,14 @@ Function ArrayClear(Int[] Arr)
 EndFunction
 
 Function RestoreSkills()
-	If !ConfigMenu.bLoseSkillForever
-		Int i = LostSkills.Length
-		While i > 0
-			i -= 1
-			If LostSkills[i] > 0
-				PlayerRef.SetActorValue(Skills[i], PlayerRef.GetBaseActorValue(Skills[i]) + LostSkills[i])
-				 LostSkills[i] = 0
-			EndIf
-		Endwhile
-	EndIf
+	Int i = LostSkills.Length
+	While i > 0
+		i -= 1
+		If LostSkills[i] > 0
+			PlayerRef.SetActorValue(Skills[i], PlayerRef.GetBaseActorValue(Skills[i]) + LostSkills[i])
+			 LostSkills[i] = 0
+		EndIf
+	Endwhile
 	If PlayerRef.HasSpell(Dumbness)
 		PlayerRef.RemoveSpell(Dumbness)
 	EndIf

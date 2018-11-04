@@ -11,7 +11,7 @@ zzzmoaReviveMCM Property ConfigMenu Auto
 
 Event OnActivate(ObjectReference akActionRef)
 	If (akActionRef As Actor) == PlayerRef
-		If ReviveScript.bIsItemsRemoved || PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt) || (!ConfigMenu.bLoseSkillForever && ReviveScript.bSkillReduced())
+		If ReviveScript.bIsItemsRemoved || PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt) || ReviveScript.bSkillReduced()
 			Self.MoveToMyEditorLocation()
 			If (ReviveScript.ThiefNPC.GetReference() As Actor)
 				ReviveScript.RemoveStolenItemMarkers(ReviveScript.ThiefNPC.GetReference() As Actor)

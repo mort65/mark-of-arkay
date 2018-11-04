@@ -2106,7 +2106,7 @@ Function RevivePlayer(Bool bRevive)
 					Utility.Wait(1.0)
 					Game.EnablePlayerControls()
 					Game.EnableFastTravel(True)
-					ExecuteCommand("showracemenu",1,0,0)
+					Game.ShowRaceMenu()
 				EndIf
 				GoToState("")
 			Else

@@ -1670,7 +1670,7 @@ Event OnOptionSliderAccept(int option, Float value)
 		SetSliderOptionValue(oidRPMinDistanceSlider, fRPMinDistanceSlider, "{0}")
 	ElseIf (option == oidSkillReduceValSlider)
 		fSkillReduceValSlider = value
-		SetSliderOptionValue(oidSkillReduceValSlider, fSkillReduceValSlider, "{0}")	
+		SetSliderOptionValue(oidSkillReduceValSlider, fSkillReduceValSlider, "$mrt_MarkofArkay_SkillReduceValSlider_2")	
 	ElseIf (option == oidSkillReduceMaxValSlider)
 		fSkillReduceMaxValSlider = value
 		SetSliderOptionValue(oidSkillReduceMaxValSlider, fSkillReduceMaxValSlider, "{0}")

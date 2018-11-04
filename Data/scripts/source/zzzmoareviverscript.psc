@@ -89,6 +89,8 @@ Quest Property WerewolfQuest Auto
 Formlist Property PotionList Auto
 FormList Property LocationsList Auto
 Form[] Property VItemArr Auto Hidden
+Int[] Property LostSkills Auto Hidden
+String[] Property Skills Auto Hidden
 Int Property iTotalBleedOut = 0 Auto Hidden;
 Int Property iTotalRespawn = 0 Auto Hidden;
 Int Property iTotalRevives = 0 Auto Hidden;
@@ -162,6 +164,7 @@ Form Property RightHandEquipedItem Auto Hidden
 Bool Property bSoulMark = False Auto Hidden
 Bool Property bStealSoul = False Auto Hidden
 Bool Property bIsConditionSafe = False Auto Hidden
+Spell Property Dumbness Auto
 
 Bool bCidhnaJail
 Bool bDidItemsRemoved
@@ -343,7 +346,7 @@ Event OnLocationChange(Location akOldLoc, Location akNewLoc)
 			If !( ThiefNPC.GetReference() As Actor ) || ( ThiefNPC.GetReference() As Actor ).IsDisabled() || ( ThiefNPC.GetReference() As Objectreference ).IsDeleted()
 				Configmenu.bIsLoggingEnabled && Debug.Trace( "MarkofArkay: ( '" + ( ThiefNPC.GetReference() As Actor ).GetActorBase().GetName() + "', " +\
 				( ThiefNPC.GetReference() As Actor ) + ", " + ( ThiefNPC.GetReference() As Actor ).GetRace() + ", ) who stoled player's items, is disabled, deleted or no longer exist." )
-				If ConfigMenu.bLoseForever && (ConfigMenu.iRemovableItems != 0)
+				If ConfigMenu.bLoseForever
 					DestroyLostItems(PlayerRef)
 					If moaRetrieveLostItems.IsRunning()
 						moaRetrieveLostItems.setStage(10)
@@ -685,7 +688,9 @@ Function BleedoutHandler(String CurrentState)
 					RevivePlayer(False)
 				EndIf
 			Else
-				PriorityArray = New Float[5]
+				If !PriorityArray.Length == 5
+					PriorityArray = New Float[5]
+				EndIf
 				PriorityArray[0] = ConfigMenu.fGoldPSlider + 10   ; adding this numbers to Priorities so after sorting them by ones, they still be distinguishable 
 				PriorityArray[1] = ConfigMenu.fDragonSoulPSlider + 20
 				PriorityArray[2] = ConfigMenu.fBSoulgemPSlider + 30
@@ -1140,7 +1145,7 @@ Endfunction
 Function DetectThiefNPC()
 	Int i
 	ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Finding a thief (Phase 0)...")
-	If LostItemsChest.GetNumItems() > 0 && Thief && !Thief.IsDisabled() && !Thief.GetActorBase().IsInvulnerable() && (!ConfigMenu.bLoseForever || ( thief.IsDead() || ( thief.GetActorValue("Health") <= 0 )))
+	If ((LostItemsChest.GetNumItems() > 0) || PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt) || bSkillReduced()) && Thief && !Thief.IsDisabled() && !Thief.GetActorBase().IsInvulnerable() && (!ConfigMenu.bLoseForever || ( thief.IsDead() || ( thief.GetActorValue("Health") <= 0 )))
 		If ( !bIsHostile(Thief) || PlayerRef.GetDistance(Thief) > 2000 )
 			iRemovableItems = 0
 		EndIf
@@ -1270,7 +1275,7 @@ Function DetectFollowers()
 		i += 1
 	EndWhile
 	moaFollowerDetector.Start()
-	If FollowerArr.Length < 128
+	If FollowerArr.Length != 128
 		FollowerArr = New Actor[128]
 	EndIf
 	i = FollowerArr.Length
@@ -1643,8 +1648,9 @@ Function RevivePlayer(Bool bRevive)
 				iRemovableItems = ConfigMenu.iRemovableItems
 				If ( ConfigMenu.bNPCStealItems ) 
 					If moaSoulMark01.IsRunning()
-						If (( ConfigMenu.bLoseForever && ( ConfigMenu.iRemovableItems != 0 )) &&\
-						(( !Configmenu.bArkayCurse || Configmenu.bIsArkayCurseTemporary ) && !PlayerRef.HasSpell(ArkayCurse) && !PlayerRef.HasSpell(ArkayCurseAlt) ))
+						If (( ConfigMenu.bLoseForever ) && \
+						(( !Configmenu.bArkayCurse || Configmenu.bIsArkayCurseTemporary ) && \
+						!PlayerRef.HasSpell(ArkayCurse) && !PlayerRef.HasSpell(ArkayCurseAlt) && !bSkillReduced())) ;Soul mark can be removed
 							moaSoulMark01.Stop()
 							LostItemsMarker.MoveToMyEditorLocation()
 							LostItemsMarker.Disable()
@@ -1666,8 +1672,8 @@ Function RevivePlayer(Bool bRevive)
 							bStealSoul = bStealSoul(Thief)
 							If !moaThiefNPC01.IsRunning()
 								moaThiefNPC01.Start()
-								AddStolenItemMarker(ThiefNPC.GetReference() As Actor)
-								(ThiefNPC.GetReference() As Actor).AddToFaction(PlayerEnemyFaction)
+								;AddStolenItemMarker(ThiefNPC.GetReference() As Actor)
+								;(ThiefNPC.GetReference() As Actor).AddToFaction(PlayerEnemyFaction)
 							EndIf
 						Else
 							If moaThiefNPC01.IsRunning()
@@ -1679,8 +1685,8 @@ Function RevivePlayer(Bool bRevive)
 						EndIf
 					EndIf
 				ElseIf ( moaThiefNPC01.IsRunning() )
-					If (( ConfigMenu.bLoseForever && ( ConfigMenu.iRemovableItems != 0 )) ||\
-						(( LostItemsChest.GetNumItems() == 0 ) && ( fLostSouls == 0.0 )))
+					If (( ConfigMenu.bLoseForever ) ||\
+						(( LostItemsChest.GetNumItems() == 0 ) && ( fLostSouls == 0.0 ) && !bSkillReduced()))
 						If (ThiefNPC.GetReference() As Actor)
 							RemoveStolenItemMarkers(ThiefNPC.GetReference() As Actor)
 							(ThiefNPC.GetReference() As Actor).RemoveFromFaction(PlayerEnemyFaction)
@@ -1743,9 +1749,9 @@ Function RevivePlayer(Bool bRevive)
 				ElseIf ( iRemovableItems == 7 ) ;Random but not everything
 					iRemovableItems = Utility.RandomInt(0,5)
 				EndIf
-				If ConfigMenu.bLoseForever && (ConfigMenu.iRemovableItems != 0)
+				If ConfigMenu.bLoseForever
 					ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Destroying previously lost items...")
-					If ( ( LostItemsChest.GetNumItems() > 0 ) || ( fLostSouls > 0.0 ) )
+					If ( ( LostItemsChest.GetNumItems() > 0 ) || ( fLostSouls > 0.0 ) || bSkillReduced())
 						bDidItemsRemoved = True
 						If ConfigMenu.iDestroyedItems < 99999999
 							ConfigMenu.iDestroyedItems += LostItemsChest.GetNumItems()
@@ -1758,6 +1764,7 @@ Function RevivePlayer(Bool bRevive)
 					EndIf
 					LostItemsChest.RemoveAllItems()
 					fLostSouls = 0.0
+					ArrayClear(LostSkills)
 					ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: previously lost items are destroyed.")
 				EndIf
 				If iRemovableItems != 0
@@ -1854,11 +1861,32 @@ Function RevivePlayer(Bool bRevive)
 						Debug.Trace(str)
 					EndIf
 				EndIf
+				If ConfigMenu.iReducedSkill > 0
+					String Skill = "All"
+					If ConfigMenu.iReducedSkill < 19
+						Skill = Skills[ConfigMenu.iReducedSkill - 1]
+					ElseIf ConfigMenu.iReducedSkill == 19
+						Skill = "Random"
+					ElseIf ConfigMenu.iReducedSkill == 20
+						Skill = "Lowest"
+					ElseIf ConfigMenu.iReducedSkill == 21
+						Skill = "Highest"
+					ElseIf ConfigMenu.iReducedSkill == 22
+						Skill = "Lowest_All"
+					ElseIf ConfigMenu.iReducedSkill == 23
+						Skill = "Highest_All"
+					EndIf
+					If ConfigMenu.bSkillReduceRandomVal
+						ReduceSkills(Skill, -1, ConfigMenu.fSkillReduceMinValSlider As Int, ConfigMenu.fSkillReduceMaxValSlider As Int)
+					Else
+						ReduceSkills(Skill, ConfigMenu.fSkillReduceValSlider As Int, ConfigMenu.fSkillReduceMinValSlider As Int, ConfigMenu.fSkillReduceMaxValSlider As Int)
+					EndIf
+				EndIf
 				If ( PlayerRef.GetParentCell() != DefaultCell )
 					If ((( LostItemsChest.GetNumItems() > 0 ) || ( fLostSouls > 0.0 )) || PlayerRef.HasSpell(ArkayCurse) ||\
-					PlayerRef.HasSpell(ArkayCurseAlt) || ( Configmenu.bArkayCurse && !Configmenu.bIsArkayCurseTemporary ))
+					PlayerRef.HasSpell(ArkayCurseAlt) || ( Configmenu.bArkayCurse && !Configmenu.bIsArkayCurseTemporary ) || bSkillReduced() ) ;Something is removed or player is cursed
 						If ( bSoulMark || ((( ConfigMenu.bArkayCurse && !Configmenu.bIsArkayCurseTemporary ) ||\
-						PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt) ) && !moaThiefNPC01.IsRunning() ))
+						PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt) || bSkillReduced() ) && !moaThiefNPC01.IsRunning() )) ;Soul mark can be used
 							LostItemsMarker.Enable()
 							If ( !ConfigMenu.bSoulMarkStay || ( LostItemsMarker.GetParentCell() == DefaultCell ) )
 								ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Moving soul mark to player's location...")
@@ -2011,24 +2039,37 @@ Function RevivePlayer(Bool bRevive)
 					RemoveStolenItemMarkers(PlayerRef)
 					Utility.Wait(0.5)
 				EndIf
-				If ConfigMenu.bLostItemQuest
-					If  (( bIsItemsRemoved && (( LostItemsChest.GetNumItems() > 0 ) || ( fLostSouls > 0.0 ))) ||\
-					PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt) )
-						If moaSoulMark01.IsRunning()
+				If  (( bIsItemsRemoved && (( LostItemsChest.GetNumItems() > 0 ) || ( fLostSouls > 0.0 ))) ||\
+				PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt) || bSkillReduced() )
+					If moaSoulMark01.IsRunning()
+						If ConfigMenu.bLostItemQuest
 							moaRetrieveLostItems.Start()
 							moaRetrieveLostItems.SetStage(1)
 							ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Soul Mark Quest Started.")
-						ElseIf moaThiefNPC01.IsRunning()
+						EndIf
+					ElseIf moaThiefNPC01.IsRunning()
+						If ConfigMenu.bLostItemQuest
 							moaRetrieveLostItems01.Start()
 							moaRetrieveLostItems01.SetStage(1)
 							ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Stolen Items Quest Started.")
 						EndIf
+						If ( LostItemsChest.GetNumItems() == 0 )
+							If Thief ;If no physical item stolen
+								Thief.RemoveItem(StolenItemsMisc, Thief.GetItemCount(StolenItemsMisc), abSilent = True)
+								If !Thief.GetItemCount(StolenSoulsMisc )
+									Thief.AddItem(StolenSoulsMisc)
+								EndIf
+							EndIf
+						EndIf
+					EndIf
+					If bSkillReduced()
+						PlayerRef.AddSpell(Dumbness)
 					EndIf
 				EndIf
 				If ( moaThiefNPC01.IsRunning() )			
 					If ( ThiefNPC.GetReference() As Actor ) 
 						AddStolenItemMarker(ThiefNPC.GetReference() As Actor)
-						(ThiefNPC.GetReference() As Actor).RemoveFromFaction(PlayerEnemyFaction)
+						(ThiefNPC.GetReference() As Actor).AddToFaction(PlayerEnemyFaction)
 					EndIf
 				EndIf
 				moaHostileNPCDetector.Stop()
@@ -2037,11 +2078,14 @@ Function RevivePlayer(Bool bRevive)
 				If !bIsCameraStateSafe()
 					Game.ForceThirdPerson()
 				EndIf
-				If ConfigMenu.bAltEyeFix
-					ExecuteCommand("player.say 0142b5")
+				If !ConfigMenu.bShowRaceMenu
+					If ConfigMenu.bAltEyeFix
+						Utility.Wait(0.5)
+						ExecuteCommand("player.say 0142b5",1,0,1)
+					EndIf
+					Game.EnablePlayerControls()
+					Game.EnableFastTravel(True)
 				EndIf
-				Game.EnablePlayerControls()
-				Game.EnableFastTravel(True)
 				PlayerRef.StopCombatAlarm()
 				ToggleSaving(True)
 				moaBleedoutHandlerState.SetValue(0)
@@ -2058,6 +2102,12 @@ Function RevivePlayer(Bool bRevive)
 					ConfigMenu.iTotalRespawn += 1
 				EndIf
 				ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Respawn finished.")
+				If ConfigMenu.bShowRaceMenu
+					Utility.Wait(0.5)
+					Game.EnablePlayerControls()
+					Game.EnableFastTravel(True)
+					ExecuteCommand("showracemenu",1,0,0)
+				EndIf
 				GoToState("")
 			Else
 				ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Exiting to the Main menu...")
@@ -2110,6 +2160,30 @@ Function SetVars()
 	fRPMinDistance = ConfigMenu.fRPMinDistanceSlider
 	If VItemArr.Length != 20
 		VItemArr = New Form[20]
+	EndIf
+	If !Skills.Length == 18
+		Skills = New String[18]
+		Skills[0] = "Alchemy"
+		Skills[1] = "Alteration"
+		Skills[2] = "Block"
+		Skills[3] = "Conjuration"
+		Skills[4] = "Destruction"
+		Skills[5] = "Enchanting"
+		Skills[6] =	"HeavyArmor"
+		Skills[7] =	"Illusion"
+		Skills[8] =	"LightArmor"
+		Skills[9] =	"Lockpicking"
+		Skills[10] = "Marksman"
+		Skills[11] = "OneHanded"
+		Skills[12] = "Pickpocket"
+		Skills[13] = "Restoration"
+		Skills[14] = "Smithing"
+		Skills[15] = "Sneak"
+		Skills[16] = "Speechcraft"
+		Skills[17] = "TwoHanded"
+	EndIf
+	If LostSkills.Length != 18
+		LostSkills = New Int[18]
 	EndIf
 	If (bArkayMarkRevive)
 		moaArkayMarkRevive.SetValue(1)
@@ -2349,13 +2423,15 @@ Function RemoveStolenItemMarkers(Actor ActorRef)
 	ActorRef.RemoveItem(StolenSoulsMisc, ActorRef.GetItemCount(StolenSoulsMisc), abSilent = True)
 EndFunction
 
-Function AddStolenItemMarker(Actor ActorRef)
+Function AddStolenItemMarker(Actor ActorRef) ;Thief can only steal souls or only no physical item stolen
 	If ActorRef
-		If bStealSoul(ActorRef)
+		If bStealSoul(ActorRef) || (LostItemsChest.GetNumItems() == 0)
+			ActorRef.RemoveItem(StolenItemsMisc, ActorRef.GetItemCount(StolenItemsMisc), abSilent = True)
 			If !ActorRef.GetItemCount(StolenSoulsMisc )
 				ActorRef.AddItem(StolenSoulsMisc)
 			EndIf
 		Else
+			ActorRef.RemoveItem(StolenSoulsMisc, ActorRef.GetItemCount(StolenSoulsMisc), abSilent = True)
 			If !ActorRef.GetItemCount(StolenItemsMisc )
 				ActorRef.AddItem(StolenItemsMisc)
 			EndIf
@@ -2636,17 +2712,16 @@ Function RestoreLostItems(Actor ActorRef)
 	ActorRef.RemoveSpell(ArkayCurseAlt)
 	moaSoulMark01.Stop()
 	moaThiefNPC01.Stop()
-	If bIsItemsRemoved
-		LostItemsMarker.MoveToMyEditorLocation()
-		LostItemsMarker.Disable()
-		LostItemsChest.RemoveAllItems(ActorRef, True, True)
-		If fLostSouls > 0.0
-			ActorRef.ModActorValue("DragonSouls", fLostSouls)
-			fLostSouls = 0.0
-		EndIf
-		bIsItemsRemoved = False
-		Debug.Notification("$mrt_MarkofArkay_Notification_RestoreLostItems")
+	LostItemsMarker.MoveToMyEditorLocation()
+	LostItemsMarker.Disable()
+	LostItemsChest.RemoveAllItems(ActorRef, True, True)
+	If fLostSouls > 0.0
+		ActorRef.ModActorValue("DragonSouls", fLostSouls)
+		fLostSouls = 0.0
 	EndIf
+	RestoreSkills()
+	bIsItemsRemoved = False
+	Debug.Notification("$mrt_MarkofArkay_Notification_RestoreLostItems")
 EndFunction
 
 Function DestroyLostItems(Actor ActorRef)
@@ -2658,6 +2733,9 @@ Function DestroyLostItems(Actor ActorRef)
 				ConfigMenu.iDestroyedItems += 1
 			EndIf
 		EndIf
+	EndIf
+	If bSkillReduced()
+		ArrayClear(LostSkills)
 	EndIf
 	LostItemsChest.RemoveAllItems()
 	fLostSouls = 0.0
@@ -2676,12 +2754,10 @@ Function DestroyLostItems(Actor ActorRef)
 	ActorRef.RemoveSpell(ArkayCurseAlt)
 	moaSoulMark01.Stop()
 	moaThiefNPC01.Stop()
-	If bIsItemsRemoved
-		LostItemsMarker.MoveToMyEditorLocation()
-		LostItemsMarker.Disable()
-		LostItemsChest.RemoveAllItems(ActorRef, True, True)
-		bIsItemsRemoved = False
-	EndIf
+	bIsItemsRemoved = False
+	LostItemsMarker.MoveToMyEditorLocation()
+	LostItemsMarker.Disable()
+	LostItemsChest.RemoveAllItems(ActorRef, True, True)
 	ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Previously lost items are destroyed.")
 EndFunction
 
@@ -2701,15 +2777,15 @@ Function RefreshFace()	;for closed eye bug
 	EndIf
 EndFunction
 
-Function ExecuteCommand(String strCMD) ;Requires Autorun Console Commands
+Function ExecuteCommand(String strCMD, Int aiSilent = 1,Int aiFadeOut = 0,Int aiHideMenu = 0) ;Requires Autorun Console Commands
 	Int Handle = ModEvent.Create("ARCC_RunCommand")
 	If (Handle)
 		ModEvent.PushForm(Handle,PlayerRef) ;sender
 		ModEvent.PushString(Handle,"Mark of Arkay") ;strModName
 		ModEvent.PushString(Handle, strCMD) ;strCommand
-		ModEvent.PushInt(Handle, 1) ;aiSilent
-		ModEvent.PushInt(Handle, 0) ;aiFadeOut
-		ModEvent.PushInt(Handle, 1) ;aiHideMenu
+		ModEvent.PushInt(Handle, aiSilent)
+		ModEvent.PushInt(Handle, aiFadeOut)
+		ModEvent.PushInt(Handle, aiHideMenu)
 		ModEvent.Send(Handle)
 	EndIf
 EndFunction
@@ -4134,5 +4210,201 @@ Function EquipItems(Actor ActorRef, Bool RightHand, Bool LeftHand)
 				EndIf
 			EndIf
 		EndWhile
+	EndIf
+EndFunction
+
+Int Function RandomIntWithExclusionArray( Int iFrom, Int iTo, Bool[] iFlagArray) 
+	Int ExcludeCount = 0
+	int iIndex = 0
+	Int iRandom = 0
+	While iIndex < iFlagArray.Length
+		If (!iFlagArray[iIndex])
+			ExcludeCount += 1
+		EndIf
+		iIndex += 1
+	Endwhile
+	If ExcludeCount > iTo
+		Return -1
+	EndIf
+	iRandom = Utility.RandomInt(iFrom, iTo - ExcludeCount)
+	 iIndex = 0 
+	 While (iIndex < iFlagArray.Length)
+		If ( iRandom < iIndex )
+			Return iRandom
+		ElseIf (( iRandom >= iIndex ) && !iFlagArray[iIndex])
+			iRandom += 1
+		EndIf
+		iIndex += 1
+	EndWhile
+	Return iRandom
+EndFunction
+
+
+Function ReduceSkills(String Skill = "Random",Int Amount = -1, Int  MinAmount = 1, Int MaxAmount = 1)
+	ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Reducing skills...")
+	Int _amount
+	Int Min = 0
+	Int Max = 0
+	Int minIndex = -1
+	Int maxIndex = -1
+	Bool[] SkillsFlags = New Bool[18]
+	Int i = Skills.Length
+	While i > 0
+		i -= 1
+		If  PlayerRef.GetBaseActorValue(Skills[i]) > 0
+			SkillsFlags[i] = True
+			If Skill == "Highest"
+				If PlayerRef.GetBaseActorValue(Skills[i]) > Max
+					Max = PlayerRef.GetBaseActorValue(Skills[i]) As Int
+					maxIndex = i
+				EndIf
+			ElseIf Skill == "Highest_All"
+				If PlayerRef.GetBaseActorValue(Skills[i]) > Max
+					Max = PlayerRef.GetBaseActorValue(Skills[i]) As Int
+				EndIf
+			ElseIf Skill == "Lowest"
+				If !Min
+					Min = PlayerRef.GetBaseActorValue(Skills[i]) As Int
+					minIndex = i
+				ElseIf PlayerRef.GetBaseActorValue(Skills[i]) < Min
+					Min = PlayerRef.GetBaseActorValue(Skills[i]) As Int
+					minIndex = i
+				EndIf
+			ElseIf Skill == "Lowest_All"
+				If !Min
+					Min = PlayerRef.GetBaseActorValue(Skills[i]) As Int
+				ElseIf PlayerRef.GetBaseActorValue(Skills[i]) < Min
+					Min = PlayerRef.GetBaseActorValue(Skills[i]) As Int
+				EndIf
+			EndIf
+		Else
+			SkillsFlags[i] = False
+		EndIf
+	Endwhile
+	If Skill && (Skill != "Random")
+		If Skill == "All"
+			i = Skills.Length
+			While i > 0
+				i -= 1
+				If SkillsFlags[i]
+					ReduceSkill(Skills[i],Amount,MinAmount,MaxAmount)
+				EndIf
+			Endwhile
+		ElseIf Skill == "Highest_All"
+			If Max 
+				i = Skills.Length
+				While i > 0
+					i -= 1
+					If (PlayerRef.GetBaseActorValue(Skills[i]) As Int) == Max
+						ReduceSkill(Skills[i],Amount,MinAmount,MaxAmount)
+					EndIf	
+				Endwhile
+			EndIf
+		ElseIf Skill == "Highest"
+			If maxIndex > -1
+				ReduceSkill(Skills[maxIndex],Amount,MinAmount,MaxAmount)
+			EndIf
+		ElseIf Skill == "Lowest_All"
+			If Min 
+				i = Skills.Length
+				While i > 0
+					i -= 1
+					If (PlayerRef.GetBaseActorValue(Skills[i]) As Int) == Min
+						ReduceSkill(Skills[i],Amount,MinAmount,MaxAmount)
+					EndIf	
+				Endwhile
+			EndIf
+		ElseIf Skill == "Lowest"
+			If minIndex > -1
+				ReduceSkill(Skills[minIndex],Amount,MinAmount,MaxAmount)
+			EndIf
+		Else
+			i = Skills.Find(Skill)
+			If (i > -1) && SkillsFlags[i]
+				ReduceSkill(Skill,Amount,MinAmount,MaxAmount)
+			EndIf
+		EndIf
+	Else
+		i = RandomIntWithExclusionArray(0,Skills.Length - 1, SkillsFlags)
+		If i > -1
+			ReduceSkill(Skills[i],Amount,MinAmount,MaxAmount)
+		EndIf
+	EndIf
+	ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: Reducing skills finished.")
+EndFunction
+
+Function ReduceSkill(String Skill ,Int Amount = -1, Int  MinAmount = 1, Int MaxAmount = 1)
+		Int _amount
+		If Amount >= 0
+			_amount = iMin(Amount,PlayerRef.GetBaseActorValue(Skill) As Int)
+		Else
+			If MaxAmount && (MaxAmount > 0)
+				If MaxAmount < MinAmount
+					Int tmp = MinAmount
+					MinAmount = MaxAmount
+					MaxAmount = tmp
+				EndIf
+				If MaxAmount > (PlayerRef.GetBaseActorValue(Skill) As Int)
+					MaxAmount = PlayerRef.GetBaseActorValue(Skill) As Int
+				EndIf
+			Else
+				MaxAmount = PlayerRef.GetBaseActorValue(Skill) As Int
+			EndIf
+			If MinAmount && (MinAmount > 0)
+				If MinAmount >= PlayerRef.GetBaseActorValue(Skill)
+					_amount = PlayerRef.GetBaseActorValue(Skill) As Int
+				Else
+					_amount = Utility.RandomInt(MinAmount,MaxAmount)
+				EndIf
+			Else
+				_amount = Utility.RandomInt(0,MaxAmount)
+			EndIf
+		EndIf
+		If _amount > 0
+			PlayerRef.SetActorValue(Skill, PlayerRef.GetBaseActorValue(Skill) - _amount)
+			If !ConfigMenu.bLoseSkillForever
+				Int iIndex = Skills.Find(Skill)
+				If iIndex > -1
+					LostSkills[iIndex] =  LostSkills[iIndex] + _amount
+				EndIf
+			EndIf
+			ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkofArkay: " + Skill + " reduced by " + _amount)
+		EndIf
+EndFunction
+
+Bool Function bSkillReduced()
+	Int i = LostSkills.Length
+	While i > 0
+		i -= 1
+		If LostSkills[i] > 0
+			Return True
+		EndIf
+	Endwhile
+	Return False
+EndFunction
+
+Function ArrayClear(Int[] Arr)
+	If Arr
+		int i = Arr.Length
+		While i > 0 
+			i -= 1
+			Arr[i] = 0
+		EndWhile
+	EndIf
+EndFunction
+
+Function RestoreSkills()
+	If !ConfigMenu.bLoseSkillForever
+		Int i = LostSkills.Length
+		While i > 0
+			i -= 1
+			If LostSkills[i] > 0
+				PlayerRef.SetActorValue(Skills[i], PlayerRef.GetBaseActorValue(Skills[i]) + LostSkills[i])
+				 LostSkills[i] = 0
+			EndIf
+		Endwhile
+	EndIf
+	If PlayerRef.HasSpell(Dumbness)
+		PlayerRef.RemoveSpell(Dumbness)
 	EndIf
 EndFunction

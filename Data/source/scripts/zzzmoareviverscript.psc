@@ -2104,7 +2104,7 @@ Function RevivePlayer(Bool bRevive)
 				EndIf
 				ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Respawn finished.")
 				If ConfigMenu.bShowRaceMenu
-					Utility.Wait(0.5)
+					Utility.Wait(1.0)
 					Game.EnablePlayerControls()
 					Game.EnableFastTravel(True)
 					ExecuteCommand("showracemenu",1,0,0)
@@ -2170,10 +2170,10 @@ Function SetVars()
 		Skills[3] = "Conjuration"
 		Skills[4] = "Destruction"
 		Skills[5] = "Enchanting"
-		Skills[6] =	"HeavyArmor"
-		Skills[7] =	"Illusion"
-		Skills[8] =	"LightArmor"
-		Skills[9] =	"Lockpicking"
+		Skills[6] = "HeavyArmor"
+		Skills[7] = "Illusion"
+		Skills[8] = "LightArmor"
+		Skills[9] = "Lockpicking"
 		Skills[10] = "Marksman"
 		Skills[11] = "OneHanded"
 		Skills[12] = "Pickpocket"

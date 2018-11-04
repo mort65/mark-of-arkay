@@ -97,6 +97,13 @@ Int oidAltEyeFix
 Int oidLoadDefaultPreset
 Int oidMoralityMatters
 Int oidPlayerProtectFollower
+Int oidSkillReduce_M
+Int oidSkillReduceRandomVal
+Int oidSkillReduceValSlider
+Int oidSkillReduceMinValSlider
+Int oidSkillReduceMaxValSlider
+Int oidLoseSkillForever
+Int oidShowRaceMenu
 Bool Property bInit = False Auto Hidden
 String[] Property sRespawnPoints Auto
 String[] Property sLoseOptions Auto
@@ -105,6 +112,7 @@ Bool[] Property bRespawnPointsFlags Auto
 String[] Property sArkayCurses Auto
 String[] Property sSaveOptions Auto
 String[] Property sPresets Auto Hidden
+String[] Property sSkills Auto Hidden
 Actor Property PlayerRef Auto
 GlobalVariable Property moaState Auto
 GlobalVariable Property moaLootChance Auto
@@ -123,6 +131,9 @@ Quest Property moaHostileNPCDetector Auto
 Quest Property moaHostileNPCDetector01 Auto
 Quest Property moaGuardDetector Auto
 Float Property fJumpFallHeightMinDefault = 600.00 Auto Hidden
+Float Property fSkillReduceMinValSlider = 0.0 Auto Hidden
+Float Property fSkillReduceMaxValSlider = 1.0 Auto Hidden
+Float Property fSkillReduceValSlider = 1.0 Auto Hidden
 Bool Property bIsRevivalEnabled = True Auto Hidden
 Bool Property bIsEffectEnabled = False Auto Hidden
 Bool Property bIsDragonSoulEnabled = True Auto Hidden
@@ -137,6 +148,7 @@ Bool Property bRecallByArkayMark = False Auto Hidden ;
 Bool Property bIsMarkEnabled = True Auto Hidden
 Bool Property bIsMenuEnabled = True Auto Hidden
 Bool Property bRespawnMenu = False Auto Hidden
+Bool Property bShowRaceMenu = False Auto Hidden
 Bool Property bTeleportMenu = False Auto Hidden
 Bool Property bAltEyeFix = False Auto Hidden
 Bool Property bArkayCurse = False Auto Hidden
@@ -156,6 +168,7 @@ Bool Property bHostileNPC = False Auto Hidden
 Int Property iNotTradingAftermath = 0 Auto Hidden
 Int Property iRemovableItems = 0 Auto Hidden
 Int Property iArkayCurse = 0 Auto Hidden
+Int Property iReducedSkill = 0 Auto Hidden
 Bool Property bLoseForever = False Auto Hidden
 Bool Property bDeathEffect = True Auto Hidden
 Bool Property bSoulMarkStay = False Auto Hidden
@@ -165,6 +178,7 @@ Bool property bHealActors = False Auto Hidden
 Bool property bResurrectActors = False Auto Hidden
 Bool Property bSendToJail = False Auto Hidden
 Bool Property bPlayerProtectFollower = False Auto Hidden
+Bool Property bSkillReduceRandomVal = False Auto Hidden
 Bool Property bMoralityMatters = True Auto Hidden
 Int Property iTeleportLocation = 0 Auto Hidden
 Int Property iSaveOption = 1 Auto Hidden
@@ -203,6 +217,7 @@ Bool Property bShiftBack = False Auto Hidden
 Bool Property bShiftBackRespawn = True Auto Hidden
 Bool Property bInvisibility = False Auto Hidden
 Bool Property bCreaturesCanSteal = False Auto Hidden
+Bool Property bLoseSkillForever = False Auto Hidden
 String Property sResetHistory = "" Auto Hidden
 FormList property MarkerList Auto
 ObjectReference Property SleepMarker Auto
@@ -406,78 +421,91 @@ Event OnPageReset(String page)
 		SetCursorPosition(12)
 		oidJail = AddToggleOption("$mrt_MarkofArkay_Jail",bSendToJail,flags)
 		SetCursorPosition(14)
-		oidHealActors = AddToggleOption("$mrt_MarkofArkay_HealActors",bHealActors,flags)
+		oidShowRaceMenu = AddToggleOption("$mrt_MarkofArkay_ShowRaceMenu", bShowRaceMenu,flags)
 		SetCursorPosition(16)
-		oidResurrectActors = AddToggleOption("$mrt_MarkofArkay_ResurrectActors",bResurrectActors,flags)
+		oidHealActors = AddToggleOption("$mrt_MarkofArkay_HealActors",bHealActors,flags)
 		SetCursorPosition(18)
+		oidResurrectActors = AddToggleOption("$mrt_MarkofArkay_ResurrectActors",bResurrectActors,flags)
+		SetCursorPosition(22)
+		AddHeaderOption("$Curse")
+		SetCursorPosition(24)
 		oidArkayCurse = AddToggleOption("$mrt_MarkofArkay_ArkayCurse", bArkayCurse, flags)
-		SetCursorPosition(20)
+		SetCursorPosition(26)
 		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bArkayCurse)
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidTempArkayCurse = AddToggleOption("$mrt_MarkofArkay_TempArkayCurse",bIsArkayCurseTemporary, flags)
-		SetCursorPosition(22)
+		SetCursorPosition(28)
 		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bArkayCurse )
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidArkayCurses_M = AddMenuOption("$mrt_MarkofArkay_ArkayCurses_M", sArkayCurses[iArkayCurse], flags)
-		SetCursorPosition(26)
-		AddHeaderOption("$Lost_Item")
-		SetCursorPosition(28)
+		SetCursorPosition(32)
+		AddHeaderOption("$Skill_Reduction")
+		SetCursorPosition(34)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1 )
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidSkillReduce_M = AddMenuOption("$mrt_MarkofArkay_SkillReduce_M", sSkills[iReducedSkill], flags)
+		SetCursorPosition(36)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1 ) && (iReducedSkill != 0) && !bSkillReduceRandomVal
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidSkillReduceValSlider = AddSliderOption("$mrt_MarkofArkay_SkillReduceValSlider_1", fSkillReduceValSlider, "{0}", flags)
+		SetCursorPosition(38)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1 ) && (iReducedSkill != 0)
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidSkillReduceRandomVal = AddToggleOption("$mrt_MarkofArkay_SkillReduceRandomVal",bSkillReduceRandomVal, flags)
+		SetCursorPosition(40)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1 ) && (iReducedSkill != 0) && bSkillReduceRandomVal
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidSkillReduceMinValSlider = AddSliderOption("$mrt_MarkofArkay_killReduceMinValSlider_1", fSkillReduceMinValSlider , "{0}", flags)
+		SetCursorPosition(42)
+		oidSkillReduceMaxValSlider = AddSliderOption("$mrt_MarkofArkay_killReduceMaxValSlider_1", fSkillReduceMaxValSlider , "{0}", flags)
+		SetCursorPosition(44)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1 ) && (iReducedSkill != 0)
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidLoseSkillForever = AddToggleOption("$mrt_MarkofArkay_LoseSkillForever",bLoseSkillForever, flags)
+		SetCursorPosition(48)
+		AddHeaderOption("$Lost_Item_Retrieval")
+		SetCursorPosition(50)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidLostItemQuest = AddToggleOption("$mrt_MarkofArkay_LostItemQuest",bLostItemQuest,flags)
-		SetCursorPosition(30)
-		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && (( iRemovableItems != 0 ) || bArkayCurse ))
+		SetCursorPosition(52)
+		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1))
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidSoulMarkStay = AddToggleOption("$mrt_MarkofArkay_SoulMarkStay",bSoulMarkStay,flags)
-		SetCursorPosition(32)
-		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && ( iRemovableItems != 0 ))
+		SetCursorPosition(54)
+		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1))
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidLoseforever = AddToggleOption("$mrt_MarkofArkay_Loseforever",bLoseForever, flags)
-		SetCursorPosition(36)
-		AddHeaderOption("$Hostile_NPC")
-		SetCursorPosition(38)
-		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1)) && ( iRemovableItems != 0 )
-			flags =	OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		oidHostileNPC =  AddToggleOption("$mrt_MarkofArkay_HostileNPC",bHostileNPC,flags)
-		SetCursorPosition(40)
-		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && ( iRemovableItems != 0 )
-			flags =	OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		oidNPCStealItems = AddToggleOption("$mrt_MarkofArkay_NPCStealItems",bNPCStealItems,flags)
-		SetCursorPosition(42)
-		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && ( iRemovableItems != 0 ) && ( bNPCStealItems )
-			flags =	OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		oidMoralityMatters = AddToggleOption("$mrt_MarkofArkay_MoralityMatters", bMoralityMatters,flags)
-		SetCursorPosition(44)
-		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && ( iRemovableItems != 0 ) && ( bHostileNPC || bNPCStealItems )
-			flags =	OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		oidCreaturesCanSteal  = AddToggleOption("$mrt_MarkofArkay_CreaturesCanSteal",bCreaturesCanSteal,flags)
 		SetCursorPosition(1)
 		AddHeaderOption("$Destination")
 		SetCursorPosition(3)
@@ -556,6 +584,36 @@ Event OnPageReset(String page)
 		oidPlayerProtectFollower = AddToggleOption("$mrt_MarkofArkay_PlayerProtectFollower", bPlayerProtectFollower, flags)
 		SetCursorPosition(39)
 		oidFollowerProtectPlayer = AddToggleOption("$mrt_MarkofArkay_FollowerProtectPlayer", bFollowerProtectPlayer, flags)
+		SetCursorPosition(43)
+		AddHeaderOption("$Hostile_NPC")
+		SetCursorPosition(45)
+		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1))
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidHostileNPC =  AddToggleOption("$mrt_MarkofArkay_HostileNPC",bHostileNPC,flags)
+		SetCursorPosition(47)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1 )
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidNPCStealItems = AddToggleOption("$mrt_MarkofArkay_NPCStealItems",bNPCStealItems,flags)
+		SetCursorPosition(49)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && ( bNPCStealItems )
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidMoralityMatters = AddToggleOption("$mrt_MarkofArkay_MoralityMatters", bMoralityMatters,flags)
+		SetCursorPosition(51)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && ( bHostileNPC || bNPCStealItems )
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidCreaturesCanSteal  = AddToggleOption("$mrt_MarkofArkay_CreaturesCanSteal",bCreaturesCanSteal,flags)
 	ElseIf (page == "$Debug")
 		SetCursorPosition(0)
 		AddHeaderOption("$Debug")
@@ -926,7 +984,7 @@ Event OnOptionSelect(Int option)
 		SetToggleOptionValue(oidAltEyeFix,bAltEyeFix)
 		If bAltEyeFix
 			Utility.Wait(1.0)
-			ReviveScript.ExecuteCommand("player.say 0142b5")
+			ReviveScript.ExecuteCommand("player.say 0142b5",1,0,1)
 		EndIf
 	ElseIf (option == oidLogging)
 		bIsLoggingEnabled = !bIsLoggingEnabled
@@ -1041,12 +1099,18 @@ Event OnOptionSelect(Int option)
 	ElseIf (option == oidJail)
 		bSendToJail = !bSendToJail
 		SetToggleOptionValue(oidJail, bSendToJail)
+	ElseIf (option == oidLoseSkillForever)
+		bLoseSkillForever = !bLoseSkillForever
+		SetToggleOptionValue(oidLoseSkillForever, bLoseSkillForever)
 	ElseIf (option == oidHealActors)
 		bHealActors = !bHealActors
 		SetToggleOptionValue(oidHealActors, bHealActors)
 	ElseIf (option == oidResurrectActors)
 		bResurrectActors = !bResurrectActors
 		SetToggleOptionValue(oidResurrectActors, bResurrectActors)
+	ElseIf (option == oidShowRaceMenu)
+		bShowRaceMenu = !bShowRaceMenu
+		SetToggleOptionValue(oidShowRaceMenu, bShowRaceMenu)
 	ElseIf (option == oidArkayCurse)
 		bArkayCurse = !bArkayCurse
 		SetToggleOptionValue(oidArkayCurse, bArkayCurse)
@@ -1056,16 +1120,26 @@ Event OnOptionSelect(Int option)
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		SetOptionFlags(oidArkayCurses_M,flags,True)
-		SetOptionFlags(oidTempArkayCurse,flags,True)
-		If  ( bIsRevivalEnabled ) && ( iNotTradingAftermath == 1) && ( bArkayCurse || ( iRemovableItems != 0 ))
+		SetOptionFlags(oidTempArkayCurse,flags)
+	ElseIf (option == oidTempArkayCurse)
+		bIsArkayCurseTemporary = !bIsArkayCurseTemporary
+		SetToggleOptionValue(oidTempArkayCurse, bIsArkayCurseTemporary)
+	ElseIf (Option == oidSkillReduceRandomVal)
+		bSkillReduceRandomVal = !bSkillReduceRandomVal
+		SetToggleOptionValue(oidSkillReduceRandomVal, bSkillReduceRandomVal)
+		If  ( bIsRevivalEnabled ) && ( iNotTradingAftermath == 1) && (iReducedSkill != 0 && !bSkillReduceRandomVal)
 			flags = OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
-		SetOptionFlags(oidSoulMarkStay, flags)
-	ElseIf (option == oidTempArkayCurse)
-		bIsArkayCurseTemporary = !bIsArkayCurseTemporary
-		SetToggleOptionValue(oidTempArkayCurse, bIsArkayCurseTemporary)	
+		SetOptionFlags(oidSkillReduceValSlider, flags, True)
+		If  ( bIsRevivalEnabled ) && ( iNotTradingAftermath == 1) && (iReducedSkill != 0) && bSkillReduceRandomVal
+			flags = OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		SetOptionFlags(oidSkillReduceMinValSlider, flags, True)
+		SetOptionFlags(oidSkillReduceMaxValSlider, flags)		
 	ElseIf (option == oidLoseforever)
 		bLoseForever = !bLoseForever
 		SetToggleOptionValue(oidLoseforever, bLoseForever)
@@ -1073,7 +1147,8 @@ Event OnOptionSelect(Int option)
 		bLostItemQuest = !bLostItemQuest
 		SetToggleOptionValue(oidLostItemQuest, bLostItemQuest)
 		If bLostItemQuest 
-			If ( ( LostItemsChest.GetNumItems() > 0 ) || ( ReviveScript.fLostSouls > 0.0 ) || PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt) )
+			If ( ( LostItemsChest.GetNumItems() > 0 ) || ( ReviveScript.fLostSouls > 0.0 ) || \
+			PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt) || ( !bLoseSkillForever && ReviveScript.bSkillReduced() ) )
 				If ( ReviveScript.bSoulMark() )
 					If ReviveScript.moaSoulMark01.IsRunning()
 						moaRetrieveLostItems.start()
@@ -1110,13 +1185,13 @@ Event OnOptionSelect(Int option)
 			bHostileNPC = False
 		EndIf
 		SetToggleOptionValue(oidHostileNPC,bHostileNPC)
-		If bIsRevivalEnabled && ( iNotTradingAftermath == 1 ) && ( iRemovableItems != 0 ) && bNPCStealItems
+		If bIsRevivalEnabled && ( iNotTradingAftermath == 1 ) && bNPCStealItems
 			flags = OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		SetOptionFlags(oidMoralityMatters, flags, True)
-		If bIsRevivalEnabled && ( iNotTradingAftermath == 1) && ( iRemovableItems != 0 ) && ( bHostileNPC || bNPCStealItems )
+		If bIsRevivalEnabled && ( iNotTradingAftermath == 1) && ( bHostileNPC || bNPCStealItems )
 			flags = OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
@@ -1129,13 +1204,13 @@ Event OnOptionSelect(Int option)
 			bNPCStealItems = False
 		EndIf
 		SetToggleOptionValue(oidNPCStealItems,bNPCStealItems)
-		If bIsRevivalEnabled && ( iNotTradingAftermath == 1 ) && ( iRemovableItems != 0 ) && bNPCStealItems
+		If bIsRevivalEnabled && ( iNotTradingAftermath == 1 ) && bNPCStealItems
 			flags = OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		SetOptionFlags(oidMoralityMatters, flags, True)
-		If bIsRevivalEnabled && ( iNotTradingAftermath == 1) && ( iRemovableItems != 0 ) && ( bHostileNPC || bNPCStealItems )
+		If bIsRevivalEnabled && ( iNotTradingAftermath == 1)&& ( bHostileNPC || bNPCStealItems )
 			flags = OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
@@ -1277,10 +1352,17 @@ Event OnOptionSelect(Int option)
 		SetOptionFlags(oidRespawnMenu,flags,True)
 		SetOptionFlags(oidTeleportMenu,flags,True)
 		SetOptionFlags(oidJail,flags,True)
+		SetOptionFlags(oidLoseSkillForever,flags,True)
 		SetOptionFlags(oidHealActors,flags,True)
 		SetOptionFlags(oidResurrectActors,flags,True)
+		SetOptionFlags(oidShowRaceMenu,flags,True)
 		SetOptionFlags(oidArkayCurse,flags,True)
 		SetOptionFlags(oidTempArkayCurse,flags,True)
+		SetOptionFlags(oidSkillReduceRandomVal,flags,True)
+		SetOptionFlags(oidSkillReduceValSlider,flags,True)
+		SetOptionFlags(oidSkillReduceMinValSlider,flags,True)
+		SetOptionFlags(oidSkillReduceMaxValSlider,flags,True)
+		SetOptionFlags(oidSkillReduce_M,flags,True)
 		SetOptionFlags(oidArkayCurses_M,flags,True)
 		SetOptionFlags(oidLoseforever,flags,True)
 		SetOptionFlags(oidLostItemQuest,flags,True)
@@ -1366,10 +1448,17 @@ Event OnOptionSelect(Int option)
 		SetOptionFlags(oidRespawnMenu,flags,True)
 		SetOptionFlags(oidTeleportMenu,flags,True)
 		SetOptionFlags(oidJail,flags,True)
+		SetOptionFlags(oidLoseSkillForever,flags,True)
 		SetOptionFlags(oidHealActors,flags,True)
 		SetOptionFlags(oidResurrectActors,flags,True)
+		SetOptionFlags(oidShowRaceMenu,flags,True)
 		SetOptionFlags(oidArkayCurse,flags,True)
 		SetOptionFlags(oidTempArkayCurse,flags,True)
+		SetOptionFlags(oidSkillReduceRandomVal,flags,True)
+		SetOptionFlags(oidSkillReduceValSlider,flags,True)
+		SetOptionFlags(oidSkillReduceMinValSlider,flags,True)
+		SetOptionFlags(oidSkillReduceMaxValSlider,flags,True)
+		SetOptionFlags(oidSkillReduce_M,flags,True)
 		SetOptionFlags(oidArkayCurses_M,flags,True)
 		SetOptionFlags(oidLoseforever,flags,True)
 		SetOptionFlags(oidLostItemQuest,flags,True)
@@ -1498,6 +1587,21 @@ Event OnOptionSliderOpen(Int option)
 		SetSliderDialogDefaultValue(0.0)
 		SetSliderDialogRange(0.0, 60.0)
 		SetSliderDialogInterval(5.0)
+	ElseIf (option == oidSkillReduceValSlider)
+		SetSliderDialogStartValue(fSkillReduceValSlider)
+		SetSliderDialogDefaultValue(1.0)
+		SetSliderDialogRange(1.0, 100.0)
+		SetSliderDialogInterval(1.0)
+	ElseIf (option == oidSkillReduceMaxValSlider)
+		SetSliderDialogStartValue(fSkillReduceMaxValSlider)
+		SetSliderDialogDefaultValue(1.0)
+		SetSliderDialogRange(1.0, 100.0)
+		SetSliderDialogInterval(1.0)
+	ElseIf (option == oidSkillReduceMinValSlider)
+		SetSliderDialogStartValue(fSkillReduceMinValSlider)
+		SetSliderDialogDefaultValue(0.0)
+		SetSliderDialogRange(0.0, 100.0)
+		SetSliderDialogInterval(1.0)
 	EndIf
 EndEvent
 
@@ -1564,6 +1668,15 @@ Event OnOptionSliderAccept(int option, Float value)
 	ElseIf (option == oidRPMinDistanceSlider)
 		fRPMinDistanceSlider = value
 		SetSliderOptionValue(oidRPMinDistanceSlider, fRPMinDistanceSlider, "{0}")
+	ElseIf (option == oidSkillReduceValSlider)
+		fSkillReduceValSlider = value
+		SetSliderOptionValue(oidSkillReduceValSlider, fSkillReduceValSlider, "{0}")	
+	ElseIf (option == oidSkillReduceMaxValSlider)
+		fSkillReduceMaxValSlider = value
+		SetSliderOptionValue(oidSkillReduceMaxValSlider, fSkillReduceMaxValSlider, "{0}")
+	ElseIf (option == oidSkillReduceMinValSlider)
+		fSkillReduceMinValSlider = value
+		SetSliderOptionValue(oidSkillReduceMinValSlider, fSkillReduceMinValSlider, "{0}")
 	EndIf
 EndEvent
 
@@ -1596,6 +1709,10 @@ Event OnOptionMenuOpen(Int option)
 		SetMenuDialogoptions(sPresets)
 		SetMenuDialogStartIndex(iSavePreset)
 		SetMenuDialogDefaultIndex(0)
+	ElseIf (option == oidSkillReduce_M)
+		SetMenuDialogoptions(sSkills)
+		SetMenuDialogStartIndex(iReducedSkill)
+		SetMenuDialogDefaultIndex(0)
 	EndIf
 EndEvent
 
@@ -1625,42 +1742,6 @@ Event OnOptionMenuAccept(Int option, Int index)
 	ElseIf (option == oidRemovableItems_M)
 		iRemovableItems = index
 		SetMenuOptionValue(oidRemovableItems_M, sLoseOptions[iRemovableItems])
-		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1 ) && ( iRemovableItems != 0 ))
-			flags =	OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		SetOptionFlags(oidLoseforever, flags,True)
-		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1 ) && ( iRemovableItems != 0 )) && !bHostileNPC
-			flags =	OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		SetOptionFlags(oidNPCStealItems,flags,True)
-		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && ( iRemovableItems != 0 )) && !bNPCStealItems
-			flags =	OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		SetOptionFlags(oidHostileNPC,flags,True)
-		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && ( iRemovableItems != 0 ) && bNPCStealItems )
-			flags =	OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		SetOptionFlags(oidMoralityMatters,flags,True)
-		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && ( iRemovableItems != 0 ) && ( bNPCStealItems || bHostileNPC ))
-			flags =	OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		SetOptionFlags(oidCreaturesCanSteal,flags,True)
-		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && (( iRemovableItems != 0 ) || bArkayCurse ))
-			flags =	OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		SetOptionFlags(oidSoulMarkStay, flags,True)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled
 			flags =	OPTION_FLAG_NONE
 		Else
@@ -1680,51 +1761,73 @@ Event OnOptionMenuAccept(Int option, Int index)
 		SetOptionFlags(oidJail,flags,True)
 		SetOptionFlags(oidHealActors,flags,True)
 		SetOptionFlags(oidResurrectActors,flags,True)
+		SetOptionFlags(oidShowRaceMenu,flags,True)
 		SetOptionFlags(oidArkayCurse,flags,True)
 		SetOptionFlags(oidRemovableItems_M,flags,True)
+		SetOptionFlags(oidSkillReduce_M,flags,True)
+		SetOptionFlags(oidLoseSkillForever,flags,True)
 		If bIsRevivalEnabled && (iNotTradingAftermath == 1) && bArkayCurse
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		SetOptionFlags(oidTempArkayCurse,flags,True)
-		If bIsRevivalEnabled && (iNotTradingAftermath == 1) && (iRemovableItems != 0) && !bHostileNPC
+		If bIsRevivalEnabled && (iNotTradingAftermath == 1) && !bHostileNPC
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		SetOptionFlags(oidNPCStealItems, Flags,True)
-		If bIsRevivalEnabled && (iNotTradingAftermath == 1) && (iRemovableItems != 0) && !bNPCStealItems
+		If bIsRevivalEnabled && (iNotTradingAftermath == 1) && !bNPCStealItems
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		SetOptionFlags(oidHostileNPC, Flags,True)
-		If bIsRevivalEnabled && (iNotTradingAftermath == 1) && (iRemovableItems != 0) && bNPCStealItems
+		If bIsRevivalEnabled && (iNotTradingAftermath == 1) && bNPCStealItems
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		SetOptionFlags(oidMoralityMatters, Flags,True)
-		If bIsRevivalEnabled && (iNotTradingAftermath == 1) && (iRemovableItems != 0) && (bNPCStealItems || bHostileNPC)
+		If bIsRevivalEnabled && (iNotTradingAftermath == 1) && (bNPCStealItems || bHostileNPC)
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		SetOptionFlags(oidCreaturesCanSteal, Flags,True)
+		If bIsRevivalEnabled && (iNotTradingAftermath == 1) && (iReducedSkill != 0)
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		SetOptionFlags(oidSkillReduceRandomVal,flags,True)
+		If bIsRevivalEnabled && (iNotTradingAftermath == 1) && (iReducedSkill != 0) && !bSkillReduceRandomVal
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		SetOptionFlags(oidSkillReduceValSlider,flags,True)
+		If bIsRevivalEnabled && (iNotTradingAftermath == 1) && (iReducedSkill != 0) && bSkillReduceRandomVal
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		SetOptionFlags(oidSkillReduceMaxValSlider,flags,True)
+		SetOptionFlags(oidSkillReduceMinValSlider,flags,True)
 		If bIsRevivalEnabled && (iNotTradingAftermath == 1) && bArkayCurse
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		SetOptionFlags(oidArkayCurses_M,flags,True)
-		If ( bIsRevivalEnabled && (iNotTradingAftermath == 1) && !( iRemovableItems == 0 ))
+		If ( bIsRevivalEnabled && (iNotTradingAftermath == 1))
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		SetOptionFlags(oidLoseforever,flags,True)
-		If ( bIsRevivalEnabled && (iNotTradingAftermath == 1) && (( iRemovableItems != 0 ) || bArkayCurse ))
+		If ( bIsRevivalEnabled && (iNotTradingAftermath == 1))
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
@@ -1764,6 +1867,34 @@ Event OnOptionMenuAccept(Int option, Int index)
 	ElseIf (option == oidSavePreset_M)
 		iSavePreset = index
 		SetMenuOptionValue(oidSavePreset_M, sPresets[iSavePreset])
+	ElseIf (option == oidSkillReduce_M)
+		iReducedSkill = index
+		SetMenuOptionValue(oidSkillReduce_M, sSkills[iReducedSkill])
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1 ) && (iReducedSkill != 0)
+			flags = OPTION_FLAG_NONE
+			SetOptionFlags(oidSkillReduceRandomVal,flags,True)
+			SetOptionFlags(oidLoseSkillForever,flags,True)
+			If !bSkillReduceRandomVal
+				flags =	OPTION_FLAG_NONE
+			Else
+				flags =	OPTION_FLAG_DISABLED
+			EndIf
+			SetOptionFlags(oidSkillReduceValSlider,flags,True)
+			If bSkillReduceRandomVal
+				flags =	OPTION_FLAG_NONE
+			Else
+				flags = OPTION_FLAG_DISABLED
+			EndIf
+			SetOptionFlags(oidSkillReduceMinValSlider,flags,True)
+			SetOptionFlags(oidSkillReduceMaxValSlider,flags)
+		Else
+			flags = OPTION_FLAG_DISABLED
+			SetOptionFlags(oidLoseSkillForever,flags,True)
+			SetOptionFlags(oidSkillReduceRandomVal,flags,True)
+			SetOptionFlags(oidSkillReduceValSlider,flags,True)
+			SetOptionFlags(oidSkillReduceMinValSlider,flags,True)
+			SetOptionFlags(oidSkillReduceMaxValSlider,flags)
+		EndIf
 	EndIf
 EndEvent
 
@@ -1969,19 +2100,25 @@ Event OnOptionDefault(Int option)
 	ElseIf (option == oidJail)
 		bSendToJail = False
 		SetToggleOptionValue(oidJail,bSendToJail)
+	ElseIf (option == oidLoseSkillForever)
+		bLoseSkillForever = False
+		SetToggleOptionValue(oidLoseSkillForever,bLoseSkillForever)
 	ElseIf (option == oidHealActors)
 		bHealActors = False
 		SetToggleOptionValue(oidHealActors,bHealActors)
 	ElseIf (option == oidResurrectActors)
 		bResurrectActors = False
 		SetToggleOptionValue(oidResurrectActors,bResurrectActors)
+	ElseIf (option == oidShowRaceMenu)
+		bShowRaceMenu = False
+		SetToggleOptionValue(oidShowRaceMenu,bShowRaceMenu)
 	ElseIf (option == oidArkayCurse)
 		bArkayCurse = False
 		SetToggleOptionValue(oidArkayCurse,bArkayCurse)
 		flags = OPTION_FLAG_DISABLED
 		SetOptionFlags(oidArkayCurses_M, flags,True)
 		SetOptionFlags(oidTempArkayCurse, flags,True)
-		If  (( bIsRevivalEnabled ) && ( iNotTradingAftermath == 1 ) && ( iRemovableItems != 0 ))
+		If  (( bIsRevivalEnabled ) && ( iNotTradingAftermath == 1 ))
 			flags = OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
@@ -1990,6 +2127,26 @@ Event OnOptionDefault(Int option)
 	ElseIf (option == oidTempArkayCurse)
 		bIsArkayCurseTemporary = False
 		SetToggleOptionValue(oidTempArkayCurse,bIsArkayCurseTemporary)
+	ElseIf (option == oidSkillReduce_M)
+		iReducedSkill = 0
+		SetMenuOptionValue(oidSkillReduce_M, sSkills[iReducedSkill])
+		flags = OPTION_FLAG_DISABLED
+		SetOptionFlags(oidLoseSkillForever,flags,True)
+		SetOptionFlags(oidSkillReduceRandomVal,flags,True)
+		SetOptionFlags(oidSkillReduceValSlider,flags,True)
+		SetOptionFlags(oidSkillReduceMinValSlider,flags,True)
+		SetOptionFlags(oidSkillReduceMaxValSlider,flags)
+	ElseIf (option == oidSkillReduceRandomVal)
+		bSkillReduceRandomVal = False
+		SetToggleOptionValue(oidSkillReduceRandomVal,bSkillReduceRandomVal)
+		SetOptionFlags(oidSkillReduceMinValSlider,OPTION_FLAG_DISABLED,True)
+		SetOptionFlags(oidSkillReduceMaxValSlider,OPTION_FLAG_DISABLED,True)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1 ) && (iReducedSkill != 0)
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		SetOptionFlags(oidSkillReduceValSlider,Flags)
 	ElseIf (option == oidNPCStealItems)
 		bNPCStealItems = False
 		SetToggleOptionValue(oidNPCStealItems,bNPCStealItems)
@@ -2003,7 +2160,7 @@ Event OnOptionDefault(Int option)
 	ElseIf (option == oidHostileNPC)
 		bHostileNPC = False
 		SetToggleOptionValue(oidHostileNPC,bHostileNPC)
-		If bIsRevivalEnabled && ( iNotTradingAftermath == 1) && ( iRemovableItems != 0 ) && bNPCStealItems
+		If bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bNPCStealItems
 			flags = OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
@@ -2024,7 +2181,8 @@ Event OnOptionDefault(Int option)
 	ElseIf (option == oidLostItemQuest)
 		bLostItemQuest = True
 		SetToggleOptionValue(oidLostItemQuest,bLostItemQuest)
-		If ( ( LostItemsChest.GetNumItems() > 0 ) || ( ReviveScript.fLostSouls > 0.0 ) || PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt) )
+		If ( ( LostItemsChest.GetNumItems() > 0 ) || ( ReviveScript.fLostSouls > 0.0 ) || \
+		PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt) || (!bLoseSkillForever && ReviveScript.bSkillReduced()))
 			If ( ReviveScript.bSoulMark() )
 				If ReviveScript.moaSoulMark01.IsRunning()
 					moaRetrieveLostItems.start()
@@ -2072,6 +2230,7 @@ Event OnOptionDefault(Int option)
 		SetOptionFlags(oidJail,flags,True)
 		SetOptionFlags(oidHealActors,flags,True)
 		SetOptionFlags(oidResurrectActors,flags,True)
+		SetOptionFlags(oidShowRaceMenu,flags,True)
 		SetOptionFlags(oidArkayCurse,flags,True)
 		SetOptionFlags(oidTempArkayCurse,flags,True)
 		SetOptionFlags(oidNPCStealItems,flags,True)
@@ -2079,6 +2238,12 @@ Event OnOptionDefault(Int option)
 		SetOptionFlags(oidMoralityMatters,flags,True)
 		SetOptionFlags(oidCreaturesCanSteal,flags,True)
 		SetOptionFlags(oidArkayCurses_M,flags,True)
+		SetOptionFlags(oidSkillReduce_M,flags,True)
+		SetOptionFlags(oidSkillReduceRandomVal,flags,True)
+		SetOptionFlags(oidSkillReduceMinValSlider,flags,True)
+		SetOptionFlags(oidSkillReduceMaxValSlider,flags,True)
+		SetOptionFlags(oidSkillReduceValSlider,flags,True)
+		SetOptionFlags(oidLoseSkillForever,flags,True)
 		SetOptionFlags(oidLoseforever,flags,True)
 		SetOptionFlags(oidRemovableItems_M,flags,True)
 		SetOptionFlags(oidSoulMarkStay,flags)
@@ -2090,14 +2255,7 @@ Event OnOptionDefault(Int option)
 		SetOptionFlags(oidNPCStealItems,flags,True)
 		SetOptionFlags(oidHostileNPC,flags,True)
 		SetOptionFlags(oidMoralityMatters,flags,True)
-		SetOptionFlags(oidCreaturesCanSteal,flags,True)
-		If ( !bArkayCurse )
-			flags = OPTION_FLAG_DISABLED
-			
-		Else
-			flags = OPTION_FLAG_NONE
-		EndIf
-		SetOptionFlags(oidSoulMarkStay,flags)
+		SetOptionFlags(oidCreaturesCanSteal,flags)
 	ElseIf (option == oidInformation)
 		bIsInfoEnabled = False
 		SetToggleOptionValue(oidInformation,bIsInfoEnabled)
@@ -2272,14 +2430,28 @@ Event OnOptionHighlight(Int option)
 		SetInfoText("$mrt_MarkofArkay_DESC_TeleportMenu")
 	ElseIf (option == oidJail)
 		SetInfoText("$mrt_MarkofArkay_DESC_Jail")
+	ElseIf (option == oidLoseSkillForever)
+		SetInfoText("$mrt_MarkofArkay_DESC_LoseSkillForever")
 	ElseIf (option == oidHealActors)
 		SetInfoText("$mrt_MarkofArkay_DESC_HealActors")
 	ElseIf (option == oidResurrectActors)
 		SetInfoText("$mrt_MarkofArkay_DESC_ResurrectActors")
+	ElseIf (option == oidShowRaceMenu)
+		SetInfoText("$mrt_MarkofArkay_DESC_ShowRaceMenu")
 	ElseIf (option == oidArkayCurse)
 		SetInfoText("$mrt_MarkofArkay_DESC_ArkayCurse")
 	ElseIf (option == oidTempArkayCurse)
 		SetInfoText("$mrt_MarkofArkay_DESC_TempArkayCurse")
+	ElseIf (option == oidSkillReduceRandomVal)
+		SetInfoText("$mrt_MarkofArkay_DESC_SkillReduceRandomVal")
+	ElseIf (option == oidSkillReduce_M)
+		SetInfoText("$mrt_MarkofArkay_DESC_SkillReduce_M")
+	ElseIf (option == oidSkillReduceValSlider)
+		SetInfoText("$mrt_MarkofArkay_DESC_SkillReduceValSlider")
+	ElseIf (option == oidSkillReduceMinValSlider)
+		SetInfoText("$mrt_MarkofArkay_DESC_SkillReduceMinValSlider")
+	ElseIf (option == oidSkillReduceMaxValSlider)
+		SetInfoText("$mrt_MarkofArkay_DESC_SkillReduceMaxValSlider")
 	ElseIf (option == oidNPCStealItems)
 		SetInfoText("$mrt_MarkofArkay_DESC_NPCStealItems")
 	ElseIf (option == oidCreaturesCanSteal )
@@ -2368,16 +2540,15 @@ Function moaStop()
 		EndIf
 		PlayerRef.RemoveItem(ReviveScript.StolenItemsMisc,playerRef.GetItemCount(ReviveScript.StolenItemsMisc),abSilent = True)
 		ReviveScript.Thief = None
-		If ( ReviveScript.bIsItemsRemoved == True )
-			LostItemsMarker.MoveToMyEditorLocation()
-			LostItemsMarker.Disable()
-			LostItemsChest.RemoveAllItems(PlayerRef, True, True)
-			If ReviveScript.fLostSouls > 0.0
-				PlayerRef.ModActorValue("DragonSouls", ReviveScript.fLostSouls)
-				ReviveScript.fLostSouls = 0.0
-			EndIf
-			ReviveScript.bIsItemsRemoved = False
+		LostItemsMarker.MoveToMyEditorLocation()
+		LostItemsMarker.Disable()
+		LostItemsChest.RemoveAllItems(PlayerRef, True, True)
+		If ReviveScript.fLostSouls > 0.0
+			PlayerRef.ModActorValue("DragonSouls", ReviveScript.fLostSouls)
+			ReviveScript.fLostSouls = 0.0
 		EndIf
+		ReviveScript.RestoreSkills()
+		ReviveScript.bIsItemsRemoved = False
 		If moaRetrieveLostItems.IsRunning()
 			moaRetrieveLostItems.SetStage(20)
 		EndIf
@@ -2487,7 +2658,7 @@ Event OnConfigRegister()
 EndEvent
 
 Int Function GetVersion()
-	Return 39
+	Return 41
 EndFunction
 
 Event OnVersionUpdate(int a_version)
@@ -2650,6 +2821,9 @@ Event OnVersionUpdate(int a_version)
 	EndIf
 	If (a_version >= 39 && CurrentVersion < 39)
 		Debug.Trace(self + ": Updating script to version "  + 39)
+	EndIf
+	If (a_version >= 41 && CurrentVersion < 41)
+		Debug.Trace(self + ": Updating script to version "  + 41)
 		setArrays()
 	EndIf
 	ForcePageReset()
@@ -2675,6 +2849,7 @@ Function setArrays()
 	setArkayCurses()
 	setSaveOptions()
 	setPresets()
+	setSkills()
 EndFunction
 
 Function setPages()
@@ -2766,6 +2941,35 @@ Function setPresets()
 	sPresets[7] = "$Preset8"
 	sPresets[8] = "$Preset9"
 	sPresets[9] = "$Preset10"
+EndFunction
+
+Function setSkills()
+	sSkills = New String[25]
+	sSkills[0] = "$Disabled"
+	sSkills[1] = "$Alchemy"
+	sSkills[2] = "$Alteration"
+	sSkills[3] = "$Block"
+	sSkills[4] = "$Conjuration"
+	sSkills[5] = "$Destruction"
+	sSkills[6] = "$Enchanting"
+	sSkills[7] = "$HeavyArmor"
+	sSkills[8] = "$Illusion"
+	sSkills[9] = "$LightArmor"
+	sSkills[10] = "$Lockpicking"
+	sSkills[11] = "$Marksman"
+	sSkills[12] = "$OneHanded"
+	sSkills[13] = "$Pickpocket"
+	sSkills[14] = "$Restoration"
+	sSkills[15] = "$Smithing"
+	sSkills[16] = "$Sneak"
+	sSkills[17] = "$Speechcraft"
+	sSkills[18] = "$TwoHanded"
+	sSkills[19] = "$Random"
+	sSkills[20] = "$Lowest"
+	sSkills[21] = "$Highest"
+	sSkills[22] = "$Lowest_All"
+	sSkills[23] = "$Highest_All"
+	sSkills[24] = "$All"
 EndFunction
 
 Int Function iGetRespawnPointsCount()
@@ -2873,28 +3077,65 @@ Bool function bLoadUserSettings(String sFileName)
 	bPlayerProtectFollower = fiss.loadBool("bPlayerProtectFollower")
 	bMoralityMatters = fiss.loadBool("bMoralityMatters")
 	moaMoralityMatters.SetValue(bMoralityMatters As Int)
+	iReducedSkill = fiss.loadInt("iReducedSkill")
+	bSkillReduceRandomVal = fiss.loadBool("bSkillReduceRandomVal")
+	fSkillReduceValSlider = fiss.loadFloat("fSkillReduceValSlider")
+	fSkillReduceMinValSlider = fiss.loadFloat("fSkillReduceMinValSlider")
+	fSkillReduceMaxValSlider = fiss.loadFloat("fSkillReduceMaxValSlider")
+	bShowRaceMenu = fiss.loadBool("bShowRaceMenu")
+	bLoseSkillForever = fiss.loadBool("bLoseSkillForever")
 	String Result = fiss.endLoad()
 	if Result != ""
-		Debug.Trace("Mark of Arkay: Error loading user settings -> " + Result)
-		If Result == "Element bPlayerProtectFollower not found\nElement bMoralityMatters not found\n"
-			bPlayerProtectFollower = False
-			bMoralityMatters = True
-			moaMoralityMatters.SetValue(bMoralityMatters As Int)
-			bSaveUserSettings(sFileName)
-			Return True
-		ElseIf Result == "Element bIsTradeEnabled not found\nElement bDeathEffect not found\nElement bAltEyeFix not found\nElement bPlayerProtectFollower not found\nElement bMoralityMatters not found\n"
-			bIsTradeEnabled = True
-			bDeathEffect = True
-			bAltEyeFix = False
-			bPlayerProtectFollower = False
-			bMoralityMatters = True
-			moaMoralityMatters.SetValue(bMoralityMatters As Int)
+		If bCheckFissErrors(Result)
 			bSaveUserSettings(sFileName)
 			Return True
 		EndIf
 		Return False
 	EndIf
 	Return True
+EndFunction
+
+Bool Function bCheckFissErrors(String strErrors)
+	String[] resultArr = StringUtil.Split(strErrors,"\n")
+	Int index = resultArr.Length
+	Bool Result = True
+	String strError
+	While index > 0
+		index -= 1
+		strError = resultArr[index]
+		If strError == "Element bIsTradeEnabled not found"
+			bIsTradeEnabled = True
+		ElseIf strError == "Element bDeathEffect not found"
+			bDeathEffect = True
+		ElseIf strError == "Element bAltEyeFix not found"
+			bAltEyeFix = False
+		ElseIf strError == "Element bPlayerProtectFollower not found"
+			bPlayerProtectFollower = False
+		ElseIf strError == "Element bMoralityMatters not found"
+			bMoralityMatters = True
+			moaMoralityMatters.SetValue(bMoralityMatters As Int)
+		ElseIf strError == "Element iReducedSkill not found"
+			iReducedSkill = 0
+		ElseIf strError == "Element bSkillReduceRandomVal not found"
+			bSkillReduceRandomVal = False
+		ElseIf strError == "Element fSkillReduceValSlider not found"
+			fSkillReduceValSlider = 1.0
+		ElseIf strError == "Element fSkillReduceMinValSlider not found"
+			fSkillReduceMinValSlider = 0.0
+		ElseIf strError == "Element fSkillReduceMaxValSlider not found"
+			fSkillReduceMaxValSlider = 1.0
+		ElseIf strError == "Element bShowRaceMenu not found"
+			bShowRaceMenu = False
+		ElseIf strError == "Element bLoseSkillForever not found"
+			bLoseSkillForever = False
+		ElseIf strError == "Element bRespawnPointsFlags7 not found"
+			bRespawnPointsFlags[7] = True
+		Else
+			Debug.Trace("Mark of Arkay: Error loading user settings -> " + strError)
+			Result = False
+		EndIf
+	EndWhile
+	Return Result
 EndFunction
 
 Bool Function bCheckPreset(FISSInterface fiss, String sFileName)
@@ -2986,6 +3227,13 @@ bool function bSaveUserSettings(String sFileName)
 	fiss.saveBool("bIsTradeEnabled", bIsTradeEnabled)
 	fiss.saveBool("bDeathEffect", bDeathEffect)
 	fiss.saveBool("bAltEyeFix", bAltEyeFix)
+	fiss.saveInt("iReducedSkill", iReducedSkill)
+	fiss.saveBool("bSkillReduceRandomVal", bSkillReduceRandomVal)
+	fiss.saveFloat("fSkillReduceValSlider", fSkillReduceValSlider)
+	fiss.saveFloat("fSkillReduceMinValSlider", fSkillReduceMinValSlider)
+	fiss.saveFloat("fSkillReduceMaxValSlider", fSkillReduceMaxValSlider)
+	fiss.saveBool("bShowRaceMenu",bShowRaceMenu)
+	fiss.saveBool("bLoseSkillForever",bLoseSkillForever)
 	String Result = fiss.endSave()
 	If Result != ""
 		Debug.Trace("Mark of Arkay: Error saving user settings -> " + Result)
@@ -3078,4 +3326,11 @@ function LoadDefaultSettings()
 	bIsTradeEnabled = True
 	bDeathEffect = True
 	bAltEyeFix = False
+	iReducedSkill = 0
+	bSkillReduceRandomVal = False
+	fSkillReduceValSlider = 1.0
+	fSkillReduceMinValSlider = 0.0
+	fSkillReduceMaxValSlider = 1.0
+	bShowRaceMenu = False
+	bLoseSkillForever = False
 EndFunction

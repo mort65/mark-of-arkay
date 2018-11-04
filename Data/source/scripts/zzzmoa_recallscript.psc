@@ -203,7 +203,7 @@ Function SendToAnotherLocation()
 	While ( iIndex > 0 )
 		iIndex -= 1
 		If ( iIndex == 3 )
-			If bInSameLocation(LocationsList.GetAt(iIndex) As Location) ||  bInSameLocation(DLC1HunterHQLocation) ;Riften or Dayspring Canyon
+			If bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(DLC1HunterHQLocation) ;Riften or Dayspring Canyon
 				If ConfigMenu.bRespawnPointsFlags[iIndex]
 					If ( Caster.GetDistance( MarkerList.GetAt(iIndex) As ObjectReference ) >= ConfigMenu.fRPMinDistanceSlider )
 						Caster.MoveTo( MarkerList.GetAt(iIndex) As ObjectReference )
@@ -212,7 +212,7 @@ Function SendToAnotherLocation()
 				EndIf
 			EndIf
 		ElseIf ( iIndex == 4 )
-			If bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(HjaalmarchHoldLocation) ||  bInSameLocation(DLC1VampireCastleLocation) ;Solitude or Morthal or Castle Volkihar
+			If bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(HjaalmarchHoldLocation) || bInSameLocation(DLC1VampireCastleLocation) ;Solitude or Morthal or Castle Volkihar
 				If ConfigMenu.bRespawnPointsFlags[iIndex]
 					If ( Caster.GetDistance( MarkerList.GetAt(iIndex) As ObjectReference ) >= ConfigMenu.fRPMinDistanceSlider )
 						Caster.MoveTo( MarkerList.GetAt(iIndex) As ObjectReference )

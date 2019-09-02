@@ -1,7 +1,9 @@
-Scriptname zzzmoaReviveMCM extends SKI_ConfigBase  
+Scriptname zzzmoaReviveMCM extends SKI_ConfigBase
 
 Import Game
+Import StringUtil
 Import FISSFactory
+Import zzzmoautilscript
 
 Int oidRevivalEnabled
 Int oidDragonSoulRevivalEnabled
@@ -49,6 +51,9 @@ Int oidInvisibility
 Int oidDeathEffect
 Int oidRespawnMenu
 Int oidTeleportMenu
+Int oidSpawnByLocation
+Int oidSpawnCheckRelation
+Int oidSpawnBringAllies
 Int flags
 Int oidRespawnPoint0
 Int oidRespawnPoint1
@@ -60,7 +65,6 @@ Int oidRespawnPoint6
 Int oidRespawnPoint7
 Int oidExternalTeleportLocation
 Int oidTeleportLocation_M
-Int oidRemovableItems_M
 Int oidNoTradingAftermath_M
 Int oidArkayCurses_M
 Int oidInformation
@@ -72,15 +76,13 @@ int oidMarkCost
 int oidBleedoutTime
 Int oidRecallByArkayMark
 Int oidJail
+Int oidKillIfCantRespawn
 Int oidTogglePowers
 Int oidToggleSpells
-Int oidRespawnTimeSlider
 Int oidEnableSave_M
 Int oidHealActors
 Int oidResurrectActors
-Int oidNPCStealItems
 Int oidFadeToBlack
-Int oidHostileNPC
 Int oidCreaturesCanSteal
 Int oidSavePreset_M
 Int oidLoadPreset_M
@@ -104,15 +106,28 @@ Int oidSkillReduceMinValSlider
 Int oidSkillReduceMaxValSlider
 Int oidLoseSkillForever
 Int oidShowRaceMenu
-Bool Property bInit = False Auto Hidden
-String[] Property sRespawnPoints Auto
-String[] Property sLoseOptions Auto
-String[] Property sAftermathOptions Auto
-Bool[] Property bRespawnPointsFlags Auto
-String[] Property sArkayCurses Auto
-String[] Property sSaveOptions Auto
-String[] Property sPresets Auto Hidden
-String[] Property sSkills Auto Hidden
+Int oidLostItemsInfo
+Int oidLostSkillsInfo
+Int oidRagdollEffect
+Int oidTotalCustomRPSlotSlider
+Int oidSelectedCustomRPSlot_M
+Int oidHostileOptions_M
+Int oidCorpseAsSoulMark
+Int oidSpawnMinLevel_M
+Int oidSpawnMaxLevel_M
+Int oidSpawns_M
+Int oidRetrySpawnWithoutLocation
+Bool Property bRetrySpawnWithoutLocation = True Auto Hidden
+Int Property iSpawn = 0 Auto Hidden
+Float Property fTotalCustomRPSlotSlider = 1.0 Auto Hidden
+Int Property iSelectedCustomRPSlot = 0 Auto Hidden
+zzzmoaReviverScript Property ReviveScript Auto
+String[] Property sRespawnPoints Auto Hidden
+Int[] Property iSpawnWeights Auto Hidden
+Int Property iHostileOption = 0 Auto Hidden
+Bool[] Property bRespawnPointsFlags Auto Hidden
+Int[] Property iSpawnCounts Auto Hidden
+Int[] Property iValidTypes Auto Hidden
 Actor Property PlayerRef Auto
 GlobalVariable Property moaState Auto
 GlobalVariable Property moaLootChance Auto
@@ -123,6 +138,7 @@ GlobalVariable Property moaPraytoSave Auto
 GlobalVariable Property moaCreaturesCanSteal Auto
 GlobalVariable Property moaSnoozeState Auto
 GlobalVariable Property moaMoralityMatters Auto
+GlobalVariable Property moaRPMinDistance Auto
 Quest Property moaReviverQuest Auto
 Quest Property moaRetrieveLostItems Auto
 Quest Property moaRetrieveLostItems01 Auto
@@ -149,9 +165,12 @@ Bool Property bIsMarkEnabled = True Auto Hidden
 Bool Property bIsMenuEnabled = True Auto Hidden
 Bool Property bRespawnMenu = False Auto Hidden
 Bool Property bShowRaceMenu = False Auto Hidden
-Bool Property bTeleportMenu = False Auto Hidden
+Bool Property bTeleportMenu = True Auto Hidden
 Bool Property bAltEyeFix = False Auto Hidden
 Bool Property bArkayCurse = False Auto Hidden
+Bool Property bSpawnByLocation = True Auto Hidden
+Bool Property bSpawnCheckRelation = True Auto Hidden
+Bool Property bSpawnBringAllies = True Auto Hidden
 Bool Property bIsArkayCurseTemporary = False Auto Hidden
 Bool Property bIsRagdollEnabled = False Auto Hidden
 Bool Property bIsNotificationEnabled = False Auto Hidden
@@ -163,10 +182,7 @@ Bool Property bRespawnNaked = False Auto Hidden
 Bool Property bLostItemQuest = True Auto Hidden
 Bool Property bIsRecallRestricted = True Auto Hidden
 Bool Property bAutoSwitchRP = False Auto Hidden
-Bool Property bNPCStealItems = False Auto Hidden
-Bool Property bHostileNPC = False Auto Hidden
 Int Property iNotTradingAftermath = 0 Auto Hidden
-Int Property iRemovableItems = 0 Auto Hidden
 Int Property iArkayCurse = 0 Auto Hidden
 Int Property iReducedSkill = 0 Auto Hidden
 Bool Property bLoseForever = False Auto Hidden
@@ -177,6 +193,7 @@ Bool Property bIsHistoryEnabled = False Auto Hidden
 Bool property bHealActors = False Auto Hidden
 Bool property bResurrectActors = False Auto Hidden
 Bool Property bSendToJail = False Auto Hidden
+Bool Property bKillIfCantRespawn = True Auto Hidden
 Bool Property bPlayerProtectFollower = False Auto Hidden
 Bool Property bSkillReduceRandomVal = False Auto Hidden
 Bool Property bMoralityMatters = True Auto Hidden
@@ -184,6 +201,7 @@ Int Property iTeleportLocation = 0 Auto Hidden
 Int Property iSaveOption = 1 Auto Hidden
 Int Property iLoadPreset = 0 Auto Hidden
 Int Property iSavePreset = 0 Auto Hidden
+Int Property iLoseInclusion = 0 Auto Hidden
 Float Property fValueSoulSlider = 1.0 Auto Hidden
 Float Property fValueGoldSlider = 1000.0 Auto Hidden
 Float Property fValueBSoulGemSlider = 1.0 Auto Hidden
@@ -201,9 +219,10 @@ Float Property fLootChanceSlider = 50.0 Auto Hidden
 Float Property fScrollChanceSlider = 25.0 Auto Hidden
 Float Property fRecallCastSlider = 0.0 Auto Hidden
 Float Property fMarkCastSlider = 0.0 Auto Hidden
-Float Property fRespawnTimeSlider = 0.0 Auto Hidden
 Float Property fRPMinDistanceSlider = 2500.0 Auto Hidden
 Int Property iExternalIndex = -1 Auto Hidden
+Int Property iSpawnMinLevel = 4 Auto Hidden
+Int Property iSpawnMaxLevel = 4 Auto Hidden
 Spell Property RevivalPower Auto
 Spell Property SacrificePower Auto
 Spell Property MoveCustomMarker Auto
@@ -220,10 +239,10 @@ Bool Property bCreaturesCanSteal = False Auto Hidden
 Bool Property bLoseSkillForever = False Auto Hidden
 String Property sResetHistory = "" Auto Hidden
 FormList property MarkerList Auto
+FormList property CustomRespawnPoints Auto
 ObjectReference Property SleepMarker Auto
 ObjectReference Property LocationMarker Auto
 ObjectReference Property LostItemsMarker Auto
-ObjectReference Property CustomMarker Auto
 ObjectReference Property DetachMarker1 Auto
 ObjectReference Property DetachMarker2 Auto
 ObjectReference Property DetachMarker3 Auto
@@ -231,7 +250,7 @@ Objectreference Property CellLoadMarker Auto
 Objectreference Property CellLoadMarker2 Auto
 Objectreference Property LocationMarker2 Auto
 ObjectReference Property LostItemsChest Auto
-zzzmoaReviverScript Property ReviveScript Auto
+ObjectReference Property ThiefMarker Auto
 Formlist property ExternalMarkerList Auto
 Int Property iTotalBleedOut = 0 Auto Hidden
 Int Property iTotalRespawn = 0 Auto Hidden
@@ -243,12 +262,123 @@ Int Property iRevivesByPotion = 0 Auto Hidden
 Int Property iRevivesByFollower = 0 Auto Hidden
 Int Property iDestroyedItems = 0 Auto Hidden
 Bool Property bFadeToBlack = True Auto Hidden
-Bool bToggling
+Message Property moaLostItemMenu Auto
+Float Property fRespawnTimeSlider = 0.0 Auto Hidden
+Bool Property bDisableUnsafe = True Auto Hidden
+Bool Property bShowRagdollWarning = True Auto Hidden
+Bool Property bShowTimeScaleWarning = True Auto Hidden
+Bool Property bShowBleedoutTimeWarning = True Auto Hidden
+Bool Property bSpawnHostile = False Auto Hidden
+Bool Property bIsUpdating = False Auto Hidden
+
+Int oidSpawnCountSlider
+Int oidSpawnWeightSlider
+Int oidSpawnHostile
+Int oidDisableUnsafe
+Int oidRespawnTimeSlider
+Int oidRandomItemCurse
+Int oidMoreRandomRespawn
+Int oidEquipInclude_M
+Int oidLoseItem
+Int oidLoseGold
+Int oidLoseAmmo
+Int oidLoseBook
+Int oidLoseArmor
+Int oidLoseWeapon
+Int oidLoseMisc
+Int oidLoseKey
+Int oidLoseSoulgem
+Int oidLosePotion
+Int oidLoseScroll
+Int oidLoseIngredient
+Int oidLoseArkayMark
+Int oidLoseDragonSoul
+Int oidLoseBlackSoulGem
+Int oidLoseGrandSoulGem
+Int oidLoseOthers
+Int oidCheckKeyword
+Int oidCheckWeight
+Int oidLevelReduce
+Bool Property bLoseItem = False Auto Hidden
+Bool Property bLoseGold = True Auto Hidden
+Bool Property bLoseArkayMark = False Auto Hidden
+Bool Property bLoseBlackSoulGem = False Auto Hidden
+Bool Property bLoseGrandSoulGem = False Auto Hidden
+Bool Property bLoseDragonSoul = False Auto Hidden
+Bool Property bLoseOthers = False Auto Hidden
+Bool Property bLoseAmmo = False Auto Hidden
+Bool Property bLoseBook = False Auto Hidden
+Bool Property bLoseArmor = True Auto Hidden
+Bool Property bLoseWeapon = True Auto Hidden
+Bool Property bLoseMisc = False Auto Hidden
+Bool Property bLoseKey = False Auto Hidden
+Bool Property bLoseSoulgem = False Auto Hidden
+Bool Property bLosePotion = False Auto Hidden
+Bool Property bLoseScroll = False Auto Hidden
+Bool Property bLoseIngredient = False Auto Hidden
+Bool Property bExcludeQuestItems = True Auto Hidden
+Bool Property bCheckKeyword = True Auto Hidden
+Bool Property bCheckWeight = True Auto Hidden
+Bool Property bLevelReduce = False Auto Hidden
+Bool Property bMoreRandomRespawn = False Auto Hidden
+Bool Property bRandomItemCurse = False Auto Hidden
+Bool Property bSKSEOK Auto Hidden
+Bool Property bSKSELoaded Auto Hidden
+Bool Property bARCCOK Auto Hidden
+Bool Property bFISSOK Auto Hidden
+Bool Property bDLIEOK Auto Hidden
+Bool Property bUIEOK Auto Hidden
+Bool Property bClone = True Auto Hidden
+Bool Property bCorpseAsSoulMark = False Auto Hidden
+
+Int oidMinLoseGoldSlider
+Int oidMaxLoseGoldSlider
+Int oidLoseGoldAll
+Int oidLoseArkayMarkAll
+Int oidMinLoseArkayMarkSlider
+Int oidMaxLoseArkayMarkSlider
+Int oidLoseDragonSoulAll
+Int oidMinLoseDragonSoulSlider
+Int oidMaxLoseDragonSoulSlider
+Int oidLoseBlackSoulGemAll
+Int oidMinLoseBlackSoulGemSlider
+Int oidMaxLoseBlackSoulGemSlider
+Int oidLoseGrandSoulGemAll
+Int oidMaxLoseGrandSoulGemSlider
+Int oidMinLoseGrandSoulGemSlider
+Int oidLoseOtherMinValueSlider
+Int oidLoseOtherTotalValueSlider
+Int oidExcludeQuestItems
+Float Property fMaxLoseGoldSlider = 250.0 Auto Hidden
+Float Property fMaxLoseArkayMarkSlider = 1.0 Auto Hidden
+Float Property fMaxLoseDragonSoulSlider = 1.0 Auto Hidden
+Float Property fMaxLoseBlackSoulGemSlider = 1.0 Auto Hidden
+Float Property fMaxLoseGrandSoulGemSlider = 1.0 Auto Hidden
+Float Property fMinLoseGoldSlider = 0.0 Auto Hidden
+Float Property fMinLoseArkayMarkSlider = 0.0 Auto Hidden
+Float Property fMinLoseDragonSoulSlider = 0.0 Auto Hidden
+Float Property fMinLoseBlackSoulGemSlider = 0.0 Auto Hidden
+Float Property fMinLoseGrandSoulGemSlider = 0.0 Auto Hidden
+Float Property fLoseOtherMinValueSlider = 0.0 Auto Hidden
+Float Property fLoseOtherTotalValueSlider = 0.0 Auto Hidden
+Bool Property bLoseGoldAll = False Auto Hidden
+Bool Property bLoseArkayMarkAll = False Auto Hidden
+Bool Property bLoseDragonSoulAll = False Auto Hidden
+Bool Property bLoseGrandSoulGemAll = False Auto Hidden
+Bool Property bLoseBlackSoulGemAll = False Auto Hidden
+Message Property ModVersionError Auto
+GlobalVariable Property moaIsBusy Auto
+
 
 Event OnPageReset(String page)
+	setArrays()
 	SetCursorFillMode(LEFT_TO_RIGHT)
-	If ( bIsModBusy() )
-		AddHeaderOption("$mrt_MarkofArkay_HEAD_Locked")
+	Int iCurStatus = iGetModStatus()
+	If iCurStatus == 1
+		AddHeaderOption("$mrt_MarkofArkay_HEAD_Mod_Status_1")
+		Return
+	ElseIf iCurStatus == 2
+		AddHeaderOption("$mrt_MarkofArkay_HEAD_Mod_Status_2")
 		Return
 	EndIf
 	If (page == "$General")
@@ -309,7 +439,7 @@ Event OnPageReset(String page)
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
-		oidEnableSave_M = AddMenuOption("$mrt_MarkofArkay_EnableSave_M", sSaveOptions[iSaveOption], flags)
+		oidEnableSave_M = AddMenuOption("$mrt_MarkofArkay_EnableSave_M", sGetSaveOptions()[iSaveOption], flags)
 		SetCursorPosition(4)
 		oidNoFallDamageEnabled = AddToggleOption("$mrt_MarkofArkay_NoFallDamageEnabled", bIsNoFallDamageEnabled, flags )
 		SetCursorPosition(6)
@@ -401,113 +531,42 @@ Event OnPageReset(String page)
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
-		oidNoTradingAftermath_M = AddMenuOption("$mrt_MarkofArkay_NoTradingAftermath_M", sAftermathOptions[iNotTradingAftermath], flags)
-		SetCursorPosition(4)
-		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1))
-			flags =	OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		oidRemovableItems_M = AddMenuOption("$mrt_MarkofArkay_RemovableItems_M", sLoseOptions[iRemovableItems], flags)
-		SetCursorPosition(8)
+		oidNoTradingAftermath_M = AddMenuOption("Aftermath", sGetAftermathOptions()[iNotTradingAftermath], flags)
+		SetCursorPosition(6)
 		AddHeaderOption("$Respawn")
-		SetCursorPosition(10)
+		SetCursorPosition(8)
 		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1))
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidRespawnNaked = AddToggleOption("$mrt_MarkofArkay_RespawnNaked", bRespawnNaked, flags)
-		SetCursorPosition(12)
+		SetCursorPosition(10)
 		oidJail = AddToggleOption("$mrt_MarkofArkay_Jail",bSendToJail,flags)
+		SetCursorPosition(12)
+		oidKillIfCantRespawn = AddToggleOption("$mrt_MarkofArkay_KillIfCantRespawn",bKillIfCantRespawn,flags)
 		SetCursorPosition(14)
 		oidShowRaceMenu = AddToggleOption("$mrt_MarkofArkay_ShowRaceMenu", bShowRaceMenu,flags)
 		SetCursorPosition(16)
-		oidHealActors = AddToggleOption("$mrt_MarkofArkay_HealActors",bHealActors,flags)
+		If ( moaState.getValue() == 1 )
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidMoreRandomRespawn = AddToggleOption("$mrt_MarkofArkay_MoreRandomRespawn",bMoreRandomRespawn,flags)
 		SetCursorPosition(18)
-		oidResurrectActors = AddToggleOption("$mrt_MarkofArkay_ResurrectActors",bResurrectActors,flags)
+		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1))
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidCorpseAsSoulMark = AddToggleOption("$mrt_MarkofArkay_CorpseAsSoulMark", bCorpseAsSoulMark, flags)
+		SetCursorPosition(20)
+		oidHealActors = AddToggleOption("$mrt_MarkofArkay_HealActors",bHealActors,flags)
 		SetCursorPosition(22)
-		AddHeaderOption("$Curse")
-		SetCursorPosition(24)
-		oidArkayCurse = AddToggleOption("$mrt_MarkofArkay_ArkayCurse", bArkayCurse, flags)
-		SetCursorPosition(26)
-		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bArkayCurse)
-			flags =	OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		oidTempArkayCurse = AddToggleOption("$mrt_MarkofArkay_TempArkayCurse",bIsArkayCurseTemporary, flags)
-		SetCursorPosition(28)
-		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bArkayCurse )
-			flags =	OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		oidArkayCurses_M = AddMenuOption("$mrt_MarkofArkay_ArkayCurses_M", sArkayCurses[iArkayCurse], flags)
-		SetCursorPosition(32)
-		AddHeaderOption("$Skill_Reduction")
-		SetCursorPosition(34)
-		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1 )
-			flags =	OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		oidSkillReduce_M = AddMenuOption("$mrt_MarkofArkay_SkillReduce_M", sSkills[iReducedSkill], flags)
-		SetCursorPosition(36)
-		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1 ) && (iReducedSkill != 0) && !bSkillReduceRandomVal
-			flags =	OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		oidSkillReduceValSlider = AddSliderOption("$mrt_MarkofArkay_SkillReduceValSlider_1", fSkillReduceValSlider, "$mrt_MarkofArkay_SkillReduceValSlider_2", flags)
-		SetCursorPosition(38)
-		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1 ) && (iReducedSkill != 0)
-			flags =	OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		oidSkillReduceRandomVal = AddToggleOption("$mrt_MarkofArkay_SkillReduceRandomVal",bSkillReduceRandomVal, flags)
-		SetCursorPosition(40)
-		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1 ) && (iReducedSkill != 0) && bSkillReduceRandomVal
-			flags =	OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		oidSkillReduceMinValSlider = AddSliderOption("$mrt_MarkofArkay_killReduceMinValSlider_1", fSkillReduceMinValSlider , "{0}", flags)
-		SetCursorPosition(42)
-		oidSkillReduceMaxValSlider = AddSliderOption("$mrt_MarkofArkay_killReduceMaxValSlider_1", fSkillReduceMaxValSlider , "{0}", flags)
-		SetCursorPosition(44)
-		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1 ) && (iReducedSkill != 0)
-			flags =	OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		oidLoseSkillForever = AddToggleOption("$mrt_MarkofArkay_LoseSkillForever",bLoseSkillForever, flags)
-		SetCursorPosition(48)
-		AddHeaderOption("$Lost_Item_Retrieval")
-		SetCursorPosition(50)
-		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled
-			flags =	OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		oidLostItemQuest = AddToggleOption("$mrt_MarkofArkay_LostItemQuest",bLostItemQuest,flags)
-		SetCursorPosition(52)
-		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1))
-			flags =	OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		oidSoulMarkStay = AddToggleOption("$mrt_MarkofArkay_SoulMarkStay",bSoulMarkStay,flags)
-		SetCursorPosition(54)
-		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1))
-			flags =	OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		oidLoseforever = AddToggleOption("$mrt_MarkofArkay_Loseforever",bLoseForever, flags)
+		oidResurrectActors = AddToggleOption("$mrt_MarkofArkay_ResurrectActors",bResurrectActors,flags)
 		SetCursorPosition(1)
-		AddHeaderOption("$Destination")
+		AddHeaderOption("$mrt_MarkofArkay_HEAD_Destination")
 		SetCursorPosition(3)
 		If ( moaState.getValue() == 1 )
 			flags =	OPTION_FLAG_NONE
@@ -523,14 +582,23 @@ Event OnPageReset(String page)
 		EndIf
 		oidRespawnMenu = AddToggleOption("$mrt_MarkofArkay_RespawnMenu", bRespawnMenu, flags)
 		SetCursorPosition(7)
-		If (( moaState.getValue() == 1 ) && ( !bRespawnMenu || !bTeleportMenu ))
+		If ( moaState.getValue() == 1 )
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidTeleportLocation_M = AddMenuOption("$mrt_MarkofArkay_TeleportLocation_M", sRespawnPoints[iTeleportLocation], flags)
 		SetCursorPosition(9)
-		If (( moaState.getValue() == 1 ) && ( iTeleportLocation == ( sRespawnPoints.Length - 3 )) && ( ExternalMarkerList.GetSize() > 1 ) && ( !bRespawnMenu || !bTeleportMenu ))
+		oidSelectedCustomRPSlot_M = AddMenuOption("$mrt_MarkofArkay_SelectedCustomRPSlot_M", sGetCustomRPs()[iSelectedCustomRPSlot], flags)
+		SetCursorPosition(11)
+		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled)
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidTotalCustomRPSlotSlider = AddSliderOption("$mrt_MarkofArkay_TotalCustomRPSlotSlider_1", fTotalCustomRPSlotSlider, "{0}", flags)
+		SetCursorPosition(13)
+		If (( moaState.getValue() == 1 ) && ( iTeleportLocation == getExternalRPIndex()) && ( ExternalMarkerList.GetSize() > 1 ))
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
@@ -543,77 +611,371 @@ Event OnPageReset(String page)
 		Else
 			oidExternalTeleportLocation = AddTextOption("$mrt_MarkofArkay_ExternalTeleportLocation", ( (iExternalIndex + 1) As String ), flags)
 		EndIf
-		SetCursorPosition(11)
-		If ( moaState.getValue() == 1 )
+		SetCursorPosition(15)
+		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1))
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidRPMinDistanceSlider = AddSliderOption("$mrt_MarkofArkay_RPMinDistanceSlider_1", fRPMinDistanceSlider, "{0}", flags)
-		SetCursorPosition(15)
-		AddHeaderOption("$City")
 		SetCursorPosition(17)
+		If ( moaState.getValue() == 1 ) && !bDisableUnsafe
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidRespawnTimeSlider = AddSliderOption("$mrt_MarkofArkay_RespawnTimeSlider_1", fRespawnTimeSlider, "$mrt_MarkofArkay_RespawnTimeSlider_2", flags)
+		SetCursorPosition(21)
+		AddHeaderOption("$mrt_MarkofArkay_HEAD_City")
+		SetCursorPosition(23)
 		If ( moaState.getValue() == 1 )
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidRespawnPoint0 = AddToggleOption(sRespawnPoints[0], bRespawnPointsFlags[0], flags )
-		SetCursorPosition(19)
-		oidRespawnPoint1 = AddToggleOption(sRespawnPoints[1], bRespawnPointsFlags[1], flags )
-		SetCursorPosition(21)
-		oidRespawnPoint2 = AddToggleOption(sRespawnPoints[2], bRespawnPointsFlags[2], flags )
-		SetCursorPosition(23)
-		oidRespawnPoint3 = AddToggleOption(sRespawnPoints[3], bRespawnPointsFlags[3], flags )
 		SetCursorPosition(25)
-		oidRespawnPoint4 = AddToggleOption(sRespawnPoints[4], bRespawnPointsFlags[4], flags )
+		oidRespawnPoint1 = AddToggleOption(sRespawnPoints[1], bRespawnPointsFlags[1], flags )
 		SetCursorPosition(27)
-		oidRespawnPoint5 = AddToggleOption(sRespawnPoints[5], bRespawnPointsFlags[5], flags )
+		oidRespawnPoint2 = AddToggleOption(sRespawnPoints[2], bRespawnPointsFlags[2], flags )
 		SetCursorPosition(29)
-		oidRespawnPoint6 = AddToggleOption(sRespawnPoints[6], bRespawnPointsFlags[6], flags )
+		oidRespawnPoint3 = AddToggleOption(sRespawnPoints[3], bRespawnPointsFlags[3], flags )
 		SetCursorPosition(31)
-		oidRespawnPoint7 = AddToggleOption(sRespawnPoints[7], bRespawnPointsFlags[7], flags )
+		oidRespawnPoint4 = AddToggleOption(sRespawnPoints[4], bRespawnPointsFlags[4], flags )
+		SetCursorPosition(33)
+		oidRespawnPoint5 = AddToggleOption(sRespawnPoints[5], bRespawnPointsFlags[5], flags )
 		SetCursorPosition(35)
-		AddHeaderOption("$Follower")
+		oidRespawnPoint6 = AddToggleOption(sRespawnPoints[6], bRespawnPointsFlags[6], flags )
 		SetCursorPosition(37)
+		oidRespawnPoint7 = AddToggleOption(sRespawnPoints[7], bRespawnPointsFlags[7], flags )
+	ElseIf (page == "$Curse")
+		SetCursorPosition(0)
+		AddHeaderOption("$Curse")
+		SetCursorPosition(2)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1)
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidArkayCurse = AddToggleOption("$mrt_MarkofArkay_ArkayCurse", bArkayCurse, flags)
+		SetCursorPosition(4)
+		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bArkayCurse)
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidTempArkayCurse = AddToggleOption("$mrt_MarkofArkay_TempArkayCurse",bIsArkayCurseTemporary, flags)
+		SetCursorPosition(6)
+		oidArkayCurses_M = AddMenuOption("$mrt_MarkofArkay_ArkayCurses_M", sGetArkayCurses()[iArkayCurse], flags)
+		SetCursorPosition(10)
+		AddHeaderOption("$mrt_MarkofArkay_HEAD_Skill_Reduction")
+		SetCursorPosition(12)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1 )
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidSkillReduce_M = AddMenuOption("$mrt_MarkofArkay_SkillReduce_M", sGetSkills()[iReducedSkill], flags)
+		SetCursorPosition(14)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1 ) && (iReducedSkill != 0)
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidLevelReduce = AddToggleOption("$mrt_MarkofArkay_LevelReduce", bLevelReduce, flags)
+		SetCursorPosition(16)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1 ) && (iReducedSkill != 0) && !bSkillReduceRandomVal
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidSkillReduceValSlider = AddSliderOption("$mrt_MarkofArkay_SkillReduceValSlider_1", fSkillReduceValSlider, "$mrt_MarkofArkay_SkillReduceValSlider_2", flags)
+		SetCursorPosition(18)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1 ) && (iReducedSkill != 0)
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidSkillReduceRandomVal = AddToggleOption("$mrt_MarkofArkay_SkillReduceRandomVal",bSkillReduceRandomVal, flags)
+		SetCursorPosition(20)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1 ) && (iReducedSkill != 0) && bSkillReduceRandomVal
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidSkillReduceMinValSlider = AddSliderOption("$mrt_MarkofArkay_killReduceMinValSlider_1", fSkillReduceMinValSlider , "{0}", flags)
+		SetCursorPosition(22)
+		oidSkillReduceMaxValSlider = AddSliderOption("$mrt_MarkofArkay_killReduceMaxValSlider_1", fSkillReduceMaxValSlider , "{0}", flags)
+		SetCursorPosition(24)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1 ) && !bDisableUnsafe && (iReducedSkill != 0) && bDLIEOK
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidLoseSkillForever = AddToggleOption("$mrt_MarkofArkay_LoseSkillForever",bLoseSkillForever, flags)
+		SetCursorPosition(28)
+		AddHeaderOption("$mrt_MarkofArkay_HEAD_Curse_Recovery")
+		SetCursorPosition(30)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidLostItemQuest = AddToggleOption("$mrt_MarkofArkay_LostItemQuest",bLostItemQuest,flags)
+		SetCursorPosition(32)
+		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1))
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidSoulMarkStay = AddToggleOption("$mrt_MarkofArkay_SoulMarkStay",bSoulMarkStay,flags)
+		SetCursorPosition(34)
+		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1)) && !bDisableUnsafe
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidLoseforever = AddToggleOption("$mrt_MarkofArkay_Loseforever",bLoseForever, flags)
+		SetCursorPosition(1)
+		AddHeaderOption("$mrt_MarkofArkay_HEAD_Item_Curse")
+		SetCursorPosition(3)
+		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1))
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidLoseItem = AddToggleOption("$mrt_MarkofArkay_Lose_Items", bLoseItem,flags)
+		SetCursorPosition(5)
+		AddHeaderOption("")
+		SetCursorPosition(7)
+		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bLoseItem)
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidLoseGold = AddToggleOption("$mrt_MarkofArkay_Lose_Gold", bLoseGold,flags)
+		SetCursorPosition(9)
+		oidLoseGoldAll = AddToggleOption("$mrt_MarkofArkay_LoseGoldAll", bLoseGoldAll,flags)
+		SetCursorPosition(11)
+		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bLoseItem && !bLoseGoldAll)
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidMinLoseGoldSlider = AddSliderOption("$mrt_MarkofArkay_MinLoseGoldSlider", fMinLoseGoldSlider, "{0}", flags)
+		SetCursorPosition(13)
+		oidMaxLoseGoldSlider = AddSliderOption("$mrt_MarkofArkay_MaxLoseGoldSlider", fMaxLoseGoldSlider, "{0}", flags)
+		SetCursorPosition(15)
+		AddHeaderOption("")
+		SetCursorPosition(17)
+		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bLoseItem )
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidLoseArkayMark = AddToggleOption("$mrt_MarkofArkay_LoseArkayMark", bLoseArkayMark,flags)
+		SetCursorPosition(19)
+		oidLoseArkayMarkAll = AddToggleOption("$mrt_MarkofArkay_LoseArkayMarkAll", bLoseArkayMarkAll,flags)
+		SetCursorPosition(21)
+		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bLoseItem && !bLoseArkayMarkAll)
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidMinLoseArkayMarkSlider = AddSliderOption("$mrt_MarkofArkay_MinLoseArkayMarkSlider", fMinLoseArkayMarkSlider, "{0}", flags)
+		SetCursorPosition(23)
+		oidMaxLoseArkayMarkSlider = AddSliderOption("$mrt_MarkofArkay_MaxLoseArkayMarkSlider", fMaxLoseArkayMarkSlider, "{0}", flags)
+		SetCursorPosition(25)
+		AddHeaderOption("")
+		SetCursorPosition(27)
+		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bLoseItem)
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidLoseDragonSoul = AddToggleOption("$mrt_MarkofArkay_LoseDragonSoul", bLoseDragonSoul,flags)
+		SetCursorPosition(29)
+		oidLoseDragonSoulAll = AddToggleOption("$mrt_MarkofArkay_LoseDragonSoulAll", bLoseDragonSoulAll,flags)
+		SetCursorPosition(31)
+		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bLoseItem && !bLoseDragonSoulAll)
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidMinLoseDragonSoulSlider = AddSliderOption("$mrt_MarkofArkay_MinLoseDragonSoulSlider", fMinLoseDragonSoulSlider, "{0}", flags)
+		SetCursorPosition(33)
+		oidMaxLoseDragonSoulSlider = AddSliderOption("$mrt_MarkofArkay_MaxLoseDragonSoulSlider", fMaxLoseDragonSoulSlider, "{0}", flags)
+		SetCursorPosition(35)
+		AddHeaderOption("")
+		SetCursorPosition(37)
+		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bLoseItem)
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidLoseBlackSoulGem = AddToggleOption("$mrt_MarkofArkay_LoseBlackSoulGem", bLoseBlackSoulGem,flags)
+		SetCursorPosition(39)
+		oidLoseBlackSoulGemAll = AddToggleOption("$mrt_MarkofArkay_LoseBlackSoulGemAll", bLoseBlackSoulGemAll,flags)
+		SetCursorPosition(41)
+		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bLoseItem && !bLoseBlackSoulGemAll)
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidMinLoseBlackSoulGemSlider = AddSliderOption("$mrt_MarkofArkay_MinLoseBlackSoulGemSlider", fMinLoseBlackSoulGemSlider, "{0}", flags)
+		SetCursorPosition(43)
+		oidMaxLoseBlackSoulGemSlider = AddSliderOption("$mrt_MarkofArkay_MaxLoseBlackSoulGemSlider", fMaxLoseBlackSoulGemSlider, "{0}", flags)
+		SetCursorPosition(45)
+		AddHeaderOption("")
+		SetCursorPosition(47)
+		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bLoseItem)
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidLoseGrandSoulGem = AddToggleOption("$mrt_MarkofArkay_LoseGrandSoulGem", bLoseGrandSoulGem,flags)
+		SetCursorPosition(49)
+		oidLoseGrandSoulGemAll = AddToggleOption("$mrt_MarkofArkay_LoseGrandSoulGemAll", bLoseGrandSoulGemAll,flags)
+		SetCursorPosition(51)
+		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bLoseItem && !bLoseGrandSoulGemAll)
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidMinLoseGrandSoulGemSlider = AddSliderOption("$mrt_MarkofArkay_MinLoseGrandSoulGemSlider", fMinLoseGrandSoulGemSlider, "{0}", flags)
+		SetCursorPosition(53)
+		oidMaxLoseGrandSoulGemSlider = AddSliderOption("$mrt_MarkofArkay_MaxLoseGrandSoulGemSlider", fMaxLoseGrandSoulGemSlider, "{0}", flags)
+		SetCursorPosition(55)
+		AddHeaderOption("$mrt_MarkofArkay_HEAD_Extra_Item_Curse")
+		SetCursorPosition(57)
+		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bLoseItem)
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidLoseOthers = AddToggleOption("$mrt_MarkofArkay_LoseOthers", bLoseOthers,flags)
+		SetCursorPosition(59)
+		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bLoseItem && bLoseOthers)
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidEquipInclude_M = AddMenuOption("$mrt_MarkofArkay_EquipInclude_M", sGetLoseInclusions()[iLoseInclusion], flags)
+		SetCursorPosition(61)
+		oidCheckWeight = AddToggleOption("$mrt_MarkofArkay_CheckWeight", bCheckWeight,flags)
+		SetCursorPosition(63)
+		oidCheckKeyword = AddToggleOption("Exclude by Keyword", bCheckKeyword,flags)
+		SetCursorPosition(65)
+		oidExcludeQuestItems = AddToggleOption("$mrt_MarkofArkay_ExcludeQuestItems", bExcludeQuestItems, flags)
+		SetCursorPosition(67)
+		oidRandomItemCurse = AddToggleOption("$mrt_MarkofArkay_RandomItemCurse",bRandomItemCurse,flags)
+		SetCursorPosition(69)
+		oidLoseOtherMinValueSlider = AddSliderOption("$mrt_MarkofArkay_LoseOtherMinValueSlider", fLoseOtherMinValueSlider, "{0}", flags)
+		SetCursorPosition(71)
+		oidLoseOtherTotalValueSlider = AddSliderOption("$mrt_MarkofArkay_LoseOtherTotalValueSlider", fLoseOtherTotalValueSlider, "{0}", flags)
+		SetCursorPosition(73)
+		AddHeaderOption("")
+		SetCursorPosition(75)
+		oidLoseArmor = AddToggleOption("$mrt_MarkofArkay_LoseArmor", bLoseArmor,flags)
+		SetCursorPosition(77)
+		oidLoseWeapon = AddToggleOption("$mrt_MarkofArkay_LoseWeapon", bLoseWeapon,flags)
+		SetCursorPosition(79)
+		oidLoseAmmo = AddToggleOption("$mrt_MarkofArkay_LoseAmmo", bLoseAmmo,flags)
+		SetCursorPosition(81)
+		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bLoseItem && bLoseOthers && (iLoseInclusion != 1))
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidLoseBook = AddToggleOption("$mrt_MarkofArkay_LoseBook", bLoseBook,flags)
+		SetCursorPosition(83)
+		oidLoseMisc = AddToggleOption("$mrt_MarkofArkay_LoseMisc", bLoseMisc,flags)
+		SetCursorPosition(85)
+		oidLoseKey = AddToggleOption("$mrt_MarkofArkay_LoseKey", bLoseKey,flags)
+		SetCursorPosition(87)
+		oidLoseSoulgem = AddToggleOption("$mrt_MarkofArkay_LoseSoulgem", bLoseSoulgem,flags)
+		SetCursorPosition(89)
+		oidLosePotion = AddToggleOption("$mrt_MarkofArkay_LosePotion", bLosePotion,flags)
+		SetCursorPosition(91)
+		oidLoseScroll = AddToggleOption("$mrt_MarkofArkay_LoseScroll", bLoseScroll,flags)
+		SetCursorPosition(93)
+		oidLoseIngredient = AddToggleOption("$mrt_MarkofArkay_LoseIngredient", bLoseIngredient,flags)
+	ElseIf (page == "NPC")
+		SetCursorPosition(0)
+		AddHeaderOption("$mrt_MarkofArkay_HEAD_NPC")
+		SetCursorPosition(2)
+		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1))
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidHostileOptions_M = AddMenuOption("$mrt_MarkofArkay_HostileOptions_M", sGetHostileOptions()[iHostileOption], flags)
+		SetCursorPosition(4)
+		oidMoralityMatters = AddToggleOption("$mrt_MarkofArkay_MoralityMatters", bMoralityMatters,flags)
+		SetCursorPosition(6)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && ( iHostileOption == 1 || iHostileOption == 2 )
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidCreaturesCanSteal  = AddToggleOption("$mrt_MarkofArkay_CreaturesCanSteal",bCreaturesCanSteal,flags)
+		SetCursorPosition(10)
+		AddHeaderOption("Spawn Options")
+		SetCursorPosition(12)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && iHostileOption == 2
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidSpawnHostile = AddToggleOption("$mrt_MarkofArkay_SpawnHostile",bSpawnHostile,flags)
+		SetCursorPosition(14)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) &&  bSpawnHostile
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidSpawnByLocation = AddToggleOption("$mrt_MarkofArkay_SpawnByLocation", bSpawnByLocation, flags)
+		SetCursorPosition(16)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) &&  bSpawnHostile && bSpawnByLocation
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidRetrySpawnWithoutLocation = AddToggleOption("$mrt_MarkofArkay_RetrySpawnWithoutLocation", bRetrySpawnWithoutLocation, flags)
+		SetCursorPosition(18)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) &&  bSpawnHostile
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidSpawnCheckRelation = AddToggleOption("$mrt_MarkofArkay_SpawnCheckRelation", bSpawnCheckRelation, flags)
+		SetCursorPosition(20)
+		oidSpawnBringAllies = AddToggleOption("$mrt_MarkofArkay_SpawnBringAllies", bSpawnBringAllies, flags)
+		SetCursorPosition(22)
+		oidSpawnMinLevel_M = AddMenuOption("$mrt_MarkofArkay_SpawnMinLevel_M", sGetSpawnLevels()[iSpawnMinLevel], flags)
+		SetCursorPosition(24)
+		oidSpawnMaxLevel_M = AddMenuOption("$mrt_MarkofArkay_SpawnMaxLevel_M", sGetSpawnLevels()[iSpawnMaxLevel], flags)
+		SetCursorPosition(26)
+		AddHeaderOption("")
+		SetCursorPosition(28)
+		oidSpawns_M = AddMenuOption("$mrt_MarkofArkay_Spawns_M", sGetSpawns()[iSpawn], flags)
+		SetCursorPosition(30)
+		oidSpawnWeightSlider = AddSliderOption("$mrt_MarkofArkay_SpawnWeightSlider_1", iSpawnWeights[iSpawn], "$mrt_MarkofArkay_SpawnWeightSlider_2", flags)
+		SetCursorPosition(32)
+		oidSpawnCountSlider = AddSliderOption("$mrt_MarkofArkay_SpawnCountSlider_1", iSpawnCounts[iSpawn], "$mrt_MarkofArkay_SpawnCountSlider_2", flags)		
+		SetCursorPosition(1)
+		AddHeaderOption("$Follower")
+		SetCursorPosition(3)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidPlayerProtectFollower = AddToggleOption("$mrt_MarkofArkay_PlayerProtectFollower", bPlayerProtectFollower, flags)
-		SetCursorPosition(39)
+		SetCursorPosition(5)
 		oidFollowerProtectPlayer = AddToggleOption("$mrt_MarkofArkay_FollowerProtectPlayer", bFollowerProtectPlayer, flags)
-		SetCursorPosition(43)
-		AddHeaderOption("$Hostile_NPC")
-		SetCursorPosition(45)
-		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1))
-			flags =	OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		oidHostileNPC =  AddToggleOption("$mrt_MarkofArkay_HostileNPC",bHostileNPC,flags)
-		SetCursorPosition(47)
-		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1 )
-			flags =	OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		oidNPCStealItems = AddToggleOption("$mrt_MarkofArkay_NPCStealItems",bNPCStealItems,flags)
-		SetCursorPosition(49)
-		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && ( bNPCStealItems )
-			flags =	OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		oidMoralityMatters = AddToggleOption("$mrt_MarkofArkay_MoralityMatters", bMoralityMatters,flags)
-		SetCursorPosition(51)
-		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && ( bHostileNPC || bNPCStealItems )
-			flags =	OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		oidCreaturesCanSteal  = AddToggleOption("$mrt_MarkofArkay_CreaturesCanSteal",bCreaturesCanSteal,flags)
+		
+		
 	ElseIf (page == "$Debug")
 		SetCursorPosition(0)
 		AddHeaderOption("$Debug")
@@ -631,7 +993,7 @@ Event OnPageReset(String page)
 		EndIf
 		oidReset = AddTextOption("$mrt_MarkofArkay_Reset", "", flags)
 		SetCursorPosition(6)
-			If ( PlayerRef.HasSpell(MoveCustomMarker ) || PlayerRef.HasSpell(RecallMarker ) )
+		If ( PlayerRef.HasSpell(MoveCustomMarker ) || PlayerRef.HasSpell(RecallMarker ) )
 			oidToggleSpells = AddTextOption("$mrt_MarkofArkay_ToggleSpells1", "", flags) 
 		Else
 			oidToggleSpells = AddTextOption("$mrt_MarkofArkay_ToggleSpells2", "", flags) 
@@ -646,64 +1008,112 @@ Event OnPageReset(String page)
 		sResetHistory = ""
 		oidResetHistory = AddTextOption("$mrt_MarkofArkay_ResetHistory", sResetHistory, flags)
 		SetCursorPosition(12)
+		AddHeaderOption("")
+		SetCursorPosition(14)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
+		oidDisableUnsafe = AddToggleOption("$mrt_MarkofArkay_DisableUnsafe", bDisableUnsafe, flags)
+		SetCursorPosition(16)
 		oidLogging = AddToggleOption("$mrt_MarkofArkay_Logging", bIsLoggingEnabled, flags )
-		SetCursorPosition(14)
+		SetCursorPosition(18)
 		If ( moaState.getValue() == 1 )
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidInformation = AddToggleOption("$mrt_MarkofArkay_Info", bIsInfoEnabled, flags )
-		SetCursorPosition(16)
+		SetCursorPosition(20)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidNotification = AddToggleOption("$mrt_MarkofArkay_Notification", bIsNotificationEnabled, flags )
-		SetCursorPosition(18)
-		oidFadeToBlack = AddToggleOption("$mrt_MarkofArkay_FadeToBlack", bFadeToBlack, flags )
-		SetCursorPosition(20)
-		oidInvisibility = AddToggleOption("$mrt_MarkofArkay_Invisibility", bInvisibility, flags)
 		SetCursorPosition(22)
-		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && (bFadeToBlack || bInvisibility)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && !bDisableUnsafe
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
-		oidDeathEffect = AddToggleOption("$mrt_MarkofArkay_DeathEffect", bDeathEffect,flags)
+		oidRagdollEffect = AddToggleOption("$mrt_MarkofArkay_RagdollEffect", bIsRagdollEnabled,flags)
 		SetCursorPosition(24)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
+		oidFadeToBlack = AddToggleOption("$mrt_MarkofArkay_FadeToBlack", bFadeToBlack, flags )
+		SetCursorPosition(26)
+		oidInvisibility = AddToggleOption("$mrt_MarkofArkay_Invisibility", bInvisibility, flags)
+		SetCursorPosition(28)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && !bIsRagdollEnabled && (bFadeToBlack || bInvisibility)
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidDeathEffect = AddToggleOption("$mrt_MarkofArkay_DeathEffect", bDeathEffect,flags)		
+		SetCursorPosition(30)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && bARCCOK
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
 		oidAltEyeFix = AddToggleOption("$mrt_MarkofArkay_AltEyeFix", bAltEyeFix, flags)
 		SetCursorPosition(1)
-		AddHeaderOption("$Info")
+		If  ( iNotTradingAftermath == 1 && !ReviveScript.RespawnScript.bCanTeleport() )
+			AddHeaderOption("$mrt_MarkofArkay_HEAD_CanNotRespawn")
+		Else
+			AddHeaderOption("")
+		EndIf
 		SetCursorPosition(3)
 		flags = OPTION_FLAG_DISABLED
+		String sText
+		Int iCount
 		If bIsInfoEnabled
-			Int iCount = LostItemsChest.GetNumItems()
-			If ReviveScript.fLostSouls > 0
-				iCount += 1
-			EndIf
+			iCount = LostItemsChest.GetNumItems()
 			If iCount <= 999999
-				AddTextOption("$mrt_MarkofArkay_Cur_Lost_Items", iCount, flags)
+				sText = iCount As String
+				If iCount > 0 && bUIEOK
+					flags = OPTION_FLAG_NONE
+				Else
+					flags = OPTION_FLAG_DISABLED
+				EndIf
 			Else
-				AddTextOption("$mrt_MarkofArkay_Cur_Lost_Items", "+999999", flags)
+				sText = "+999999"
 			EndIf
 		Else
-			AddTextOption("$mrt_MarkofArkay_Cur_Lost_Items", "$Disabled", flags)
+			sText = "$Disabled"
 		EndIf
+		oidLostItemsInfo = AddTextOption("$mrt_MarkofArkay_Cur_Lost_Items", sText, flags)
 		SetCursorPosition(5)
+		flags = OPTION_FLAG_DISABLED
+		If bIsInfoEnabled
+			iCount = ReviveScript.SkillScript.iGetReducedSkillsCount(False)
+			sText = iCount As String
+			If iCount > 0 && bUIEOK
+				flags = OPTION_FLAG_NONE
+			EndIf
+		Else
+			sText = "$Disabled"
+		EndIf
+		oidLostSkillsInfo = AddTextOption("$mrt_MarkofArkay_LostSkillsInfo", sText, flags)
+		SetCursorPosition(7)
+		flags = OPTION_FLAG_DISABLED
+		If bIsInfoEnabled
+			sText = ReviveScript.ItemScript.fLostSouls As Int
+		Else
+			sText = "$Disabled"
+		EndIf
+		AddTextOption("$mrt_MarkofArkay_Lost_Dragon_Souls", sText, flags)		
+		SetCursorPosition(9)
+		AddHeaderOption("")
+		SetCursorPosition(11)
+		flags = OPTION_FLAG_DISABLED
 		If ( moaState.getValue() == 1 ) && bIsInfoEnabled
-			If iTeleportLocation < sRespawnPoints.Length - 6
+			If iTeleportLocation < getRandCityRPIndex()
 				If (MarkerList.GetAt(iTeleportLocation) As Objectreference)
 					Float fDistance = PlayerRef.GetDistance(MarkerList.GetAt(iTeleportLocation) As Objectreference)
 					If fDistance
@@ -718,7 +1128,7 @@ Event OnPageReset(String page)
 				Else
 					AddTextOption("$mrt_MarkofArkay_Dis_From_Respawn", "$Unknown", flags)
 				EndIf
-			ElseIf (iTeleportLocation == sRespawnPoints.Length - 5)
+			ElseIf (iTeleportLocation == getSleepRPIndex())
 				If ( SleepMarker && !SleepMarker.Isdisabled() )
 					Float fDistance = PlayerRef.GetDistance(SleepMarker)
 					If fDistance
@@ -733,22 +1143,21 @@ Event OnPageReset(String page)
 				Else
 					AddTextOption("$mrt_MarkofArkay_Dis_From_Respawn", "$Unknown", flags)
 				EndIf
-			ElseIf (iTeleportLocation == sRespawnPoints.Length - 4)
-				If ( CustomMarker && !CustomMarker.Isdisabled() )
-					Float fDistance = PlayerRef.GetDistance(CustomMarker)
-					If fDistance
-						If fDistance <= 999999
-							AddTextOption("$mrt_MarkofArkay_Dis_From_Respawn", fDistance As Int, flags)
-						Else
-							AddTextOption("$mrt_MarkofArkay_Dis_From_Respawn", "+999999", flags)
-						EndIf
+			ElseIf (iTeleportLocation == getCustomRPIndex())
+				Float fDistance
+				If (CustomRespawnPoints.GetAt(iSelectedCustomRPSlot) As ObjectReference).IsEnabled()
+					fDistance = PlayerRef.GetDistance((CustomRespawnPoints.GetAt(iSelectedCustomRPSlot) As ObjectReference))
+				EndIf
+				If fDistance
+					If fDistance <= 999999
+						AddTextOption("$mrt_MarkofArkay_Dis_From_Respawn", fDistance As Int, flags)
 					Else
-						AddTextOption("$mrt_MarkofArkay_Dis_From_Respawn", "$Unknown", flags)
+						AddTextOption("$mrt_MarkofArkay_Dis_From_Respawn", "+999999", flags)
 					EndIf
 				Else
 					AddTextOption("$mrt_MarkofArkay_Dis_From_Respawn", "$Unknown", flags)
 				EndIf
-			ElseIf (iTeleportLocation == sRespawnPoints.Length - 3) && (ExternalMarkerList.GetSize() > 1) && (iExternalIndex != -1)
+			ElseIf (iTeleportLocation == getExternalRPIndex()) && (ExternalMarkerList.GetSize() > 1) && (iExternalIndex != -1)
 				ObjectReference ExtMarker = ExternalMarkerList.GetAt(iExternalIndex) As ObjectReference
 				If ( ExtMarker && !ExtMarker.Isdisabled() )
 					Float fDistance = PlayerRef.GetDistance(ExtMarker)
@@ -764,7 +1173,7 @@ Event OnPageReset(String page)
 				Else
 					AddTextOption("$mrt_MarkofArkay_Dis_From_Respawn", "$Unknown", flags)
 				EndIf
-			ElseIf (iTeleportLocation == sRespawnPoints.Length - 3) && (ExternalMarkerList.GetSize() == 1)
+			ElseIf (iTeleportLocation == getExternalRPIndex()) && (ExternalMarkerList.GetSize() == 1)
 				ObjectReference ExtMarker = ExternalMarkerList.GetAt(0) As ObjectReference
 				If ( ExtMarker && !ExtMarker.Isdisabled() )
 					Float fDistance = PlayerRef.GetDistance(ExtMarker)
@@ -786,7 +1195,7 @@ Event OnPageReset(String page)
 		Else
 			AddTextOption("$mrt_MarkofArkay_Dis_From_Respawn", "$Disabled", flags)
 		EndIf
-		SetCursorPosition(7)
+		SetCursorPosition(13)
 		If bIsInfoEnabled && ( moaState.getValue() == 1 )
 			If iTotalBleedOut > 99999999
 				AddTextOption("$Bleedouts", "+99999999", flags)
@@ -796,7 +1205,7 @@ Event OnPageReset(String page)
 		Else
 			AddTextOption("$Bleedouts", "$Disabled", flags)
 		EndIf
-		SetCursorPosition(9)
+		SetCursorPosition(15)
 		If bIsInfoEnabled && ( moaState.getValue() == 1 )
 			If iTotalRevives > 99999999
 				AddTextOption("$Revivals", "+99999999", flags)
@@ -806,7 +1215,7 @@ Event OnPageReset(String page)
 		Else
 			AddTextOption("$Revivals", "$Disabled", flags)
 		EndIf
-		SetCursorPosition(11)
+		SetCursorPosition(17)
 		If bIsInfoEnabled && ( moaState.getValue() == 1 )
 			If iRevivesByFollower > 99999999
 				AddTextOption("$mrt_MarkofArkay_Revive_By_Follower", "+99999999", flags)
@@ -816,7 +1225,7 @@ Event OnPageReset(String page)
 		Else
 			AddTextOption("$mrt_MarkofArkay_Revive_By_Follower", "$Disabled", flags)
 		EndIf
-		SetCursorPosition(13)
+		SetCursorPosition(19)
 		If bIsInfoEnabled && ( moaState.getValue() == 1 )
 			If iRevivesByPotion > 99999999
 				AddTextOption("$mrt_MarkofArkay_Revive_With_Potion", "+99999999", flags)
@@ -826,7 +1235,7 @@ Event OnPageReset(String page)
 		Else
 			AddTextOption("$mrt_MarkofArkay_Revive_With_Potion", "$Disabled", flags)
 		EndIf
-		SetCursorPosition(15)
+		SetCursorPosition(21)
 		If bIsInfoEnabled && ( moaState.getValue() == 1 )
 			If iRevivesByRevivalSpell > 99999999
 				AddTextOption("$mrt_MarkofArkay_Revive_With_Revival_Spell", "+99999999", flags)
@@ -836,7 +1245,7 @@ Event OnPageReset(String page)
 		Else
 			AddTextOption("$mrt_MarkofArkay_Revive_With_Revival_Spell", "$Disabled", flags)
 		EndIf
-		SetCursorPosition(17)
+		SetCursorPosition(23)
 		If bIsInfoEnabled && ( moaState.getValue() == 1 )
 			If iRevivesBySacrificeSpell > 99999999
 				AddTextOption("$mrt_MarkofArkay_Revive_With_Sacrifice_Spell", "+99999999", flags)
@@ -846,7 +1255,7 @@ Event OnPageReset(String page)
 		Else
 			AddTextOption("$mrt_MarkofArkay_Revive_With_Sacrifice_Spell", "$Disabled", flags)
 		EndIf
-		SetCursorPosition(19)
+		SetCursorPosition(25)
 		If bIsInfoEnabled && ( moaState.getValue() == 1 )
 			If iRevivesByTrade > 99999999
 				AddTextOption("$mrt_MarkofArkay_Revive_By_Trading", "+99999999", flags)
@@ -856,7 +1265,7 @@ Event OnPageReset(String page)
 		Else
 			AddTextOption("$mrt_MarkofArkay_Revive_By_Trading", "$Disabled", flags)
 		EndIf
-		SetCursorPosition(21)
+		SetCursorPosition(27)
 		If bIsInfoEnabled && ( moaState.getValue() == 1 )
 			If iTotalRespawn > 99999999
 				AddTextOption("$Respawns", "+99999999", flags)
@@ -866,7 +1275,7 @@ Event OnPageReset(String page)
 		Else
 			AddTextOption("$Respawns", "$Disabled", flags)
 		EndIf
-		SetCursorPosition(23)
+		SetCursorPosition(29)
 		If bIsInfoEnabled && ( moaState.getValue() == 1 )
 			If iDestroyedItems > 99999999
 				AddTextOption("$mrt_MarkofArkay_Destroyed_Items", "+99999999", flags)
@@ -877,18 +1286,17 @@ Event OnPageReset(String page)
 			AddTextOption("$mrt_MarkofArkay_Destroyed_Items", "$Disabled", flags)
 		EndIf
 	ElseIf (page == "$Presets")
-		Int iFissIndex = GetModByName("FISS.esp")
 		SetCursorPosition(0)
 		AddHeaderOption("$Presets")
 		SetCursorPosition(2)
-		If moaState.getValue() == 1 && ( 0 < iFissIndex && iFissIndex < 255 )
+		If moaState.getValue() == 1 && bFISSOK
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
-		oidLoadPreset_M = AddMenuOption("$mrt_MarkofArkay_Preset_M", sPresets[iLoadPreset], flags)
+		oidLoadPreset_M = AddMenuOption("$mrt_MarkofArkay_Preset_M", sGetPresets()[iLoadPreset], flags)
 		SetCursorPosition(3)
-		oidSavePreset_M = AddMenuOption("$mrt_MarkofArkay_Preset_M", sPresets[iSavePreset], flags)
+		oidSavePreset_M = AddMenuOption("$mrt_MarkofArkay_Preset_M", sGetPresets()[iSavePreset], flags)
 		SetCursorPosition(4)
 		oidLoadPreset1 = AddTextOption("$mrt_MarkofArkay_Load_Preset", "", flags)
 		SetCursorPosition(5)
@@ -946,13 +1354,26 @@ Event OnOptionSelect(Int option)
 	ElseIf (option == oidPlayerProtectFollower)
 		bPlayerProtectFollower = !bPlayerProtectFollower
 		SetToggleOptionValue(oidPlayerProtectFollower, bPlayerProtectFollower)
+	ElseIf (option == oidSpawnByLocation)
+		bSpawnByLocation = !bSpawnByLocation
+		SetToggleOptionValue(oidSpawnByLocation, bSpawnByLocation)
+		ForcePageReset()
+	ElseIf (option == oidRetrySpawnWithoutLocation)
+		bRetrySpawnWithoutLocation = !bRetrySpawnWithoutLocation
+		SetToggleOptionValue(oidRetrySpawnWithoutLocation, bRetrySpawnWithoutLocation)
+	ElseIf (option == oidSpawnCheckRelation)
+		bSpawnCheckRelation = !bSpawnCheckRelation
+		SetToggleOptionValue(oidSpawnCheckRelation, bSpawnCheckRelation)
+	ElseIf (option == oidSpawnBringAllies)
+		bSpawnBringAllies = !bSpawnBringAllies
+		SetToggleOptionValue(oidSpawnBringAllies, bSpawnBringAllies)
 	ElseIf (option == oidNotification)
 		bIsNotificationEnabled = !bIsNotificationEnabled
 		SetToggleOptionValue(oidNotification, bIsNotificationEnabled)
 	ElseIf (option == oidFadeToBlack)
 		bFadeToBlack = !bFadeToBlack
 		SetToggleOptionValue(oidFadeToBlack, bFadeToBlack)
-		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && (bFadeToBlack || bInvisibility)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && (!bIsRagdollEnabled || bDisableUnsafe) && (bFadeToBlack || bInvisibility)
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
@@ -967,7 +1388,7 @@ Event OnOptionSelect(Int option)
 	ElseIf (option == oidInvisibility)
 		bInvisibility = !bInvisibility
 		SetToggleOptionValue(oidInvisibility, bInvisibility)
-		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && (bFadeToBlack || bInvisibility)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && (!bIsRagdollEnabled || bDisableUnsafe) && (bFadeToBlack || bInvisibility)
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
@@ -979,13 +1400,39 @@ Event OnOptionSelect(Int option)
 	ElseIf (option == oidDeathEffect)
 		bDeathEffect = !bDeathEffect
 		SetToggleOptionValue(oidDeathEffect, bDeathEffect)
+	ElseIf (option == oidRagdollEffect)
+		If !bIsRagdollEnabled && bShowRagdollWarning
+			If !Self.ShowMessage("$mrt_MarkofArkay_MESG_RagdollConfirm", True, "$Yes", "$No")
+				Return
+			Else
+				bShowRagdollWarning = False
+			EndIf
+		EndIf
+		bIsRagdollEnabled = !bIsRagdollEnabled
+		SetToggleOptionValue(oidRagdollEffect, bIsRagdollEnabled)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && (!bIsRagdollEnabled || bDisableUnsafe) && (bFadeToBlack || bInvisibility)
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		SetOptionFlags(oidDeathEffect,flags)
 	ElseIf (option == oidAltEyeFix)
 		bAltEyeFix = !bAltEyeFix
 		SetToggleOptionValue(oidAltEyeFix,bAltEyeFix)
 		If bAltEyeFix
-			Utility.Wait(1.0)
+			ForceCloseMenu()
 			ReviveScript.ExecuteCommand("player.say 0142b5",1,0,1)
 		EndIf
+	ElseIf (option == oidDisableUnsafe)
+		bDisableUnsafe = !bDisableUnsafe
+		If bDisableUnsafe
+			bLoseForever = False
+			bLoseSkillForever = False
+			bIsRagdollEnabled = false
+			fRespawnTimeSlider = 0.0
+		EndIf
+		SetToggleOptionValue(oidDisableUnsafe,bDisableUnsafe)
+		ForcePageReset()
 	ElseIf (option == oidLogging)
 		bIsLoggingEnabled = !bIsLoggingEnabled
 		SetToggleOptionValue(oidLogging, bIsLoggingEnabled)
@@ -1024,81 +1471,63 @@ Event OnOptionSelect(Int option)
 			SetTextOptionValue(option, ( (iExternalIndex + 1) As String ))
 		EndIf
 	ElseIf (option == oidRespawnPoint0)
-		If !( (iGetRespawnPointsCount() < 3) && bRespawnPointsFlags[0])
+		;If !( (iGetRespawnPointsCount() < 3) && bRespawnPointsFlags[0])
 			bRespawnPointsFlags[0] = !bRespawnPointsFlags[0]
 			SetToggleOptionValue(oidRespawnPoint0,bRespawnPointsFlags[0])
-		EndIf
+		;EndIf
 	ElseIf (option == oidRespawnPoint1)
-		If !( (iGetRespawnPointsCount() < 3) && bRespawnPointsFlags[1])
+		;If !( (iGetRespawnPointsCount() < 3) && bRespawnPointsFlags[1])
 			bRespawnPointsFlags[1] = !bRespawnPointsFlags[1]
 			SetToggleOptionValue(oidRespawnPoint1,bRespawnPointsFlags[1])
-		EndIf
+		;EndIf
 	ElseIf (option == oidRespawnPoint2)
-		If !( (iGetRespawnPointsCount() < 3) && bRespawnPointsFlags[2])
+		;If !( (iGetRespawnPointsCount() < 3) && bRespawnPointsFlags[2])
 			bRespawnPointsFlags[2] = !bRespawnPointsFlags[2]
 			SetToggleOptionValue(oidRespawnPoint2,bRespawnPointsFlags[2])
-		EndIf
+		;EndIf
 	ElseIf (option == oidRespawnPoint3)
-		If !( (iGetRespawnPointsCount() < 3) && bRespawnPointsFlags[3])
+		;If !( (iGetRespawnPointsCount() < 3) && bRespawnPointsFlags[3])
 			bRespawnPointsFlags[3] = !bRespawnPointsFlags[3]
 			SetToggleOptionValue(oidRespawnPoint3,bRespawnPointsFlags[3])
-		EndIf
+		;EndIf
 	ElseIf (option == oidRespawnPoint4)
-		If !( (iGetRespawnPointsCount() < 3) && bRespawnPointsFlags[4])
+		;If !( (iGetRespawnPointsCount() < 3) && bRespawnPointsFlags[4])
 			bRespawnPointsFlags[4] = !bRespawnPointsFlags[4]
 			SetToggleOptionValue(oidRespawnPoint4,bRespawnPointsFlags[4])
-		EndIf
+		;EndIf
 	ElseIf (option == oidRespawnPoint5)
-		If !( (iGetRespawnPointsCount() < 3) && bRespawnPointsFlags[5])
+		;If !( (iGetRespawnPointsCount() < 3) && bRespawnPointsFlags[5])
 			bRespawnPointsFlags[5] = !bRespawnPointsFlags[5]
 			SetToggleOptionValue(oidRespawnPoint5,bRespawnPointsFlags[5])
-		EndIf
+		;EndIf
 	ElseIf (option == oidRespawnPoint6)
-		If !( (iGetRespawnPointsCount() < 3) && bRespawnPointsFlags[6])
+		;If !( (iGetRespawnPointsCount() < 3) && bRespawnPointsFlags[6])
 			bRespawnPointsFlags[6] = !bRespawnPointsFlags[6]
 			SetToggleOptionValue(oidRespawnPoint6,bRespawnPointsFlags[6])
-		EndIf
+		;EndIf
 	ElseIf (option == oidRespawnPoint7)
-		If !( (iGetRespawnPointsCount() < 3) && bRespawnPointsFlags[7])
+		;If !( (iGetRespawnPointsCount() < 3) && bRespawnPointsFlags[7])
 			bRespawnPointsFlags[7] = !bRespawnPointsFlags[7]
 			SetToggleOptionValue(oidRespawnPoint7,bRespawnPointsFlags[7])
-		EndIf
+		;EndIf
 	ElseIf (option == oidRespawnNaked)
 		bRespawnNaked = !bRespawnNaked
 		SetToggleOptionValue(oidRespawnNaked, bRespawnNaked)
+	ElseIf (option == oidCorpseAsSoulMark)
+		bCorpseAsSoulMark = !bCorpseAsSoulMark
+		SetToggleOptionValue(oidCorpseAsSoulMark, bCorpseAsSoulMark)
 	ElseIf (option == oidRespawnMenu)
 		bRespawnMenu = !bRespawnMenu
 		SetToggleOptionValue(oidRespawnMenu, bRespawnMenu)
-		If ( !bTeleportMenu || !bRespawnMenu )
-			flags = OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		SetOptionFlags(oidTeleportLocation_M,flags,True)
-		If (( iTeleportLocation == ( sRespawnPoints.Length - 3 )) && ( ExternalMarkerList.GetSize() > 1 ) && ( !bRespawnMenu || !bTeleportMenu ))
-			flags = OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		SetOptionFlags(oidExternalTeleportLocation,flags)
 	ElseIf (option == oidTeleportMenu)
 		bTeleportMenu = !bTeleportMenu
 		SetToggleOptionValue(oidTeleportMenu, bTeleportMenu)
-		If ( !bTeleportMenu || !bRespawnMenu )
-			flags = OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		SetOptionFlags(oidTeleportLocation_M,flags,True)
-		If (( iTeleportLocation == ( sRespawnPoints.Length - 3 )) && ( ExternalMarkerList.GetSize() > 1 ) && ( !bRespawnMenu || !bTeleportMenu ))
-			flags = OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		SetOptionFlags(oidExternalTeleportLocation,flags)
 	ElseIf (option == oidJail)
 		bSendToJail = !bSendToJail
 		SetToggleOptionValue(oidJail, bSendToJail)
+	ElseIf (option == oidKillIfCantRespawn)
+		bKillIfCantRespawn = !bKillIfCantRespawn
+		SetToggleOptionValue(oidKillIfCantRespawn, bKillIfCantRespawn)
 	ElseIf (option == oidLoseSkillForever)
 		bLoseSkillForever = !bLoseSkillForever
 		SetToggleOptionValue(oidLoseSkillForever, bLoseSkillForever)
@@ -1139,7 +1568,13 @@ Event OnOptionSelect(Int option)
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		SetOptionFlags(oidSkillReduceMinValSlider, flags, True)
-		SetOptionFlags(oidSkillReduceMaxValSlider, flags)		
+		SetOptionFlags(oidSkillReduceMaxValSlider, flags)	
+	ElseIf (option == oidLevelReduce)
+		bLevelReduce = !bLevelReduce
+		SetToggleOptionValue(oidLevelReduce,bLevelReduce)
+		If bLevelReduce
+			ReviveScript.SkillScript.RegisterForLevel()
+		EndIf
 	ElseIf (option == oidLoseforever)
 		bLoseForever = !bLoseForever
 		SetToggleOptionValue(oidLoseforever, bLoseForever)
@@ -1147,8 +1582,8 @@ Event OnOptionSelect(Int option)
 		bLostItemQuest = !bLostItemQuest
 		SetToggleOptionValue(oidLostItemQuest, bLostItemQuest)
 		If bLostItemQuest 
-			If ( ( LostItemsChest.GetNumItems() > 0 ) || ( ReviveScript.fLostSouls > 0.0 ) || \
-			PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt) || ReviveScript.bSkillReduced() )
+			If ( ( LostItemsChest.GetNumItems() > 0 ) || ( ReviveScript.ItemScript.fLostSouls > 0.0 ) || \
+			PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt) || ReviveScript.SkillScript.bSkillReduced() )
 				If ( ReviveScript.bSoulMark() )
 					If ReviveScript.moaSoulMark01.IsRunning()
 						moaRetrieveLostItems.start()
@@ -1175,59 +1610,158 @@ Event OnOptionSelect(Int option)
 	ElseIf (option == oidAutoSwitchRP)
 		bAutoSwitchRP = !bAutoSwitchRP
 		SetToggleOptionValue(oidAutoSwitchRP,bAutoSwitchRP)
+	ElseIf (option == oidMoreRandomRespawn)
+		bMoreRandomRespawn = !bMoreRandomRespawn
+		SetToggleOptionValue(oidMoreRandomRespawn,bMoreRandomRespawn)
+	ElseIf (option == oidRandomItemCurse)
+		bRandomItemCurse = !bRandomItemCurse
+		SetToggleOptionValue(oidRandomItemCurse,bRandomItemCurse)
 	ElseIf (option == oidSoulMarkStay)
 		bSoulMarkStay = !bSoulMarkStay
 		SetToggleOptionValue(oidSoulMarkStay,bSoulMarkStay)
-	ElseIf (option == oidNPCStealItems)
-		bNPCStealItems = !bNPCStealItems
-		SetToggleOptionValue(oidNPCStealItems,bNPCStealItems)
-		If bNPCStealItems
-			bHostileNPC = False
-		EndIf
-		SetToggleOptionValue(oidHostileNPC,bHostileNPC)
-		If bIsRevivalEnabled && ( iNotTradingAftermath == 1 ) && bNPCStealItems
-			flags = OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		SetOptionFlags(oidMoralityMatters, flags, True)
-		If bIsRevivalEnabled && ( iNotTradingAftermath == 1) && ( bHostileNPC || bNPCStealItems )
-			flags = OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		SetOptionFlags(oidCreaturesCanSteal, flags)
-	ElseIf (option == oidHostileNPC)
-		bHostileNPC = !bHostileNPC
-		SetToggleOptionValue(oidHostileNPC,bHostileNPC)
-		If bHostileNPC
-			bNPCStealItems = False
-		EndIf
-		SetToggleOptionValue(oidNPCStealItems,bNPCStealItems)
-		If bIsRevivalEnabled && ( iNotTradingAftermath == 1 ) && bNPCStealItems
-			flags = OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		SetOptionFlags(oidMoralityMatters, flags, True)
-		If bIsRevivalEnabled && ( iNotTradingAftermath == 1)&& ( bHostileNPC || bNPCStealItems )
-			flags = OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		SetOptionFlags(oidCreaturesCanSteal, flags)
 	ElseIf (option == oidCreaturesCanSteal)
 		bCreaturesCanSteal = !bCreaturesCanSteal
 		moaCreaturesCanSteal.SetValue(bCreaturesCanSteal As Int)
 		SetToggleOptionValue(oidCreaturesCanSteal,bCreaturesCanSteal)
+	ElseIf (option == oidSpawnHostile)
+		bSpawnHostile = !bSpawnHostile
+		SetToggleOptionValue(oidSpawnHostile,bSpawnHostile)
+		ForcePageReset()
+	;ElseIf (option == oidSpawnExtraHMS)
+	;	bSpawnExtraHMS = !bSpawnExtraHMS
+	;	SetToggleOptionValue(oidSpawnExtraHMS,bSpawnExtraHMS)
+	;	ForcePageReset()
+	;ElseIf (option == oidSpawnToggle)
+	;	bSpawnFlags[iSpawn] = !bSpawnFlags[iSpawn]
+	;	SetToggleOptionValue(oidSpawnToggle,bSpawnFlags[iSpawn])
+	;	ForcePageReset()
 	ElseIf (option == oidMoralityMatters)
 		bMoralityMatters = !bMoralityMatters
 		moaMoralityMatters.SetValue(bMoralityMatters As Int)
 		SetToggleOptionValue(oidMoralityMatters,bMoralityMatters)
+	ElseIf (option == oidLoseItem)
+		bLoseItem = !bLoseItem
+		SetToggleOptionValue(oidLoseItem,bLoseItem)
+		ForcePageReset()
+	ElseIf (option == oidLoseOthers)
+		bLoseOthers = !bLoseOthers
+		SetToggleOptionValue(oidLoseOthers,bLoseOthers)
+		ForcePageReset()
+	ElseIf (option == oidLoseAmmo)
+		bLoseAmmo = !bLoseAmmo
+		iValidTypes[6] = iGetType(42,bLoseAmmo)
+		SetToggleOptionValue(oidLoseAmmo,bLoseAmmo)
+		ForcePageReset()
+	ElseIf (option == oidCheckKeyword)
+		bCheckKeyword = !bCheckKeyword
+		SetToggleOptionValue(oidCheckKeyword,bCheckKeyword)
+		ForcePageReset()
+	ElseIf (option == oidExcludeQuestItems)
+		bExcludeQuestItems = !bExcludeQuestItems
+		SetToggleOptionValue(oidExcludeQuestItems,bExcludeQuestItems)
+	ElseIf (option == oidCheckWeight)
+		bCheckWeight = !bCheckWeight
+		SetToggleOptionValue(oidCheckWeight,bCheckWeight)
+		ForcePageReset()
+	ElseIf (option == oidLoseArkayMark)
+		bLoseArkayMark = !bLoseArkayMark
+		SetToggleOptionValue(oidLoseArkayMark,bLoseArkayMark)
+		ForcePageReset()
+	ElseIf (option == oidLoseBlackSoulGem)
+		bLoseBlackSoulGem = !bLoseBlackSoulGem
+		SetToggleOptionValue(oidLoseBlackSoulGem,bLoseBlackSoulGem)
+		ForcePageReset()
+	ElseIf (option == oidLoseGrandSoulGem)
+		bLoseGrandSoulGem = !bLoseGrandSoulGem
+		SetToggleOptionValue(oidLoseGrandSoulGem,bLoseGrandSoulGem)
+		ForcePageReset()
+	ElseIf (option == oidLoseGold)
+		bLoseGold = !bLoseGold
+		SetToggleOptionValue(oidLoseGold,bLoseGold)
+		ForcePageReset()
+	ElseIf (option == oidLoseDragonSoul)
+		bLoseDragonSoul = !bLoseDragonSoul
+		SetToggleOptionValue(oidLoseDragonSoul,bLoseDragonSoul)
+		ForcePageReset()
+	ElseIf (option == oidLoseScroll)
+		bLoseScroll = !bLoseScroll
+		iValidTypes[0] = iGetType(23,bLoseScroll)
+		SetToggleOptionValue(oidLoseScroll,bLoseScroll)
+		ForcePageReset()
+	ElseIf (option == oidLoseBook)
+		bLoseBook = !bLoseBook
+		iValidTypes[2] = iGetType(27,bLoseBook)
+		SetToggleOptionValue(oidLoseBook,bLoseBook)
+		ForcePageReset()
+	ElseIf (option == oidLoseMisc)
+		bLoseMisc = !bLoseMisc
+		iValidTypes[4] = iGetType(32,bLoseMisc)
+		SetToggleOptionValue(oidLoseMisc,bLoseMisc)
+		ForcePageReset()
+	ElseIf (option == oidLoseKey)
+		bLoseKey = !bLoseKey
+		iValidTypes[7] = iGetType(45,bLoseKey)
+		SetToggleOptionValue(oidLoseKey,bLoseKey)
+		ForcePageReset()
+	ElseIf (option == oidLoseIngredient)
+		bLoseIngredient = !bLoseIngredient
+		iValidTypes[3] = iGetType(30,bLoseIngredient)
+		SetToggleOptionValue(oidLoseIngredient,bLoseIngredient)
+		ForcePageReset()
+	ElseIf (option == oidLosePotion)
+		bLosePotion = !bLosePotion
+		iValidTypes[8] = iGetType(46,bLosePotion)
+		SetToggleOptionValue(oidLosePotion,bLosePotion)
+		ForcePageReset()
+	ElseIf (option == oidLoseSoulgem)
+		bLoseSoulgem = !bLoseSoulgem
+		iValidTypes[9] = iGetType(52,bLoseSoulgem)
+		SetToggleOptionValue(oidLoseSoulgem,bLoseSoulgem)
+		ForcePageReset()
+	ElseIf (option == oidLoseArmor)
+		bLoseArmor = !bLoseArmor
+		iValidTypes[1] = iGetType(26,bLoseArmor)
+		SetToggleOptionValue(oidLoseArmor,bLoseArmor)
+		ForcePageReset()
+	ElseIf (option == oidLoseWeapon)
+		bLoseWeapon = !bLoseWeapon
+		iValidTypes[5] = iGetType(41,bLoseWeapon)
+		SetToggleOptionValue(oidLoseWeapon,bLoseWeapon)
+		ForcePageReset()
+	ElseIf (option == oidLoseGoldAll)
+		bLoseGoldAll = !bLoseGoldAll
+		SetToggleOptionValue(oidLoseGoldAll,bLoseGoldAll)
+		ForcePageReset()
+	ElseIf (option == oidLoseDragonSoulAll)
+		bLoseDragonSoulAll = !bLoseDragonSoulAll
+		SetToggleOptionValue(oidLoseDragonSoulAll,bLoseDragonSoulAll)
+		ForcePageReset()
+	ElseIf (option == oidLoseBlackSoulGemAll)
+		bLoseBlackSoulGemAll = !bLoseBlackSoulGemAll
+		SetToggleOptionValue(oidLoseBlackSoulGemAll,bLoseBlackSoulGemAll)
+		ForcePageReset()
+	ElseIf (option == oidLoseGrandSoulGemAll)
+		bLoseGrandSoulGemAll = !bLoseGrandSoulGemAll
+		SetToggleOptionValue(oidLoseGrandSoulGemAll,bLoseGrandSoulGemAll)
+		ForcePageReset()
+	ElseIf (option == oidLoseArkayMarkAll)
+		bLoseArkayMarkAll = !bLoseArkayMarkAll
+		SetToggleOptionValue(oidLoseArkayMarkAll,bLoseArkayMarkAll)
+		ForcePageReset()
 	ElseIf (option == oidInformation)
 		bIsInfoEnabled = !bIsInfoEnabled
 		SetToggleOptionValue(oidInformation,bIsInfoEnabled)
 		ForcePageReset()
+	ElseIf (option == oidLostItemsInfo)
+		If !bUIEOK
+			Return
+		EndIf
+		ShowLostItems()
+	ElseIf (option == oidLostSkillsInfo)
+		If !bUIEOK
+			Return
+		EndIf
+		ShowLostSkills()
 	ElseIf (option == oidTogglePowers)
 		If ( PlayerRef.HasSpell(RevivalPower) || PlayerRef.HasSpell(SacrificePower) )
 			PlayerRef.RemoveSpell(RevivalPower)
@@ -1277,6 +1811,7 @@ Event OnOptionSelect(Int option)
 				ShowMessage("$mrt_MarkofArkay_MESG_Load_Preset_Failure", False)
 			EndIf
 		EndIf
+		ForcePageReset()
 	ElseIf (option == oidSavePreset1)
 		FISSInterface fiss = FISSFactory.getFISS()
 		If !fiss
@@ -1300,198 +1835,35 @@ Event OnOptionSelect(Int option)
 		If ShowMessage("$mrt_MarkofArkay_MESG_Load_Default_Preset", True, "$Yes", "$No")
 			LoadDefaultSettings()
 			ShowMessage("$mrt_MarkofArkay_MESG_Load_Default_Preset_Finish", False)
-		EndIf			
-	ElseIf (option == oidStatus)
-		SetTextOptionValue(option, "$mrt_MarkofArkay_Status_Busy",True)
-		bToggling = True
-		flags = OPTION_FLAG_DISABLED
-		SetOptionFlags(oidRevivalEnabled, flags, True)
-		SetOptionFlags(oidMenuEnabled, flags, True)
-		SetOptionFlags(oidDragonSoulRevivalEnabled, flags, True)
-		SetOptionFlags(oidDragonSoulSlider, flags, True)
-		SetOptionFlags(oidGoldRevivalEnabled, flags, True)
-		SetOptionFlags(oidFollowerProtectPlayer, flags, True)
-		SetOptionFlags(oidPlayerProtectFollower, flags, True)
-		SetOptionFlags(oidNoFallDamageEnabled, flags, True)	
-		SetOptionFlags(oidGoldSlider, flags, True)
-		SetOptionFlags(oidMarkOfArkayRevivalEnabled, flags, True)
-		SetOptionFlags(oidMarkSlider, flags, True)
-		SetOptionFlags(oidBSoulGemRevivalEnabled, flags, True)
-		SetOptionFlags(oidBSoulGemSlider, flags, True) 
-		SetOptionFlags(oidMarkPSlider, flags, True)
-		SetOptionFlags(oidSnoozeSlider, flags, True)
-		SetOptionFlags(oidDragonSoulPSlider, flags, True)
-		SetOptionFlags(oidBSoulGemPSlider, flags, True)
-		SetOptionFlags(oidGoldPSlider, flags, True)
-		SetOptionFlags(oidRecoveryTime,flags,True)
-		SetOptionFlags(oidRPMinDistanceSlider,flags,True)
-		SetOptionFlags(oidBleedoutTime,flags,True)
-		SetOptionFlags(oidRecallCost,flags,True)
-		SetOptionFlags(oidMarkCost,flags,True)
-		SetOptionFlags(oidNotification, flags,True)
-		SetOptionFlags(oidFadeToBlack, flags,True)
-		SetOptionFlags(oidInvisibility, flags,True)
-		SetOptionFlags(oidDeathEffect, flags,True)
-		SetOptionFlags(oidAltEyeFix, flags,True)
-		SetOptionFlags(oidLogging, flags,True)
-		SetOptionFlags(oidGSoulGemPSlider, flags,True)
-		SetOptionFlags(oidGSoulGemSlider, flags,True)
-		SetOptionFlags(oidGSoulGemRevivalEnabled, flags,True)
-		SetOptionFlags(oidTradeEnabled, flags,True)
-		SetOptionFlags(oidEffect, flags,True)
-		SetOptionFlags(oidRevivalRequireBlessing,flags,True)
-		SetOptionFlags(oidRecallRestriction,flags,True)
-		SetOptionFlags(oidPotionRevivalEnabled, flags,True)
-		SetOptionFlags(oidAutoDrinkPotion, flags,True)
-		SetOptionFlags(oidNoTradingAftermath_M, flags,True)
-		SetOptionFlags(oidEnableSave_M, flags,True)
-		SetOptionFlags(oidLootChanceSlider,flags,True)
-		SetOptionFlags(oidScrollChanceSlider,flags,True)
-		SetOptionFlags(oidTeleportLocation_M,flags,True)
-		SetOptionFlags(oidRespawnNaked,flags,True)
-		SetOptionFlags(oidRespawnMenu,flags,True)
-		SetOptionFlags(oidTeleportMenu,flags,True)
-		SetOptionFlags(oidJail,flags,True)
-		SetOptionFlags(oidLoseSkillForever,flags,True)
-		SetOptionFlags(oidHealActors,flags,True)
-		SetOptionFlags(oidResurrectActors,flags,True)
-		SetOptionFlags(oidShowRaceMenu,flags,True)
-		SetOptionFlags(oidArkayCurse,flags,True)
-		SetOptionFlags(oidTempArkayCurse,flags,True)
-		SetOptionFlags(oidSkillReduceRandomVal,flags,True)
-		SetOptionFlags(oidSkillReduceValSlider,flags,True)
-		SetOptionFlags(oidSkillReduceMinValSlider,flags,True)
-		SetOptionFlags(oidSkillReduceMaxValSlider,flags,True)
-		SetOptionFlags(oidSkillReduce_M,flags,True)
-		SetOptionFlags(oidArkayCurses_M,flags,True)
-		SetOptionFlags(oidLoseforever,flags,True)
-		SetOptionFlags(oidLostItemQuest,flags,True)
-		SetOptionFlags(oidAutoSwitchRP,flags,True)
-		SetOptionFlags(oidSoulMarkStay,flags,True)
-		SetOptionFlags(oidNPCStealItems,flags,True)
-		SetOptionFlags(oidHostileNPC,flags,True)
-		SetOptionFlags(oidCreaturesCanSteal,flags,True)
-		SetOptionFlags(oidMoralityMatters,flags,True)
-		SetOptionFlags(oidRemovableItems_M,flags,True)
-		SetOptionFlags(oidExternalTeleportLocation,flags,True)
-		SetOptionFlags(oidShiftBack,flags,True)
-		SetOptionFlags(oidShiftBackRespawn,flags,True)
-		SetOptionFlags(oidInformation,flags,True)
-		SetOptionFlags(oidHistory,flags,True)
-		SetOptionFlags(oidTogglePowers,flags,True)
-		SetOptionFlags(oidToggleSpells,flags,True)
-		SetOptionFlags(oidResetHistory,flags,True)
-		SetOptionFlags(oidRespawnPoint0,flags,True)
-		SetOptionFlags(oidRespawnPoint1,flags,True)
-		SetOptionFlags(oidRespawnPoint2,flags,True)
-		SetOptionFlags(oidRespawnPoint3,flags,True)
-		SetOptionFlags(oidRespawnPoint4,flags,True)
-		SetOptionFlags(oidRespawnPoint5,flags,True)
-		SetOptionFlags(oidReset,flags,True)
-		SetOptionFlags(oidRespawnPoint6,flags,True)
-		SetOptionFlags(oidRespawnPoint7,flags)
+		EndIf
 		ForcePageReset()
+	ElseIf (option == oidStatus)
+		If moaState.GetValue() == 1
+			If !self.ShowMessage("$Are_You_Sure", true, "$Yes", "$No")
+				Return
+			EndIf
+		EndIf
+		SetTextOptionValue(option, "$mrt_MarkofArkay_Status_Busy",True)
+		moaIsBusy.SetValueInt(1)
+		;ForcePageReset()
+		ForceCloseMenu()
 		If moaState.getValue() == 1
 			moaStop()
 		Else
 			moaStart()
 		EndIf
-		bToggling = False
+		moaIsBusy.SetValueInt(0)
 	ElseIf (option == oidReset)
+		If !self.ShowMessage("$Are_You_Sure", true, "$Yes", "$No")
+			Return
+		EndIf
 		SetTextOptionValue(option, "$mrt_MarkofArkay_Status_Busy",True)
-		bToggling = True
-		flags = OPTION_FLAG_DISABLED
-		SetOptionFlags(oidRevivalEnabled, flags, True)
-		SetOptionFlags(oidMenuEnabled, flags, True)
-		SetOptionFlags(oidDragonSoulRevivalEnabled, flags, True)
-		SetOptionFlags(oidDragonSoulSlider, flags, True)
-		SetOptionFlags(oidGoldRevivalEnabled, flags, True)
-		SetOptionFlags(oidFollowerProtectPlayer, flags, True)
-		SetOptionFlags(oidPlayerProtectFollower, flags, True)
-		SetOptionFlags(oidNoFallDamageEnabled, flags, True)	
-		SetOptionFlags(oidGoldSlider, flags, True)
-		SetOptionFlags(oidMarkOfArkayRevivalEnabled, flags, True)
-		SetOptionFlags(oidMarkSlider, flags, True)
-		SetOptionFlags(oidBSoulGemRevivalEnabled, flags, True)
-		SetOptionFlags(oidBSoulGemSlider, flags, True) 
-		SetOptionFlags(oidMarkPSlider, flags, True)
-		SetOptionFlags(oidSnoozeSlider, flags, True)
-		SetOptionFlags(oidDragonSoulPSlider, flags, True)
-		SetOptionFlags(oidBSoulGemPSlider, flags, True)
-		SetOptionFlags(oidGoldPSlider, flags, True)
-		SetOptionFlags(oidRecoveryTime,flags,True)
-		SetOptionFlags(oidRPMinDistanceSlider,flags,True)
-		SetOptionFlags(oidBleedoutTime,flags,True)
-		SetOptionFlags(oidRecallCost,flags,True)
-		SetOptionFlags(oidMarkCost,flags,True)
-		SetOptionFlags(oidNotification, flags,True)
-		SetOptionFlags(oidFadeToBlack, flags,True)
-		SetOptionFlags(oidInvisibility, flags,True)
-		SetOptionFlags(oidDeathEffect, flags,True)
-		SetOptionFlags(oidAltEyeFix, flags,True)
-		SetOptionFlags(oidLogging, flags,True)
-		SetOptionFlags(oidGSoulGemPSlider, flags,True)
-		SetOptionFlags(oidGSoulGemSlider, flags,True)
-		SetOptionFlags(oidGSoulGemRevivalEnabled, flags,True)
-		SetOptionFlags(oidTradeEnabled, flags,True)
-		SetOptionFlags(oidEffect, flags,True)
-		SetOptionFlags(oidRevivalRequireBlessing,flags,True)
-		SetOptionFlags(oidRecallRestriction,flags,True)
-		SetOptionFlags(oidPotionRevivalEnabled, flags,True)
-		SetOptionFlags(oidAutoDrinkPotion, flags,True)
-		SetOptionFlags(oidNoTradingAftermath_M, flags,True)
-		SetOptionFlags(oidEnableSave_M, flags,True)
-		SetOptionFlags(oidLootChanceSlider,flags,True)
-		SetOptionFlags(oidScrollChanceSlider,flags,True)
-		SetOptionFlags(oidTeleportLocation_M,flags,True)
-		SetOptionFlags(oidRespawnNaked,flags,True)
-		SetOptionFlags(oidRespawnMenu,flags,True)
-		SetOptionFlags(oidTeleportMenu,flags,True)
-		SetOptionFlags(oidJail,flags,True)
-		SetOptionFlags(oidLoseSkillForever,flags,True)
-		SetOptionFlags(oidHealActors,flags,True)
-		SetOptionFlags(oidResurrectActors,flags,True)
-		SetOptionFlags(oidShowRaceMenu,flags,True)
-		SetOptionFlags(oidArkayCurse,flags,True)
-		SetOptionFlags(oidTempArkayCurse,flags,True)
-		SetOptionFlags(oidSkillReduceRandomVal,flags,True)
-		SetOptionFlags(oidSkillReduceValSlider,flags,True)
-		SetOptionFlags(oidSkillReduceMinValSlider,flags,True)
-		SetOptionFlags(oidSkillReduceMaxValSlider,flags,True)
-		SetOptionFlags(oidSkillReduce_M,flags,True)
-		SetOptionFlags(oidArkayCurses_M,flags,True)
-		SetOptionFlags(oidLoseforever,flags,True)
-		SetOptionFlags(oidLostItemQuest,flags,True)
-		SetOptionFlags(oidSoulMarkStay,flags,True)
-		SetOptionFlags(oidNPCStealItems,flags,True)
-		SetOptionFlags(oidHostileNPC,flags,True)
-		SetOptionFlags(oidCreaturesCanSteal,flags,True)
-		SetOptionFlags(oidMoralityMatters,flags,True)
-		SetOptionFlags(oidRemovableItems_M,flags,True)
-		SetOptionFlags(oidExternalTeleportLocation,flags,True)
-		SetOptionFlags(oidAutoSwitchRP,flags,True)
-		SetOptionFlags(oidInformation,flags,True)
-		SetOptionFlags(oidHistory,flags,True)
-		SetOptionFlags(oidShiftBack,flags,True)
-		SetOptionFlags(oidShiftBackRespawn,flags,True)
-		SetOptionFlags(oidResetHistory,flags,True)
-		SetOptionFlags(oidTogglePowers,flags,True)
-		SetOptionFlags(oidToggleSpells,flags,True)
-		SetOptionFlags(oidResetHistory,flags,True)
-		SetOptionFlags(oidRespawnPoint0,flags,True)
-		SetOptionFlags(oidRespawnPoint1,flags,True)
-		SetOptionFlags(oidRespawnPoint2,flags,True)
-		SetOptionFlags(oidRespawnPoint3,flags,True)
-		SetOptionFlags(oidRespawnPoint4,flags,True)
-		SetOptionFlags(oidRespawnPoint5,flags,True)
-		SetOptionFlags(oidStatus,flags,True)
-		SetOptionFlags(oidRespawnPoint6,flags,True)
-		SetOptionFlags(oidRespawnPoint7,flags)
-		ForcePageReset()
+		moaIsBusy.SetValueInt(1)
+		;ForcePageReset()
+		ForceCloseMenu()
 		moaStop()
-		Utility.Wait(2.0)
 		moaStart()
-		bToggling = False
+		moaIsBusy.SetValueInt(0)
 	EndIf
 EndEvent
 
@@ -1555,7 +1927,7 @@ Event OnOptionSliderOpen(Int option)
 	ElseIf (option == oidBleedoutTime)
 		SetSliderDialogStartValue(fBleedoutTimeSlider)
 		SetSliderDialogDefaultValue(6.0)
-		SetSliderDialogRange(6.0, 20.0)
+		SetSliderDialogRange(3.0, 20.0)
 		SetSliderDialogInterval(1.0)	
 	ElseIf (option == oidLootChanceSlider)
 		SetSliderDialogStartValue(fLootChanceSlider)
@@ -1580,7 +1952,7 @@ Event OnOptionSliderOpen(Int option)
 	ElseIf(option == oidRPMinDistanceSlider)
 		SetSliderDialogStartValue(fRPMinDistanceSlider)
 		SetSliderDialogDefaultValue(2500.0)
-		SetSliderDialogRange(1000.0, 10000.0)
+		SetSliderDialogRange(0.0, 10000.0)
 		SetSliderDialogInterval(250.0)
 	ElseIf (option == oidSnoozeSlider)
 		SetSliderDialogStartValue(fValueSnoozeSlider)
@@ -1595,13 +1967,93 @@ Event OnOptionSliderOpen(Int option)
 	ElseIf (option == oidSkillReduceMaxValSlider)
 		SetSliderDialogStartValue(fSkillReduceMaxValSlider)
 		SetSliderDialogDefaultValue(1.0)
-		SetSliderDialogRange(1.0, 100.0)
+		SetSliderDialogRange(1.0, 99.0)
 		SetSliderDialogInterval(1.0)
 	ElseIf (option == oidSkillReduceMinValSlider)
 		SetSliderDialogStartValue(fSkillReduceMinValSlider)
 		SetSliderDialogDefaultValue(0.0)
+		SetSliderDialogRange(0.0, 99.0)
+		SetSliderDialogInterval(1.0)
+	ElseIf (option == oidMinLoseGoldSlider)
+		SetSliderDialogStartValue(fMinLoseGoldSlider)
+		SetSliderDialogDefaultValue(0.0)
+		SetSliderDialogRange(0.0, 100000.0)
+		SetSliderDialogInterval(250.0)
+	ElseIf (option == oidMaxLoseGoldSlider)
+		SetSliderDialogStartValue(fMaxLoseGoldSlider)
+		SetSliderDialogDefaultValue(250.0)
+		SetSliderDialogRange(1.0, 100000.0)
+		SetSliderDialogInterval(250.0)
+	ElseIf (option == oidMinLoseArkayMarkSlider)
+		SetSliderDialogStartValue(fMinLoseArkayMarkSlider)
+		SetSliderDialogDefaultValue(0.0)
 		SetSliderDialogRange(0.0, 100.0)
 		SetSliderDialogInterval(1.0)
+	ElseIf (option == oidMaxLoseArkayMarkSlider)
+		SetSliderDialogStartValue(fMaxLoseArkayMarkSlider)
+		SetSliderDialogDefaultValue(1.0)
+		SetSliderDialogRange(1.0, 100.0)
+		SetSliderDialogInterval(1.0)
+	ElseIf (option == oidMinLoseDragonSoulSlider)
+		SetSliderDialogStartValue(fMinLoseDragonSoulSlider)
+		SetSliderDialogDefaultValue(0.0)
+		SetSliderDialogRange(0.0, 100.0)
+		SetSliderDialogInterval(1.0)
+	ElseIf (option == oidMaxLoseDragonSoulSlider)
+		SetSliderDialogStartValue(fMaxLoseDragonSoulSlider)
+		SetSliderDialogDefaultValue(1.0)
+		SetSliderDialogRange(1.0, 100.0)
+		SetSliderDialogInterval(1.0)
+	ElseIf (option == oidMinLoseBlackSoulGemSlider)
+		SetSliderDialogStartValue(fMinLoseBlackSoulGemSlider)
+		SetSliderDialogDefaultValue(0.0)
+		SetSliderDialogRange(0.0, 100.0)
+		SetSliderDialogInterval(1.0)
+	ElseIf (option == oidMaxLoseBlackSoulGemSlider)
+		SetSliderDialogStartValue(fMaxLoseBlackSoulGemSlider)
+		SetSliderDialogDefaultValue(1.0)
+		SetSliderDialogRange(1.0, 100.0)
+		SetSliderDialogInterval(1.0)
+	ElseIf (option == oidMinLoseGrandSoulGemSlider)
+		SetSliderDialogStartValue(fMinLoseGrandSoulGemSlider)
+		SetSliderDialogDefaultValue(0.0)
+		SetSliderDialogRange(0.0, 100.0)
+		SetSliderDialogInterval(1.0)
+	ElseIf (option == oidMaxLoseGrandSoulGemSlider)
+		SetSliderDialogStartValue(fMaxLoseGrandSoulGemSlider)
+		SetSliderDialogDefaultValue(1.0)
+		SetSliderDialogRange(1.0, 100.0)
+		SetSliderDialogInterval(1.0)
+	ElseIf (option == oidLoseOtherMinValueSlider)
+		SetSliderDialogStartValue(fLoseOtherMinValueSlider)
+		SetSliderDialogDefaultValue(0.0)
+		SetSliderDialogRange(0.0, 1000.0)
+		SetSliderDialogInterval(25.0)
+	ElseIf (option == oidLoseOtherTotalValueSlider)
+		SetSliderDialogStartValue(fLoseOtherTotalValueSlider)
+		SetSliderDialogDefaultValue(0.0)
+		SetSliderDialogRange(0.0, 1000000.0)
+		SetSliderDialogInterval(25.0)
+	ElseIf (option == oidRespawnTimeSlider)
+		SetSliderDialogStartValue(fRespawnTimeSlider)
+		SetSliderDialogDefaultValue(0.0)
+		SetSliderDialogRange(0.0, 744.0)
+		SetSliderDialogInterval(1.0)
+	ElseIf (option == oidSpawnCountSlider)
+		SetSliderDialogStartValue(iSpawnCounts[iSpawn])
+		SetSliderDialogDefaultValue(1.0)
+		SetSliderDialogRange(1.0, 10.0)
+		SetSliderDialogInterval(1.0)
+	ElseIf (option == oidTotalCustomRPSlotSlider)
+		SetSliderDialogStartValue(fTotalCustomRPSlotSlider)
+		SetSliderDialogDefaultValue(1.0)
+		SetSliderDialogRange(1.0,3.0)
+		SetSliderDialogInterval(1.0)
+	ElseIf (option == oidSpawnWeightSlider)
+		SetSliderDialogStartValue(iSpawnWeights[iSpawn])
+		SetSliderDialogDefaultValue(1.0)
+		SetSliderDialogRange(0.0, 100.0)
+		SetSliderDialogInterval(1.0)		
 	EndIf
 EndEvent
 
@@ -1648,7 +2100,32 @@ Event OnOptionSliderAccept(int option, Float value)
 	ElseIf (option == oidRecoveryTime)
 		fRecoveryTimeSlider = value
 		SetSliderOptionValue(oidRecoveryTime, fRecoveryTimeSlider, "$mrt_MarkofArkay_RecoveryTime_2")
+	ElseIf (option == oidSpawnCountSlider)
+		iSpawnCounts[iSpawn] = value As Int
+		SetSliderOptionValue(oidSpawnCountSlider, iSpawnCounts[iSpawn], "$mrt_MarkofArkay_SpawnCountSlider_2")
+		ForcePageReset()
+	ElseIf (option == oidSpawnWeightSlider)
+		iSpawnWeights[iSpawn] = value As Int
+		SetSliderOptionValue(oidSpawnWeightSlider, iSpawnWeights[iSpawn], "$mrt_MarkofArkay_SpawnWeightSlider_2")
+		ForcePageReset()
+	ElseIf (option == oidRespawnTimeSlider)
+		If value > 0.0 && bShowTimeScaleWarning
+			If !Self.ShowMessage("$mrt_MarkofArkay_MESG_TimeScaleConfirm", True, "$Yes", "$No")
+				value = 0.0
+			Else
+				bShowTimeScaleWarning = False
+			EndIf
+		EndIf
+		fRespawnTimeSlider = value
+		SetSliderOptionValue(oidRespawnTimeSlider, fRespawnTimeSlider, "$mrt_MarkofArkay_RespawnTimeSlider_2")
 	ElseIf (option == oidBleedoutTime)
+		If value < 6.0 && bShowBleedoutTimeWarning
+			If !Self.ShowMessage("$mrt_MarkofArkay_MESG_BleedoutTimeConfirm", True, "$Yes", "$No")
+				value = 6.0
+			Else
+				bShowBleedoutTimeWarning = False
+			EndIf
+		EndIf
 		fBleedoutTimeSlider = value
 		SetSliderOptionValue(oidBleedoutTime, fBleedoutTimeSlider, "$mrt_MarkofArkay_RecoveryTime_2")	
 	ElseIf (option == oidLootChanceSlider)
@@ -1667,6 +2144,7 @@ Event OnOptionSliderAccept(int option, Float value)
 		SetSliderOptionValue(oidMarkCost, fMarkCastSlider, "$mrt_MarkofArkay_MarkSlider_2")
 	ElseIf (option == oidRPMinDistanceSlider)
 		fRPMinDistanceSlider = value
+		moaRPMinDistance.SetValue(fRPMinDistanceSlider)
 		SetSliderOptionValue(oidRPMinDistanceSlider, fRPMinDistanceSlider, "{0}")
 	ElseIf (option == oidSkillReduceValSlider)
 		fSkillReduceValSlider = value
@@ -1677,6 +2155,46 @@ Event OnOptionSliderAccept(int option, Float value)
 	ElseIf (option == oidSkillReduceMinValSlider)
 		fSkillReduceMinValSlider = value
 		SetSliderOptionValue(oidSkillReduceMinValSlider, fSkillReduceMinValSlider, "{0}")
+	ElseIf (option == oidMinLoseGoldSlider)
+		fMinLoseGoldSlider = value
+		SetSliderOptionValue(oidMinLoseGoldSlider, fMinLoseGoldSlider, "{0}")
+	ElseIf (option == oidMaxLoseGoldSlider)
+		fMaxLoseGoldSlider = value
+		SetSliderOptionValue(oidMaxLoseGoldSlider, fMaxLoseGoldSlider, "{0}")
+	ElseIf (option == oidMinLoseDragonSoulSlider)
+		fMinLoseDragonSoulSlider = value
+		SetSliderOptionValue(oidMinLoseDragonSoulSlider, fMinLoseDragonSoulSlider, "{0}")
+	ElseIf (option == oidMaxLoseDragonSoulSlider)
+		fMaxLoseDragonSoulSlider = value
+		SetSliderOptionValue(oidMaxLoseDragonSoulSlider, fMaxLoseDragonSoulSlider, "{0}")
+	ElseIf (option == oidMinLoseBlackSoulGemSlider)
+		fMinLoseBlackSoulGemSlider = value
+		SetSliderOptionValue(oidMinLoseBlackSoulGemSlider, fMinLoseBlackSoulGemSlider, "{0}")
+	ElseIf (option == oidMaxLoseBlackSoulGemSlider)
+		fMaxLoseBlackSoulGemSlider = value
+		SetSliderOptionValue(oidMaxLoseBlackSoulGemSlider, fMaxLoseBlackSoulGemSlider, "{0}")
+	ElseIf (option == oidMinLoseGrandSoulGemSlider)
+		fMinLoseGrandSoulGemSlider = value
+		SetSliderOptionValue(oidMinLoseGrandSoulGemSlider, fMinLoseGrandSoulGemSlider, "{0}")
+	ElseIf (option == oidMaxLoseGrandSoulGemSlider)
+		fMaxLoseGrandSoulGemSlider = value
+		SetSliderOptionValue(oidMaxLoseGrandSoulGemSlider, fMaxLoseGrandSoulGemSlider, "{0}")
+	ElseIf (option == oidMinLoseArkayMarkSlider)
+		fMinLoseArkayMarkSlider = value
+		SetSliderOptionValue(oidMinLoseArkayMarkSlider, fMinLoseArkayMarkSlider, "{0}")
+	ElseIf (option == oidMaxLoseArkayMarkSlider)
+		fMaxLoseArkayMarkSlider = value
+		SetSliderOptionValue(oidMaxLoseArkayMarkSlider, fMaxLoseArkayMarkSlider, "{0}")
+	ElseIf (option == oidLoseOtherMinValueSlider)
+		fLoseOtherMinValueSlider = value
+		SetSliderOptionValue(oidLoseOtherMinValueSlider, fLoseOtherMinValueSlider, "{0}")
+	ElseIf (option == oidLoseOtherTotalValueSlider)
+		fLoseOtherTotalValueSlider = value
+		SetSliderOptionValue(oidLoseOtherTotalValueSlider, fLoseOtherTotalValueSlider, "{0}")
+	ElseIf (option == oidTotalCustomRPSlotSlider)
+		fTotalCustomRPSlotSlider = value
+		SetCustomRPFlags()
+		SetSliderOptionValue(oidTotalCustomRPSlotSlider, fTotalCustomRPSlotSlider, "{0}")
 	EndIf
 EndEvent
 
@@ -1685,34 +2203,54 @@ Event OnOptionMenuOpen(Int option)
 		SetMenuDialogoptions(sRespawnPoints)
 		SetMenuDialogStartIndex(iTeleportLocation)
 		SetMenuDialogDefaultIndex(0)
-	ElseIf (option == oidRemovableItems_M)
-		SetMenuDialogoptions(sLoseOptions)
-		SetMenuDialogStartIndex(iRemovableItems)
-		SetMenuDialogDefaultIndex(0)
 	ElseIf (option == oidNoTradingAftermath_M)
-		SetMenuDialogoptions(sAftermathOptions)
+		SetMenuDialogoptions(sGetAftermathOptions())
 		SetMenuDialogStartIndex(iNotTradingAftermath)
 		SetMenuDialogDefaultIndex(0)
 	ElseIf (option == oidArkayCurses_M)
-		SetMenuDialogoptions(sArkayCurses)
+		SetMenuDialogoptions(sGetArkayCurses())
 		SetMenuDialogStartIndex(iArkayCurse)
 		SetMenuDialogDefaultIndex(0)
 	ElseIf (option == oidEnableSave_M)
-		SetMenuDialogoptions(sSaveOptions)
+		SetMenuDialogoptions(sGetSaveOptions())
 		SetMenuDialogStartIndex(iSaveOption)
 		SetMenuDialogDefaultIndex(1)
 	ElseIf (option == oidLoadPreset_M)
-		SetMenuDialogoptions(sPresets)
+		SetMenuDialogoptions(sGetPresets())
 		SetMenuDialogStartIndex(iLoadPreset)
 		SetMenuDialogDefaultIndex(0)
 	ElseIf (option == oidSavePreset_M)
-		SetMenuDialogoptions(sPresets)
+		SetMenuDialogoptions(sGetPresets())
 		SetMenuDialogStartIndex(iSavePreset)
 		SetMenuDialogDefaultIndex(0)
 	ElseIf (option == oidSkillReduce_M)
-		SetMenuDialogoptions(sSkills)
+		SetMenuDialogoptions(sGetSkills())
 		SetMenuDialogStartIndex(iReducedSkill)
 		SetMenuDialogDefaultIndex(0)
+	ElseIf (option == oidEquipInclude_M)
+		SetMenuDialogoptions(sGetLoseInclusions())
+		SetMenuDialogStartIndex(iLoseInclusion)
+		SetMenuDialogDefaultIndex(0)
+	ElseIf (option == oidSelectedCustomRPSlot_M)
+		SetMenuDialogoptions(sGetCustomRPs())
+		SetMenuDialogStartIndex(iSelectedCustomRPSlot)
+		SetMenuDialogDefaultIndex(0)
+	ElseIf (option == oidHostileOptions_M)
+		SetMenuDialogoptions(sGetHostileOptions())
+		SetMenuDialogStartIndex(iHostileOption)
+		SetMenuDialogDefaultIndex(0)
+	ElseIf (option == oidSpawns_M)
+		SetMenuDialogoptions(sGetSpawns())
+		SetMenuDialogStartIndex(iSpawn)
+		SetMenuDialogDefaultIndex(0)
+	ElseIf (option == oidSpawnMinLevel_M)
+		SetMenuDialogoptions(sGetSpawnLevels())
+		SetMenuDialogStartIndex(iSpawnMinLevel)
+		SetMenuDialogDefaultIndex(4)
+	ElseIf (option == oidSpawnMaxLevel_M)
+		SetMenuDialogoptions(sGetSpawnLevels())
+		SetMenuDialogStartIndex(iSpawnMaxLevel)
+		SetMenuDialogDefaultIndex(4)
 	EndIf
 EndEvent
 
@@ -1720,159 +2258,58 @@ Event OnOptionMenuAccept(Int option, Int index)
 	If (option == oidTeleportLocation_M)
 		iTeleportLocation = index
 		SetMenuOptionValue(oidTeleportLocation_M, sRespawnPoints[iTeleportLocation])
-		If ( ( moaState.getValue() == 1 ) && ( iTeleportLocation == (sRespawnPoints.Length - 3 ) ) && ExternalMarkerList.GetSize() > 1 )
-			flags =	OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		SetOptionFlags(oidExternalTeleportLocation,flags,True)
-		If ( moaState.getValue() == 1 )
-			flags =	OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		SetOptionFlags(oidRespawnPoint0,flags,True)
-		SetOptionFlags(oidRespawnPoint1,flags,True)
-		SetOptionFlags(oidRespawnPoint2,flags,True)
-		SetOptionFlags(oidRespawnPoint3,flags,True)
-		SetOptionFlags(oidRespawnPoint4,flags,True)
-		SetOptionFlags(oidRespawnPoint5,flags,True)
-		SetOptionFlags(oidRespawnPoint6,flags,True)
-		SetOptionFlags(oidRespawnPoint7,flags)
-	ElseIf (option == oidRemovableItems_M)
-		iRemovableItems = index
-		SetMenuOptionValue(oidRemovableItems_M, sLoseOptions[iRemovableItems])
-		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled
-			flags =	OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		SetOptionFlags(oidLostItemQuest, flags)
+		ForcePageReset()
 	ElseIf (option == oidNoTradingAftermath_M)
 		iNotTradingAftermath = index
-		SetMenuOptionValue(oidNoTradingAftermath_M, sAftermathOptions[iNotTradingAftermath])
-		If bIsRevivalEnabled && ( iNotTradingAftermath == 1)
-			flags =	OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		SetOptionFlags(oidRespawnNaked,flags,True)
-		SetOptionFlags(oidRespawnMenu,flags,True)
-		SetOptionFlags(oidJail,flags,True)
-		SetOptionFlags(oidHealActors,flags,True)
-		SetOptionFlags(oidResurrectActors,flags,True)
-		SetOptionFlags(oidShowRaceMenu,flags,True)
-		SetOptionFlags(oidArkayCurse,flags,True)
-		SetOptionFlags(oidRemovableItems_M,flags,True)
-		SetOptionFlags(oidSkillReduce_M,flags,True)
-		SetOptionFlags(oidLoseSkillForever,flags,True)
-		If bIsRevivalEnabled && (iNotTradingAftermath == 1) && bArkayCurse
-			flags =	OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		SetOptionFlags(oidTempArkayCurse,flags,True)
-		If bIsRevivalEnabled && (iNotTradingAftermath == 1) && !bHostileNPC
-			flags =	OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		SetOptionFlags(oidNPCStealItems, Flags,True)
-		If bIsRevivalEnabled && (iNotTradingAftermath == 1) && !bNPCStealItems
-			flags =	OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		SetOptionFlags(oidHostileNPC, Flags,True)
-		If bIsRevivalEnabled && (iNotTradingAftermath == 1) && bNPCStealItems
-			flags =	OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		SetOptionFlags(oidMoralityMatters, Flags,True)
-		If bIsRevivalEnabled && (iNotTradingAftermath == 1) && (bNPCStealItems || bHostileNPC)
-			flags =	OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		SetOptionFlags(oidCreaturesCanSteal, Flags,True)
-		If bIsRevivalEnabled && (iNotTradingAftermath == 1) && (iReducedSkill != 0)
-			flags =	OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		SetOptionFlags(oidSkillReduceRandomVal,flags,True)
-		If bIsRevivalEnabled && (iNotTradingAftermath == 1) && (iReducedSkill != 0) && !bSkillReduceRandomVal
-			flags =	OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		SetOptionFlags(oidSkillReduceValSlider,flags,True)
-		If bIsRevivalEnabled && (iNotTradingAftermath == 1) && (iReducedSkill != 0) && bSkillReduceRandomVal
-			flags =	OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		SetOptionFlags(oidSkillReduceMaxValSlider,flags,True)
-		SetOptionFlags(oidSkillReduceMinValSlider,flags,True)
-		If bIsRevivalEnabled && (iNotTradingAftermath == 1) && bArkayCurse
-			flags =	OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		SetOptionFlags(oidArkayCurses_M,flags,True)
-		If ( bIsRevivalEnabled && (iNotTradingAftermath == 1))
-			flags =	OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		SetOptionFlags(oidLoseforever,flags,True)
-		If ( bIsRevivalEnabled && (iNotTradingAftermath == 1))
-			flags =	OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		SetOptionFlags(oidSoulMarkStay,flags,True)
-		If ( bIsRevivalEnabled )
-			flags =	OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		SetOptionFlags(oidLostItemQuest,flags,True)
-		If ( ( iTeleportLocation == (sRespawnPoints.Length - 3 ) ) && ExternalMarkerList.GetSize() > 1 )
-			flags =	OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		SetOptionFlags(oidExternalTeleportLocation,flags,True)
-		flags =	OPTION_FLAG_NONE
-		SetOptionFlags(oidRespawnPoint0,flags,True)
-		SetOptionFlags(oidRespawnPoint1,flags,True)
-		SetOptionFlags(oidRespawnPoint2,flags,True)
-		SetOptionFlags(oidRespawnPoint3,flags,True)
-		SetOptionFlags(oidRespawnPoint4,flags,True)
-		SetOptionFlags(oidRespawnPoint5,flags,True)
-		SetOptionFlags(oidRespawnPoint6,flags,True)
-		SetOptionFlags(oidRespawnPoint7,flags)
+		SetMenuOptionValue(oidNoTradingAftermath_M, sGetAftermathOptions()[iNotTradingAftermath])
+		ForcePageReset()
 	ElseIf (option == oidArkayCurses_M)
 	    iArkayCurse = index
-		SetMenuOptionValue(oidArkayCurses_M, sArkayCurses[iArkayCurse])
+		SetMenuOptionValue(oidArkayCurses_M, sGetArkayCurses()[iArkayCurse])
+	ElseIf (option == oidSelectedCustomRPSlot_M)
+	    iSelectedCustomRPSlot = index
+		SetCustomRPFlags()
+		SetMenuOptionValue(oidSelectedCustomRPSlot_M, sGetCustomRPs()[iSelectedCustomRPSlot])
 	ElseIf (option == oidEnableSave_M)
 	    iSaveOption = index
 		SetSavingOption(iSaveOption)
-		SetMenuOptionValue(oidEnableSave_M, sSaveOptions[iSaveOption])
+		SetMenuOptionValue(oidEnableSave_M, sGetSaveOptions()[iSaveOption])
 	ElseIf (option == oidLoadPreset_M)
 		iLoadPreset = index
-		SetMenuOptionValue(oidLoadPreset_M, sPresets[iLoadPreset])
+		SetMenuOptionValue(oidLoadPreset_M, sGetPresets()[iLoadPreset])
 	ElseIf (option == oidSavePreset_M)
 		iSavePreset = index
-		SetMenuOptionValue(oidSavePreset_M, sPresets[iSavePreset])
+		SetMenuOptionValue(oidSavePreset_M, sGetPresets()[iSavePreset])
+	ElseIf (option == oidEquipInclude_M)
+		iLoseInclusion = index
+		SetMenuOptionValue(oidEquipInclude_M, sGetLoseInclusions()[iLoseInclusion])
+		ForcePageReset()
+	ElseIf (option == oidHostileOptions_M)
+		iHostileOption = index
+		SetMenuOptionValue(oidHostileOptions_M, sGetHostileOptions()[iHostileOption])
+		ForcePageReset()
+	ElseIf (option == oidSpawns_M)
+		iSpawn = index
+		SetMenuOptionValue(oidSpawns_M, sGetSpawns()[iSpawn])
+		ForcePageReset()
+	ElseIf (option == oidSpawnMinLevel_M)
+		iSpawnMinLevel = index
+		SetMenuOptionValue(oidSpawnMinLevel_M, sGetSpawnLevels()[iSpawnMinLevel])
+	ElseIf (option == oidSpawnMaxLevel_M)
+		iSpawnMaxLevel = index
+		SetMenuOptionValue(oidSpawnMaxLevel_M, sGetSpawnLevels()[iSpawnMaxLevel])
 	ElseIf (option == oidSkillReduce_M)
 		iReducedSkill = index
-		SetMenuOptionValue(oidSkillReduce_M, sSkills[iReducedSkill])
+		SetMenuOptionValue(oidSkillReduce_M, sGetSkills()[iReducedSkill])
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1 ) && (iReducedSkill != 0)
 			flags = OPTION_FLAG_NONE
+			SetOptionFlags(oidLevelReduce,flags,True)
 			SetOptionFlags(oidSkillReduceRandomVal,flags,True)
+			If !bDisableUnsafe && bDLIEOK
+				flags =	OPTION_FLAG_NONE
+			Else
+				flags =	OPTION_FLAG_DISABLED
+			EndIf
 			SetOptionFlags(oidLoseSkillForever,flags,True)
 			If !bSkillReduceRandomVal
 				flags =	OPTION_FLAG_NONE
@@ -1889,6 +2326,7 @@ Event OnOptionMenuAccept(Int option, Int index)
 			SetOptionFlags(oidSkillReduceMaxValSlider,flags)
 		Else
 			flags = OPTION_FLAG_DISABLED
+			SetOptionFlags(oidLevelReduce,flags,True)
 			SetOptionFlags(oidLoseSkillForever,flags,True)
 			SetOptionFlags(oidSkillReduceRandomVal,flags,True)
 			SetOptionFlags(oidSkillReduceValSlider,flags,True)
@@ -1933,12 +2371,34 @@ Event OnOptionDefault(Int option)
 	ElseIf (option == oidPlayerProtectFollower)
 		bPlayerProtectFollower = False
 		SetToggleOptionValue(oidPlayerProtectFollower, bPlayerProtectFollower)
+	ElseIf (option == oidRetrySpawnWithoutLocation)
+		bRetrySpawnWithoutLocation = True
+		SetToggleOptionValue(oidRetrySpawnWithoutLocation, bRetrySpawnWithoutLocation)
+	ElseIf (option == oidSpawnByLocation)
+		bSpawnByLocation = True
+		SetToggleOptionValue(oidSpawnByLocation, bSpawnByLocation)
+		ForcePageReset()
+	ElseIf (option == oidSpawnCheckRelation)
+		bSpawnCheckRelation = True
+		SetToggleOptionValue(oidSpawnCheckRelation, bSpawnCheckRelation)
+	ElseIf (option == oidSpawnBringAllies)
+		bSpawnBringAllies = True
+		SetToggleOptionValue(oidSpawnBringAllies, bSpawnBringAllies)
 	ElseIf (option == oidNoFallDamageEnabled)
 		ToggleFallDamage(False)
 		SetToggleOptionValue(oidNoFallDamageEnabled, bIsNoFallDamageEnabled)
 	ElseIf (option == oidNotification)
 		bIsNotificationEnabled = False
 		SetToggleOptionValue(oidNotification, bIsNotificationEnabled)
+	ElseIf (option == oidRespawnTimeSlider)
+		fRespawnTimeSlider = 0.0
+		SetSliderOptionValue(oidRespawnTimeSlider, fRespawnTimeSlider, "$mrt_MarkofArkay_RespawnTimeSlider_2")
+	ElseIf (option == oidSpawnCountSlider)
+		iSpawnCounts[iSpawn] = 1
+		SetSliderOptionValue(oidSpawnCountSlider, iSpawnCounts[iSpawn], "$mrt_MarkofArkay_SpawnCountSlider_2")
+	ElseIf (option == oidSpawnWeightSlider)
+		iSpawnWeights[iSpawn] = 50
+		SetSliderOptionValue(oidSpawnWeightSlider, iSpawnWeights[iSpawn], "$mrt_MarkofArkay_SpawnWeightSlider_2")
 	ElseIf (option == oidFadeToBlack)
 		bFadeToBlack = True
 		SetToggleOptionValue(oidFadeToBlack, bFadeToBlack)
@@ -1948,10 +2408,27 @@ Event OnOptionDefault(Int option)
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		SetOptionFlags(oidDeathEffect,flags)
+	ElseIf (option == oidRagdollEffect)
+		bIsRagdollEnabled = False
+		SetToggleOptionValue(oidRagdollEffect, bIsRagdollEnabled)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && (bFadeToBlack || bInvisibility)
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		SetOptionFlags(oidDeathEffect,flags)
+	ElseIf (option == oidDisableUnsafe)
+		bDisableUnsafe = True
+		bLoseForever = False
+		bLoseSkillForever = False
+		bIsRagdollEnabled = false
+		fRespawnTimeSlider = 0.0
+		SetToggleOptionValue(oidDisableUnsafe, bDisableUnsafe)
+		ForcePageReset()
 	ElseIf (option == oidInvisibility)
 		bInvisibility = False
 		SetToggleOptionValue(oidInvisibility, bInvisibility)
-		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && bFadeToBlack
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && (!bIsRagdollEnabled || bDisableUnsafe) && bFadeToBlack
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
@@ -1967,6 +2444,9 @@ Event OnOptionDefault(Int option)
 	ElseIf (option == oidLogging)
 		bIsLoggingEnabled = False
 		SetToggleOptionValue(oidLogging, bIsLoggingEnabled)
+	ElseIf (option == oidSkillReduceValSlider)
+		fSkillReduceValSlider = 10.0
+		SetSliderOptionValue(oidSkillReduceValSlider, fSkillReduceValSlider, "$mrt_MarkofArkay_SkillReduceValSlider_2")	
 	ElseIf (option == oidPotionRevivalEnabled)
 		bIsPotionEnabled = False
 		SetToggleOptionValue(oidPotionRevivalEnabled, bIsPotionEnabled)
@@ -2012,6 +2492,7 @@ Event OnOptionDefault(Int option)
 		SetSliderOptionValue(oidRecoveryTime, fRecoveryTimeSlider, "$mrt_MarkofArkay_RecoveryTime_2")
 	ElseIf (option == oidRPMinDistanceSlider)
 		fRPMinDistanceSlider = 2500.0
+		moaRPMinDistance.SetValue(fRPMinDistanceSlider)
 		SetSliderOptionValue(oidRPMinDistanceSlider, fRPMinDistanceSlider, "{0}")
 	ElseIf (option == oidBleedoutTime)
 		fBleedoutTimeSlider = 6.0
@@ -2035,7 +2516,7 @@ Event OnOptionDefault(Int option)
 		SetToggleOptionValue(oidEffect, bIsEffectEnabled)
 	ElseIf (option == oidExternalTeleportLocation)
 		iExternalIndex = -1
-		SetTextOptionValue(option,"Random")
+		SetTextOptionValue(option,"$Random")
 	ElseIf (option == oidRespawnPoint0)
 		bRespawnPointsFlags[0] = True
 		SetToggleOptionValue(oidRespawnPoint0,bRespawnPointsFlags[0])
@@ -2058,7 +2539,7 @@ Event OnOptionDefault(Int option)
 		bRespawnPointsFlags[6] = True
 		SetToggleOptionValue(oidRespawnPoint6,bRespawnPointsFlags[6])
 	ElseIf (option == oidRespawnPoint7)
-		bRespawnPointsFlags[7] = True
+		bRespawnPointsFlags[7] = False
 		SetToggleOptionValue(oidRespawnPoint7,bRespawnPointsFlags[7])
 	ElseIf (option == oidRevivalRequireBlessing)
 		bIsRevivalRequiresBlessing = False
@@ -2075,31 +2556,30 @@ Event OnOptionDefault(Int option)
 	ElseIf (option == oidRespawnNaked)
 		bRespawnNaked = False
 		SetToggleOptionValue(oidRespawnNaked,bRespawnNaked)
+	ElseIf (option == oidCorpseAsSoulMark)
+		bCorpseAsSoulMark = False
+		SetToggleOptionValue(oidCorpseAsSoulMark,bCorpseAsSoulMark)
 	ElseIf (option == oidRespawnMenu)
 		bRespawnMenu = False
 		SetToggleOptionValue(oidRespawnMenu,bRespawnMenu)
 		flags = OPTION_FLAG_NONE
-		SetOptionFlags(oidTeleportLocation_M,flags,True)
-		If ( ( moaState.getValue() == 1 ) && ( iTeleportLocation == (sRespawnPoints.Length - 3 ) ) && ExternalMarkerList.GetSize() > 1 )
-			flags = OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		SetOptionFlags(oidExternalTeleportLocation,flags)
 	ElseIf (option == oidTeleportMenu)
-		bTeleportMenu = False
+		bTeleportMenu = True
 		SetToggleOptionValue(oidTeleportMenu,bTeleportMenu)
-		flags = OPTION_FLAG_NONE
-		SetOptionFlags(oidTeleportLocation_M,flags,True)
-		If ( ( moaState.getValue() == 1 ) && ( iTeleportLocation == (sRespawnPoints.Length - 3 ) ) && ExternalMarkerList.GetSize() > 1 )
-			flags = OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		SetOptionFlags(oidExternalTeleportLocation,flags)
+	ElseIf (option == oidTotalCustomRPSlotSlider)
+		fTotalCustomRPSlotSlider = 1.0
+		SetCustomRPFlags()
+		SetSliderOptionValue(oidTotalCustomRPSlotSlider,fTotalCustomRPSlotSlider,"$mrt_MarkofArkay_TotalCustomRPSlotSlider_1")
+	ElseIf (option == oidSelectedCustomRPSlot_M)
+		iSelectedCustomRPSlot = 0
+		SetCustomRPFlags()
+		SetMenuOptionValue(oidSelectedCustomRPSlot_M, sGetCustomRPs()[iSelectedCustomRPSlot])
 	ElseIf (option == oidJail)
 		bSendToJail = False
 		SetToggleOptionValue(oidJail,bSendToJail)
+	ElseIf (option == oidKillIfCantRespawn)
+		bKillIfCantRespawn = True
+		SetToggleOptionValue(oidKillIfCantRespawn,bKillIfCantRespawn)
 	ElseIf (option == oidLoseSkillForever)
 		bLoseSkillForever = False
 		SetToggleOptionValue(oidLoseSkillForever,bLoseSkillForever)
@@ -2129,13 +2609,18 @@ Event OnOptionDefault(Int option)
 		SetToggleOptionValue(oidTempArkayCurse,bIsArkayCurseTemporary)
 	ElseIf (option == oidSkillReduce_M)
 		iReducedSkill = 0
-		SetMenuOptionValue(oidSkillReduce_M, sSkills[iReducedSkill])
+		SetMenuOptionValue(oidSkillReduce_M, sGetSkills()[iReducedSkill])
 		flags = OPTION_FLAG_DISABLED
+		SetOptionFlags(oidLevelReduce,flags,True)
 		SetOptionFlags(oidLoseSkillForever,flags,True)
 		SetOptionFlags(oidSkillReduceRandomVal,flags,True)
 		SetOptionFlags(oidSkillReduceValSlider,flags,True)
 		SetOptionFlags(oidSkillReduceMinValSlider,flags,True)
 		SetOptionFlags(oidSkillReduceMaxValSlider,flags)
+	ElseIf (option == oidEquipInclude_M)
+		iLoseInclusion = 0
+		SetMenuOptionValue(oidEquipInclude_M, sGetLoseInclusions()[iLoseInclusion])
+		ForcePageReset()
 	ElseIf (option == oidSkillReduceRandomVal)
 		bSkillReduceRandomVal = False
 		SetToggleOptionValue(oidSkillReduceRandomVal,bSkillReduceRandomVal)
@@ -2147,30 +2632,14 @@ Event OnOptionDefault(Int option)
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		SetOptionFlags(oidSkillReduceValSlider,Flags)
-	ElseIf (option == oidNPCStealItems)
-		bNPCStealItems = False
-		SetToggleOptionValue(oidNPCStealItems,bNPCStealItems)
-		If bIsRevivalEnabled && ( iNotTradingAftermath == 1 ) && ( iRemovableItems != 0 ) && bHostileNPC
-			flags = OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		SetOptionFlags(oidCreaturesCanSteal , flags, True)
-		SetOptionFlags(oidMoralityMatters , OPTION_FLAG_DISABLED)
-	ElseIf (option == oidHostileNPC)
-		bHostileNPC = False
-		SetToggleOptionValue(oidHostileNPC,bHostileNPC)
-		If bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bNPCStealItems
-			flags = OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		SetOptionFlags(oidMoralityMatters, flags, True)
-		SetOptionFlags(oidCreaturesCanSteal , flags)
 	ElseIf (option == oidCreaturesCanSteal )
 		bCreaturesCanSteal = False
 		moaCreaturesCanSteal.SetValue(bCreaturesCanSteal As Int)
 		SetToggleOptionValue(oidCreaturesCanSteal ,bCreaturesCanSteal)
+	ElseIf (option == oidSpawnHostile )
+		bSpawnHostile = False
+		SetToggleOptionValue(oidSpawnHostile ,bSpawnHostile)
+		ForcePageReset()
 	ElseIf (option == oidMoralityMatters )
 		bMoralityMatters = True
 		moaMoralityMatters.SetValue(bMoralityMatters As Int)
@@ -2178,11 +2647,142 @@ Event OnOptionDefault(Int option)
 	ElseIf (option == oidLoseforever)
 		bLoseForever = False
 		SetToggleOptionValue(oidLoseforever,bLoseForever)
+	ElseIf (option == oidRandomItemCurse)
+		bRandomItemCurse = False
+		SetToggleOptionValue(oidRandomItemCurse,bRandomItemCurse)
+	ElseIf (option == oidMoreRandomRespawn)
+		bMoreRandomRespawn = False
+		SetToggleOptionValue(oidMoreRandomRespawn,bMoreRandomRespawn)
+	ElseIf (option == oidMinLoseGoldSlider)
+		fMinLoseGoldSlider = 0.0
+		SetSliderOptionValue(oidMinLoseGoldSlider, fMinLoseGoldSlider, "{0}")
+	ElseIf (option == oidMaxLoseGoldSlider)
+		fMaxLoseGoldSlider = 250.0
+		SetSliderOptionValue(oidMaxLoseGoldSlider, fMaxLoseGoldSlider, "{0}")
+	ElseIf (option == oidLoseGoldAll)
+		bLoseGoldAll = False
+		SetToggleOptionValue(oidLoseGoldAll,bLoseGoldAll)
+	ElseIf (option == oidLoseItem)
+		bLoseItem = False
+		SetToggleOptionValue(oidLoseItem,bLoseItem)
+		forcePageReset()
+	ElseIf (option == oidLoseArkayMarkAll)
+		bLoseArkayMarkAll = False
+		SetToggleOptionValue(oidLoseArkayMarkAll,bLoseArkayMarkAll)
+		forcePageReset()
+	ElseIf (option == oidMinLoseArkayMarkSlider)
+		fMinLoseArkayMarkSlider = 0.0
+		SetSliderOptionValue(oidMinLoseArkayMarkSlider, fMinLoseArkayMarkSlider, "{0}")
+	ElseIf (option == oidMaxLoseArkayMarkSlider)
+		fMaxLoseArkayMarkSlider = 1.0
+		SetSliderOptionValue(oidMaxLoseArkayMarkSlider, fMaxLoseArkayMarkSlider, "{0}")
+	ElseIf (option == oidLoseDragonSoulAll)
+		bLoseDragonSoulAll = False
+		SetToggleOptionValue(oidLoseDragonSoulAll,bLoseDragonSoulAll)
+		forcePageReset()
+	ElseIf (option == oidMinLoseDragonSoulSlider)
+		fMinLoseDragonSoulSlider = 0.0
+		SetSliderOptionValue(oidMinLoseDragonSoulSlider, fMinLoseDragonSoulSlider, "{0}")
+	ElseIf (option == oidMaxLoseDragonSoulSlider)
+		fMaxLoseDragonSoulSlider = 1.0
+		SetSliderOptionValue(oidMaxLoseDragonSoulSlider, fMaxLoseDragonSoulSlider, "{0}")
+	ElseIf (option == oidLoseBlackSoulGemAll)
+		bLoseBlackSoulGemAll = False
+		SetToggleOptionValue(oidLoseBlackSoulGemAll,bLoseBlackSoulGemAll)
+		forcePageReset()
+	ElseIf (option == oidMinLoseBlackSoulGemSlider)
+		fMinLoseBlackSoulGemSlider = 0.0
+		SetSliderOptionValue(oidMinLoseBlackSoulGemSlider, fMinLoseBlackSoulGemSlider, "{0}")
+	ElseIf (option == oidMaxLoseBlackSoulGemSlider)
+		fMaxLoseBlackSoulGemSlider = 1.0
+		SetSliderOptionValue(oidMaxLoseBlackSoulGemSlider, fMaxLoseBlackSoulGemSlider, "{0}")
+	ElseIf (option == oidLoseGrandSoulGemAll)
+		bLoseGrandSoulGemAll = False
+		SetToggleOptionValue(oidLoseGrandSoulGemAll,bLoseGrandSoulGemAll)
+		forcePageReset()
+	ElseIf (option == oidMinLoseGrandSoulGemSlider)
+		fMinLoseGrandSoulGemSlider = 0.0
+		SetSliderOptionValue(oidMinLoseGrandSoulGemSlider, fMinLoseGrandSoulGemSlider, "{0}")
+	ElseIf (option == oidMaxLoseGrandSoulGemSlider)
+		fMaxLoseGrandSoulGemSlider = 1.0
+		SetSliderOptionValue(oidMaxLoseGrandSoulGemSlider, fMaxLoseGrandSoulGemSlider, "{0}")
+	ElseIf (option == oidLoseOtherMinValueSlider)
+		fLoseOtherMinValueSlider = 0.0
+		SetSliderOptionValue(oidLoseOtherMinValueSlider, fLoseOtherMinValueSlider, "{0}")
+	ElseIf (option == oidLoseOtherTotalValueSlider)
+		fLoseOtherTotalValueSlider = 0.0
+		SetSliderOptionValue(oidLoseOtherTotalValueSlider, fLoseOtherTotalValueSlider, "{0}")
+	ElseIf (option == oidExcludeQuestItems)		
+		bExcludeQuestItems = True
+		SetToggleOptionValue(oidExcludeQuestItems,bExcludeQuestItems)
+	ElseIf (option == oidLoseGold)
+		bLoseGold = True
+		SetToggleOptionValue(oidLoseGold,bLoseGold)
+		forcePageReset()
+	ElseIf (option == oidLoseArkayMark)
+		bLoseArkayMark = False
+		SetToggleOptionValue(oidLoseArkayMark,bLoseArkayMark)
+		forcePageReset()
+	ElseIf (option == oidLoseBlackSoulGem)
+		bLoseBlackSoulGem = False
+		SetToggleOptionValue(oidLoseBlackSoulGem,bLoseBlackSoulGem)
+		forcePageReset()
+	ElseIf (option == oidLoseGrandSoulGem)
+		bLoseGrandSoulGem = False
+		SetToggleOptionValue(oidLoseGrandSoulGem,bLoseGrandSoulGem)
+		forcePageReset()
+	ElseIf (option == oidLoseDragonSoul)
+		bLoseDragonSoul = False
+		SetToggleOptionValue(oidLoseDragonSoul,bLoseDragonSoul)
+		forcePageReset()
+	ElseIf (option == oidLoseOthers)
+		bLoseOthers = False
+		SetToggleOptionValue(oidLoseOthers,bLoseOthers)
+		forcePageReset()
+	ElseIf (option == oidLoseAmmo)
+		bLoseAmmo = False
+		SetToggleOptionValue(oidLoseAmmo,bLoseAmmo)
+	ElseIf (option == oidLoseBook)
+		bLoseBook = False
+		SetToggleOptionValue(oidLoseBook,bLoseBook)
+	ElseIf (option == oidLoseArmor)
+		bLoseArmor = True
+		SetToggleOptionValue(oidLoseArmor,bLoseArmor)
+	ElseIf (option == oidLoseWeapon)
+		bLoseWeapon = True
+		SetToggleOptionValue(oidLoseWeapon,bLoseWeapon)
+	ElseIf (option == oidLoseMisc)
+		bLoseMisc = False
+		SetToggleOptionValue(oidLoseMisc,bLoseMisc)
+	ElseIf (option == oidLoseKey)
+		bLoseKey = False
+		SetToggleOptionValue(oidLoseKey,bLoseKey)
+	ElseIf (option == oidLoseSoulgem)
+		bLoseSoulgem = False
+		SetToggleOptionValue(oidLoseSoulgem,bLoseSoulgem)
+	ElseIf (option == oidLosePotion)
+		bLosePotion = False
+		SetToggleOptionValue(oidLosePotion,bLosePotion)
+	ElseIf (option == oidLoseScroll)
+		bLoseScroll = False
+		SetToggleOptionValue(oidLoseScroll,bLoseScroll)
+	ElseIf (option == oidLoseIngredient)
+		bLoseIngredient = False
+		SetToggleOptionValue(oidLoseIngredient,bLoseIngredient)
+	ElseIf (option == oidCheckKeyword)
+		bCheckKeyword = True
+		SetToggleOptionValue(oidCheckKeyword,bCheckKeyword)
+	ElseIf (option == oidCheckWeight)
+		bCheckWeight = True
+		SetToggleOptionValue(oidCheckWeight,bCheckWeight)
+	ElseIf (option == oidLevelReduce)
+		bLevelReduce = False
+		SetToggleOptionValue(oidLevelReduce,bLevelReduce)
 	ElseIf (option == oidLostItemQuest)
 		bLostItemQuest = True
 		SetToggleOptionValue(oidLostItemQuest,bLostItemQuest)
-		If ( ( LostItemsChest.GetNumItems() > 0 ) || ( ReviveScript.fLostSouls > 0.0 ) || \
-		PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt) || ReviveScript.bSkillReduced())
+		If ( ( LostItemsChest.GetNumItems() > 0 ) || ( ReviveScript.ItemScript.fLostSouls > 0.0 ) || \
+		PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt) || ReviveScript.SkillScript.bSkillReduced())
 			If ( ReviveScript.bSoulMark() )
 				If ReviveScript.moaSoulMark01.IsRunning()
 					moaRetrieveLostItems.start()
@@ -2211,51 +2811,11 @@ Event OnOptionDefault(Int option)
 	ElseIf (option == oidTeleportLocation_M)
 		iTeleportLocation = 0
 		SetMenuOptionValue(oidTeleportLocation_M, sRespawnPoints[iTeleportLocation])
-		flags = OPTION_FLAG_DISABLED
-		SetOptionFlags(oidExternalTeleportLocation,flags,True)
-		SetOptionFlags(oidRespawnPoint0,flags,True)
-		SetOptionFlags(oidRespawnPoint1,flags,True)
-		SetOptionFlags(oidRespawnPoint2,flags,True)
-		SetOptionFlags(oidRespawnPoint3,flags,True)
-		SetOptionFlags(oidRespawnPoint4,flags,True)
-		SetOptionFlags(oidRespawnPoint5,flags,True)
-		SetOptionFlags(oidRespawnPoint6,flags,True)
-		SetOptionFlags(oidRespawnPoint7,flags)
+		ForcePageReset()
 	ElseIf (option == oidNoTradingAftermath_M)
 		iNotTradingAftermath = 0
-		SetMenuOptionValue(oidNoTradingAftermath_M, sAftermathOptions[iNotTradingAftermath])
-		flags = OPTION_FLAG_DISABLED
-		SetOptionFlags(oidRespawnNaked,flags,True)
-		SetOptionFlags(oidRespawnMenu,flags,True)
-		SetOptionFlags(oidJail,flags,True)
-		SetOptionFlags(oidHealActors,flags,True)
-		SetOptionFlags(oidResurrectActors,flags,True)
-		SetOptionFlags(oidShowRaceMenu,flags,True)
-		SetOptionFlags(oidArkayCurse,flags,True)
-		SetOptionFlags(oidTempArkayCurse,flags,True)
-		SetOptionFlags(oidNPCStealItems,flags,True)
-		SetOptionFlags(oidHostileNPC,flags,True)
-		SetOptionFlags(oidMoralityMatters,flags,True)
-		SetOptionFlags(oidCreaturesCanSteal,flags,True)
-		SetOptionFlags(oidArkayCurses_M,flags,True)
-		SetOptionFlags(oidSkillReduce_M,flags,True)
-		SetOptionFlags(oidSkillReduceRandomVal,flags,True)
-		SetOptionFlags(oidSkillReduceMinValSlider,flags,True)
-		SetOptionFlags(oidSkillReduceMaxValSlider,flags,True)
-		SetOptionFlags(oidSkillReduceValSlider,flags,True)
-		SetOptionFlags(oidLoseSkillForever,flags,True)
-		SetOptionFlags(oidLoseforever,flags,True)
-		SetOptionFlags(oidRemovableItems_M,flags,True)
-		SetOptionFlags(oidSoulMarkStay,flags)
-	ElseIf (option == oidRemovableItems_M)
-		iRemovableItems = 0
-		SetMenuOptionValue(oidRemovableItems_M, sLoseOptions[iRemovableItems])
-		flags = OPTION_FLAG_DISABLED
-		SetOptionFlags(oidLoseforever, flags,True)
-		SetOptionFlags(oidNPCStealItems,flags,True)
-		SetOptionFlags(oidHostileNPC,flags,True)
-		SetOptionFlags(oidMoralityMatters,flags,True)
-		SetOptionFlags(oidCreaturesCanSteal,flags)
+		SetMenuOptionValue(oidNoTradingAftermath_M, sGetAftermathOptions()[iNotTradingAftermath])
+		ForcePageReset()
 	ElseIf (option == oidInformation)
 		bIsInfoEnabled = False
 		SetToggleOptionValue(oidInformation,bIsInfoEnabled)
@@ -2265,12 +2825,22 @@ Event OnOptionDefault(Int option)
 		SetToggleOptionValue(oidAutoSwitchRP,bAutoSwitchRP)
 	ElseIf (option == oidArkayCurses_M)
 		iArkayCurse = 0
-		SetMenuOptionValue(oidArkayCurses_M, sArkayCurses[iArkayCurse])
+		SetMenuOptionValue(oidArkayCurses_M, sGetArkayCurses()[iArkayCurse])
 	ElseIf (option == oidEnableSave_M)
 		iSaveOption = 1
-		SetMenuOptionValue(oidEnableSave_M, sSaveOptions[iSaveOption])
+		SetMenuOptionValue(oidEnableSave_M, sGetSaveOptions()[iSaveOption])
 		moaPraytoSave.SetValue(0.0)
 		SetInChargen(False,False,False)
+	ElseIf (option == oidHostileOptions_M)
+		iHostileOption = 0
+		SetMenuOptionValue(oidHostileOptions_M, sGetHostileOptions()[iHostileOption])
+		ForcePageReset()
+	ElseIf option == oidSpawnMinLevel_M
+		iSpawnMinLevel = 4
+		SetMenuOptionValue(oidSpawnMinLevel_M, sGetSpawnLevels()[iSpawnMinLevel])
+	ElseIf option == oidSpawnMaxLevel_M
+		iSpawnMaxLevel = 4
+		SetMenuOptionValue(oidSpawnMaxLevel_M, sGetSpawnLevels()[iSpawnMaxLevel])
 	EndIf
 EndEvent
 
@@ -2334,6 +2904,12 @@ Event OnOptionHighlight(Int option)
 			SetInfoText("$mrt_MarkofArkay_DESC_FollowerProtectPlayer")
 	ElseIf (option == oidPlayerProtectFollower)
 			SetInfoText("$mrt_MarkofArkay_DESC_PlayerProtectFollower")
+	ElseIf (option == oidSpawnByLocation)
+			SetInfoText("$mrt_MarkofArkay_DESC_SpawnByLocation")
+	ElseIf (option == oidRetrySpawnWithoutLocation)
+			SetInfoText("$mrt_MarkofArkay_DESC_RetrySpawnWithoutLocation")
+	ElseIf (option == oidSpawnCheckRelation)
+			SetInfoText("$mrt_MarkofArkay_DESC_SpawnCheckRelation")
 	ElseIf (option == oidNoFallDamageEnabled)
 		If bIsNoFallDamageEnabled
 			SetInfoText("$mrt_MarkofArkay_DESC_NoFallDamageEnabled_On")
@@ -2424,12 +3000,16 @@ Event OnOptionHighlight(Int option)
 		SetInfoText("$mrt_MarkofArkay_DESC_RespawnPoint7")
 	ElseIf (option == oidRespawnNaked)
 		SetInfoText("$mrt_MarkofArkay_DESC_RespawnNaked")
+	ElseIf (option == oidCorpseAsSoulMark)
+		SetInfoText("$mrt_MarkofArkay_DESC_CorpseAsSoulMark")
 	ElseIf (option == oidRespawnMenu)
 		SetInfoText("$mrt_MarkofArkay_DESC_RespawnMenu")
 	ElseIf (option == oidTeleportMenu)
 		SetInfoText("$mrt_MarkofArkay_DESC_TeleportMenu")
 	ElseIf (option == oidJail)
 		SetInfoText("$mrt_MarkofArkay_DESC_Jail")
+	ElseIf (option == oidKillIfCantRespawn)
+		SetInfoText("$mrt_MarkofArkay_DESC_KillIfCantRespawn")
 	ElseIf (option == oidLoseSkillForever)
 		SetInfoText("$mrt_MarkofArkay_DESC_LoseSkillForever")
 	ElseIf (option == oidHealActors)
@@ -2452,16 +3032,10 @@ Event OnOptionHighlight(Int option)
 		SetInfoText("$mrt_MarkofArkay_DESC_SkillReduceMinValSlider")
 	ElseIf (option == oidSkillReduceMaxValSlider)
 		SetInfoText("$mrt_MarkofArkay_DESC_SkillReduceMaxValSlider")
-	ElseIf (option == oidNPCStealItems)
-		SetInfoText("$mrt_MarkofArkay_DESC_NPCStealItems")
 	ElseIf (option == oidCreaturesCanSteal )
 		SetInfoText("$mrt_MarkofArkay_DESC_CreaturesCanSteal")
 	ElseIf (option == oidMoralityMatters )
 		SetInfoText("$mrt_MarkofArkay_DESC_MoralityMatters")
-	ElseIf (option == oidHostileNPC)
-		SetInfoText("$mrt_MarkofArkay_DESC_HostileNPC")
-	ElseIf (option == oidRemovableItems_M)
-		SetInfoText("$mrt_MarkofArkay_DESC_RemovableItems_M")
 	ElseIf (option == oidLoseforever)
 		SetInfoText("$mrt_MarkofArkay_DESC_Loseforever")
 	ElseIf (option == oidLostItemQuest)
@@ -2496,6 +3070,14 @@ Event OnOptionHighlight(Int option)
 	    setInfotext("$mrt_MarkofArkay_DESC_ArkayCurses_M")
 	ElseIf (option == oidEnableSave_M)
 	    setInfotext("$mrt_MarkofArkay_DESC_EnableSave_M")
+	ElseIf (option == oidHostileOptions_M)
+	    setInfotext("$mrt_MarkofArkay_DESC_HostileOptions_M")
+	ElseIf (option == oidSpawns_M)
+	    setInfotext("$mrt_MarkofArkay_DESC_Spawns_M")
+	ElseIf (option == oidSpawnMinLevel_M)
+	    setInfotext("$mrt_MarkofArkay_DESC_SpawnMinLevel_M")
+	ElseIf (option == oidSpawnMaxLevel_M)
+	    setInfotext("$mrt_MarkofArkay_DESC_SpawnMaxLevel_M")
 	ElseIf (option == oidLoadPreset1)
 		SetInfoText("$mrt_MarkofArkay_DESC_Load_Preset")
 	ElseIf (option == oidSavePreset1)
@@ -2506,13 +3088,117 @@ Event OnOptionHighlight(Int option)
 		SetInfoText("$mrt_MarkofArkay_DESC_Load_Preset_M")
 	ElseIf (option == oidSavePreset_M)
 		SetInfoText("$mrt_MarkofArkay_DESC_Save_Preset_M")
+	ElseIf (option == oidRagdollEffect)
+		SetInfoText("$mrt_MarkofArkay_DESC_RagdollEffect")
+	ElseIf (option == oidRespawnTimeSlider)
+		SetInfoText("$mrt_MarkofArkay_DESC_RespawnTimeSlider")
+	ElseIf (option == oidSpawnCountSlider)
+		SetInfoText("$mrt_MarkofArkay_DESC_SpawnCountSlider")
+	ElseIf (option == oidSpawnWeightSlider)
+		SetInfoText("$mrt_MarkofArkay_DESC_SpawnWeightSlider")
+	ElseIf (option == oidRandomItemCurse)
+		SetInfoText("$mrt_MarkofArkay_DESC_RandomItemCurse")
+	ElseIf (option == oidMoreRandomRespawn)
+		SetInfoText("$mrt_MarkofArkay_DESC_MoreRandomRespawn")
+	ElseIf (option == oidEquipInclude_M)
+		SetInfoText("$mrt_MarkofArkay_DESC_EquipInclude_M")
+	ElseIf (option == oidDisableUnsafe)
+		SetInfoText("$mrt_MarkofArkay_DESC_DisableUnsafe")
+	ElseIf (option == oidMinLoseGoldSlider)
+		SetInfoText("$mrt_MarkofArkay_DESC_MinLoseGoldSlider")
+	ElseIf (option == oidMaxLoseGoldSlider)
+		SetInfoText("$mrt_MarkofArkay_DESC_MaxLoseGoldSlider")
+	ElseIf (option == oidLoseGoldAll)
+		SetInfoText("$mrt_MarkofArkay_DESC_LoseGoldAll")
+	ElseIf (option == oidLoseArkayMarkAll)
+		SetInfoText("$mrt_MarkofArkay_DESC_LoseArkayMarkAll")	
+	ElseIf (option == oidMinLoseArkayMarkSlider)
+		SetInfoText("$mrt_MarkofArkay_DESC_MinLoseArkayMarkSlider")	
+	ElseIf (option == oidMaxLoseArkayMarkSlider)
+		SetInfoText("$mrt_MarkofArkay_DESC_MaxLoseArkayMarkSlider")	
+	ElseIf (option == oidLoseDragonSoulAll)
+		SetInfoText("$mrt_MarkofArkay_DESC_LoseDragonSoulAll")	
+	ElseIf (option == oidMinLoseDragonSoulSlider)
+		SetInfoText("$mrt_MarkofArkay_DESC_MinLoseDragonSoulSlider")	
+	ElseIf (option == oidMaxLoseDragonSoulSlider)
+		SetInfoText("$mrt_MarkofArkay_DESC_MaxLoseDragonSoulSlider")		
+	ElseIf (option == oidLoseBlackSoulGemAll)
+		SetInfoText("$mrt_MarkofArkay_DESC_LoseBSoulgemAll")	
+	ElseIf (option == oidMinLoseBlackSoulGemSlider)
+		SetInfoText("$mrt_MarkofArkay_DESC_MinLoseBSoulgemSlider")	
+	ElseIf (option == oidMaxLoseBlackSoulGemSlider)
+		SetInfoText("$mrt_MarkofArkay_DESC_MaxLoseBSoulgemSlider")	
+	ElseIf (option == oidLoseGrandSoulGemAll)
+		SetInfoText("$mrt_MarkofArkay_DESC_LoseGSoulgemAll")	
+	ElseIf (option == oidMaxLoseGrandSoulGemSlider)
+		SetInfoText("$mrt_MarkofArkay_DESC_MaxLoseGSoulgemSlider")	
+	ElseIf (option == oidMinLoseGrandSoulGemSlider)
+		SetInfoText("$mrt_MarkofArkay_DESC_MinLoseGSoulgemSlider")	
+	ElseIf (option == oidLoseOtherMinValueSlider)
+		SetInfoText("$mrt_MarkofArkay_DESC_LoseOtherMinValueSlider")	
+	ElseIf (option == oidLoseOtherTotalValueSlider)
+		SetInfoText("$mrt_MarkofArkay_DESC_LoseOtherTotalValueSlider")	
+	ElseIf (option == oidExcludeQuestItems)		
+		SetInfoText("$mrt_MarkofArkay_DESC_ExcludeQuestItems")
+	ElseIf (option == oidLoseItem)
+		SetInfoText("$mrt_MarkofArkay_DESC_LoseItem")
+	ElseIf (option == oidLoseGold)
+		SetInfoText("$mrt_MarkofArkay_DESC_LoseGold")
+	ElseIf (option == oidLoseArkayMark)
+		SetInfoText("$mrt_MarkofArkay_DESC_LoseArkayMark")
+	ElseIf (option == oidLoseBlackSoulGem)
+		SetInfoText("$mrt_MarkofArkay_DESC_LoseBSoulGem")
+	ElseIf (option == oidLoseGrandSoulGem)
+		SetInfoText("$mrt_MarkofArkay_DESC_LoseGSoulGem")
+	ElseIf (option == oidLoseDragonSoul)
+		SetInfoText("$mrt_MarkofArkay_DESC_LoseDragonSoul")
+	ElseIf (option == oidLoseOthers)
+		SetInfoText("$mrt_MarkofArkay_DESC_LoseOthers")
+	ElseIf (option == oidLoseAmmo)
+		SetInfoText("$mrt_MarkofArkay_DESC_LoseAmmo")
+	ElseIf (option == oidLoseBook)
+		SetInfoText("$mrt_MarkofArkay_DESC_LoseBook")
+	ElseIf (option == oidLoseArmor)
+		SetInfoText("$mrt_MarkofArkay_DESC_LoseArmor")
+	ElseIf (option == oidLoseWeapon)
+		SetInfoText("$mrt_MarkofArkay_DESC_LoseWeapon")
+	ElseIf (option == oidLoseMisc)
+		SetInfoText("$mrt_MarkofArkay_DESC_LoseMisc")
+	ElseIf (option == oidLoseKey)
+		SetInfoText("$mrt_MarkofArkay_DESC_LoseKey")
+	ElseIf (option == oidLoseSoulgem)
+		SetInfoText("$mrt_MarkofArkay_DESC_LoseSoulgem")
+	ElseIf (option == oidLosePotion)
+		SetInfoText("$mrt_MarkofArkay_DESC_LosePotion")
+	ElseIf (option == oidLoseScroll)
+		SetInfoText("$mrt_MarkofArkay_DESC_LoseScroll")
+	ElseIf (option == oidLoseIngredient)
+		SetInfoText("$mrt_MarkofArkay_DESC_LoseIngredient")
+	ElseIf (option == oidCheckKeyword)
+		SetInfoText("$mrt_MarkofArkay_DESC_CheckKeyword")
+	ElseIf (option == oidCheckWeight)
+		SetInfoText("$mrt_MarkofArkay_DESC_CheckWeight")
+	ElseIf (option == oidLevelReduce)
+		SetInfoText("$mrt_MarkofArkay_DESC_LevelReduce")
+	ElseIf (option == oidLostItemsInfo)
+		SetInfoText("$mrt_MarkofArkay_DESC_LostItemsInfo")
+	ElseIf (option == oidLostSkillsInfo)
+		SetInfoText("$mrt_MarkofArkay_DESC_LostSkillsInfo")
+	ElseIf (option == oidTotalCustomRPSlotSlider)
+		SetInfoText("$mrt_MarkofArkay_DESC_TotalCustomRPSlotSlider")
+	ElseIf (option == oidSelectedCustomRPSlot_M)
+		SetInfoText("$mrt_MarkofArkay_DESC_SelectedCustomRPSlot_M")
+	ElseIf (option == oidSpawnBringAllies)
+		SetInfoText("$mrt_MarkofArkay_DESC_SpawnBringAllies")
+	ElseIf (option == oidSpawnHostile)
+		SetInfoText("$mrt_MarkofArkay_DESC_SpawnHostile")		
 	EndIf
 EndEvent
 
 Function moaStart()
 	If moaState.GetValue() == 0
 		moaState.SetValue(1)
-		setArrays()
+		setPages()
 		moaBleedoutHandlerState.SetValue(0)
 		moaReviverQuest.Start()
 		PlayerRef.GetActorBase().SetEssential(True)
@@ -2541,25 +3227,38 @@ Function moaStop()
 		PlayerRef.RemoveItem(ReviveScript.StolenItemsMisc,playerRef.GetItemCount(ReviveScript.StolenItemsMisc),abSilent = True)
 		ReviveScript.Thief = None
 		LostItemsMarker.MoveToMyEditorLocation()
+		ReviveScript.NPCScript.RemoveDeadClone()
 		LostItemsMarker.Disable()
 		LostItemsChest.RemoveAllItems(PlayerRef, True, True)
-		If ReviveScript.fLostSouls > 0.0
-			PlayerRef.ModActorValue("DragonSouls", ReviveScript.fLostSouls)
-			ReviveScript.fLostSouls = 0.0
+		If ReviveScript.ItemScript.fLostSouls > 0.0
+			PlayerRef.ModActorValue("DragonSouls", ReviveScript.ItemScript.fLostSouls)
+			ReviveScript.ItemScript.fLostSouls = 0.0
 		EndIf
-		ReviveScript.RestoreSkills()
-		ReviveScript.bIsItemsRemoved = False
+		ReviveScript.SkillScript.RestoreSkills()
+		ReviveScript.ItemScript.bIsItemsRemoved = False
 		If moaRetrieveLostItems.IsRunning()
 			moaRetrieveLostItems.SetStage(20)
 		EndIf
 		If moaRetrieveLostItems01.IsRunning()
 			moaRetrieveLostItems01.SetStage(20)
 		EndIf
-		ReviveScript.moaSoulMark01.Stop()
-		ReviveScript.moaThiefNPC01.Stop()
-		CustomMarker.MoveToMyEditorLocation()
+		ReviveScript.NPCScript.RemoveDeadClone()
+		StopAndConfirm(ReviveScript.moaSoulMark01)
+		If ( ReviveScript.ThiefNPC.GetReference() As Actor )
+			ReviveScript.RemoveStolenItemMarkers(ReviveScript.ThiefNPC.GetReference() As Actor)
+		EndIf
+		ReviveScript.NPCScript.RemoveSpawnedThiefs()
+		If ReviveScript.moaThiefNPC01.IsRunning()
+			StopAndConfirm(ReviveScript.moaThiefNPC01,30)
+		EndIf
+		Int i = CustomRespawnPoints.GetSize()
+		While i > 0
+			i -= 1
+			(CustomRespawnPoints.GetAt(i) As ObjectReference).Enable()
+			(CustomRespawnPoints.GetAt(i) As ObjectReference).MoveToMyEditorLocation()
+			(CustomRespawnPoints.GetAt(i) As ObjectReference).Disable()
+		EndWhile
 		SleepMarker.MoveToMyEditorLocation()
-		CustomMarker.Disable()
 		SleepMarker.Disable()
 		ReviveScript.Fadeout.Remove()
 		ReviveScript.FastFadeOut.Remove()
@@ -2592,6 +3291,7 @@ Function moaStop()
 		LocationMarker.MoveToMyEditorLocation()
 		CellLoadMarker2.MoveToMyEditorLocation()
 		LocationMarker2.MoveToMyEditorLocation()
+		ThiefMarker.MoveToMyEditorLocation()
 		DetachMarker1.Disable()
 		DetachMarker2.Disable()
 		DetachMarker3.Disable()
@@ -2599,6 +3299,7 @@ Function moaStop()
 		LocationMarker.Disable()
 		CellLoadMarker2.Disable()
 		LocationMarker2.Disable()
+		ThiefMarker.Disable()
 		Debug.SetGodMode(False)
 		moaLootChance.SetValue(100.0)
 		moaScrollChance.SetValue(100.0)
@@ -2609,10 +3310,17 @@ Function moaStop()
 	EndIf
 EndFunction
 
-Bool Function bIsModBusy()
+Int Function iGetModStatus()
+	If moaIsBusy.GetValue() || (moaState.GetValue() == 1 && (PlayerRef.IsBleedingOut() || moaBleedoutHandlerState.GetValue() != 0))
+		Return 2
+	EndIf
 	PlayerRef.GetCombatState()
-	Return ((PlayerRef.GetCombatState() == 1) || (bToggling) || ( moaState.GetValue() == 1 && (PlayerRef.IsBleedingOut() || (moaBleedoutHandlerState.GetValue() != 0))))
+	If PlayerRef.GetCombatState() == 1
+		Return 1
+	EndIf
+	Return 0
 EndFunction
+
 Function ToggleFallDamage(Bool bFallDamage)
 	If !bFallDamage
 		If !(fJumpFallHeightMinDefault == 100000.00)
@@ -2645,12 +3353,37 @@ Function SetSavingOption(Int iIndex)
 	EndIf
 EndFunction
 
+Function SetCustomRPFlags()
+	Bool[] bSlotflags = New Bool[3]
+	bSlotflags[0] = False
+	bSlotflags[1] = False
+	bSlotflags[2] = False
+	Int i = 0
+	While i < fTotalCustomRPSlotSlider As Int
+		bSlotflags[i] = True
+		i += 1
+	EndWhile
+	If iSelectedCustomRPSlot + 1 > fTotalCustomRPSlotSlider As Int
+		bSlotflags[(fTotalCustomRPSlotSlider As Int) - 1] = False
+		bSlotflags[iSelectedCustomRPSlot] = True
+	EndIf
+	i = CustomRespawnPoints.GetSize()
+	While i > 0
+		i -= 1
+		If bSlotflags[i]
+			(CustomRespawnPoints.GetAt(i) As ObjectReference).Enable()
+		Else
+			(CustomRespawnPoints.GetAt(i) As ObjectReference).Disable()
+		EndIf
+	EndWhile
+EndFunction
+
 Event OnConfigInit()
-	If bInit
+	If moaIsBusy.GetValue()
 		Return
 	EndIf
-	bInit = True
-	setPages()
+	moaIsBusy.SetValueInt(1)
+	init()
 EndEvent
 
 Event OnConfigRegister()
@@ -2658,179 +3391,27 @@ Event OnConfigRegister()
 EndEvent
 
 Int Function GetVersion()
-	Return 41
+	Return 300
 EndFunction
 
 Event OnVersionUpdate(int a_version)
+	bIsUpdating = True
+	If CurrentVersion > 0 && CurrentVersion < 300
+		Debug.Trace("MarkOfArkay: [Error] Can't update because too old("+CurrentVersion+"<"+a_version+")")
+		ModVersionError.Show()
+		Return
+	EndIf
 	; a_version is the new version, CurrentVersion is the old version
-	If (a_version >= 2 && CurrentVersion < 2)
-		Debug.Trace(self + ": Updating script to version " + 2)
+	If (a_version >= 300 && CurrentVersion < 300)
+		Debug.Trace(self + ": Updating script to version " + 300)
+		;init()
 	EndIf
-	If (a_version >= 3 && CurrentVersion < 3)
-		Debug.Trace(self + ": Updating script to version " + 3)
-		sRespawnPoints = New String[8]
-		bRespawnPointsFlags = New Bool[7]
-		sRespawnPoints[0] = "$Whiterun"
-		sRespawnPoints[1] = "$Falkreath"
-		sRespawnPoints[2] = "$Markarth"
-		sRespawnPoints[3] = "$Riften"
-		sRespawnPoints[4] = "$Solitude"
-		sRespawnPoints[5] = "$Windhelm"
-		sRespawnPoints[6] = "$RavenRock"
-		sRespawnPoints[7] = "$Random"
-		bRespawnPointsFlags[0] = True
-		bRespawnPointsFlags[1] = True
-		bRespawnPointsFlags[2] = True
-		bRespawnPointsFlags[3] = True
-		bRespawnPointsFlags[4] = True
-		bRespawnPointsFlags[5] = True
-		bRespawnPointsFlags[6] = True
-	EndIf
-	If (a_version >= 5 && CurrentVersion < 5)
-		Debug.Trace(self + ": Updating script to version " + 5)
-		sRespawnPoints = New String[9]
-		bRespawnPointsFlags = New Bool[8]
-		sRespawnPoints[0] = "$Whiterun"
-		sRespawnPoints[1] = "$Falkreath"
-		sRespawnPoints[2] = "$Markarth"
-		sRespawnPoints[3] = "$Riften"
-		sRespawnPoints[4] = "$Solitude"
-		sRespawnPoints[5] = "$Windhelm"
-		sRespawnPoints[6] = "$Winterhold"
-		sRespawnPoints[7] = "$RavenRock"
-		sRespawnPoints[8] = "$Random"
-		bRespawnPointsFlags[0] = True
-		bRespawnPointsFlags[1] = True
-		bRespawnPointsFlags[2] = True
-		bRespawnPointsFlags[3] = True
-		bRespawnPointsFlags[4] = True
-		bRespawnPointsFlags[5] = True
-		bRespawnPointsFlags[6] = True
-		bRespawnPointsFlags[7] = True
-	EndIf
-	If (a_version >= 7 && CurrentVersion < 7)
-		Debug.Trace(self + ": Updating script to version " + 7)
-		sRespawnPoints = New String[10]
-		bRespawnPointsFlags = New Bool[8]
-		sRespawnPoints[0] = "$Whiterun"
-		sRespawnPoints[1] = "$Falkreath"
-		sRespawnPoints[2] = "$Markarth"
-		sRespawnPoints[3] = "$Riften"
-		sRespawnPoints[4] = "$Solitude"
-		sRespawnPoints[5] = "$Windhelm"
-		sRespawnPoints[6] = "$Winterhold"
-		sRespawnPoints[7] = "$RavenRock"
-		sRespawnPoints[8] = "$Random"
-		sRespawnPoints[9] = "$Custom"
-		bRespawnPointsFlags[0] = True
-		bRespawnPointsFlags[1] = True
-		bRespawnPointsFlags[2] = True
-		bRespawnPointsFlags[3] = True
-		bRespawnPointsFlags[4] = True
-		bRespawnPointsFlags[5] = True
-		bRespawnPointsFlags[6] = True
-		bRespawnPointsFlags[7] = True
-	EndIf
-	If (a_version >= 9 && CurrentVersion < 9)
-		Debug.Trace(self + ": Updating script to version " + 9)
-		If bLostItemQuest && ( ReviveScript.bIsItemsRemoved || PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt) )
-			moaRetrieveLostItems.start()
-			moaRetrieveLostItems.SetStage(1)
-		ElseIf moaRetrieveLostItems.IsRunning()
-			moaRetrieveLostItems.SetStage(20)
-		EndIf
-	EndIf
-	If (a_version >= 13 && CurrentVersion < 13)
-		Debug.Trace(self + ": Updating script to version "  + 13)
-	EndIf
-	If (a_version >= 15 && CurrentVersion < 15)
-		Debug.Trace(self + ": Updating script to version "  + 15)
-		If iTeleportLocation >= sRespawnPoints.Length
-			iTeleportLocation = ( sRespawnPoints.Length - 6 )
-		EndIf
-	EndIf
-	If (a_version >= 17 && CurrentVersion < 17)
-		Debug.Trace(self + ": Updating script to version "  + 17)
-		If iRemovableItems == 3
-			iRemovableItems = 5
-		ElseIf iRemovableItems == 4
-			iRemovableItems = 9
-		EndIf
-	EndIf
-	If (a_version >= 21 && CurrentVersion < 21)
-		Debug.Trace(self + ": Updating script to version "  + 21)
-		sRespawnPoints = New String[12]
-		sRespawnPoints[0] = "$Whiterun"
-		sRespawnPoints[1] = "$Falkreath"
-		sRespawnPoints[2] = "$Markarth"
-		sRespawnPoints[3] = "$Riften"
-		sRespawnPoints[4] = "$Solitude"
-		sRespawnPoints[5] = "$Windhelm"
-		sRespawnPoints[6] = "$Winterhold"
-		sRespawnPoints[7] = "$RavenRock"
-		sRespawnPoints[8] = "$Random"
-		sRespawnPoints[9] = "$LastSleepLocation"
-		sRespawnPoints[10] = "$Custom"
-		sRespawnPoints[11] = "$External"
-		If iTeleportLocation == 9
-			iTeleportLocation = 10
-		ElseIf iTeleportLocation == 10
-			iTeleportLocation = 11
-		EndIf 
-		ReviveScript.RegisterForSleep()
-	EndIf
-	If (a_version >= 23 && CurrentVersion < 23)
-		Debug.Trace(self + ": Updating script to version "  + 23)
-	EndIf
-	If (a_version >= 25 && CurrentVersion < 25)
-		Debug.Trace(self + ": Updating script to version "  + 25)
-	EndIf
-	If (a_version >= 27 && CurrentVersion < 27)
-		Debug.Trace(self + ": Updating script to version "  + 27)
-		DetachMarker2.Enable()
-		DetachMarker2.MoveTo(PlayerRef)
-	EndIf
-	If (a_version >= 29 && CurrentVersion < 29)
-		Debug.Trace(self + ": Updating script to version "  + 29)
-		iTotalBleedOut = ReviveScript.iTotalBleedOut
-		iTotalRespawn = ReviveScript.iTotalRespawn
-		iTotalRevives = ReviveScript.iTotalRevives
-		iRevivesByTrade = ReviveScript.iRevivesByTrade
-		iRevivesByRevivalSpell = ReviveScript.iRevivesByRevivalSpell
-		iRevivesBySacrificeSpell = ReviveScript.iRevivesBySacrificeSpell
-		iRevivesByPotion = ReviveScript.iRevivesByPotion
-		iDestroyedItems = ReviveScript.iDestroyedItems
-	EndIf
-	If (a_version >= 31 && CurrentVersion < 31)
-		Debug.Trace(self + ": Updating script to version "  + 31)
-	EndIf
-	If (a_version >= 33 && CurrentVersion < 33)
-		If ( LostItemsMarker.GetParentCell() != ReviveScript.DefaultCell )
-			Debug.Trace(self + ": Updating script to version "  + 33)
-			ReviveScript.moaSoulMark01.Start()
-		EndIf
-	EndIf
-	If (a_version >= 35 && CurrentVersion < 35)
-		Debug.Trace(self + ": Updating script to version "  + 35)
-	EndIf
-	If (a_version >= 37 && CurrentVersion < 37)
-		Debug.Trace(self + ": Updating script to version "  + 37)
-		If iRemovableItems > 1
-			iRemovableItems += 1
-		EndIf
-	EndIf
-	If (a_version >= 39 && CurrentVersion < 39)
-		Debug.Trace(self + ": Updating script to version "  + 39)
-	EndIf
-	If (a_version >= 41 && CurrentVersion < 41)
-		Debug.Trace(self + ": Updating script to version "  + 41)
-		setArrays()
-	EndIf
+	bIsUpdating = False
 	ForcePageReset()
 EndEvent
 
 Event OnUpdate()
-	bInit = False
+	moaIsBusy.SetValueInt(0)
 	If moaState.GetValue() == 1
 		Debug.notification("$mrt_MarkofArkay_Notification_Init")
 	EndIf
@@ -2841,29 +3422,33 @@ Event OnGameReload()
 	OnVersionUpdate(GetVersion())
 EndEvent
 
+Function init()
+	setArrays()
+	SetCustomRPFlags()
+EndFunction
+
 Function setArrays()
 	setPages()
-	setRespawnPoints()
-	setLoseOptions()
-	setAftermathOptions()
-	setArkayCurses()
-	setSaveOptions()
-	setPresets()
-	setSkills()
+	setRPs()
+	setRPFlags() ;Only if Changing order without changing length need update
+	SetTypes() ;Only if Changing order without changing length need update
+	setSpawnCounts() ;Only if Changing order without changing length need update
+	setSpawnWeights() ;Only if Changing order without changing length need update
 EndFunction
 
 Function setPages()
-	Pages = new String[5]
+	Pages = new String[7]
 	pages[0] = "$General"
 	pages[1] = "$Extra"
 	pages[2] = "$Aftermath"
-	pages[3] = "$Debug"
-	pages[4] = "$Presets"
+	pages[3] = "$Curse"
+	pages[4] = "NPC"
+	pages[5] = "$Debug"
+	pages[6] = "$Presets"
 EndFunction
 
-Function setRespawnPoints()
-	sRespawnPoints = New String[14]
-	bRespawnPointsFlags = New Bool[8]
+Function setRPs()
+	sRespawnPoints = New String[16]
 	sRespawnPoints[0] = "$Whiterun"
 	sRespawnPoints[1] = "$Falkreath"
 	sRespawnPoints[2] = "$Markarth"
@@ -2876,61 +3461,62 @@ Function setRespawnPoints()
 	sRespawnPoints[9] = "$LastSleepLocation"
 	sRespawnPoints[10] = "$Custom"
 	sRespawnPoints[11] = "$External"
-	sRespawnPoints[12] = "$Nearby"
-	sRespawnPoints[13] = "$Random"
-	bRespawnPointsFlags[0] = True
-	bRespawnPointsFlags[1] = True
-	bRespawnPointsFlags[2] = True
-	bRespawnPointsFlags[3] = True
-	bRespawnPointsFlags[4] = True
-	bRespawnPointsFlags[5] = True
-	bRespawnPointsFlags[6] = True
-	bRespawnPointsFlags[7] = True
+	sRespawnPoints[12] = "$Checkpoint"
+	sRespawnPoints[13] = "$Nearby"
+	sRespawnPoints[14] = "$Random"
+	sRespawnPoints[15] = "$ThroatOfTheWorld"
 EndFunction
 
-Function setLoseOptions()
-	sLoseOptions = New String[14]
-	sLoseOptions[0] = "$mrt_MarkofArkay_LoseOptions_0" 
-	sLoseOptions[1] = "$mrt_MarkofArkay_LoseOptions_1" 
-	sLoseOptions[2] = "$mrt_MarkofArkay_LoseOptions_2" 
-	sLoseOptions[3] = "$mrt_MarkofArkay_LoseOptions_3" 
-	sLoseOptions[4] = "$mrt_MarkofArkay_LoseOptions_4" 
-	sLoseOptions[5] = "$mrt_MarkofArkay_LoseOptions_5" 
-	sLoseOptions[6] = "$mrt_MarkofArkay_LoseOptions_6" 
-	sLoseOptions[7] = "$mrt_MarkofArkay_LoseOptions_7" 
-	sLoseOptions[8] = "$mrt_MarkofArkay_LoseOptions_8" 
-	sLoseOptions[9] = "$mrt_MarkofArkay_LoseOptions_9" 
-	sLoseOptions[10] = "$mrt_MarkofArkay_LoseOptions_10"
-	sLoseOptions[11] = "$mrt_MarkofArkay_LoseOptions_11"
-	sLoseOptions[12] = "$mrt_MarkofArkay_LoseOptions_12"
-	sLoseOptions[13] = "$mrt_MarkofArkay_LoseOptions_13"
+Function setRPFlags(Bool bForce = False)
+	if bForce || bIsUpdating || bRespawnPointsFlags.Length != 8
+		bRespawnPointsFlags = New Bool[8]
+		bRespawnPointsFlags[0] = True
+		bRespawnPointsFlags[1] = True
+		bRespawnPointsFlags[2] = True
+		bRespawnPointsFlags[3] = True
+		bRespawnPointsFlags[4] = True
+		bRespawnPointsFlags[5] = True
+		bRespawnPointsFlags[6] = True
+		bRespawnPointsFlags[7] = False
+	EndIf
 EndFunction
 
-Function setAftermathOptions()
-	sAftermathOptions = New String[3]
+String[] Function sGetAftermathOptions()
+	String[] sAftermathOptions = New String[3]
 	sAftermathOptions[0] = "$mrt_MarkofArkay_AftermathOptions_0"
 	sAftermathOptions[1] = "$mrt_MarkofArkay_AftermathOptions_1"
 	sAftermathOptions[2] = "$mrt_MarkofArkay_AftermathOptions_2"
+	Return sAftermathOptions
 EndFunction
 
-Function setArkayCurses()
-	sArkayCurses = New String[3]
+String[] Function sGetArkayCurses()
+	String[] sArkayCurses = New String[3]
 	sArkayCurses[0] = "$mrt_MarkofArkay_ArkayCurses_0"
 	sArkayCurses[1] = "$mrt_MarkofArkay_ArkayCurses_1"
 	sArkayCurses[2] = "$mrt_MarkofArkay_ArkayCurses_2"
+	Return sArkayCurses
 EndFunction
 
-Function setSaveOptions()
-	sSaveOptions = new String[5]
+String[] Function sGetSaveOptions()
+	String[] sSaveOptions = new String[5]
 	sSaveOptions[0] = "$mrt_MarkofArkay_SaveOptions_0"
 	sSaveOptions[1] = "$mrt_MarkofArkay_SaveOptions_1"
 	sSaveOptions[2] = "$mrt_MarkofArkay_SaveOptions_2"
 	sSaveOptions[3] = "$mrt_MarkofArkay_SaveOptions_3"
 	sSaveOptions[4] = "$mrt_MarkofArkay_SaveOptions_4"
+	Return sSaveOptions
 EndFunction
 
-Function setPresets()
-	sPresets = New String[10]
+String[] Function sGetHostileOptions()
+	String[] sHostileOptions = new String[3]
+	sHostileOptions[0] = "$mrt_MarkofArkay_HostileOptions_0"
+	sHostileOptions[1] = "$mrt_MarkofArkay_HostileOptions_1"
+	sHostileOptions[2] = "$mrt_MarkofArkay_HostileOptions_2"
+	Return sHostileOptions
+EndFunction
+
+String[] Function sGetPresets()
+	String[] sPresets = New String[10]
 	sPresets[0] = "$Preset1"
 	sPresets[1] = "$Preset2"
 	sPresets[2] = "$Preset3"
@@ -2941,10 +3527,19 @@ Function setPresets()
 	sPresets[7] = "$Preset8"
 	sPresets[8] = "$Preset9"
 	sPresets[9] = "$Preset10"
+	Return sPresets
 EndFunction
 
-Function setSkills()
-	sSkills = New String[25]
+String[] Function sGetLoseInclusions()
+	String[] sLoseInclusions = New String[3]
+	sLoseInclusions[0] = "$mrt_MarkofArkay_LoseInclusions_0"
+	sLoseInclusions[1] = "$mrt_MarkofArkay_LoseInclusions_1"
+	sLoseInclusions[2] = "$mrt_MarkofArkay_LoseInclusions_2"
+	Return sLoseInclusions
+EndFunction
+
+String[] Function sGetSkills()
+	String[] sSkills = New String[28]
 	sSkills[0] = "$Disabled"
 	sSkills[1] = "$Alchemy"
 	sSkills[2] = "$Alteration"
@@ -2969,20 +3564,177 @@ Function setSkills()
 	sSkills[21] = "$Highest"
 	sSkills[22] = "$Lowest_All"
 	sSkills[23] = "$Highest_All"
-	sSkills[24] = "$All"
+	sSkills[24] = "$All_Low"
+	sSkills[25] = "$All_High"
+	sSkills[26] = "$All_Random"
+	sSkills[27] = "$All_One_By_One"
+	Return sSkills
 EndFunction
 
-Int Function iGetRespawnPointsCount()
-	int iIndex = 0
-	Int iCount = 0
-	while( iIndex < ( sRespawnPoints.Length - 6 ))
-		If bRespawnPointsFlags[iIndex]
-			iCount += 1
-		EndIf
-		iIndex += 1
-	EndWhile
-	Return iCount
+String[] Function sGetCustomRPs()
+	String[] sGetCustomRPSlot = New String[3]
+	sGetCustomRPSlot[0] = "$CustopRP_Slot1"
+	sGetCustomRPSlot[1] = "$CustopRP_Slot2"
+	sGetCustomRPSlot[2] = "$CustopRP_Slot3"
+	Return sGetCustomRPSlot
+Endfunction
+
+Function SetTypes()
+	If bIsUpdating || iValidTypes.Length != 10
+		iValidTypes = New Int[10]
+		iValidTypes[0] = iGetType(23,bLoseScroll)
+		iValidTypes[1] = iGetType(26,bLoseArmor)
+		iValidTypes[2] = iGetType(27,bLoseBook)
+		iValidTypes[3] = iGetType(30,bLoseIngredient)
+		iValidTypes[4] = iGetType(32,bLoseMisc)
+		iValidTypes[5] = iGetType(41,bLoseWeapon)
+		iValidTypes[6] = iGetType(42,bLoseAmmo)
+		iValidTypes[7] = iGetType(45,bLoseKey)
+		iValidTypes[8] = iGetType(46,bLosePotion)
+		iValidTypes[9] = iGetType(52,bLoseSoulgem)
+	EndIf
+Endfunction
+
+Function setSpawnCounts(Bool bForce = False)
+	if bForce || bIsUpdating || iSpawnCounts.Length != 28
+		iSpawnCounts = New Int[28]
+		iSpawnCounts[0] = 1
+		iSpawnCounts[1] = 1
+		iSpawnCounts[2] = 1
+		iSpawnCounts[3] = 1
+		iSpawnCounts[4] = 1
+		iSpawnCounts[5] = 1
+		iSpawnCounts[6] = 1
+		iSpawnCounts[7] = 1
+		iSpawnCounts[8] = 1
+		iSpawnCounts[9] = 1
+		iSpawnCounts[10] = 1
+		iSpawnCounts[11] = 1
+		iSpawnCounts[12] = 1
+		iSpawnCounts[13] = 1
+		iSpawnCounts[14] = 1
+		iSpawnCounts[15] = 1
+		iSpawnCounts[16] = 1
+		iSpawnCounts[17] = 1
+		iSpawnCounts[18] = 1
+		iSpawnCounts[19] = 1
+		iSpawnCounts[20] = 1
+		iSpawnCounts[21] = 1
+		iSpawnCounts[22] = 1
+		iSpawnCounts[23] = 1
+		iSpawnCounts[24] = 1
+		iSpawnCounts[25] = 1
+		iSpawnCounts[26] = 1
+		iSpawnCounts[27] = 1
+	EndIf
 EndFunction
+
+Function setSpawnWeights(Bool bForce = False)
+	If bForce || bIsUpdating || iSpawnWeights.Length != 28
+		iSpawnWeights = New Int[28]
+		iSpawnWeights[0] = 50
+		iSpawnWeights[1] = 50
+		iSpawnWeights[2] = 50
+		iSpawnWeights[3] = 50
+		iSpawnWeights[4] = 50
+		iSpawnWeights[5] = 50
+		iSpawnWeights[6] = 50
+		iSpawnWeights[7] = 50
+		iSpawnWeights[8] = 50
+		iSpawnWeights[9] = 50
+		iSpawnWeights[10] = 50
+		iSpawnWeights[11] = 50
+		iSpawnWeights[12] = 50
+		iSpawnWeights[13] = 50
+		iSpawnWeights[14] = 50
+		iSpawnWeights[15] = 50
+		iSpawnWeights[16] = 50
+		iSpawnWeights[17] = 50
+		iSpawnWeights[18] = 50
+		iSpawnWeights[19] = 50
+		iSpawnWeights[20] = 50
+		iSpawnWeights[21] = 50
+		iSpawnWeights[22] = 50
+		iSpawnWeights[23] = 50
+		iSpawnWeights[24] = 50
+		iSpawnWeights[25] = 50
+		iSpawnWeights[26] = 50
+		iSpawnWeights[27] = 50
+	EndIf
+EndFunction
+
+String[] Function sGetSpawnLevels()
+	String[] sSpawnLevel = New String[5]
+	sSpawnLevel[0] = "$mrt_MarkofArkay_SpawnLevel_0"
+	sSpawnLevel[1] = "$mrt_MarkofArkay_SpawnLevel_1"
+	sSpawnLevel[2] = "$mrt_MarkofArkay_SpawnLevel_2"
+	sSpawnLevel[3] = "$mrt_MarkofArkay_SpawnLevel_3"
+	sSpawnLevel[4] = "$mrt_MarkofArkay_SpawnLevel_4"
+	Return sSpawnLevel
+EndFunction
+
+String[] Function sGetSpawns()
+	String[] sSpawns = New String[28]
+	sSpawns[0] = "$Afflicted"
+	sSpawns[1] = "$Assassin"
+	sSpawns[2] = "$Atronach"
+	sSpawns[3] = "$Bandit"
+	sSpawns[4] = "$Chaurus"
+	sSpawns[5] = "$Dawnguard"
+	sSpawns[6] = "$DragonPriest"
+	sSpawns[7] = "$Dragon"
+	sSpawns[8] = "$Draugrs"
+	sSpawns[9] = "$Dremoras"
+	sSpawns[10] = "$Dwarven"
+	sSpawns[11] = "$Falmer"
+	sSpawns[12] = "$Forsworn"
+	sSpawns[13] = "$Ghost"
+	sSpawns[14] = "$Giant"
+	sSpawns[15] = "$Hagraven"
+	sSpawns[16] = "$SilverHand"
+	sSpawns[17] = "$Skeleton"
+	sSpawns[18] = "$Spider"
+	sSpawns[19] = "$Spriggan"
+	sSpawns[20] = "$Thalmors"
+	sSpawns[21] = "$Thief"
+	sSpawns[22] = "$Troll"
+	sSpawns[23] = "$Vampire"
+	sSpawns[24] = "$Warlock"
+	sSpawns[25] = "$Werewolf"
+	sSpawns[26] = "$Wisp"
+	sSpawns[27] = "$Witch"
+	Return sSpawns
+EndFunction
+
+Int Function iGetType(Int iType, Bool bEnabled)
+	Return  ((iType + iType) * (bEnabled As Int)) - iType
+Endfunction
+
+String Function sType(Int iType)
+	If iType == 23
+		Return "Scroll"
+	ElseIf iType == 26
+		Return "Armor"
+	ElseIf iType == 27
+		Return "Book"
+	ElseIf iType == 30
+		Return "Ingredient"
+	ElseIf iType == 32
+		Return "Misc"
+	ElseIf iType == 41
+		Return "Weapon"
+	ElseIf iType == 42
+		Return "Ammo"
+	ElseIf iType == 45
+		Return "Key"
+	ElseIf iType == 46
+		Return "Potion"
+	ElseIf iType == 52
+		Return "Soulgem"
+	EndIf
+	Return ""
+Endfunction
+
 
 Bool function bLoadUserSettings(String sFileName)
 	FISSInterface fiss = FISSFactory.getFISS()
@@ -3008,6 +3760,7 @@ Bool function bLoadUserSettings(String sFileName)
 	fValueGoldSlider = fiss.loadFloat("fValueGoldSlider")
 	iSaveOption = fiss.loadInt("iSaveOption")
 	SetSavingOption(iSaveOption)
+	iHostileOption = fiss.loadInt("iHostileOption")
 	bIsNoFallDamageEnabled = fiss.loadBool("bIsNoFallDamageEnabled")
 	ToggleFallDamage(!bIsNoFallDamageEnabled)
 	bIsEffectEnabled = fiss.loadBool("bIsEffectEnabled")
@@ -3025,16 +3778,20 @@ Bool function bLoadUserSettings(String sFileName)
 	fGSoulgemPSlider = fiss.loadFloat("fGSoulgemPSlider")
 	fBSoulgemPSlider = fiss.loadFloat("fBSoulgemPSlider")
 	fBleedoutTimeSlider = fiss.loadFloat("fBleedoutTimeSlider")
+	If fBleedoutTimeSlider < 6.0
+		bShowBleedoutTimeWarning = False
+	EndIf	
 	fRecoveryTimeSlider = fiss.loadFloat("fRecoveryTimeSlider")
 	fLootChanceSlider = fiss.loadFloat("fLootChanceSlider")
 	moaLootChance.SetValue(100.0 -  fLootChanceSlider)
 	fScrollChanceSlider = fiss.loadFloat("fScrollChanceSlider")
 	moaScrollChance.SetValue(100.0 -  fScrollChanceSlider)
 	iNotTradingAftermath = fiss.loadInt("iNotTradingAftermath")
-	iRemovableItems = fiss.loadInt("iRemovableItems")
 	iArkayCurse = fiss.loadInt("iArkayCurse")
 	bRespawnNaked = fiss.loadBool("bRespawnNaked")
+	bCorpseAsSoulMark = fiss.loadBool("bCorpseAsSoulMark")
 	bSendToJail = fiss.loadBool("bSendToJail")
+	bKillIfCantRespawn = fiss.loadBool("bKillIfCantRespawn")
 	bTeleportMenu = fiss.loadBool("bTeleportMenu")
 	bRespawnMenu = fiss.loadBool("bRespawnMenu")
 	bFollowerProtectPlayer = fiss.loadBool("bFollowerProtectPlayer")
@@ -3045,19 +3802,12 @@ Bool function bLoadUserSettings(String sFileName)
 	bLoseForever = fiss.loadBool("bLoseForever")
 	bSoulMarkStay = fiss.loadBool("bSoulMarkStay")
 	;bLostItemQuest = fiss.loadBool("bLostItemQuest")
-	bHostileNPC = fiss.loadBool("bHostileNPC")
-	If bHostileNPC
-		bNPCStealItems = False
-	EndIf
-	bNPCStealItems = fiss.loadBool("bNPCStealItems")
-	If bNPCStealItems
-		bHostileNPC = False
-	EndIf
 	bCreaturesCanSteal = fiss.loadBool("bCreaturesCanSteal")
 	moaCreaturesCanSteal.SetValue(bCreaturesCanSteal As Int)
 	iTeleportLocation = fiss.loadInt("iTeleportLocation")
 	iExternalIndex = fiss.loadInt("iExternalIndex")
 	fRPMinDistanceSlider = fiss.loadFloat("fRPMinDistanceSlider")
+	moaRPMinDistance.SetValue(fRPMinDistanceSlider)
 	bRespawnPointsFlags[0] = fiss.loadBool("bRespawnPointsFlags0")
 	bRespawnPointsFlags[1] = fiss.loadBool("bRespawnPointsFlags1")
 	bRespawnPointsFlags[2] = fiss.loadBool("bRespawnPointsFlags2")
@@ -3066,6 +3816,64 @@ Bool function bLoadUserSettings(String sFileName)
 	bRespawnPointsFlags[5] = fiss.loadBool("bRespawnPointsFlags5")
 	bRespawnPointsFlags[6] = fiss.loadBool("bRespawnPointsFlags6")
 	bRespawnPointsFlags[7] = fiss.loadBool("bRespawnPointsFlags7")
+	iSpawnCounts[0] = fiss.loadInt("iSpawnCounts0")
+	iSpawnCounts[1] = fiss.loadInt("iSpawnCounts1")
+	iSpawnCounts[2] = fiss.loadInt("iSpawnCounts2")
+	iSpawnCounts[3] = fiss.loadInt("iSpawnCounts3")
+	iSpawnCounts[4] = fiss.loadInt("iSpawnCounts4")
+	iSpawnCounts[5] = fiss.loadInt("iSpawnCounts5")
+	iSpawnCounts[6] = fiss.loadInt("iSpawnCounts6")
+	iSpawnCounts[7] = fiss.loadInt("iSpawnCounts7")
+	iSpawnCounts[8] = fiss.loadInt("iSpawnCounts8")
+	iSpawnCounts[9] = fiss.loadInt("iSpawnCounts9")
+	iSpawnCounts[10] = fiss.loadInt("iSpawnCounts10")
+	iSpawnCounts[11] = fiss.loadInt("iSpawnCounts11")
+	iSpawnCounts[12] = fiss.loadInt("iSpawnCounts12")
+	iSpawnCounts[13] = fiss.loadInt("iSpawnCounts13")
+	iSpawnCounts[14] = fiss.loadInt("iSpawnCounts14")
+	iSpawnCounts[15] = fiss.loadInt("iSpawnCounts15")
+	iSpawnCounts[16] = fiss.loadInt("iSpawnCounts16")
+	iSpawnCounts[17] = fiss.loadInt("iSpawnCounts17")
+	iSpawnCounts[18] = fiss.loadInt("iSpawnCounts18")
+	iSpawnCounts[19] = fiss.loadInt("iSpawnCounts19")
+	iSpawnCounts[20] = fiss.loadInt("iSpawnCounts20")
+	iSpawnCounts[21] = fiss.loadInt("iSpawnCounts21")
+	iSpawnCounts[22] = fiss.loadInt("iSpawnCounts22")
+	iSpawnCounts[23] = fiss.loadInt("iSpawnCounts23")
+	iSpawnCounts[24] = fiss.loadInt("iSpawnCounts24")
+	iSpawnCounts[25] = fiss.loadInt("iSpawnCounts25")
+	iSpawnCounts[26] = fiss.loadInt("iSpawnCounts26")
+	iSpawnCounts[27] = fiss.loadInt("iSpawnCounts27")
+	iSpawnWeights[0] = fiss.loadInt("iSpawnWeights0")
+	iSpawnWeights[1] = fiss.loadInt("iSpawnWeights1")
+	iSpawnWeights[2] = fiss.loadInt("iSpawnWeights2")
+	iSpawnWeights[3] = fiss.loadInt("iSpawnWeights3")
+	iSpawnWeights[4] = fiss.loadInt("iSpawnWeights4")
+	iSpawnWeights[5] = fiss.loadInt("iSpawnWeights5")
+	iSpawnWeights[6] = fiss.loadInt("iSpawnWeights6")
+	iSpawnWeights[7] = fiss.loadInt("iSpawnWeights7")
+	iSpawnWeights[8] = fiss.loadInt("iSpawnWeights8")
+	iSpawnWeights[9] = fiss.loadInt("iSpawnWeights9")
+	iSpawnWeights[10] = fiss.loadInt("iSpawnWeights10")
+	iSpawnWeights[11] = fiss.loadInt("iSpawnWeights11")
+	iSpawnWeights[12] = fiss.loadInt("iSpawnWeights12")
+	iSpawnWeights[13] = fiss.loadInt("iSpawnWeights13")
+	iSpawnWeights[14] = fiss.loadInt("iSpawnWeights14")
+	iSpawnWeights[15] = fiss.loadInt("iSpawnWeights15")
+	iSpawnWeights[16] = fiss.loadInt("iSpawnWeights16")
+	iSpawnWeights[17] = fiss.loadInt("iSpawnWeights17")
+	iSpawnWeights[18] = fiss.loadInt("iSpawnWeights18")
+	iSpawnWeights[19] = fiss.loadInt("iSpawnWeights19")
+	iSpawnWeights[20] = fiss.loadInt("iSpawnWeights20")
+	iSpawnWeights[21] = fiss.loadInt("iSpawnWeights21")
+	iSpawnWeights[22] = fiss.loadInt("iSpawnWeights22")
+	iSpawnWeights[23] = fiss.loadInt("iSpawnWeights23")
+	iSpawnWeights[24] = fiss.loadInt("iSpawnWeights24")
+	iSpawnWeights[25] = fiss.loadInt("iSpawnWeights25")
+	iSpawnWeights[26] = fiss.loadInt("iSpawnWeights26")
+	iSpawnWeights[27] = fiss.loadInt("iSpawnWeights27")
+	iSpawnMinLevel = fiss.loadInt("iSpawnMinLevel")
+	iSpawnMaxLevel = fiss.loadInt("iSpawnMaxLevel")
 	bIsLoggingEnabled = fiss.loadBool("bIsLoggingEnabled")
 	bIsInfoEnabled = fiss.loadBool("bIsInfoEnabled")
 	bIsNotificationEnabled = fiss.loadBool("bIsNotificationEnabled")
@@ -3075,6 +3883,10 @@ Bool function bLoadUserSettings(String sFileName)
 	bDeathEffect = fiss.loadBool("bDeathEffect")
 	bAltEyeFix = fiss.loadBool("bAltEyeFix")
 	bPlayerProtectFollower = fiss.loadBool("bPlayerProtectFollower")
+	bSpawnByLocation = fiss.loadBool("bSpawnByLocation")
+	bRetrySpawnWithoutLocation = fiss.loadBool("bRetrySpawnWithoutLocation")
+	bSpawnCheckRelation = fiss.loadBool("bSpawnCheckRelation")
+	bSpawnBringAllies = fiss.loadBool("bSpawnBringAllies")
 	bMoralityMatters = fiss.loadBool("bMoralityMatters")
 	moaMoralityMatters.SetValue(bMoralityMatters As Int)
 	iReducedSkill = fiss.loadInt("iReducedSkill")
@@ -3084,19 +3896,83 @@ Bool function bLoadUserSettings(String sFileName)
 	fSkillReduceMaxValSlider = fiss.loadFloat("fSkillReduceMaxValSlider")
 	bShowRaceMenu = fiss.loadBool("bShowRaceMenu")
 	bLoseSkillForever = fiss.loadBool("bLoseSkillForever")
+	bIsRagdollEnabled = fiss.loadBool("bIsRagdollEnabled")
+	If bIsRagdollEnabled
+		bShowRagdollWarning = False
+	EndIf
+	iLoseInclusion = fiss.loadInt("iLoseInclusion")
+	fRespawnTimeSlider = fiss.loadFloat("fRespawnTimeSlider")
+	If fRespawnTimeSlider > 0.0
+		bShowTimeScaleWarning = False
+	EndIf
+	bRandomItemCurse = fiss.loadBool("bRandomItemCurse")
+	bMoreRandomRespawn = fiss.loadBool("bMoreRandomRespawn")
+	fMinLoseGoldSlider = fiss.loadFloat("fMinLoseGoldSlider")
+	fMaxLoseGoldSlider = fiss.loadFloat("fMaxLoseGoldSlider")
+	bLoseGoldAll = fiss.loadBool("bLoseGoldAll")
+	bLoseArkayMarkAll = fiss.loadBool("bLoseArkayMarkAll")
+	fMinLoseArkayMarkSlider = fiss.loadFloat("fMinLoseArkayMarkSlider")
+	fMaxLoseArkayMarkSlider = fiss.loadFloat("fMaxLoseArkayMarkSlider")
+	bLoseDragonSoulAll = fiss.loadBool("bLoseDragonSoulAll")
+	fMinLoseDragonSoulSlider = fiss.loadFloat("fMinLoseDragonSoulSlider")
+	fMaxLoseDragonSoulSlider = fiss.loadFloat("fMaxLoseDragonSoulSlider")
+	bLoseBlackSoulGemAll = fiss.loadBool("bLoseBlackSoulGemAll")
+	fMinLoseBlackSoulGemSlider = fiss.loadFloat("fMinLoseBlackSoulGemSlider")
+	fMaxLoseBlackSoulGemSlider = fiss.loadFloat("fMaxLoseBlackSoulGemSlider")
+	bLoseGrandSoulGemAll = fiss.loadBool("bLoseGrandSoulGemAll")
+	fMaxLoseGrandSoulGemSlider = fiss.loadFloat("fMaxLoseGrandSoulGemSlider")
+	fMinLoseGrandSoulGemSlider = fiss.loadFloat("fMinLoseGrandSoulGemSlider")
+	fLoseOtherMinValueSlider = fiss.loadFloat("fLoseOtherMinValueSlider")
+	fLoseOtherTotalValueSlider = fiss.loadFloat("fLoseOtherTotalValueSlider")
+	bLoseItem = fiss.loadBool("bLoseItem")
+	bExcludeQuestItems = fiss.loadBool("bExcludeQuestItems")
+	bLoseGold = fiss.loadBool("bLoseGold")
+	bLoseArkayMark = fiss.loadBool("bLoseArkayMark")
+	bLoseBlackSoulGem = fiss.loadBool("bLoseBlackSoulGem")
+	bLoseGrandSoulGem = fiss.loadBool("bLoseGrandSoulGem")
+	bLoseDragonSoul = fiss.loadBool("bLoseDragonSoul")
+	bLoseOthers = fiss.loadBool("bLoseOthers")
+	bLoseAmmo = fiss.loadBool("bLoseAmmo")
+	bLoseBook = fiss.loadBool("bLoseBook")
+	bLoseArmor = fiss.loadBool("bLoseArmor")
+	bLoseWeapon = fiss.loadBool("bLoseWeapon")
+	bLoseMisc = fiss.loadBool("bLoseMisc")
+	bLoseKey = fiss.loadBool("bLoseKey")
+	bLoseSoulgem = fiss.loadBool("bLoseSoulgem")
+	bLosePotion = fiss.loadBool("bLosePotion")
+	bLoseScroll = fiss.loadBool("bLoseScroll")
+	bLoseIngredient = fiss.loadBool("bLoseIngredient")
+	bCheckKeyword = fiss.loadBool("bCheckKeyword")
+	bCheckWeight = fiss.loadBool("bCheckWeight")
+	bLevelReduce = fiss.loadBool("bLevelReduce")
+	If bLevelReduce
+		ReviveScript.SkillScript.RegisterForLevel()
+	EndIf
+	bSpawnHostile = fiss.loadBool("bSpawnHostile")
+	;bSpawnExtraHMS = fiss.loadBool("bSpawnExtraHMS")
+	bDisableUnsafe = fiss.loadBool("bDisableUnsafe")
+	iSelectedCustomRPSlot = fiss.loadInt("iSelectedCustomRPSlot")
+	fTotalCustomRPSlotSlider = fiss.loadFloat("fTotalCustomRPSlotSlider")
+	SetCustomRPFlags()
+	If bDisableUnsafe
+		bLoseForever = False
+		bLoseSkillForever = False
+		bIsRagdollEnabled = false
+		fRespawnTimeSlider = 0.0
+	EndIf
 	String Result = fiss.endLoad()
 	if Result != ""
-		If bCheckFissErrors(Result)
-			bSaveUserSettings(sFileName)
-			Return True
-		EndIf
+		;If bCheckFissErrors(Result)
+		;	bSaveUserSettings(sFileName)
+		;	Return True
+		;EndIf
 		Return False
 	EndIf
 	Return True
 EndFunction
 
 Bool Function bCheckFissErrors(String strErrors)
-	String[] resultArr = StringUtil.Split(strErrors,"\n")
+	String[] resultArr = Split(strErrors,"\n")
 	Int index = resultArr.Length
 	Bool Result = True
 	String strError
@@ -3129,7 +4005,7 @@ Bool Function bCheckFissErrors(String strErrors)
 		ElseIf strError == "Element bLoseSkillForever not found"
 			bLoseSkillForever = False
 		ElseIf strError == "Element bRespawnPointsFlags7 not found"
-			bRespawnPointsFlags[7] = True
+			bRespawnPointsFlags[7] = False
 		Else
 			Debug.Trace("Mark of Arkay: Error loading user settings -> " + strError)
 			Result = False
@@ -3168,6 +4044,7 @@ bool function bSaveUserSettings(String sFileName)
 	fiss.saveFloat("fValueSoulSlider", fValueSoulSlider)
 	fiss.saveFloat("fValueGoldSlider", fValueGoldSlider)
 	fiss.saveInt("iSaveOption", iSaveOption)
+	fiss.saveInt("iHostileOption", iHostileOption)
 	fiss.saveBool("bIsNoFallDamageEnabled", bIsNoFallDamageEnabled)
 	fiss.saveBool("bIsEffectEnabled", bIsEffectEnabled)
 	fiss.saveBool("bIsPotionEnabled", bIsPotionEnabled)
@@ -3189,14 +4066,19 @@ bool function bSaveUserSettings(String sFileName)
 	fiss.saveFloat("fLootChanceSlider", fLootChanceSlider)
 	fiss.saveFloat("fScrollChanceSlider", fScrollChanceSlider)
 	fiss.saveInt("iNotTradingAftermath", iNotTradingAftermath)
-	fiss.saveInt("iRemovableItems", iRemovableItems)
 	fiss.saveInt("iArkayCurse", iArkayCurse)
 	fiss.saveBool("bRespawnNaked", bRespawnNaked)
+	fiss.saveBool("bCorpseAsSoulMark", bCorpseAsSoulMark)
 	fiss.saveBool("bSendToJail", bSendToJail)
+	fiss.saveBool("bKillIfCantRespawn", bKillIfCantRespawn)
 	fiss.saveBool("bTeleportMenu", bTeleportMenu)
 	fiss.saveBool("bRespawnMenu", bRespawnMenu)
 	fiss.saveBool("bFollowerProtectPlayer", bFollowerProtectPlayer)
 	fiss.saveBool("bPlayerProtectFollower", bPlayerProtectFollower)
+	fiss.saveBool("bSpawnByLocation", bSpawnByLocation)
+	fiss.saveBool("bRetrySpawnWithoutLocation", bRetrySpawnWithoutLocation)
+	fiss.saveBool("bSpawnCheckRelation", bSpawnCheckRelation)
+	fiss.saveBool("bSpawnBringAllies", bSpawnBringAllies)
 	fiss.saveBool("bArkayCurse", bArkayCurse)
 	fiss.saveBool("bIsArkayCurseTemporary", bIsArkayCurseTemporary)
 	fiss.saveBool("bHealActors", bHealActors)
@@ -3204,8 +4086,6 @@ bool function bSaveUserSettings(String sFileName)
 	fiss.saveBool("bLoseForever", bLoseForever)
 	fiss.saveBool("bSoulMarkStay", bSoulMarkStay)
 	;fiss.saveBool("bLostItemQuest", bLostItemQuest)
-	fiss.saveBool("bHostileNPC", bHostileNPC)
-	fiss.saveBool("bNPCStealItems", bNPCStealItems)
 	fiss.saveBool("bCreaturesCanSteal", bCreaturesCanSteal)
 	fiss.saveBool("bMoralityMatters", bMoralityMatters)
 	fiss.saveInt("iTeleportLocation", iTeleportLocation)
@@ -3219,6 +4099,64 @@ bool function bSaveUserSettings(String sFileName)
 	fiss.saveBool("bRespawnPointsFlags5", bRespawnPointsFlags[5])
 	fiss.saveBool("bRespawnPointsFlags6", bRespawnPointsFlags[6])
 	fiss.saveBool("bRespawnPointsFlags7", bRespawnPointsFlags[7])
+	fiss.SaveInt("iSpawnCounts0",iSpawnCounts[0])
+	fiss.SaveInt("iSpawnCounts1",iSpawnCounts[1])
+	fiss.SaveInt("iSpawnCounts2",iSpawnCounts[2])
+	fiss.SaveInt("iSpawnCounts3",iSpawnCounts[3])
+	fiss.SaveInt("iSpawnCounts4",iSpawnCounts[4])
+	fiss.SaveInt("iSpawnCounts5",iSpawnCounts[5])
+	fiss.SaveInt("iSpawnCounts6",iSpawnCounts[6])
+	fiss.SaveInt("iSpawnCounts7",iSpawnCounts[7])
+	fiss.SaveInt("iSpawnCounts8",iSpawnCounts[8])
+	fiss.SaveInt("iSpawnCounts9",iSpawnCounts[9])
+	fiss.SaveInt("iSpawnCounts10",iSpawnCounts[10])
+	fiss.SaveInt("iSpawnCounts11",iSpawnCounts[11])
+	fiss.SaveInt("iSpawnCounts12",iSpawnCounts[12])
+	fiss.SaveInt("iSpawnCounts13",iSpawnCounts[13])
+	fiss.SaveInt("iSpawnCounts14",iSpawnCounts[14])
+	fiss.SaveInt("iSpawnCounts15",iSpawnCounts[15])
+	fiss.SaveInt("iSpawnCounts16",iSpawnCounts[16])
+	fiss.SaveInt("iSpawnCounts17",iSpawnCounts[17])
+	fiss.SaveInt("iSpawnCounts18",iSpawnCounts[18])
+	fiss.SaveInt("iSpawnCounts19",iSpawnCounts[19])
+	fiss.SaveInt("iSpawnCounts20",iSpawnCounts[20])
+	fiss.SaveInt("iSpawnCounts21",iSpawnCounts[21])
+	fiss.SaveInt("iSpawnCounts22",iSpawnCounts[22])
+	fiss.SaveInt("iSpawnCounts23",iSpawnCounts[23])
+	fiss.SaveInt("iSpawnCounts24",iSpawnCounts[24])
+	fiss.SaveInt("iSpawnCounts25",iSpawnCounts[25])
+	fiss.SaveInt("iSpawnCounts26",iSpawnCounts[26])
+	fiss.SaveInt("iSpawnCounts27",iSpawnCounts[27])
+	fiss.SaveInt("iSpawnWeights0",iSpawnWeights[0])
+	fiss.SaveInt("iSpawnWeights1",iSpawnWeights[1])
+	fiss.SaveInt("iSpawnWeights2",iSpawnWeights[2])
+	fiss.SaveInt("iSpawnWeights3",iSpawnWeights[3])
+	fiss.SaveInt("iSpawnWeights4",iSpawnWeights[4])
+	fiss.SaveInt("iSpawnWeights5",iSpawnWeights[5])
+	fiss.SaveInt("iSpawnWeights6",iSpawnWeights[6])
+	fiss.SaveInt("iSpawnWeights7",iSpawnWeights[7])
+	fiss.SaveInt("iSpawnWeights8",iSpawnWeights[8])
+	fiss.SaveInt("iSpawnWeights9",iSpawnWeights[9])
+	fiss.SaveInt("iSpawnWeights10",iSpawnWeights[10])
+	fiss.SaveInt("iSpawnWeights11",iSpawnWeights[11])
+	fiss.SaveInt("iSpawnWeights12",iSpawnWeights[12])
+	fiss.SaveInt("iSpawnWeights13",iSpawnWeights[13])
+	fiss.SaveInt("iSpawnWeights14",iSpawnWeights[14])
+	fiss.SaveInt("iSpawnWeights15",iSpawnWeights[15])
+	fiss.SaveInt("iSpawnWeights16",iSpawnWeights[16])
+	fiss.SaveInt("iSpawnWeights17",iSpawnWeights[17])
+	fiss.SaveInt("iSpawnWeights18",iSpawnWeights[18])
+	fiss.SaveInt("iSpawnWeights19",iSpawnWeights[19])
+	fiss.SaveInt("iSpawnWeights20",iSpawnWeights[20])
+	fiss.SaveInt("iSpawnWeights21",iSpawnWeights[21])
+	fiss.SaveInt("iSpawnWeights22",iSpawnWeights[22])
+	fiss.SaveInt("iSpawnWeights23",iSpawnWeights[23])
+	fiss.SaveInt("iSpawnWeights24",iSpawnWeights[24])
+	fiss.SaveInt("iSpawnWeights25",iSpawnWeights[25])
+	fiss.SaveInt("iSpawnWeights26",iSpawnWeights[26])
+	fiss.SaveInt("iSpawnWeights27",iSpawnWeights[27])
+	fiss.SaveInt("iSpawnMinLevel",iSpawnMinLevel)
+	fiss.SaveInt("iSpawnMaxLevel",iSpawnMaxLevel)
 	fiss.saveBool("bIsLoggingEnabled", bIsLoggingEnabled)
 	fiss.saveBool("bIsInfoEnabled", bIsInfoEnabled)
 	fiss.saveBool("bIsNotificationEnabled", bIsNotificationEnabled)
@@ -3228,12 +4166,59 @@ bool function bSaveUserSettings(String sFileName)
 	fiss.saveBool("bDeathEffect", bDeathEffect)
 	fiss.saveBool("bAltEyeFix", bAltEyeFix)
 	fiss.saveInt("iReducedSkill", iReducedSkill)
+	fiss.saveInt("iLoseInclusion", iLoseInclusion)
 	fiss.saveBool("bSkillReduceRandomVal", bSkillReduceRandomVal)
 	fiss.saveFloat("fSkillReduceValSlider", fSkillReduceValSlider)
 	fiss.saveFloat("fSkillReduceMinValSlider", fSkillReduceMinValSlider)
 	fiss.saveFloat("fSkillReduceMaxValSlider", fSkillReduceMaxValSlider)
 	fiss.saveBool("bShowRaceMenu",bShowRaceMenu)
 	fiss.saveBool("bLoseSkillForever",bLoseSkillForever)
+	fiss.saveBool("bIsRagdollEnabled",bIsRagdollEnabled)
+	fiss.SaveFloat("fRespawnTimeSlider",fRespawnTimeSlider)
+	fiss.SaveBool("bDisableUnsafe",bDisableUnsafe)
+	fiss.SaveBool("bRandomItemCurse",bRandomItemCurse)
+	fiss.SaveBool("bMoreRandomRespawn",bMoreRandomRespawn)
+	fiss.saveFloat("fMinLoseGoldSlider",fMinLoseGoldSlider)
+	fiss.saveFloat("fMaxLoseGoldSlider",fMaxLoseGoldSlider)
+	fiss.saveBool("bLoseGoldAll",bLoseGoldAll)
+	fiss.saveBool("bLoseArkayMarkAll",bLoseArkayMarkAll)
+	fiss.saveFloat("fMinLoseArkayMarkSlider",fMinLoseArkayMarkSlider)
+	fiss.saveFloat("fMaxLoseArkayMarkSlider",fMaxLoseArkayMarkSlider)
+	fiss.saveBool("bLoseDragonSoulAll",bLoseDragonSoulAll)
+	fiss.saveFloat("fMinLoseDragonSoulSlider",fMinLoseDragonSoulSlider)
+	fiss.saveFloat("fMaxLoseDragonSoulSlider",fMaxLoseDragonSoulSlider)
+	fiss.saveBool("bLoseBlackSoulGemAll",bLoseBlackSoulGemAll)
+	fiss.saveFloat("fMinLoseBlackSoulGemSlider",fMinLoseBlackSoulGemSlider)
+	fiss.saveFloat("fMaxLoseBlackSoulGemSlider",fMaxLoseBlackSoulGemSlider)
+	fiss.saveBool("bLoseGrandSoulGemAll",bLoseGrandSoulGemAll)
+	fiss.saveFloat("fMaxLoseGrandSoulGemSlider",fMaxLoseGrandSoulGemSlider)
+	fiss.saveFloat("fMinLoseGrandSoulGemSlider",fMinLoseGrandSoulGemSlider)
+	fiss.saveFloat("fLoseOtherMinValueSlider",fLoseOtherMinValueSlider)
+	fiss.saveFloat("fLoseOtherTotalValueSlider",fLoseOtherTotalValueSlider)
+	fiss.saveBool("bExcludeQuestItems",bExcludeQuestItems)
+	fiss.saveBool("bLoseItem",bLoseItem)
+	fiss.saveBool("bLoseGold",bLoseGold)
+	fiss.saveBool("bLoseArkayMark",bLoseArkayMark)
+	fiss.saveBool("bLoseBlackSoulGem",bLoseBlackSoulGem)
+	fiss.saveBool("bLoseGrandSoulGem",bLoseGrandSoulGem)
+	fiss.saveBool("bLoseDragonSoul",bLoseDragonSoul)
+	fiss.saveBool("bLoseOthers",bLoseOthers)
+	fiss.saveBool("bLoseAmmo",bLoseAmmo)
+	fiss.saveBool("bLoseBook",bLoseBook)
+	fiss.saveBool("bLoseArmor",bLoseArmor)
+	fiss.saveBool("bLoseWeapon",bLoseWeapon)
+	fiss.saveBool("bLoseMisc",bLoseMisc)
+	fiss.saveBool("bLoseKey",bLoseKey)
+	fiss.saveBool("bLoseSoulgem",bLoseSoulgem)
+	fiss.saveBool("bLosePotion",bLosePotion)
+	fiss.saveBool("bLoseScroll",bLoseScroll)
+	fiss.saveBool("bLoseIngredient",bLoseIngredient)
+	fiss.saveBool("bCheckKeyword",bCheckKeyword)
+	fiss.saveBool("bCheckWeight",bCheckWeight)
+	fiss.saveBool("bLevelReduce",bLevelReduce)
+	fiss.saveInt("iSelectedCustomRPSlot",iSelectedCustomRPSlot)
+	fiss.SaveFloat("fTotalCustomRPSlotSlider",fTotalCustomRPSlotSlider)
+	fiss.SaveBool("bSpawnHostile", bSpawnHostile)
 	String Result = fiss.endSave()
 	If Result != ""
 		Debug.Trace("Mark of Arkay: Error saving user settings -> " + Result)
@@ -3257,6 +4242,7 @@ function LoadDefaultSettings()
 	fValueGoldSlider = 1000.0
 	iSaveOption = 1
 	SetSavingOption(iSaveOption)
+	iHostileOption = 0
 	bIsNoFallDamageEnabled = False
 	ToggleFallDamage(!bIsNoFallDamageEnabled)
 	bIsEffectEnabled = False
@@ -3280,14 +4266,19 @@ function LoadDefaultSettings()
 	fScrollChanceSlider = 25.0
 	moaScrollChance.SetValue(100.0 -  fScrollChanceSlider)
 	iNotTradingAftermath = 0
-	iRemovableItems = 0
 	iArkayCurse = 0
 	bRespawnNaked = False
+	bCorpseAsSoulMark = False
 	bSendToJail = False
-	bTeleportMenu = False
+	bKillIfCantRespawn = True
+	bTeleportMenu = True
 	bRespawnMenu = False
 	bFollowerProtectPlayer = False
 	bPlayerProtectFollower = False
+	bSpawnByLocation = True
+	bRetrySpawnWithoutLocation = True
+	bSpawnCheckRelation = True
+	bSpawnBringAllies = True
 	bArkayCurse = False
 	bIsArkayCurseTemporary = False
 	bHealActors = False
@@ -3295,14 +4286,6 @@ function LoadDefaultSettings()
 	bLoseForever = False
 	bSoulMarkStay = False
 	bLostItemQuest = True
-	bHostileNPC = False
-	If bHostileNPC
-		bNPCStealItems = False
-	EndIf
-	bNPCStealItems = False
-	If bNPCStealItems
-		bHostileNPC = False
-	EndIf
 	bCreaturesCanSteal = False
 	moaCreaturesCanSteal.SetValue(bCreaturesCanSteal As Int)
 	bMoralityMatters = True
@@ -3310,14 +4293,12 @@ function LoadDefaultSettings()
 	iTeleportLocation = 0
 	iExternalIndex = -1
 	fRPMinDistanceSlider = 2500.0
-	bRespawnPointsFlags[0] = True
-	bRespawnPointsFlags[1] = True
-	bRespawnPointsFlags[2] = True
-	bRespawnPointsFlags[3] = True
-	bRespawnPointsFlags[4] = True
-	bRespawnPointsFlags[5] = True
-	bRespawnPointsFlags[6] = True
-	bRespawnPointsFlags[7] = True
+	moaRPMinDistance.SetValue(fRPMinDistanceSlider)
+	setRPFlags(True)
+	setSpawnCounts(True)
+	setSpawnWeights(True)
+	iSpawnMinLevel = 4
+	iSpawnMaxLevel = 4
 	bIsLoggingEnabled = False
 	bIsInfoEnabled = False
 	bIsNotificationEnabled = False
@@ -3333,4 +4314,351 @@ function LoadDefaultSettings()
 	fSkillReduceMaxValSlider = 1.0
 	bShowRaceMenu = False
 	bLoseSkillForever = False
+	bIsRagdollEnabled = False
+	fRespawnTimeSlider = 0.0
+	bDisableUnsafe = True
+	bRandomItemCurse = False
+	bMoreRandomRespawn = False
+	iLoseInclusion = 0
+	fMinLoseGoldSlider = 0.0
+	fMaxLoseGoldSlider = 250.0
+	bLoseGoldAll = False
+	bLoseArkayMarkAll = False
+	fMinLoseArkayMarkSlider = 0.0
+	fMaxLoseArkayMarkSlider = 1.0
+	bLoseDragonSoulAll = False
+	fMinLoseDragonSoulSlider = 0.0
+	fMaxLoseDragonSoulSlider = 1.0
+	bLoseBlackSoulGemAll = False
+	fMinLoseBlackSoulGemSlider = 0.0
+	fMaxLoseBlackSoulGemSlider = 1.0
+	bLoseGrandSoulGemAll = False
+	fMaxLoseGrandSoulGemSlider = 1.0
+	fMinLoseGrandSoulGemSlider = 0.0
+	fLoseOtherMinValueSlider = 0.0
+	fLoseOtherTotalValueSlider = 0.0
+	bExcludeQuestItems = True
+	bLoseItem = False
+	bLoseGold = True
+	bLoseArkayMark = False
+	bLoseBlackSoulGem = False
+	bLoseGrandSoulGem = False
+	bLoseDragonSoul = False
+	bLoseOthers = False
+	bLoseAmmo = False
+	bLoseBook = False
+	bLoseArmor = True
+	bLoseWeapon = True
+	bLoseMisc = False
+	bLoseKey = False
+	bLoseSoulgem = False
+	bLosePotion = False
+	bLoseScroll = False
+	bLoseIngredient = False
+	bCheckKeyword = True
+	bCheckWeight = True
+	bLevelReduce = False
+	bSpawnHostile = False
+	fTotalCustomRPSlotSlider = 1.0
+	iSelectedCustomRPSlot = 0
+	SetCustomRPFlags()
+EndFunction
+
+Function ForceCloseMenu()
+	;ForcePageReset()
+	UI.Invoke("Journal Menu", "_root.QuestJournalFader.Menu_mc.ConfigPanelClose") ; mcm
+	UI.Invoke("Journal Menu", "_root.QuestJournalFader.Menu_mc.CloseMenu") ; quest journal
+	Utility.Wait(0.5)
+EndFunction
+
+Bool Function isCustomSlotAvailable(Int aiIndex)
+	Return (CustomRespawnPoints.GetAt(aiIndex) As ObjectReference).IsEnabled()
+EndFunction
+
+Bool Function isCustomSlotEmpty(Int aiIndex)
+	Return (CustomRespawnPoints.GetAt(aiIndex) As ObjectReference).GetParentCell() == ReviveScript.DefaultCell
+EndFunction
+
+Bool Function isCustomSlotSelected(Int aiIndex)
+	Return aiIndex == iSelectedCustomRPSlot
+EndFunction
+
+Function ShowCustomSlotsInfo()
+	Int i = 0
+	String sCellName
+	Cell aCell
+	String sType
+	While i < CustomRespawnPoints.GetSize()
+		sCellName = "No Name"
+		aCell = None
+		sType = "Unknown"
+		If !isCustomSlotEmpty(i)
+			If (CustomRespawnPoints.GetAt(i) As ObjectReference).GetParentCell()
+				aCell = (CustomRespawnPoints.GetAt(i) As ObjectReference).GetParentCell()
+			EndIf
+			If aCell
+				If aCell.GetName()
+					sCellName = aCell.GetName()
+				EndIf
+				If aCell.IsInterior()
+					sType = "Interior"
+				Else
+					sType = "Exterior"
+				EndIf
+			EndIf
+			Debug.Notification("Mark of Arkay - " + (i + 1) + ": " + sCellName + " (" + sType + ")")
+		Else
+			Debug.Notification("Mark of Arkay - " + (i + 1) + ": Empty")
+		EndIf
+		i += 1
+	EndWhile
+EndFunction
+
+Function checkMods()
+	bSKSEOK = bCheckSKSE()
+	bDLIEOK = bCheckDLIE()
+	bUIEOK = bCheckUIE()
+	bFISSOK = bCheckFISS()
+	bARCCOK = bCheckARCC()
+EndFunction
+
+Bool Function bCheckSKSE()
+	bSKSELoaded = SKSE.GetVersion()
+	If bSKSELoaded
+		Return ( SKSE.GetVersion() == 1 && SKSE.GetVersionRelease() >= 43 ) || ( SKSE.GetVersion() == 2 && SKSE.GetVersionRelease() >= 54 )
+	Else
+		Debug.Notification("$mrt_MarkofArkay_Notification_SKSE_Error")
+		Debug.Trace("MarkOfArkay: [Error] SKSE not found.")
+		Return False
+	EndIf
+EndFunction
+
+Bool Function bCheckFISS()
+	Int iFissIndex = Game.GetModByName("FISS.esp")
+	Return (iFissIndex > 0 && iFissIndex < 255 && bSKSELoaded && \
+	((SKSE.GetVersion() == 1 && SKSE.GetPluginVersion("fiss") != -1) || (SKSE.GetVersion() == 2 && SKSE.GetPluginVersion("fisses") != -1)))
+EndFunction
+
+Bool Function bCheckUIE()
+	Int iExtsIndex = Game.GetModByName("UIExtensions.esp")
+	Return (iExtsIndex > 0 && iExtsIndex < 255)
+EndFunction
+
+Bool Function bCheckARCC()
+	Int iARCCIndex = Game.GetModByName("mrt_ARCC.esp")
+	Return (iARCCIndex > 0 && iARCCIndex < 255)
+EndFunction
+
+Bool Function bCheckDLIE()
+	Return bSKSELoaded && SKSE.GetPluginVersion("DSL Level Up Event Plugin") != -1 && DSL_LevelIncreaseEvent.bIsDLIELoaded()
+EndFunction
+
+
+Function ShowLostItems()
+	UIListMenu ListMenu = uiextensions.GetMenu("UIListMenu", True) as UIListMenu
+	If !ListMenu || LostItemsChest.GetNumItems() == 0
+		Return
+	EndIf
+	String sText
+	int count = LostItemsChest.GetNumItems()
+	Int iResult = 0
+	If count < 128
+		Int i = 0
+		Form kItem
+		While i < LostItemsChest.GetNumItems()
+			kItem = LostItemsChest.GetNthForm(i)
+			If kItem
+				If kItem.GetName()
+					sText = LostItemsChest.GetItemCount(kItem) + " " + kItem.GetName()
+				Else
+					sText = LostItemsChest.GetItemCount(kItem) + " ?"
+				EndIf
+			Else
+				sText = "?"
+			EndIf
+			If GetLength(sText) > 40
+				sText = Substring(sText,0, 37) + "..."
+			EndIf
+			listMenu.AddEntryItem(sText, -1, -1, False)
+			i += 1
+		EndWhile
+		listMenu.AddEntryItem("$mrt_MarkofArkay_TXT_Exit", -1, -1, False)
+		ForceCloseMenu()
+		listMenu.OpenMenu(none, none)
+		iResult = listMenu.GetResultInt()
+		While iResult > -1 && iResult < LostItemsChest.GetNumItems()
+				kItem = LostItemsChest.GetNthForm(iResult)
+				;UIWheelMenu wheelMenu = uiextensions.GetMenu("UIWheelMenu", True) as UIWheelMenu
+				;wheelMenu.SetPropertyIndexString("optionText", 0, "Name")
+				;wheelMenu.SetPropertyIndexString("optionLabelText", 0, "Name")
+				;wheelMenu.SetPropertyIndexBool("optionEnabled", 0, True)
+				;wheelMenu.SetPropertyIndexString("optionText", 1, "Type")
+				;wheelMenu.SetPropertyIndexString("optionLabelText", 1, "Type")
+				;wheelMenu.SetPropertyIndexBool("optionEnabled", 1, True)
+				;iResult = wheelMenu.OpenMenu(none, none)
+				;If iResult == 0 || iResult == 1
+				;	do something
+				;EndIf
+				Int iType = kItem.GetType()
+				String sType = sType(iType)
+				Int iFormID = kItem.GetFormID()
+				moaLostItemMenu.Show(iType,kItem.GetGoldValue(),LostItemsChest.GetItemCount(kItem),kItem.GetWeight(),iFormID)
+				Debug.Notification("Mark of Arkay - Name: " + kItem.GetName())
+				Debug.Notification("Mark of Arkay - Type: " + sType)
+				Debug.Notification("Mark of Arkay - FormID: " + sDecToHex(iFormID))
+				listMenu.OpenMenu(none, none)
+				iResult = listMenu.GetResultInt()
+		EndWhile
+		listMenu.ResetMenu()
+	Else
+		Int iPage = 1
+		Int iPrevPage = -1
+		Int iTotal = 124
+		Int iTotalPages = (Count / iTotal) As Int
+		Int iLast = 127 ;Index of last item in last page
+		If (Count % iTotal) > 0
+			iTotalPages += 1
+			iLast = (Count % iTotal) + 3
+		EndIf
+		ForceCloseMenu()
+		Int i
+		Form kItem
+		While iPage > 0
+			If iPrevPage != iPage
+				iPrevPage = iPage
+				listMenu.ResetMenu()
+				If iPage == 1
+					listMenu.AddEntryItem((iPage + 1) + "/" + iTotalPages + " >", -1, -1, False)
+				Else 
+					listMenu.AddEntryItem("< " + (iPage - 1) + "/" + iTotalPages + "", -1, -1, False)
+				EndIf
+				listMenu.AddEntryItem("$mrt_MarkofArkay_TXT_GoToPage", -1, -1, False)
+				i = ((iPage - 1) * iTotal)
+				While i < iMin((iPage * iTotal),LostItemsChest.GetNumItems())
+					kItem = LostItemsChest.GetNthForm(i)
+					If kItem
+						If kItem.GetName()
+							sText = LostItemsChest.GetItemCount(kItem) + " " + kItem.GetName()
+						Else
+							sText = LostItemsChest.GetItemCount(kItem) + " ?"
+						EndIf
+					Else
+						sText = "?"
+					EndIf
+					If GetLength(sText) > 40
+						sText = Substring(sText,0, 37) + "..."
+					EndIf
+					listMenu.AddEntryItem(sText, -1, -1, False)
+					i += 1
+				EndWhile
+				If iPage < iTotalPages
+					listMenu.AddEntryItem((iPage + 1) + "/" + iTotalPages + " >", -1, -1, False)
+				Else
+					listMenu.AddEntryItem("< " + (iPage - 1) + "/" + iTotalPages, -1, -1, False)
+				EndIf
+				listMenu.AddEntryItem("$mrt_MarkofArkay_TXT_Exit", -1, -1, False)
+			EndIf
+			listMenu.OpenMenu(none, none)
+			iResult = listMenu.GetResultInt()
+			If iResult == -1
+				iPage = 0
+				listMenu.ResetMenu()
+			Else
+				If (iPage < iTotalPages && iResult == 126) || (iPage == iTotalPages && iResult == (iLast - 1))
+					If iPage < iTotalPages
+						iPage += 1
+					Else
+						iPage -= 1
+					EndIf
+				ElseIf (iPage < iTotalPages && iResult == 127) || (iPage == iTotalPages && iResult == iLast)
+					iPage = 0
+					listMenu.ResetMenu()
+				ElseIf iResult == 0
+					If iPage > 1
+						iPage -= 1
+					Else
+						iPage += 1
+					EndIf
+				ElseIf iResult == 1
+					UITextEntryMenu TextMenu = uiextensions.GetMenu("UITextEntryMenu", True) as UITextEntryMenu
+					TextMenu.OpenMenu(none,none)
+					String sResult = TextMenu.GetResultString()
+					i = 0
+					Bool bIsDigit = True
+					While ( i < getLength(sResult) && bIsDigit )
+						If !IsDigit(GetNthChar(sResult,i))
+							bIsDigit = False
+						EndIf
+						i += 1
+					EndWhile
+					If bIsDigit
+						If ((sResult As Int) >= 1 && (sResult As Int) <= iTotalPages)
+							iPage = sResult As Int
+						EndIf
+					EndIf
+				Else
+					Int iIndex = ((iPage - 1) * iTotal) + (iResult - 2)
+					kItem = LostItemsChest.GetNthForm(iIndex)
+					Int iType = kItem.GetType()
+					String sType = sType(iType)
+					Int iFormID = kItem.GetFormID()
+					Debug.Notification("Mark of Arkay - Name: " + kItem.GetName())
+					Debug.Notification("Mark of Arkay - Type: " + sType)
+					Debug.Notification("Mark of Arkay - FormID: " + sDecToHex(iFormID))
+					moaLostItemMenu.Show(iType,kItem.GetGoldValue(),LostItemsChest.GetItemCount(kItem),kItem.GetWeight(),iFormID)
+				EndIf
+			EndIf
+		EndWhile
+	EndIf
+EndFunction
+
+Function ShowLostSkills()
+	UIListMenu ListMenu = uiextensions.GetMenu("UIListMenu", True) as UIListMenu
+	If !ListMenu || !ReviveScript.SkillScript.bSkillReduced()
+		Return
+	EndIf
+	String sText
+	Int i = 0
+	While i < ReviveScript.SkillScript.sSKillName.Length
+		sText = ReviveScript.SkillScript.iLostSkills[i] + " " + ReviveScript.SkillScript.sSKillName[i]
+		listMenu.AddEntryItem(sText, -1, -1, false)
+		i += 1
+	EndWhile
+	sText =  ReviveScript.SkillScript.iGetReducedSkillsCount(True) + " Skills"
+	listMenu.AddEntryItem(sText, -1, -1, false)
+	ForceCloseMenu()
+	listMenu.OpenMenu(none, none)
+	listMenu.ResetMenu()
+EndFunction
+
+Int Function getRandCityRPIndex()
+	Return sRespawnPoints.Length - 8
+EndFunction
+
+Int Function getSleepRPIndex()
+	Return sRespawnPoints.Length - 7
+EndFunction
+
+Int Function getCustomRPIndex()
+	Return sRespawnPoints.Length - 6
+EndFunction
+
+Int Function getExternalRPIndex()
+	Return sRespawnPoints.Length - 5
+EndFunction
+
+Int Function getCheckpointRPIndex()
+	Return sRespawnPoints.Length - 4
+EndFunction
+
+Int Function getNearbyRPIndex()
+	Return sRespawnPoints.Length - 3
+EndFunction
+
+Int Function getRandomRPIndex()
+	Return sRespawnPoints.Length - 2
+EndFunction
+
+Int Function getThroatRPIndex()
+	Return sRespawnPoints.Length - 1
 EndFunction

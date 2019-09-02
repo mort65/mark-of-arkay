@@ -9,6 +9,7 @@ GlobalVariable Property moaBleedoutHandlerState Auto
 zzzmoaReviveMCM Property ConfigMenu Auto
 
 Event OnCellDetach()
+	;Debug.Trace("Detached1")
 	If moaState.GetValue() == 1
 		If moaBleedoutHandlerState.GetValue() == 0
 			If DetachMarker1.IsInInterior()
@@ -30,4 +31,5 @@ Event OnCellDetach()
 		SetPosition(PlayerRef.GetPositionx(), PlayerRef.GetPositiony(), PlayerRef.GetPositionz())
 		SetAngle(0.0, 0.0, PlayerRef.GetAnglez())
 	EndIf
+	;Debug.Trace("Detached2")
 EndEvent

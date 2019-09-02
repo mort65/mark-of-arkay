@@ -4,6 +4,9 @@ zzzmoaReviverScript Property ReviveScript Auto
 Actor Property PlayerRef Auto
 
 Event OnContainerChanged(ObjectReference akNewContainer, ObjectReference akOldContainer)
+	If !PlayerRef.IsGhost()
+		PlayerRef.SetGhost(True)
+	EndIf
 	if akNewContainer == PlayerRef
 		If ReviveScript.moaRetrieveLostItems.IsRunning()
 			ReviveScript.moaRetrieveLostItems.setStage(20)
@@ -11,6 +14,7 @@ Event OnContainerChanged(ObjectReference akNewContainer, ObjectReference akOldCo
 		If ReviveScript.moaRetrieveLostItems01.IsRunning()
 			ReviveScript.moaRetrieveLostItems01.setStage(20)
 		EndIf
-		ReviveScript.RestoreLostItems(PlayerRef)		
+		ReviveScript.ItemScript.RestoreLostItems(PlayerRef)		
 	EndIf
+	PlayerRef.SetGhost(False)
 EndEvent

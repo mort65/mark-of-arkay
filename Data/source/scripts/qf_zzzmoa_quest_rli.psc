@@ -7,13 +7,10 @@ Scriptname QF_zzzmoa_Quest_RLI Extends Quest Hidden
 ReferenceAlias Property Alias_zzzmoa_ItemMarker Auto
 ;END ALIAS PROPERTY
 
-;BEGIN FRAGMENT Fragment_11
-Function Fragment_11()
-;BEGIN CODE
-Stop()
-;END CODE
-EndFunction
-;END FRAGMENT
+;BEGIN ALIAS PROPERTY zzzmoa_ItemMarker02
+;ALIAS PROPERTY TYPE ReferenceAlias
+ReferenceAlias Property Alias_zzzmoa_ItemMarker02 Auto
+;END ALIAS PROPERTY
 
 ;BEGIN FRAGMENT Fragment_8
 Function Fragment_8()
@@ -24,10 +21,10 @@ Stop()
 EndFunction
 ;END FRAGMENT
 
-;BEGIN FRAGMENT Fragment_10
-Function Fragment_10()
+;BEGIN FRAGMENT Fragment_11
+Function Fragment_11()
 ;BEGIN CODE
-SetObjectiveDisplayed(1)
+stop()
 ;END CODE
 EndFunction
 ;END FRAGMENT
@@ -37,6 +34,14 @@ Function Fragment_6()
 ;BEGIN CODE
 FailAllObjectives()
 Stop()
+;END CODE
+EndFunction
+;END FRAGMENT
+
+;BEGIN FRAGMENT Fragment_10
+Function Fragment_10()
+;BEGIN CODE
+setObjectiveDisplayed(1)
 ;END CODE
 EndFunction
 ;END FRAGMENT

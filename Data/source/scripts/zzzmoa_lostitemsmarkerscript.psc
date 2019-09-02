@@ -10,29 +10,13 @@ zzzmoaReviverScript Property ReviveScript Auto
 zzzmoaReviveMCM Property ConfigMenu Auto
 
 Event OnActivate(ObjectReference akActionRef)
+	If !PlayerRef.IsGhost()
+		PlayerRef.SetGhost(True)
+	EndIf
 	If (akActionRef As Actor) == PlayerRef
-		If ReviveScript.bIsItemsRemoved || PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt) || ReviveScript.bSkillReduced()
+		If ReviveScript.ItemScript.bIsItemsRemoved || PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt) || ReviveScript.skillscript.bSkillReduced()
 			Self.MoveToMyEditorLocation()
-			If (ReviveScript.ThiefNPC.GetReference() As Actor)
-				ReviveScript.RemoveStolenItemMarkers(ReviveScript.ThiefNPC.GetReference() As Actor)
-				(ReviveScript.ThiefNPC.GetReference() As Actor).RemoveFromFaction(ReviveScript.PlayerEnemyFaction)
-			EndIf
-			If ReviveScript.Thief
-				ReviveScript.RemoveStolenItemMarkers(ReviveScript.Thief)
-				ReviveScript.Thief.RemoveFromFaction(ReviveScript.PlayerEnemyFaction)
-			EndIf
-			ReviveScript.RemoveStolenItemMarkers(PlayerRef)
-			ReviveScript.Thief = None
-			ReviveScript.bStealSoul = False
-			PlayerRef.RemoveSpell(ArkayCurse)
-			PlayerRef.RemoveSpell(ArkayCurseAlt)
-			LostItemsChest.RemoveAllItems(PlayerRef, True, True)
-			If ReviveScript.fLostSouls > 0.0
-				PlayerRef.ModActorValue("DragonSouls", ReviveScript.fLostSouls)
-				ReviveScript.fLostSouls = 0.0
-			EndIf
-			ReviveScript.RestoreSkills()
-			ReviveScript.bIsItemsRemoved = False
+			ReviveScript.ItemScript.RestoreLostItems(PlayerRef)
 			Debug.Notification("$mrt_MarkofArkay_Notification_SoulMark_Activated")
 			If moaRetrieveLostItems.IsRunning()
 				moaRetrieveLostItems.SetStage(20)
@@ -45,4 +29,5 @@ Event OnActivate(ObjectReference akActionRef)
 			Self.Disable()
 		EndIf
 	EndIf
+	PlayerRef.SetGhost(False)
 EndEvent

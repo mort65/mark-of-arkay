@@ -116,6 +116,7 @@ Int oidCorpseAsSoulMark
 Int oidSpawnMinLevel_M
 Int oidSpawnMaxLevel_M
 Int oidSpawns_M
+Int oidDoNotStopCombat
 Int oidRetrySpawnWithoutLocation
 Bool Property bRetrySpawnWithoutLocation = True Auto Hidden
 Int Property iSpawn = 0 Auto Hidden
@@ -182,6 +183,7 @@ Bool Property bRespawnNaked = False Auto Hidden
 Bool Property bLostItemQuest = True Auto Hidden
 Bool Property bIsRecallRestricted = True Auto Hidden
 Bool Property bAutoSwitchRP = False Auto Hidden
+Bool Property bDoNotStopCombat = False Auto Hidden
 Int Property iNotTradingAftermath = 0 Auto Hidden
 Int Property iArkayCurse = 0 Auto Hidden
 Int Property iReducedSkill = 0 Auto Hidden
@@ -544,26 +546,28 @@ Event OnPageReset(String page)
 		SetCursorPosition(10)
 		oidJail = AddToggleOption("$mrt_MarkofArkay_Jail",bSendToJail,flags)
 		SetCursorPosition(12)
-		oidKillIfCantRespawn = AddToggleOption("$mrt_MarkofArkay_KillIfCantRespawn",bKillIfCantRespawn,flags)
+		oidDoNotStopCombat = AddToggleOption("$mrt_MarkofArkay_DoNotStopCombat",bDoNotStopCombat)
 		SetCursorPosition(14)
-		oidShowRaceMenu = AddToggleOption("$mrt_MarkofArkay_ShowRaceMenu", bShowRaceMenu,flags)
+		oidKillIfCantRespawn = AddToggleOption("$mrt_MarkofArkay_KillIfCantRespawn",bKillIfCantRespawn,flags)
 		SetCursorPosition(16)
+		oidShowRaceMenu = AddToggleOption("$mrt_MarkofArkay_ShowRaceMenu", bShowRaceMenu,flags)
+		SetCursorPosition(18)
 		If ( moaState.getValue() == 1 )
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidMoreRandomRespawn = AddToggleOption("$mrt_MarkofArkay_MoreRandomRespawn",bMoreRandomRespawn,flags)
-		SetCursorPosition(18)
+		SetCursorPosition(20)
 		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1))
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidCorpseAsSoulMark = AddToggleOption("$mrt_MarkofArkay_CorpseAsSoulMark", bCorpseAsSoulMark, flags)
-		SetCursorPosition(20)
-		oidHealActors = AddToggleOption("$mrt_MarkofArkay_HealActors",bHealActors,flags)
 		SetCursorPosition(22)
+		oidHealActors = AddToggleOption("$mrt_MarkofArkay_HealActors",bHealActors,flags)
+		SetCursorPosition(24)
 		oidResurrectActors = AddToggleOption("$mrt_MarkofArkay_ResurrectActors",bResurrectActors,flags)
 		SetCursorPosition(1)
 		AddHeaderOption("$mrt_MarkofArkay_HEAD_Destination")
@@ -1525,6 +1529,9 @@ Event OnOptionSelect(Int option)
 	ElseIf (option == oidJail)
 		bSendToJail = !bSendToJail
 		SetToggleOptionValue(oidJail, bSendToJail)
+	ElseIf (option == oidDoNotStopCombat)
+		bDoNotStopCombat = !bDoNotStopCombat
+		SetToggleOptionValue(oidDoNotStopCombat, bDoNotStopCombat)
 	ElseIf (option == oidKillIfCantRespawn)
 		bKillIfCantRespawn = !bKillIfCantRespawn
 		SetToggleOptionValue(oidKillIfCantRespawn, bKillIfCantRespawn)
@@ -2577,6 +2584,9 @@ Event OnOptionDefault(Int option)
 	ElseIf (option == oidJail)
 		bSendToJail = False
 		SetToggleOptionValue(oidJail,bSendToJail)
+	ElseIf (option == oidDoNotStopCombat)
+		bDoNotStopCombat = False
+		SetToggleOptionValue(oidDoNotStopCombat,bDoNotStopCombat)
 	ElseIf (option == oidKillIfCantRespawn)
 		bKillIfCantRespawn = True
 		SetToggleOptionValue(oidKillIfCantRespawn,bKillIfCantRespawn)
@@ -3008,6 +3018,8 @@ Event OnOptionHighlight(Int option)
 		SetInfoText("$mrt_MarkofArkay_DESC_TeleportMenu")
 	ElseIf (option == oidJail)
 		SetInfoText("$mrt_MarkofArkay_DESC_Jail")
+	ElseIf (option == oidDoNotStopCombat)
+		SetInfoText("$mrt_MarkofArkay_DESC_DoNotStopCombat")
 	ElseIf (option == oidKillIfCantRespawn)
 		SetInfoText("$mrt_MarkofArkay_DESC_KillIfCantRespawn")
 	ElseIf (option == oidLoseSkillForever)
@@ -3448,7 +3460,7 @@ Function setPages()
 EndFunction
 
 Function setRPs()
-	sRespawnPoints = New String[16]
+	sRespawnPoints = New String[17]
 	sRespawnPoints[0] = "$Whiterun"
 	sRespawnPoints[1] = "$Falkreath"
 	sRespawnPoints[2] = "$Markarth"
@@ -3457,14 +3469,15 @@ Function setRPs()
 	sRespawnPoints[5] = "$Windhelm"
 	sRespawnPoints[6] = "$Winterhold"
 	sRespawnPoints[7] = "$RavenRock"
-	sRespawnPoints[8] = "$RandomCity"
-	sRespawnPoints[9] = "$LastSleepLocation"
-	sRespawnPoints[10] = "$Custom"
-	sRespawnPoints[11] = "$External"
-	sRespawnPoints[12] = "$Checkpoint"
-	sRespawnPoints[13] = "$Nearby"
-	sRespawnPoints[14] = "$Random"
-	sRespawnPoints[15] = "$ThroatOfTheWorld"
+	sRespawnPoints[8] = "$NearbyCity"
+	sRespawnPoints[9] = "$RandomCity"
+	sRespawnPoints[10] = "$LastSleepLocation"
+	sRespawnPoints[11] = "$Custom"
+	sRespawnPoints[12] = "$External"
+	sRespawnPoints[13] = "$Checkpoint"
+	sRespawnPoints[14] = "$Nearby"
+	sRespawnPoints[15] = "$Random"
+	sRespawnPoints[16] = "$ThroatOfTheWorld"
 EndFunction
 
 Function setRPFlags(Bool bForce = False)
@@ -3949,10 +3962,10 @@ Bool function bLoadUserSettings(String sFileName)
 		ReviveScript.SkillScript.RegisterForLevel()
 	EndIf
 	bSpawnHostile = fiss.loadBool("bSpawnHostile")
-	;bSpawnExtraHMS = fiss.loadBool("bSpawnExtraHMS")
 	bDisableUnsafe = fiss.loadBool("bDisableUnsafe")
 	iSelectedCustomRPSlot = fiss.loadInt("iSelectedCustomRPSlot")
 	fTotalCustomRPSlotSlider = fiss.loadFloat("fTotalCustomRPSlotSlider")
+	bDoNotStopCombat = fiss.loadBool("bDoNotStopCombat")
 	SetCustomRPFlags()
 	If bDisableUnsafe
 		bLoseForever = False
@@ -3962,10 +3975,10 @@ Bool function bLoadUserSettings(String sFileName)
 	EndIf
 	String Result = fiss.endLoad()
 	if Result != ""
-		;If bCheckFissErrors(Result)
-		;	bSaveUserSettings(sFileName)
-		;	Return True
-		;EndIf
+		If bCheckFissErrors(Result)
+			bSaveUserSettings(sFileName)
+			Return True
+		EndIf
 		Return False
 	EndIf
 	Return True
@@ -3979,33 +3992,8 @@ Bool Function bCheckFissErrors(String strErrors)
 	While index > 0
 		index -= 1
 		strError = resultArr[index]
-		If strError == "Element bIsTradeEnabled not found"
-			bIsTradeEnabled = True
-		ElseIf strError == "Element bDeathEffect not found"
-			bDeathEffect = True
-		ElseIf strError == "Element bAltEyeFix not found"
-			bAltEyeFix = False
-		ElseIf strError == "Element bPlayerProtectFollower not found"
-			bPlayerProtectFollower = False
-		ElseIf strError == "Element bMoralityMatters not found"
-			bMoralityMatters = True
-			moaMoralityMatters.SetValue(bMoralityMatters As Int)
-		ElseIf strError == "Element iReducedSkill not found"
-			iReducedSkill = 0
-		ElseIf strError == "Element bSkillReduceRandomVal not found"
-			bSkillReduceRandomVal = False
-		ElseIf strError == "Element fSkillReduceValSlider not found"
-			fSkillReduceValSlider = 10.0
-		ElseIf strError == "Element fSkillReduceMinValSlider not found"
-			fSkillReduceMinValSlider = 0.0
-		ElseIf strError == "Element fSkillReduceMaxValSlider not found"
-			fSkillReduceMaxValSlider = 1.0
-		ElseIf strError == "Element bShowRaceMenu not found"
-			bShowRaceMenu = False
-		ElseIf strError == "Element bLoseSkillForever not found"
-			bLoseSkillForever = False
-		ElseIf strError == "Element bRespawnPointsFlags7 not found"
-			bRespawnPointsFlags[7] = False
+		If strError == "Element bDoNotStopCombat not found"
+			bDoNotStopCombat = False
 		Else
 			Debug.Trace("Mark of Arkay: Error loading user settings -> " + strError)
 			Result = False
@@ -4219,6 +4207,7 @@ bool function bSaveUserSettings(String sFileName)
 	fiss.saveInt("iSelectedCustomRPSlot",iSelectedCustomRPSlot)
 	fiss.SaveFloat("fTotalCustomRPSlotSlider",fTotalCustomRPSlotSlider)
 	fiss.SaveBool("bSpawnHostile", bSpawnHostile)
+	fiss.saveBool("bDoNotStopCombat", bDoNotStopCombat)
 	String Result = fiss.endSave()
 	If Result != ""
 		Debug.Trace("Mark of Arkay: Error saving user settings -> " + Result)
@@ -4270,6 +4259,7 @@ function LoadDefaultSettings()
 	bRespawnNaked = False
 	bCorpseAsSoulMark = False
 	bSendToJail = False
+	bDoNotStopCombat = False
 	bKillIfCantRespawn = True
 	bTeleportMenu = True
 	bRespawnMenu = False
@@ -4629,6 +4619,10 @@ Function ShowLostSkills()
 	ForceCloseMenu()
 	listMenu.OpenMenu(none, none)
 	listMenu.ResetMenu()
+EndFunction
+
+Int Function getNearbyCityRPIndex()
+	Return sRespawnPoints.Length - 9
 EndFunction
 
 Int Function getRandCityRPIndex()

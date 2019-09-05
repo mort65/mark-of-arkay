@@ -52,7 +52,7 @@ Event OnEffectStart(Actor akTarget, Actor akCaster)
 			If ( ConfigMenu.bTeleportMenu )
 				ReviveScript.RespawnScript.moaERPCount.SetValue(ExternalMarkerList.GetSize())
 				Utility.Wait(0.5)
-				iTeleportLocation = TeleportMenu() ;-1-> exxternal and random | > total sRespawnPoints -> external && not random | < -2 -> custom | -2 -> cancel
+				iTeleportLocation = TeleportMenu()
 				If (( iTeleportLocation == -1 ) || ( iTeleportLocation > ( ConfigMenu.sRespawnPoints.Length - 1 )))
 					If ( iTeleportLocation == -1 )
 						iExternalIndex = iTeleportLocation
@@ -68,7 +68,7 @@ Event OnEffectStart(Actor akTarget, Actor akCaster)
 			If iTeleportLocation > -1
 				PlayerMarker.Enable()
 				PlayerMarker.MoveTo(Caster)
-				If iTeleportLocation < ConfigMenu.getRandCityRPIndex()
+				If iTeleportLocation < ConfigMenu.getNearbyCityRPIndex()
 					If ConfigMenu.bMoreRandomRespawn
 						moaRandomDestination.SetValueInt(0)
 						TeleportDestination.Revert()
@@ -93,6 +93,8 @@ Event OnEffectStart(Actor akTarget, Actor akCaster)
 						EndIf
 					EndIf
 					Caster.MoveTo( MarkerList.GetAt( iTeleportLocation ) As Objectreference, abMatchRotation = true)
+				ElseIf iTeleportLocation == ConfigMenu.getNearbyCityRPIndex()
+					SendToNearbyCity()
 				ElseIf iTeleportLocation == ConfigMenu.getRandCityRPIndex()
 					SendToRandomCity()
 				ElseIf iTeleportLocation == ConfigMenu.getSleepRPIndex()
@@ -287,7 +289,7 @@ Function RandomTeleport()
 	EndIf
 EndFunction
 
-Function SendToAnotherLocation()
+ObjectReference Function findCityMarkerByLocation()
 	Int iIndex = LocationsList.GetSize()
 	While ( iIndex > 0 )
 		iIndex -= 1
@@ -295,8 +297,7 @@ Function SendToAnotherLocation()
 			If bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(DLC1HunterHQLocation) ;Riften or Dayspring Canyon
 				If ConfigMenu.bRespawnPointsFlags[iIndex]
 					If ( Caster.GetDistance( MarkerList.GetAt(iIndex) As ObjectReference ) >= ConfigMenu.fRPMinDistanceSlider )
-						Caster.MoveTo( MarkerList.GetAt(iIndex) As ObjectReference )
-						Return
+						Return MarkerList.GetAt(iIndex) As ObjectReference
 					EndIf
 				EndIf
 			EndIf
@@ -304,8 +305,7 @@ Function SendToAnotherLocation()
 			If bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(HjaalmarchHoldLocation) || bInSameLocation(DLC1VampireCastleLocation) ;Solitude or Morthal or Castle Volkihar
 				If ConfigMenu.bRespawnPointsFlags[iIndex]
 					If ( Caster.GetDistance( MarkerList.GetAt(iIndex) As ObjectReference ) >= ConfigMenu.fRPMinDistanceSlider )
-						Caster.MoveTo( MarkerList.GetAt(iIndex) As ObjectReference )
-						Return
+						Return MarkerList.GetAt(iIndex) As ObjectReference
 					EndIf
 				EndIf
 			EndIf
@@ -313,20 +313,79 @@ Function SendToAnotherLocation()
 			If ( bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(PaleHoldLocation) ) ;Winterhold or Dawnstar
 				If ConfigMenu.bRespawnPointsFlags[iIndex]
 					If ( Caster.GetDistance( MarkerList.GetAt(iIndex) As ObjectReference ) >= ConfigMenu.fRPMinDistanceSlider )
-						Caster.MoveTo( MarkerList.GetAt(iIndex) As ObjectReference )
-						Return
+						Return MarkerList.GetAt(iIndex) As ObjectReference
 					EndIf
 				EndIf
 			EndIf
 		ElseIf bInSameLocation(LocationsList.GetAt(iIndex) As Location)
 			If ConfigMenu.bRespawnPointsFlags[iIndex]
 				If ( Caster.GetDistance( MarkerList.GetAt(iIndex) As ObjectReference ) >= ConfigMenu.fRPMinDistanceSlider )
-					Caster.MoveTo( MarkerList.GetAt(iIndex) As ObjectReference )
-					Return
+					Return MarkerList.GetAt(iIndex) As ObjectReference
 				EndIf
 			EndIf
 		EndIf
 	EndWhile
+	Return None
+EndFunction
+
+Function SendToNearbyCity()
+	ObjectReference Marker = FindCityMarkerByLocation()
+	If Marker
+		Caster.MoveTo(Marker)
+		Return 
+	EndIf
+	If !ReviveScript.RespawnScript.IsInInteriorActual(PlayerMarker)
+		float fDistance
+		Int iIndex
+		If ExternalMarkerList.GetSize() > 0
+			iIndex = iMin(100,ExternalMarkerList.GetSize())
+			While iIndex > 0
+			iIndex -= 1
+				If ( !fDistance || ( fDistance > PlayerMarker.GetDistance( ExternalMarkerList.GetAt( iIndex ) As ObjectReference ) ) )
+					fDistance = PlayerMarker.GetDistance( ExternalMarkerList.GetAt( iIndex ) As ObjectReference )
+					Marker = ExternalMarkerList.GetAt( iIndex ) As ObjectReference
+				EndIf
+			EndWhile
+		EndIf
+		If PlayerMarker.IsInInterior()
+			iIndex = MarkerList.GetSize()
+			While iIndex > 0
+				iIndex -= 1
+				If ConfigMenu.bRespawnPointsFlags[iIndex]
+					If ( PlayerMarker.GetParentCell() == ( MarkerList.GetAt(iIndex) As ObjectReference ).GetParentCell() )
+						If ( !fDistance || ( fDistance > PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference) ) )
+							fDistance = PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference)
+							Marker = MarkerList.GetAt(iIndex) As ObjectReference
+						EndIf
+					EndIf
+				EndIf
+			EndWhile
+		Else
+			iIndex = CityMarkersList.GetSize()
+			While iIndex > 0
+				iIndex -= 1
+				If ConfigMenu.bRespawnPointsFlags[iIndex]
+					If ( !fDistance || ( fDistance > PlayerMarker.GetDistance(CityMarkersList.GetAt(iIndex) As ObjectReference) ) )
+						fDistance = PlayerMarker.GetDistance(CityMarkersList.GetAt(iIndex) As ObjectReference)
+						Marker = MarkerList.GetAt(iIndex) As ObjectReference
+					EndIf
+				EndIf
+			EndWhile
+		EndIf
+		If ( Marker && fDistance && fDistance < 500001 )
+			Caster.MoveTo(Marker)
+			Return
+		EndIf
+	EndIf
+	sendToRandomCity()
+Endfunction
+
+Function SendToAnotherLocation()
+	ObjectReference Marker = FindCityMarkerByLocation()
+	If Marker
+		Caster.MoveTo(Marker)
+		Return 
+	EndIf
 	SendToRandomCity()
 EndFunction
 
@@ -511,23 +570,23 @@ Int Function TeleportMenu(Int aiMessage = 0, Int aiButton = 0)
 		ElseIf aiMessage == 0
 			aiButton = moaTeleportMenu0.Show()
 			If aiButton == -1
-			ElseIf aiButton < ConfigMenu.getRandCityRPIndex() ;Whiterun,...,Raven Rock
+			ElseIf aiButton < ConfigMenu.getNearbyCityRPIndex() ;Whiterun,...,Raven Rock
 				Return aiButton
-			ElseIf aiButton == ConfigMenu.getRandCityRPIndex() ;More
+			ElseIf aiButton == ConfigMenu.getNearbyCityRPIndex() ;More
 				aiMessage = 1
-			ElseIf aiButton == (ConfigMenu.getRandCityRPIndex() + 1) ;Cancel
+			ElseIf aiButton == (ConfigMenu.getNearbyCityRPIndex() + 1) ;Cancel
 				Return -2
 			EndIf
 		ElseIf aiMessage == 1
 			aiButton = moaTeleportMenu1.Show()
 			If aiButton == -1
-			ElseIf aiButton == 2 ;Custom
+			ElseIf aiButton == 3 ;Custom
 				aiMessage = 2
-			ElseIf aiButton == 3 ;External
+			ElseIf aiButton == 4 ;External
 				aiMessage = 3
-			ElseIf aiButton < 8 ;Random City,...,Throat of the World
-				Return aiButton + ConfigMenu.getRandCityRPIndex()
-			ElseIf aiButton == 8 ;Less
+			ElseIf aiButton < 9 ;Nearby City,...,Throat of the World
+				Return aiButton + ConfigMenu.getNearbyCityRPIndex()
+			ElseIf aiButton == 9 ;Less
 				aiMessage = 0
 			EndIf
 		ElseIf aiMessage == 2 ;Custom

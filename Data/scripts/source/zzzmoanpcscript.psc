@@ -698,7 +698,6 @@ Bool Function bSpawnThief(ObjectReference akMarkerRef)
 		EndWhile
 		ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Spawning Thief in phase 3: ( '" +\
 			RandActor.GetActorBase().GetName() + "', "  + RandActor + ", " + RandActor.GetRace() + ", )" )
-		Debug.Trace(ReviveScript.ThiefNPC.GetActorReference()+",,"+ReviveScript.ThiefNPC01.GetActorReference())
 		Return True
 	EndIf
 	Return False

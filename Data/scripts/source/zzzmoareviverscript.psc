@@ -1491,7 +1491,9 @@ Function RevivePlayer(Bool bRevive)
 					Game.EnablePlayerControls()
 					Game.EnableFastTravel(True)
 				EndIf
-				PlayerRef.StopCombatAlarm()
+				If !ConfigMenu.bDoNotStopCombat
+					PlayerRef.StopCombatAlarm()
+				EndIf
 				ToggleSaving(True)
 				moaBleedoutHandlerState.SetValue(0)
 				LowHealthImod.Remove()

@@ -18,6 +18,7 @@ Location Property PaleHoldLocation  Auto
 Location Property HjaalmarchHoldLocation  Auto
 Location Property DLC1VampireCastleLocation Auto
 Location Property DLC1HunterHQLocation Auto
+Location Property TamrielLocation Auto
 Keyword property HoldKeyword Auto
 ObjectReference Property PlayerMarker Auto
 ObjectReference Property SleepMarker Auto
@@ -334,7 +335,7 @@ Function Teleport()
 	PlayerMarker.MoveTo(playerRef)
 	PlayerMarker.SetPosition(PlayerRef.GetPositionx(), PlayerRef.GetPositiony(), PlayerRef.GetPositionz())
 	PlayerMarker.SetAngle(0.0, 0.0, PlayerRef.GetAnglez())
-	If iTeleportLocation < (ConfigMenu.getRandCityRPIndex())
+	If iTeleportLocation < (ConfigMenu.getNearbyCityRPIndex())
 		If ConfigMenu.bMoreRandomRespawn
 			moaRandomDestination.SetValueInt(0)
 			TeleportDestination.Revert()
@@ -358,6 +359,8 @@ Function Teleport()
 		Else
 			 SendToAnotherLocation()
 		EndIf
+	ElseIf iTeleportLocation == (ConfigMenu.getNearbyCityRPIndex())
+		sendToNearbyCity()
 	ElseIf iTeleportLocation == (ConfigMenu.getRandCityRPIndex())
 		sendToRandomCity()
 	ElseIf iTeleportLocation == (ConfigMenu.getSleepRPIndex())
@@ -532,7 +535,7 @@ Function sendToRandomCity()
 	EndIf
 EndFunction
 
-Function SendToAnotherLocation()
+ObjectReference Function FindCityMarkerByLocation()
 	Int iIndex = LocationsList.GetSize()
 	While ( iIndex > 0 )
 		iIndex -= 1
@@ -540,9 +543,7 @@ Function SendToAnotherLocation()
 			If bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(DLC1HunterHQLocation) ;Riften or Dayspring Canyon
 				If ConfigMenu.bRespawnPointsFlags[iIndex]
 					If ( PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference) >= fRPMinDistance )
-						If bIsArrived(MarkerList.GetAt(iIndex) As ObjectReference)
-							Return
-						EndIf
+						Return MarkerList.GetAt(iIndex) As ObjectReference
 					EndIf
 				EndIf
 			EndIf
@@ -550,9 +551,7 @@ Function SendToAnotherLocation()
 			If bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(HjaalmarchHoldLocation) || bInSameLocation(DLC1VampireCastleLocation) ;Solitude or Morthal or Castle Volkihar
 				If ConfigMenu.bRespawnPointsFlags[iIndex]
 					If ( PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference) >= fRPMinDistance )
-						If bIsArrived(MarkerList.GetAt(iIndex) As ObjectReference)
-							Return
-						EndIf
+						Return MarkerList.GetAt(iIndex) As ObjectReference
 					EndIf
 				EndIf
 			EndIf
@@ -560,22 +559,40 @@ Function SendToAnotherLocation()
 			If ( bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(PaleHoldLocation) ) ;Winterhold or Dawnstar
 				If ConfigMenu.bRespawnPointsFlags[iIndex]
 					If ( PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference) >= fRPMinDistance )
-						If bIsArrived(MarkerList.GetAt(iIndex) As ObjectReference)
-							Return
-						EndIf
+						Return MarkerList.GetAt(iIndex) As ObjectReference
 					EndIf
 				EndIf
 			EndIf
 		ElseIf bInSameLocation(LocationsList.GetAt(iIndex) As Location)
 			If ConfigMenu.bRespawnPointsFlags[iIndex]
 				If ( PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference) >= fRPMinDistance )
-					If bIsArrived(MarkerList.GetAt(iIndex) As ObjectReference)
-						Return
-					EndIf
+					Return MarkerList.GetAt(iIndex) As ObjectReference
 				EndIf
 			EndIf
 		EndIf
 	EndWhile
+	Return None
+Endfunction
+
+Function SendToNearbyCity()
+	ObjectReference Marker = FindCityMarkerByLocation()
+	If Marker && bIsArrived(Marker)
+		Return 
+	EndIf
+	If !IsInInteriorActual(PlayerMarker)
+		Marker = FindCityMarkerByDistance(500000.0)
+		If Marker && bIsArrived(Marker)
+			Return 
+		EndIf
+	EndIf
+	sendToRandomCity()
+Endfunction
+
+Function SendToAnotherLocation()
+	ObjectReference Marker = FindCityMarkerByLocation()
+	If Marker && bIsArrived(Marker)
+		Return 
+	EndIf
 	sendToRandomCity()
 EndFunction
 
@@ -627,7 +644,7 @@ ObjectReference Function FindMarkerByDistance()
 	Return None
 EndFunction
 
-ObjectReference Function FindCityMarkerByDistance()
+ObjectReference Function FindCityMarkerByDistance(float fMaxDistance = 100000.0)
 	float fDistance
 	ObjectReference Marker
 	Int iIndex
@@ -670,7 +687,7 @@ ObjectReference Function FindCityMarkerByDistance()
 			EndIf
 		EndWhile
 	EndIf
-	If ( Marker && fDistance && fDistance <= 100000.0 )
+	If ( Marker && fDistance && fDistance <= fMaxDistance )
 		Return Marker
 	EndIf
 	Return None
@@ -1016,21 +1033,21 @@ Int Function RespawnMenu(Int aiMessage = 0, Int aiButton = 0)
 		ElseIf aiMessage == 0
 			aiButton = moaRespawnMenu0.Show()
 			If aiButton == -1
-			ElseIf aiButton < ConfigMenu.getRandCityRPIndex() ;Whiterun,...,Raven Rock
+			ElseIf aiButton < ConfigMenu.getNearbyCityRPIndex() ;Whiterun,...,Raven Rock
 				Return aiButton
-			ElseIf aiButton == ConfigMenu.getRandCityRPIndex() ;More
+			ElseIf aiButton == ConfigMenu.getNearbyCityRPIndex() ;More
 				aiMessage = 1
 			EndIf
 		ElseIf aiMessage == 1
 			aiButton = moaRespawnMenu1.Show()
 			If aiButton == -1
-			ElseIf aiButton == 2 ;Custom
+			ElseIf aiButton == 3 ;Custom
 				aiMessage = 2
-			ElseIf aiButton == 3
+			ElseIf aiButton == 4
 				aiMessage = 3 ;External
-			ElseIf aiButton < 8 ;Random City,...,Random
-				Return ( aiButton + ConfigMenu.getRandCityRPIndex())
-			ElseIf aiButton == 8 ;Less
+			ElseIf aiButton < 9 ;Nearby City,...,TOW
+				Return ( aiButton + ConfigMenu.getNearbyCityRPIndex())
+			ElseIf aiButton == 9 ;Less
 				aiMessage = 0
 			EndIf
 		ElseIf aiMessage == 2 ;Custom
@@ -1180,6 +1197,3 @@ Function PassTime(Float fGameHours,Float fRealSecs)
               Utility.Wait(fRealSecs)
       EndIf
 EndFunction
-
-
-

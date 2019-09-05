@@ -244,6 +244,7 @@ Function disintegrateWhenAble(Actor akActor) Global
 	While akActor && akActor.GetParentCell() && akActor.GetParentCell().IsAttached()
 		Utility.Wait(5)
 	EndWhile
+	akActor && akActor.RemoveAllItems()
 	akActor && akActor.SetCriticalStage(akActor.CritStage_DisintegrateEnd)
 	akActor && akActor.DisableNoWait()
 EndFunction

@@ -11,7 +11,6 @@ zzzmoaReviveMCM Property ConfigMenu Auto
 Bool bIsActive
 
 Event OnUpdate()
-	Debug.Trace(GetActorReference()+" is SoulMark")
 	If GetActorReference() && GetActorReference().GetParentCell() != ConfigMenu.ReviveScript.DefaultCell
 		RegisterForSingleUpdate(30.0)
 	EndIf

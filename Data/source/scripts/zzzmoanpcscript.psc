@@ -362,7 +362,12 @@ FormList Function SelectSpawnList(ObjectReference akMarker,  Int aiIndex = -2, B
 			EndIf	
 			If bIsSpawnEnabled(SpawnFlags,3)
 				addToSpawnPool(3)
-			EndIf				
+			EndIf
+			If bIsSpawnEnabled(SpawnFlags,1)
+				If !ConfigMenu.bSpawnCheckRelation || !PlayerRef.IsInFaction(DarkBrotherHoodFaction)
+					addToSpawnPool(1)
+				EndIf
+			EndIf			
 		EndIf
 		If (akMarker.GetParentCell() == MehrunesDagonShrine)
 			If bIsSpawnEnabled(SpawnFlags,9) && ConfigMenu.bCreaturesCanSteal

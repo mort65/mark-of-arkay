@@ -157,7 +157,7 @@ FormList Function SelectSpawnList(ObjectReference akMarker,  Int aiIndex = -2, B
 		clearSpawnPool()
 		Location akLocation = akMarker.GetCurrentLocation()
 		If akLocation
-			If akLocation.HasKeyword(LocTypeCity) || akLocation.HasKeyword(LocTypeTown) || akLocation.HasKeyword(LocTypePlayerHouse) || akLocation.HasKeyword(LocTypeDwelling)
+			If akLocation.HasKeyword(LocTypeCity) || akLocation.HasKeyword(LocTypeTown) || akLocation.HasKeyword(LocTypePlayerHouse) || akLocation.HasKeyword(LocTypeDwelling) || akLocation.HasKeyword(LocTypeHabitation)
 				If ConfigMenu.bSpawnCheckRelation
 					If bIsSpawnEnabled(SpawnFlags,5) && bIsPlayerVampire()
 						addToSpawnPool(5)
@@ -183,9 +183,6 @@ FormList Function SelectSpawnList(ObjectReference akMarker,  Int aiIndex = -2, B
 					If !ConfigMenu.bSpawnCheckRelation || !PlayerRef.IsInFaction(DarkBrotherHoodFaction)
 						addToSpawnPool(1)
 					EndIf
-				EndIf
-				If bIsSpawnEnabled(SpawnFlags,3)
-					addToSpawnPool(3)
 				EndIf
 			EndIf
 			If akLocation.HasKeyword(LocTypeGiantCamp)
@@ -358,15 +355,17 @@ FormList Function SelectSpawnList(ObjectReference akMarker,  Int aiIndex = -2, B
 			EndIf
 		ElseIf !ReviveScript.RespawnScript.IsInInteriorActual(akMarker)
 			If bIsSpawnEnabled(SpawnFlags,21)
-				addToSpawnPool(21)
+				If !ConfigMenu.bSpawnCheckRelation || !PlayerRef.IsInFaction(ThievesGuildFaction)
+					addToSpawnPool(21)
+				EndIf
 			EndIf	
-			If bIsSpawnEnabled(SpawnFlags,3)
-				addToSpawnPool(3)
-			EndIf
 			If bIsSpawnEnabled(SpawnFlags,1)
 				If !ConfigMenu.bSpawnCheckRelation || !PlayerRef.IsInFaction(DarkBrotherHoodFaction)
 					addToSpawnPool(1)
 				EndIf
+			EndIf
+			If bIsSpawnEnabled(SpawnFlags,3)
+				addToSpawnPool(3)
 			EndIf			
 		EndIf
 		If (akMarker.GetParentCell() == MehrunesDagonShrine)

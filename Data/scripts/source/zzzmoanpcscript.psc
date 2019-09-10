@@ -353,6 +353,18 @@ FormList Function SelectSpawnList(ObjectReference akMarker,  Int aiIndex = -2, B
 					addToSpawnPool(9)
 				EndIf
 			EndIf
+		EndIf
+		If (akMarker.GetParentCell() == MehrunesDagonShrine)
+			If bIsSpawnEnabled(SpawnFlags,9) && ConfigMenu.bCreaturesCanSteal
+				addToSpawnPool(9)
+			EndIf
+		EndIf
+		;Debug.Trace("iSpawnArr :"+iSpawnArr)
+		If iSpawnPool > 0
+			If iTotalSpawns == 1 && akLocation &&\
+			!akLocation.HasKeyword(LocTypeHabitation) && !akLocation.HasKeyword(LocTypeDwelling);Bandits can be anywhere
+				addToSpawnPool(3)
+			EndIf
 		ElseIf !ReviveScript.RespawnScript.IsInInteriorActual(akMarker)
 			If bIsSpawnEnabled(SpawnFlags,21)
 				If !ConfigMenu.bSpawnCheckRelation || !PlayerRef.IsInFaction(ThievesGuildFaction)
@@ -368,17 +380,7 @@ FormList Function SelectSpawnList(ObjectReference akMarker,  Int aiIndex = -2, B
 				addToSpawnPool(3)
 			EndIf			
 		EndIf
-		If (akMarker.GetParentCell() == MehrunesDagonShrine)
-			If bIsSpawnEnabled(SpawnFlags,9) && ConfigMenu.bCreaturesCanSteal
-				addToSpawnPool(9)
-			EndIf
-		EndIf
-		;Debug.Trace("iSpawnArr :"+iSpawnArr)
 		If iSpawnPool > 0
-			If iTotalSpawns == 1 && akLocation &&\
-			!akLocation.HasKeyword(LocTypeHabitation) && !akLocation.HasKeyword(LocTypeDwelling);Bandits can be anywhere
-				addToSpawnPool(3)
-			EndIf
 			Return getFromSpawnPool()
 		EndIf
 		If !ConfigMenu.bRetrySpawnWithoutLocation

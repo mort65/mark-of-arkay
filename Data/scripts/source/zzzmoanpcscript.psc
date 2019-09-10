@@ -38,6 +38,8 @@ FormList Property Thalmors Auto
 FormList Property Spriggans Auto
 FormList Property Witches Auto
 Location Property ThalmorEmbassyLocation Auto
+Location Property BthardamzLocation Auto
+Location Property ShrineofMehrunesDagonLocation Auto
 Keyword Property LocTypeDraugrCrypt Auto
 Keyword Property LocTypeBanditCamp Auto
 Keyword Property LocTypeFalmerHive Auto
@@ -60,6 +62,7 @@ Keyword Property LocTypeGiantCamp Auto
 Keyword Property LocTypeDwarvenAutomatons Auto
 Keyword Property LocTypePlayerHouse Auto
 Keyword Property LocTypeSprigganGrove Auto
+Keyword Property LocTypeMilitaryFort Auto
 GlobalVariable Property PlayerIsWerewolf  Auto  
 GlobalVariable Property PlayerIsVampire  Auto  
 ObjectReference Property PlayerMarker Auto
@@ -91,6 +94,7 @@ Race Property WereWolfBeastRace Auto
 Race Property DLC1VampireBeastRace Auto
 Keyword Property LocTypeHabitation Auto
 Keyword Property LocTypeDwelling Auto
+Cell Property MehrunesDagonShrine Auto
 Actor Property PlayerRef Auto
 Spell Property WontSteal Auto
 Int[] Property iSpawnArr Auto Hidden
@@ -149,149 +153,225 @@ FormList Function SelectSpawnList(ObjectReference akMarker,  Int aiIndex = -2, B
 	ElseIf aiIndex > -1
 		Return AllSpawnLists.GetAt(aiIndex) As FormList
 	EndIf
-	If ConfigMenu.bSpawnByLocation && akMarker.GetCurrentLocation()
-		Location akLocation = akMarker.GetCurrentLocation()
+	If ConfigMenu.bSpawnByLocation
 		clearSpawnPool()
-		If akLocation.HasKeyword(LocTypeCity) || akLocation.HasKeyword(LocTypeTown) || akLocation.HasKeyword(LocTypePlayerHouse) || akLocation.HasKeyword(LocTypeDwelling)
-			If ConfigMenu.bSpawnCheckRelation
-				If bIsSpawnEnabled(SpawnFlags,5) && bIsPlayerVampire()
-					addToSpawnPool(5)
-				EndIf
-				If bIsSpawnEnabled(SpawnFlags,16) && bIsPlayerWereWolf()
-					addToSpawnPool(16)
-				EndIf
-				If bIsSpawnEnabled(SpawnFlags,23)
-					If ConfigMenu.bCreaturesCanSteal && !bIsPlayerVampire() && ReviveScript.RespawnScript.IsInInteriorActual(akMarker)
-						addToSpawnPool(23)
+		Location akLocation = akMarker.GetCurrentLocation()
+		If akLocation
+			If akLocation.HasKeyword(LocTypeCity) || akLocation.HasKeyword(LocTypeTown) || akLocation.HasKeyword(LocTypePlayerHouse) || akLocation.HasKeyword(LocTypeDwelling)
+				If ConfigMenu.bSpawnCheckRelation
+					If bIsSpawnEnabled(SpawnFlags,5) && bIsPlayerVampire()
+						addToSpawnPool(5)
+					EndIf
+					If bIsSpawnEnabled(SpawnFlags,16) && bIsPlayerWereWolf()
+						addToSpawnPool(16)
+					EndIf
+					If bIsSpawnEnabled(SpawnFlags,23)
+						If ConfigMenu.bCreaturesCanSteal && !bIsPlayerVampire() && ReviveScript.RespawnScript.IsInInteriorActual(akMarker)
+							addToSpawnPool(23)
+						EndIf
+					EndIf
+					If bIsSpawnEnabled(SpawnFlags,25) && ConfigMenu.bCreaturesCanSteal && !bIsPlayerWereWolf()
+						addToSpawnPool(25)
 					EndIf
 				EndIf
-				If bIsSpawnEnabled(SpawnFlags,25) && ConfigMenu.bCreaturesCanSteal && !bIsPlayerWereWolf()
-					addToSpawnPool(25)
+				If bIsSpawnEnabled(SpawnFlags,21)
+					If !ConfigMenu.bSpawnCheckRelation || !PlayerRef.IsInFaction(ThievesGuildFaction)
+						addToSpawnPool(21)
+					EndIf
+				EndIf
+				If bIsSpawnEnabled(SpawnFlags,1)
+					If !ConfigMenu.bSpawnCheckRelation || !PlayerRef.IsInFaction(DarkBrotherHoodFaction)
+						addToSpawnPool(1)
+					EndIf
+				EndIf
+				If bIsSpawnEnabled(SpawnFlags,3)
+					addToSpawnPool(3)
 				EndIf
 			EndIf
-			If bIsSpawnEnabled(SpawnFlags,21)
-				If !ConfigMenu.bSpawnCheckRelation || !PlayerRef.IsInFaction(ThievesGuildFaction)
-					addToSpawnPool(21)
+			If akLocation.HasKeyword(LocTypeGiantCamp)
+				If bIsSpawnEnabled(SpawnFlags,14) && ConfigMenu.bCreaturesCanSteal && !ReviveScript.RespawnScript.IsInInteriorActual(akMarker)
+					addToSpawnPool(14)	
 				EndIf
 			EndIf
-			If bIsSpawnEnabled(SpawnFlags,1)
-				If !ConfigMenu.bSpawnCheckRelation || !PlayerRef.IsInFaction(DarkBrotherHoodFaction)
-					addToSpawnPool(1)
+			If akLocation.HasKeyword(LocTypeDraugrCrypt)
+				If bIsSpawnEnabled(SpawnFlags,8) && ConfigMenu.bCreaturesCanSteal
+					addToSpawnPool(8)
+				EndIf
+				If bIsSpawnEnabled(SpawnFlags,3)
+					addToSpawnPool(3)
 				EndIf
 			EndIf
-			If bIsSpawnEnabled(SpawnFlags,3)
+			If bIsSpawnEnabled(SpawnFlags,3) && (akLocation.HasKeyword(LocTypeBanditCamp) || akLocation.HasKeyword(LocTypeMine))
 				addToSpawnPool(3)
 			EndIf
-		ElseIf akLocation.HasKeyword(LocTypeGiantCamp)
-			If bIsSpawnEnabled(SpawnFlags,14) && ConfigMenu.bCreaturesCanSteal && !ReviveScript.RespawnScript.IsInInteriorActual(akMarker)
-				addToSpawnPool(14)	
-			EndIf
-		ElseIf akLocation.HasKeyword(LocTypeDraugrCrypt)
-			If bIsSpawnEnabled(SpawnFlags,8) && ConfigMenu.bCreaturesCanSteal
-				addToSpawnPool(8)
-			EndIf
-			If bIsSpawnEnabled(SpawnFlags,3)
-				addToSpawnPool(3)
-			EndIf
-		ElseIf bIsSpawnEnabled(SpawnFlags,3) && akLocation.HasKeyword(LocTypeBanditCamp) || akLocation.HasKeyword(LocTypeMine)
-			addToSpawnPool(3)
-		ElseIf akLocation.HasKeyword(LocTypeFalmerHive)
-			If ConfigMenu.bCreaturesCanSteal
-				If bIsSpawnEnabled(SpawnFlags,11)
-					addToSpawnPool(11)
-				EndIf
-				If bIsSpawnEnabled(SpawnFlags,4)
-					addToSpawnPool(4)
+			If akLocation.HasKeyword(LocTypeFalmerHive)
+				If ConfigMenu.bCreaturesCanSteal
+					If bIsSpawnEnabled(SpawnFlags,11)
+						addToSpawnPool(11)
+					EndIf
+					If bIsSpawnEnabled(SpawnFlags,4)
+						addToSpawnPool(4)
+					EndIf
+					If bIsSpawnEnabled(SpawnFlags,18)
+						addToSpawnPool(18)
+					EndIf
 				EndIf
 			EndIf
-		ElseIf akLocation.HasKeyword(LocSetDwarvenRuin) || akLocation.HasKeyword(LocTypeDwarvenAutomatons)
-			If bIsSpawnEnabled(SpawnFlags,10) && ConfigMenu.bCreaturesCanSteal
-				addToSpawnPool(10)
+			If akLocation.HasKeyword(LocSetDwarvenRuin) || akLocation.HasKeyword(LocTypeDwarvenAutomatons)
+				If bIsSpawnEnabled(SpawnFlags,10) && ConfigMenu.bCreaturesCanSteal
+					addToSpawnPool(10)
+				EndIf
+				If bIsSpawnEnabled(SpawnFlags,3)
+					addToSpawnPool(3)
+				EndIf
+				If bIsSpawnEnabled(SpawnFlags,13)
+					addToSpawnPool(13)
+				EndIf
 			EndIf
-			If bIsSpawnEnabled(SpawnFlags,3)
-				addToSpawnPool(3)
+			If bIsSpawnEnabled(SpawnFlags,12) && akLocation.HasKeyword(LocTypeForswornCamp)
+				addToSpawnPool(12)
 			EndIf
-		ElseIf bIsSpawnEnabled(SpawnFlags,12) && akLocation.HasKeyword(LocTypeForswornCamp)
-			addToSpawnPool(12)
-		ElseIf akLocation.HasKeyword(LocTypeVampireLair)
-			If ConfigMenu.bSpawnCheckRelation
-				If bIsSpawnEnabled(SpawnFlags,5) && bIsPlayerVampire()
-					addToSpawnPool(5)
+			If akLocation.HasKeyword(LocTypeVampireLair)
+				If ConfigMenu.bSpawnCheckRelation
+					If bIsSpawnEnabled(SpawnFlags,5) && bIsPlayerVampire()
+						addToSpawnPool(5)
+					ElseIf bIsSpawnEnabled(SpawnFlags,23) && ConfigMenu.bCreaturesCanSteal
+						addToSpawnPool(23)
+					EndIf
 				ElseIf bIsSpawnEnabled(SpawnFlags,23) && ConfigMenu.bCreaturesCanSteal
 					addToSpawnPool(23)
 				EndIf
-			ElseIf bIsSpawnEnabled(SpawnFlags,23) && ConfigMenu.bCreaturesCanSteal
-				addToSpawnPool(23)
 			EndIf
-		ElseIf akLocation.HasKeyword(LocTypeWerewolfLair)
-			If ConfigMenu.bSpawnCheckRelation
-				If bIsSpawnEnabled(SpawnFlags,16) && bIsPlayerWereWolf()
-					addToSpawnPool(16)
+			If akLocation.HasKeyword(LocTypeWerewolfLair)
+				If ConfigMenu.bSpawnCheckRelation
+					If bIsSpawnEnabled(SpawnFlags,16) && bIsPlayerWereWolf()
+						addToSpawnPool(16)
+					ElseIf bIsSpawnEnabled(SpawnFlags,25) && ConfigMenu.bCreaturesCanSteal
+						addToSpawnPool(25)
+					EndIf
 				ElseIf bIsSpawnEnabled(SpawnFlags,25) && ConfigMenu.bCreaturesCanSteal
 					addToSpawnPool(25)
 				EndIf
-			ElseIf bIsSpawnEnabled(SpawnFlags,25) && ConfigMenu.bCreaturesCanSteal
-				addToSpawnPool(25)
 			EndIf
-		ElseIf akLocation.HasKeyword(LocTypeWarlockLair)
-			If bIsSpawnEnabled(SpawnFlags,2) && ConfigMenu.bCreaturesCanSteal
-				addToSpawnPool(2)
+			If akLocation.HasKeyword(LocTypeWarlockLair)
+				If bIsSpawnEnabled(SpawnFlags,2) && ConfigMenu.bCreaturesCanSteal
+					addToSpawnPool(2)
+				EndIf
+				If bIsSpawnEnabled(SpawnFlags,24)
+					addToSpawnPool(24)
+				EndIf
 			EndIf
-			If bIsSpawnEnabled(SpawnFlags,24)
-				addToSpawnPool(24)
+			If akLocation.HasKeyword(LocSetNordicRuin)
+				If ConfigMenu.bCreaturesCanSteal
+					If bIsSpawnEnabled(SpawnFlags,8)
+						addToSpawnPool(8)
+					EndIf
+					If bIsSpawnEnabled(SpawnFlags,18)
+						addToSpawnPool(18)
+					EndIf
+				EndIf
+				If bIsSpawnEnabled(SpawnFlags,3)
+					addToSpawnPool(3)
+				EndIf
+				If bIsSpawnEnabled(SpawnFlags,13)
+					addToSpawnPool(13)
+				EndIf
 			EndIf
-		ElseIf akLocation.HasKeyword(LocSetNordicRuin)
-			If bIsSpawnEnabled(SpawnFlags,8) && ConfigMenu.bCreaturesCanSteal
-				addToSpawnPool(8)
+			If akLocation.HasKeyword(LocTypeMilitaryFort)
+				If bIsSpawnEnabled(SpawnFlags,17) && ConfigMenu.bCreaturesCanSteal
+					addToSpawnPool(17)
+				EndIf
+				If bIsSpawnEnabled(SpawnFlags,13)
+					addToSpawnPool(13)
+				EndIf
 			EndIf
-			If bIsSpawnEnabled(SpawnFlags,3)
-				addToSpawnPool(3)
-			EndIf
-		ElseIf akLocation.HasKeyword(LocTypeDungeon)
-			If bIsSpawnEnabled(SpawnFlags,17) && ConfigMenu.bCreaturesCanSteal
-				addToSpawnPool(17)
-			EndIf
-			If bIsSpawnEnabled(SpawnFlags,3)
-				addToSpawnPool(3)
-			EndIf
-		ElseIf akLocation.HasKeyword(LocTypeDragonPriestLair)
-			If bIsSpawnEnabled(SpawnFlags,6) && ConfigMenu.bCreaturesCanSteal
-				addToSpawnPool(6)
-			EndIf
-		ElseIf akLocation.HasKeyword(LocTypeHagravenNest)
-			If bIsSpawnEnabled(SpawnFlags,15) && ConfigMenu.bCreaturesCanSteal
-				addToSpawnPool(15)
-			EndIf
-			If bIsSpawnEnabled(SpawnFlags,27)
-				addToSpawnPool(27)
-			EndIf
-		ElseIf akLocation.HasKeyword(LocTypeDragonLair)
-			If ConfigMenu.bCreaturesCanSteal
-				If bIsSpawnEnabled(SpawnFlags,6) && ReviveScript.RespawnScript.IsInInteriorActual(akMarker)
+			If akLocation.HasKeyword(LocTypeDragonPriestLair)
+				If bIsSpawnEnabled(SpawnFlags,6) && ConfigMenu.bCreaturesCanSteal
 					addToSpawnPool(6)
 				EndIf
-				If bIsSpawnEnabled(SpawnFlags,7)
-					addToSpawnPool(7)
+			EndIf
+			If akLocation.HasKeyword(LocTypeHagravenNest)
+				If ConfigMenu.bCreaturesCanSteal
+					If bIsSpawnEnabled(SpawnFlags,15)
+						addToSpawnPool(15)
+					EndIf
+					If bIsSpawnEnabled(SpawnFlags,26)
+						addToSpawnPool(26)
+					EndIf
+				EndIf
+				If bIsSpawnEnabled(SpawnFlags,27)
+					addToSpawnPool(27)
 				EndIf
 			EndIf
-		ElseIf akLocation.HasKeyword(LocSetCave) || akLocation.HasKeyword(LocSetCaveIce)
-			If bIsSpawnEnabled(SpawnFlags,22) && ConfigMenu.bCreaturesCanSteal
-				addToSpawnPool(22)
+			If akLocation.HasKeyword(LocTypeDragonLair)
+				If ConfigMenu.bCreaturesCanSteal
+					If bIsSpawnEnabled(SpawnFlags,6) && ReviveScript.RespawnScript.IsInInteriorActual(akMarker)
+						addToSpawnPool(6)
+					EndIf
+					If bIsSpawnEnabled(SpawnFlags,7)
+						addToSpawnPool(7)
+					EndIf
+				EndIf
 			EndIf
-		ElseIf akLocation.HasKeyword(LocTypeSprigganGrove)
-			If bIsSpawnEnabled(SpawnFlags,19) && ConfigMenu.bCreaturesCanSteal
-				addToSpawnPool(19)
+			If akLocation.HasKeyword(LocSetCave) || akLocation.HasKeyword(LocSetCaveIce)
+				If ConfigMenu.bCreaturesCanSteal
+					If bIsSpawnEnabled(SpawnFlags,22)
+						addToSpawnPool(22)
+					EndIf
+					If bIsSpawnEnabled(SpawnFlags,18)
+						addToSpawnPool(18)
+					EndIf
+					If bIsSpawnEnabled(SpawnFlags,17)
+						addToSpawnPool(17)
+					EndIf
+					If akLocation.HasKeyword(LocSetCaveIce)
+						If bIsSpawnEnabled(SpawnFlags,26)
+							addToSpawnPool(26)
+						EndIf
+					EndIf
+				EndIf
 			EndIf
-		ElseIf ReviveScript.RespawnScript.bInSameLocation(ThalmorEmbassyLocation, akMarker)
-			If bIsSpawnEnabled(SpawnFlags,20) 
-				If !ConfigMenu.bSpawnCheckRelation || \
-				(!PlayerRef.GetRace() || ((PlayerRef.GetRace() != HighElf) && (PlayerRef.GetRace() != HighElfVampire)))
+			If akLocation.HasKeyword(LocTypeSprigganGrove)
+				If ConfigMenu.bCreaturesCanSteal
+					If bIsSpawnEnabled(SpawnFlags,19)
+						addToSpawnPool(19)
+					EndIf
+					If bIsSpawnEnabled(SpawnFlags,26)
+						addToSpawnPool(26)
+					EndIf
+				EndIf
+			EndIf
+			If ReviveScript.RespawnScript.bInSameLocation(ThalmorEmbassyLocation, akMarker)
+				If bIsSpawnEnabled(SpawnFlags,20) 
 					addToSpawnPool(20)
 				EndIf
 			EndIf
+			If ReviveScript.RespawnScript.bInSameLocation(BthardamzLocation, akMarker)
+				If bIsSpawnEnabled(SpawnFlags,0)
+					addToSpawnPool(0)
+				EndIf
+			EndIf
+			If ReviveScript.RespawnScript.bInSameLocation(ShrineofMehrunesDagonLocation, akMarker)
+				If bIsSpawnEnabled(SpawnFlags,9) && ConfigMenu.bCreaturesCanSteal
+					addToSpawnPool(9)
+				EndIf
+			EndIf
+		ElseIf !ReviveScript.RespawnScript.IsInInteriorActual(akMarker)
+			If bIsSpawnEnabled(SpawnFlags,21)
+				addToSpawnPool(21)
+			EndIf	
+			If bIsSpawnEnabled(SpawnFlags,3)
+				addToSpawnPool(3)
+			EndIf				
 		EndIf
+		If (akMarker.GetParentCell() == MehrunesDagonShrine)
+			If bIsSpawnEnabled(SpawnFlags,9) && ConfigMenu.bCreaturesCanSteal
+				addToSpawnPool(9)
+			EndIf
+		EndIf
+		;Debug.Trace("iSpawnArr :"+iSpawnArr)
 		If iSpawnPool > 0
-			If iTotalSpawns == 1 && \
+			If iTotalSpawns == 1 && akLocation &&\
 			!akLocation.HasKeyword(LocTypeHabitation) && !akLocation.HasKeyword(LocTypeDwelling);Bandits can be anywhere
 				addToSpawnPool(3)
 			EndIf

@@ -73,6 +73,8 @@ GlobalVariable Property moaRandomDestination Auto
 Float Property DefaultTimeScale = 20.0 Auto Hidden
 ObjectReference Property TOWMarker Auto
 FormList property CustomRespawnPoints Auto
+Bool bFirstTry = False
+Bool bFirstTryFailed = False
 
 
 Function SetVars()
@@ -208,14 +210,18 @@ Bool Function bTryToMoveByQuest(Quest aTargetDetector, ReferenceAlias akTarget, 
 	Return False
 Endfunction
 
-Bool Function bIsTeleportSafe()
-	;ConfigMenu.bIsLoggingEnabled && ReviveScript.LogCurrentState()
-	Return !(PlayerRef.GetActorValue("paralysis") || \
-	PlayerRef.GetAnimationVariableBool("bIsSynced") || \
-	PlayerRef.GetAnimationVariableBool("IsStaggering"))
+Bool Function bIsTeleportSafe(ObjectReference akMarker)
+	If bFirstTryFailed
+		bFirstTryFailed = False
+		Return False
+	EndIf
+	;Return !(PlayerRef.GetActorValue("paralysis") || PlayerRef.GetAnimationVariableBool("bIsSynced"))
+	Debug.Trace( "IsAttached:"+akMarker.GetParentCell().IsAttached())
+	;Debug.Trace( "IsLoaded:"+akMarker.GetCurrentLocation().IsLoaded())
+	Return !(PlayerRef.GetAnimationVariableBool("bIsSynced") || (PlayerRef.GetActorValue("paralysis") != 0 && PlayerRef.GetActorValue("paralysis") != 1) || (PlayerRef.GetActorValue("paralysis") && akMarker.GetParentCell() && akMarker.GetParentCell().IsAttached()))
 EndFunction
 
-Bool Function bIsArrived(ObjectReference Marker)
+Bool Function bIsArrived(ObjectReference akMarker)
 	Float fMinDistance = 750.0
 	If ConfigMenu.bIsRagdollEnabled && !ConfigMenu.bDisableUnsafe
 		fMinDistance = 4000.0
@@ -228,29 +234,40 @@ Bool Function bIsArrived(ObjectReference Marker)
 	If !ReviveScript.bIsCameraStateSafe()
 		Game.ForceThirdPerson()
 	EndIf
-	If !bIsTeleportSafe()
-		If (PlayerRef.GetActorValue("paralysis"))
+	If !bIsTeleportSafe(akMarker)
+		If PlayerRef.GetActorValue("paralysis")
 			PlayerRef.SetActorValue("paralysis",0)
+			If PlayerRef.GetActorValue("paralysis")
+				PlayerRef.ForceActorValue("paralysis",0)
+			EndIf
+			Utility.Wait(6.5)
 		EndIf
 		Float i = 5.0
-		While ( !bIsTeleportSafe() && ( i > 0.0 ))
+		While ( !bIsTeleportSafe(akMarker) && ( i > 0.0 ))
 			Utility.Wait(0.2)
 			i -= 0.2
 		Endwhile
 	EndIf
-	Float fTravel = PlayerMarker.GetDistance(Marker)
-	PlayerRef.MoveTo(Marker)
+	Float fTravel = PlayerMarker.GetDistance(akMarker)
+	PlayerRef.MoveTo(akMarker)
 	Utility.Wait(0.5)
 	Float fFrom = PlayerRef.GetDistance(PlayerMarker)
-	Float fTo = PlayerRef.GetDistance(Marker)
+	Float fTo = PlayerRef.GetDistance(akMarker)
 	ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Distance between two Points: "+ fTravel)
 	ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Distance Traveled: "+ fFrom)
 	ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Distance from Destination: "+ fTo)
 	
 	If fTo < fMinDistance
 		If fTravel < 1500.0 || fFrom > fTo
+			If bFirstTry
+				bFirstTry = False
+			EndIf
 			Return True
 		EndIf
+	EndIf
+	If bFirstTry
+		bFirstTryFailed = True
+		bFirstTry = False
 	EndIf
 	Return False
 EndFunction
@@ -292,7 +309,11 @@ EndFunction
 
 Function SendToDefaultMarker()
 	If ConfigMenu.bKillIfCantRespawn
-		PlayerRef.KillEssential()
+		PlayerRef.EndDeferredKill()
+		Utility.Wait(0.1)
+		If !PlayerRef.IsDead()
+			PlayerRef.KillEssential()
+		EndIf
 	Else
 		If PlayerMarker.GetParentCell() != ReviveScript.DefaultCell
 			bIsArrived(PlayerMarker)
@@ -1142,6 +1163,8 @@ Function SelectRespawnPointbyMenu()
 Endfunction
 
 Function Respawn()
+	bFirstTry = True
+	bFirstTryFailed = False
 	If ( ConfigMenu.bSendToJail && !ReviveScript.NPCScript.bInBeastForm() && ReviveScript.NPCScript.bGuardCanSendToJail() )
 		ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Sending Player to jail...")
 		Faction CrimeFaction = ReviveScript.Guard.GetCrimeFaction()

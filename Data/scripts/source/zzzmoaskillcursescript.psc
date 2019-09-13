@@ -119,11 +119,11 @@ Function SetVars()
 	EndIf
 EndFunction
 
-Function ReduceSkills(String Skill = "Random",Int Percent = -1, Int  MinAmount = 1, Int MaxAmount = 1)
+Function ReduceSkills(String Skill = "Random",Int Percent = -1, Int  MinAmount = 1, Int MaxAmount = 1, Bool bOnlyXP = False)
 	Float[] fSkillUseMult
 	Int i
 	If bSkillReduced()
-		If ConfigMenu.bLoseSkillForever && !ConfigMenu.bDisableUnsafe && ConfigMenu.bDLIEOK
+		If !bOnlyXP && (ConfigMenu.bLoseSkillForever && !ConfigMenu.bDisableUnsafe && ConfigMenu.bDLIEOK)
 			ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Can't lose skills forever when they are already reduced")
 			Return
 		Else
@@ -139,7 +139,13 @@ Function ReduceSkills(String Skill = "Random",Int Percent = -1, Int  MinAmount =
 	Int CurrentLevel = PlayerRef.GetLevel()
 	Float CurrentXP = Game.GetPlayerExperience()
 	Float[] Result = New Float[2]
-	ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Reducing Skills...")
+	If ConfigMenu.bIsLoggingEnabled
+		If !bOnlyXP
+			Debug.Trace("MarkOfArkay: Reducing skill...")
+		Else
+			Debug.Trace("MarkOfArkay: Reducing skill xp...")
+		EndIf
+	EndIf
 	Int _amount
 	Int Min = 0
 	Int Max = 0
@@ -152,7 +158,7 @@ Function ReduceSkills(String Skill = "Random",Int Percent = -1, Int  MinAmount =
 	While i > 0
 		i -= 1
 		skillLevel = PlayerRef.GetBaseActorValue(sSkillName[i]) As Int
-		If  skillLevel > 1 && ((ConfigMenu.bLoseSkillForever && !ConfigMenu.bDisableUnsafe && ConfigMenu.bDLIEOK) || (iSkillCap[i] <= 0 || skillLevel < iSkillCap[i]))
+		If  (bOnlyXP && skillLevel > 0) || (!bOnlyXP && skillLevel > 1 && ((ConfigMenu.bLoseSkillForever && !ConfigMenu.bDisableUnsafe && ConfigMenu.bDLIEOK) || (iSkillCap[i] <= 0 || skillLevel < iSkillCap[i])))
 			SkillsFlags[i] = True
 			If Skill == "Highest"
 				If skillLevel > Max || (skillLevel == Max && Utility.RandomInt(0,1))
@@ -179,9 +185,17 @@ Function ReduceSkills(String Skill = "Random",Int Percent = -1, Int  MinAmount =
 	Endwhile
 	If Skill && (Skill != "Random")
 		If Skill == "Highest" && maxIndex > -1
-			ReduceSkill(sSkillName[maxIndex],Percent,MinAmount,MaxAmount,CurrentLevel,CurrentXP)
+			If bOnlyXP
+				reduceSkillXP(sSkillName[maxIndex])
+			Else
+				ReduceSkill(sSkillName[maxIndex],Percent,MinAmount,MaxAmount,CurrentLevel,CurrentXP)
+			EndIf
 		ElseIf Skill == "Lowest" && minIndex > -1
-			ReduceSkill(sSkillName[minIndex],Percent,MinAmount,MaxAmount,CurrentLevel,CurrentXP)
+			If bOnlyXP
+				reduceSkillXP(sSkillName[minIndex])
+			Else
+				ReduceSkill(sSkillName[minIndex],Percent,MinAmount,MaxAmount,CurrentLevel,CurrentXP)
+			EndIf
 		ElseIf (Skill == "All_Random") || (Max && Skill == "Highest_All") || (Min && Skill == "Lowest_All")
 			i = 0
 			Int len = SkillIndex.length
@@ -194,20 +208,32 @@ Function ReduceSkills(String Skill = "Random",Int Percent = -1, Int  MinAmount =
 				EndIf
 				If Skill == "Highest_All"
 					If ((PlayerRef.GetBaseActorValue(sSkillName[SkillIndex[i]]) As Int) == Max)
-						Result = ReduceSkill(sSkillName[SkillIndex[i]],Percent,MinAmount,MaxAmount,CurrentLevel,CurrentXP)
-						CurrentLevel = Result[0] As Int
-						CurrentXP = Result[1]
+						If bOnlyXP
+							reduceSkillXP(sSkillName[SkillIndex[i]])
+						Else
+							Result = ReduceSkill(sSkillName[SkillIndex[i]],Percent,MinAmount,MaxAmount,CurrentLevel,CurrentXP)
+							CurrentLevel = Result[0] As Int
+							CurrentXP = Result[1]
+						EndIf
 					EndIf
 				ElseIf Skill == "Lowest_All"
 					If ((PlayerRef.GetBaseActorValue(sSkillName[SkillIndex[i]]) As Int) == Min)
+						If bOnlyXP
+							reduceSkillXP(sSkillName[SkillIndex[i]])
+						Else
+							Result = ReduceSkill(sSkillName[SkillIndex[i]],Percent,MinAmount,MaxAmount,CurrentLevel,CurrentXP)
+							CurrentLevel = Result[0] As Int
+							CurrentXP = Result[1]
+						EndIf
+					EndIf
+				ElseIf SkillsFlags[SkillIndex[i]]
+					If bOnlyXP
+						reduceSkillXP(sSkillName[SkillIndex[i]])
+					Else
 						Result = ReduceSkill(sSkillName[SkillIndex[i]],Percent,MinAmount,MaxAmount,CurrentLevel,CurrentXP)
 						CurrentLevel = Result[0] As Int
 						CurrentXP = Result[1]
 					EndIf
-				ElseIf SkillsFlags[SkillIndex[i]]
-					Result = ReduceSkill(sSkillName[SkillIndex[i]],Percent,MinAmount,MaxAmount,CurrentLevel,CurrentXP)
-					CurrentLevel = Result[0] As Int
-					CurrentXP = Result[1]
 				EndIf
 				If CurrentLevel <= 1 && CurrentXP <= 0.0
 					bBreak = True
@@ -231,12 +257,16 @@ Function ReduceSkills(String Skill = "Random",Int Percent = -1, Int  MinAmount =
 					EndIf
 				Endwhile
 				If iIndex > -1
-					Result = ReduceSkill(sSkillName[iIndex],Percent,MinAmount,MaxAmount,CurrentLevel,CurrentXP)
-					CurrentLevel = Result[0] As Int
-					CurrentXP = Result[1]
-					SkillsFlags[iIndex] = False
-					If CurrentLevel <= 1 && CurrentXP <= 0.0
-						bBreak = True
+					If bOnlyXP
+						reduceSkillXP(sSkillName[iIndex])
+					Else
+						Result = ReduceSkill(sSkillName[iIndex],Percent,MinAmount,MaxAmount,CurrentLevel,CurrentXP)
+						CurrentLevel = Result[0] As Int
+						CurrentXP = Result[1]
+						SkillsFlags[iIndex] = False
+						If CurrentLevel <= 1 && CurrentXP <= 0.0
+							bBreak = True
+						EndIf
 					EndIf
 				Else
 					bBreak = True
@@ -251,26 +281,30 @@ Function ReduceSkills(String Skill = "Random",Int Percent = -1, Int  MinAmount =
 				If SkillsFlags[i] 
 					Int iCurrent = PlayerRef.GetBaseActorValue(sSkillName[i]) As Int
 					Int num = 0
-					If Percent > 0
-						If iCurrent > 0
-							num = (( Percent * (iCurrent- 1 )) / 100 ) As Int
-							;If num < 1
-							;	num = 1
-							;EndIf
-						EndIf
+					If bOnlyXP
+						num = 1
 					Else
-						If MaxAmount >= iCurrent
-							MaxAmount = iCurrent - 1
+						If Percent > 0
+							If iCurrent > 0
+								num = (( Percent * (iCurrent- 1 )) / 100 ) As Int
+								;If num < 1
+								;	num = 1
+								;EndIf
+							EndIf
+						Else
+							If MaxAmount >= iCurrent
+								MaxAmount = iCurrent - 1
+							EndIf
+							If MinAmount >= iCurrent
+								MinAmount = iCurrent - 1
+							EndIf
+							If MaxAmount < MinAmount
+								Int tmp = MinAmount
+								MinAmount = MaxAmount
+								MaxAmount = tmp
+							EndIf
+							num = Utility.RandomInt(MinAmount,MaxAmount)
 						EndIf
-						If MinAmount >= iCurrent
-							MinAmount = iCurrent - 1
-						EndIf
-						If MaxAmount < MinAmount
-							Int tmp = MinAmount
-							MinAmount = MaxAmount
-							MaxAmount = tmp
-						EndIf
-						num = Utility.RandomInt(MinAmount,MaxAmount)
 					EndIf
 					iNum[i] = num
 				Else
@@ -292,16 +326,21 @@ Function ReduceSkills(String Skill = "Random",Int Percent = -1, Int  MinAmount =
 							EndIf
 						EndIf
 						If iNum[SkillIndex[i]] && !bBreak1
-							Result = ReduceSkill(sSkillName[SkillIndex[i]],-1,1,1,CurrentLevel,CurrentXP)
-							CurrentLevel = Result[0] As Int
-							CurrentXP = Result[1]
-							;Debug.Trace("lvl:" + CurrentLevel+","+CurrentXP)
-							iNum[SkillIndex[i]] = iNum[SkillIndex[i]] - 1
-							If CurrentLevel <= 1 && CurrentXP <= 0.0
-								bBreak = True
-								bBreak1 = True
+							If bOnlyXP
+								reduceSkillXP(sSkillName[SkillIndex[i]])
+								iNum[SkillIndex[i]] = 0
 							Else
-								bBreak = False
+								Result = ReduceSkill(sSkillName[SkillIndex[i]],-1,1,1,CurrentLevel,CurrentXP)
+								CurrentLevel = Result[0] As Int
+								CurrentXP = Result[1]
+								;Debug.Trace("lvl:" + CurrentLevel+","+CurrentXP)
+								iNum[SkillIndex[i]] = iNum[SkillIndex[i]] - 1
+								If CurrentLevel <= 1 && CurrentXP <= 0.0
+									bBreak = True
+									bBreak1 = True
+								Else
+									bBreak = False
+								EndIf
 							EndIf
 						EndIf
 					EndIf
@@ -311,13 +350,21 @@ Function ReduceSkills(String Skill = "Random",Int Percent = -1, Int  MinAmount =
 		Else
 			i = sSkillName.Find(Skill)
 			If (i > -1) && SkillsFlags[i]
-				ReduceSkill(Skill,Percent,MinAmount,MaxAmount,CurrentLevel,CurrentXP)
+				If bOnlyXP
+					reduceSkillXP(Skill)
+				Else
+					ReduceSkill(Skill,Percent,MinAmount,MaxAmount,CurrentLevel,CurrentXP)
+				EndIf
 			EndIf
 		EndIf
 	Else
 		i = RandomIntWithExclusionArray(0,sSkillName.Length - 1, SkillsFlags)
 		If i > -1
-			ReduceSkill(sSkillName[i],Percent,MinAmount,MaxAmount,CurrentLevel,CurrentXP)
+			If bOnlyXP
+				reduceSkillXP(sSkillName[i])
+			Else
+				ReduceSkill(sSkillName[i],Percent,MinAmount,MaxAmount,CurrentLevel,CurrentXP)
+			EndIf
 		EndIf
 	EndIf
 	If fSkillUseMult.Length == 18
@@ -328,7 +375,15 @@ Function ReduceSkills(String Skill = "Random",Int Percent = -1, Int  MinAmount =
 			DisableXP(i)		
 		EndWhile
 	EndIf
-	ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Reducing Skills finished.")
+	ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Reducing skill/skill xp finished.")
+EndFunction
+
+Function ReduceSkillXP(String Skill)
+	Int iIndex = sSkillName.Find(Skill)
+	If iIndex > -1
+		ActorValueInfo skillInfo = ActorValueInfo.GetActorValueInfoByName(Skill)
+		skillInfo.SetSkillExperience(0.0)
+	EndIf
 EndFunction
 
 Float[] Function ReduceSkill(String Skill ,Int Percent = -1, Int  MinAmount = 1, Int MaxAmount = 1, Int CurrentLevel, Float CurrentXP)

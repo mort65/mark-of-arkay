@@ -248,3 +248,10 @@ Function disintegrateWhenAble(Actor akActor) Global
 	akActor && akActor.SetCriticalStage(akActor.CritStage_DisintegrateEnd)
 	akActor && akActor.DisableNoWait()
 EndFunction
+
+Function stopBrawlQuest(Quest akBrawlQuest, Int akEndStage) Global
+	akBrawlQuest.SetStage(akEndStage)
+	Utility.Wait(1.0)
+	Game.GetPlayer().ResetHealthAndLimbs()
+	Game.GetPlayer().StopCombatAlarm()
+EndFunction

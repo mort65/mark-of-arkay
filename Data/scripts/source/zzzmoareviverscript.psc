@@ -114,10 +114,12 @@ Bool Property bInBleedout = False Auto Hidden
 Bool Property bInBleedoutAnim = False Auto Hidden
 Perk Property Invulnerable Auto
 GlobalVariable Property moaIgnoreBleedout Auto
+FormList Property Diseases Auto
 Quest Property DGIntimidateQuest Auto
 Quest Property FreeformRiften19 Auto
 Float fHealrate = 0.0
 Int iIsBeast = 0
+Bool bSheated = False
 
 Bool bDidItemsRemoved
 Bool  bSeptimRevive  
@@ -215,8 +217,7 @@ Event OnPlayerLoadGame()
 		PlayerRef.AddPerk(Invulnerable) ;because when loading a save game usually npcs start moving before player
 	EndIf
 	SetGameVars()
-	Utility.Wait(3.0)
-	PlayerRef.RemovePerk(Invulnerable)
+	RegisterForSingleUpdate(3.0)
 EndEvent
 
 Event OnDeath(Actor akKiller)
@@ -241,7 +242,7 @@ Event OnEnterBleedout()
 			ToggleSaving(True)
 			moaBleedoutHandlerState.SetValue(0)
 			LowHealthImod.Remove()
-			PlayerRef.RemovePerk(Invulnerable)
+			RegisterForSingleUpdate(5.0)
 			bInBleedout = False
 		EndIf
 	EndIf
@@ -278,6 +279,9 @@ EndEvent
 Event OnUpdate()
 	If ( ConfigMenu.iSaveOption > 1 )
 		Game.SetInChargen(abDisableSaving = True, abDisableWaiting = False, abShowControlsDisabledMessage = True)
+	EndIf
+	If GetState() == ""
+		PlayerRef.RemovePerk(Invulnerable)
 	EndIf
 EndEvent
 
@@ -418,10 +422,13 @@ Function checkHealth()
 				fHealrate = PlayerRef.GetActorValue("HealRate")
 				PlayerRef.SetActorValue("HealRate",0.0)
 				bInBleedoutAnim = True
+				bSheated = False
 				PlayerRef.AddPerk(Invulnerable)
 				Game.DisablePlayerControls()
 				iIsBeast = NPCScript.iInBeastForm()
-				If  ConfigMenu.bDisableUnsafe || !ConfigMenu.bIsRagdollEnabled
+				If ConfigMenu.bIsRagdollEnabled
+					BleedoutHandler(ToggleState())
+				Else
 					Bool bSafe = (!iIsBeast && \
 					!PlayerRef.GetActorValue("paralysis") && \
 					!PlayerRef.GetAnimationVariableBool("bIsSynced"))
@@ -429,8 +436,6 @@ Function checkHealth()
 					Utility.Wait(2.0)
 					BleedoutHandler(ToggleState())
 					bSafe && Debug.SendAnimationEvent(PlayerRef, "BleedoutStop")
-				Else
-					BleedoutHandler(ToggleState())
 				EndIf
 				If GetState() == ""
 					Game.EnablePlayerControls()
@@ -438,8 +443,11 @@ Function checkHealth()
 					ToggleSaving(True)
 					moaBleedoutHandlerState.SetValue(0)
 					LowHealthImod.Remove()
-					PlayerRef.RemovePerk(Invulnerable)
 					PlayerRef.SetActorValue("HealRate",fHealrate)
+					If !bSheated
+						PlayerRef.DrawWeapon()
+					EndIf
+					RegisterForSingleUpdate(5.0)
 					bInBleedoutAnim = False
 					bInBleedout = False
 				EndIf
@@ -464,6 +472,9 @@ Function restore(Bool bRevivePlayer = True, Bool bReviveFollower = True, Bool bE
 		EndIf
 		If bReviveFollower 
 			NPCScript.ResurrectFollowers()
+		EndIf
+		If !ConfigMenu.bDoNotStopCombatAfterRevival
+			PlayerRef.StopCombatAlarm()
 		EndIf
 	EndIf
 	Attacker = None
@@ -496,7 +507,7 @@ Function BleedoutHandler(String CurrentState)
 		GoToState("")
 		Return
 	EndIf
-	If ConfigMenu.bIsRagdollEnabled && !ConfigMenu.bDisableUnsafe && \
+	If ConfigMenu.bIsRagdollEnabled && \
 	(!PlayerRef.GetActorValue("paralysis") && !iIsBeast && !PlayerRef.GetAnimationVariableBool("bIsSynced"))
 		PlayerRef.PushActorAway(PlayerRef,0)
 		PlayerRef.SetActorValue("paralysis",1)
@@ -549,15 +560,29 @@ Function BleedoutHandler(String CurrentState)
 	NPCScript.DetectFollowers()
 	strRemovedItem = ""
 	bHasAutoReviveEffect = PlayerRef.HasMagicEffect(AutoReviveSelf)
-	If PlayerRef.GetActorValue("health") < -10
-		PlayerRef.RestoreActorValue( "health", -10 - PlayerRef.GetActorValue("health") )
+	If bInBleedoutAnim
+		If !PlayerRef.GetActorValuePercentage("health")
+			While !PlayerRef.GetActorValuePercentage("health")
+				PlayerRef.DamageActorValue("health",-1000)
+			EndWhile
+		EndIf
+		Float fMinHealth = (ConfigMenu.fHealthPercTrigger * (PlayerRef.GetActorValue("health") / PlayerRef.GetActorValuePercentage("health"))) ;fHealthPercTrigger * max health
+		If PlayerRef.GetActorValue("health") < (fMinHealth - 10)
+			PlayerRef.RestoreActorValue( "health", (fMinHealth - 10) - PlayerRef.GetActorValue("health") )
+		ElseIf PlayerRef.GetActorValue("health") > (fMinHealth - 10)
+			PlayerRef.DamageActorValue( "health",  PlayerRef.GetActorValue("health") - (fMinHealth - 10))
+		EndIf
+	Else
+		If PlayerRef.GetActorValue("health") < -10
+			PlayerRef.RestoreActorValue( "health", -10 - PlayerRef.GetActorValue("health") )
+		EndIf
 	EndIf
 	If ConfigMenu.bAutoDrinkPotion && !NPCScript.bInBeastForm()
 		Int iPotion = iHasHealingPotion()
 		If iPotion > -1
 			ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Reviving by auto drinking a healing potion...")
 			Utility.Wait(ConfigMenu.fBleedoutTimeSlider)
-			If !PlayerRef.IsBleedingOut() && (!bInBleedoutAnim || (playerRef.GetActorValuePercentage("Health") > ConfigMenu.fHealthPercTrigger))
+			If !PlayerRef.IsBleedingOut() && (!bInBleedoutAnim || (playerRef.GetActorValuePercentage("Health") > ConfigMenu.fHealthPercTrigger ))
 				If ConfigMenu.iTotalRevives < 99999999
 					ConfigMenu.iTotalRevives += 1
 				EndIf
@@ -592,7 +617,7 @@ Function BleedoutHandler(String CurrentState)
 			EndIf
 			Utility.Wait(ConfigMenu.fBleedoutTimeSlider)
 		EndIf
-		If !PlayerRef.IsBleedingOut() && (!bInBleedoutAnim || playerRef.GetActorValuePercentage("Health") > ConfigMenu.fHealthPercTrigger);player revived with potion or another script and is alive after 6 secs
+		If !PlayerRef.IsBleedingOut() && (!bInBleedoutAnim || (playerRef.GetActorValuePercentage("Health") > ConfigMenu.fHealthPercTrigger));player revived with potion or another script and is alive after 6 secs
 			If ConfigMenu.iTotalRevives < 99999999
 				ConfigMenu.iTotalRevives += 1
 			EndIf
@@ -756,11 +781,11 @@ Function BleedoutHandler(String CurrentState)
 		EndIf
 	Else
 		Utility.Wait(ConfigMenu.fBleedoutTimeSlider)
-		If !PlayerRef.IsBleedingOut() && (!bInBleedoutAnim || playerRef.GetActorValuePercentage("Health") > ConfigMenu.fHealthPercTrigger)
+		If !PlayerRef.IsBleedingOut() && (!bInBleedoutAnim || playerRef.GetActorValuePercentage("Health") > ConfigMenu.fHealthPercTrigger )
 			If ConfigMenu.iTotalRevives < 99999999
 				ConfigMenu.iTotalRevives += 1
 			EndIf
-			Restore(bRevivePlayer = True, bReviveFollower = False, bEffect = False, fWait = 5, sTrace = "MarkOfArkay: Player can't be revived but isn't in bleedout.")
+			Restore(bRevivePlayer = False, bReviveFollower = False, bEffect = False, fWait = 5, sTrace = "MarkOfArkay: Player can't be revived but isn't in bleedout.")
 			Return
 		Else
 			ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Player can't be revived..." )
@@ -891,7 +916,7 @@ Int Function RemoveItemByMenu(String curState) ;trade by using menu
 				EndIf
 				iRevive = -1
 				bBreak = True
-				Restore(bRevivePlayer = True, bReviveFollower = False, bEffect = False, fwait = 5, sTrace = "MarkOfArkay: Player revived before showing the trade menu.")
+				Restore(bRevivePlayer = False, bReviveFollower = False, bEffect = False, fwait = 5, sTrace = "MarkOfArkay: Player revived before showing the trade menu.")
 			Else
 				bInBleedout = True
 				SetVars()
@@ -1094,7 +1119,7 @@ Function RevivePlayer(Bool bRevive)
 				EndIf
 			EndIf
 		EndIf
-		Restore(bRevivePlayer = True, bReviveFollower = ConfigMenu.bPlayerProtectFollower, bEffect = ConfigMenu.bIsEffectEnabled, fWait = 5, sTrace = "MarkOfArkay: Player is revived.")
+		Restore(bRevivePlayer = True, bReviveFollower = ConfigMenu.bPlayerProtectFollower, bEffect = ConfigMenu.bIsEffectEnabled, fWait = 5, sTrace = "MarkOfArkay: Player is revived.")	
 		Return
 	Else
 		If NPCScript.FollowerCanProtectPlayer() || \
@@ -1121,7 +1146,7 @@ Function RevivePlayer(Bool bRevive)
 					Debug.Trace("MarkOfArkay: Player is revived because respawn is currently disabled.")
 				EndIf
 			EndIf
-			Restore(bRevivePlayer = False, bReviveFollower = ConfigMenu.bPlayerProtectFollower, bEffect = False, fWait = 5)
+			Restore(bRevivePlayer = True, bReviveFollower = ConfigMenu.bPlayerProtectFollower, bEffect = False, fWait = 5)
 			Return
 		Else
 			NPCScript.HoldFollowers()
@@ -1328,6 +1353,7 @@ Function RevivePlayer(Bool bRevive)
 						StopAndConfirm(moaThiefNPC01, 3, 25)
 					EndIf
 				EndIf
+				PlayerRef.ResetHealthAndLimbs()
 				If ConfigMenu.bPlayerProtectFollower
 					NPCScript.ResurrectFollowers()
 				EndIf
@@ -1363,9 +1389,6 @@ Function RevivePlayer(Bool bRevive)
 				EndIf
 				Attacker = None
 				ResetPlayer()
-				If ( ConfigMenu.bFadeToBlack || ConfigMenu.bInvisibility || ConfigMenu.fRespawnTimeSlider)
-					RespawnScript.PassTime(ConfigMenu.fRespawnTimeSlider,6.0)
-				EndIf
 				PlayerRef.SetAlpha(1.0,True)
 				Utility.Wait(1.0)
 				NPCScript.ToggleFollower(True)
@@ -1400,6 +1423,12 @@ Function RevivePlayer(Bool bRevive)
 						PlayerRef.ForceActorValue("paralysis",0)
 					EndIf
 					Utility.Wait(6.5)
+				EndIf
+				If ConfigMenu.fDiseaseChanceSlider && (Utility.RandomInt(0,99) < ConfigMenu.fDiseaseChanceSlider)
+					infectPlayer()
+				EndIf
+				If ( ConfigMenu.bFadeToBlack || ConfigMenu.bInvisibility || ConfigMenu.fRespawnTimeSlider)
+					RespawnScript.PassTime(ConfigMenu.fRespawnTimeSlider,6.0)
 				EndIf
 				If ConfigMenu.bFadeToBlack
 					BlackScreen.PopTo(FadeIn)
@@ -1657,6 +1686,7 @@ Function ResetPlayer()
 		PlayerRef.SheatheWeapon()
 	EndIf
 	RequipSpells()
+	bSheated = True
 EndFunction
 
 Function ShiftBack()
@@ -1704,6 +1734,27 @@ Function ToggleSaving(Bool bSave)
 		Else
 			Game.SetInChargen(abDisableSaving = True, abDisableWaiting = False, abShowControlsDisabledMessage = True)
 		EndIf
+	EndIf
+EndFunction
+
+Function infectPlayer()
+	If Diseases.GetSize() == 0
+		Return
+	EndIf
+	Int iIndex = Diseases.GetSize()
+	Bool[] bFlagArr = Utility.CreateBoolArray(iIndex)
+	Bool bCanInfect = False
+	While iIndex > 0
+		iIndex -= 1
+		If PlayerRef.HasSpell(Diseases.GetAt(iIndex) As Spell)
+			bFlagArr[iIndex] = False
+		Else
+			bFlagArr[iIndex] = True
+			bCanInfect = True
+		EndIf
+	EndWhile
+	If bCanInfect
+		PlayerRef.AddSpell(Diseases.GetAt(RandomIntWithExclusionArray( 0, Diseases.GetSize() - 1, bFlagArr)) As Spell)
 	EndIf
 EndFunction
 

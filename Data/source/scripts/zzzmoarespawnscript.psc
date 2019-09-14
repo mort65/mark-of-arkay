@@ -227,9 +227,8 @@ Bool Function bIsArrived(ObjectReference akMarker)
 		fMinDistance = 4000.0
 	EndIf
 	PlayerRef.DispelAllSpells()
-	If (PlayerRef.IsBleedingOut() || (PlayerRef.GetActorValue("Health") < PlayerRef.GetBaseActorValue("Health")))
+	If PlayerRef.IsBleedingOut() || (PlayerRef.GetActorValue("Health") < PlayerRef.GetBaseActorValue("Health"))
 		PlayerRef.ResetHealthAndLimbs()
-		PlayerRef.RestoreActorValue("Health",9999)
 	EndIf
 	If !ReviveScript.bIsCameraStateSafe()
 		Game.ForceThirdPerson()

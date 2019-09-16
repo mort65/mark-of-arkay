@@ -1459,7 +1459,7 @@ Function RevivePlayer(Bool bRevive)
 				If moaThiefNPC01.IsRunning()
 					Thief && ItemScript.AddStolenItemMarker(Thief)
 				EndIf
-				If ItemScript.bIsItemsRemoved && bCursed()
+				If bCursed()
 					If moaSoulMark01.IsRunning()
 						If ConfigMenu.bLostItemQuest
 							moaRetrieveLostItems.Start()

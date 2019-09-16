@@ -169,8 +169,24 @@ Int oidTriggerOnHealthPerc
 Int oidTriggerOnBleedout
 Int oidAlwaysSpawn
 Int oidHealthTriggerSlider
-Int oidDiseaseChanceSlider
+Int oidDisChanceSlider
 Int oidOnlyLoseSkillXP
+Int oidDisProgChanceSlider
+Int oidDisPriceMultSlider
+Int oidDisPriceSlider
+Int oidMultipleDis
+Int oidMultipleDisProg
+Int oidOnlyInfectIfHasBaseDis
+Int oidCureDisIfHasBlessing
+Int oidDiseaseCurse
+Float Property fDisChanceSlider = 25.0 Auto Hidden
+Float Property fDisProgChanceSlider = 50.0 Auto Hidden
+Bool Property bCureDisIfHasBlessing = False Auto Hidden
+Bool Property bOnlyInfectIfHasBaseDis = True Auto Hidden
+Float Property fDisPriceMultSlider = 0.5 Auto Hidden
+Float Property fDisPriceSlider = 100.0 Auto Hidden
+Bool Property bMultipleDis = True Auto Hidden
+Bool Property bMultipleDisProg = True Auto Hidden
 Bool Property bRetrySpawnWithoutLocation = True Auto Hidden
 Int Property iSpawn = 0 Auto Hidden
 Float Property fTotalCustomRPSlotSlider = 1.0 Auto Hidden
@@ -188,6 +204,7 @@ GlobalVariable Property moaLootChance Auto
 GlobalVariable Property moaScrollChance Auto
 GlobalVariable Property moaBleedoutHandlerState Auto
 GlobalVariable Property moaBleedouAnimation Auto
+GlobalVariable Property moaCureDisIfHasBlessing Auto
 GlobalVariable Property moaPraytoSave Auto
 GlobalVariable Property moaCreaturesCanSteal Auto
 GlobalVariable Property moaSnoozeState Auto
@@ -276,7 +293,7 @@ Float Property fLootChanceSlider = 50.0 Auto Hidden
 Float Property fScrollChanceSlider = 25.0 Auto Hidden
 Float Property fRecallCastSlider = 0.0 Auto Hidden
 Float Property fMarkCastSlider = 0.0 Auto Hidden
-Float Property fRPMinDistanceSlider = 2500.0 Auto Hidden
+Float Property fRPMinDistanceSlider = 2000.0 Auto Hidden
 Int Property iExternalIndex = -1 Auto Hidden
 Int Property iSpawnMinLevel = 4 Auto Hidden
 Int Property iSpawnMaxLevel = 4 Auto Hidden
@@ -309,6 +326,7 @@ Objectreference Property LocationMarker2 Auto
 ObjectReference Property LostItemsChest Auto
 ObjectReference Property ThiefMarker Auto
 Formlist property ExternalMarkerList Auto
+Bool Property bDiseaseCurse = False Auto Hidden
 Int Property iTotalBleedOut = 0 Auto Hidden
 Int Property iTotalRespawn = 0 Auto Hidden
 Int Property iTotalRevives = 0 Auto Hidden
@@ -380,7 +398,6 @@ Bool Property bLoseDragonSoulAll = False Auto Hidden
 Bool Property bLoseGrandSoulGemAll = False Auto Hidden
 Bool Property bLoseBlackSoulGemAll = False Auto Hidden
 Bool Property bOnlyLoseSkillXP = False Auto Hidden
-Float Property fDiseaseChanceSlider = 0.0 Auto Hidden
 Message Property ModVersionError Auto
 GlobalVariable Property moaIsBusy Auto
 GlobalVariable Property moaNoKillMoveOnPlayer Auto
@@ -431,14 +448,14 @@ Event OnPageReset(String page)
 		SetCursorPosition(20)
 		oidGoldRevivalEnabled = AddToggleOption("$mrt_MarkofArkay_GoldRevivalEnabled", bIsGoldEnabled, flags )
 		SetCursorPosition(3)
-		If ( moaState.getValue() == 1 )
+		If ( moaState.getValue() == 1 ) && (!ReviveScript.NPCScript.bInBeastForm() && !PlayerRef.GetAnimationVariableBool("bIsSynced"))
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
-		oidTriggerOnBleedout = AddToggleOption("$mrt_MarkofArkay_TriggerOnBleedout", bTriggerOnBleedout)
+		oidTriggerOnBleedout = AddToggleOption("$mrt_MarkofArkay_TriggerOnBleedout", bTriggerOnBleedout, flags)
 		SetCursorPosition(5)
-		oidTriggerOnHealthPerc = AddToggleOption("$mrt_MarkofArkay_TriggerOnHealthPerc", bTriggerOnHealthPerc)
+		oidTriggerOnHealthPerc = AddToggleOption("$mrt_MarkofArkay_TriggerOnHealthPerc", bTriggerOnHealthPerc, flags)
 		SetCursorPosition(7)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( bTriggerOnHealthPerc )
 			flags =	OPTION_FLAG_NONE
@@ -702,78 +719,101 @@ Event OnPageReset(String page)
 		oidTempArkayCurse = AddToggleOption("$mrt_MarkofArkay_TempArkayCurse",bIsArkayCurseTemporary, flags)
 		SetCursorPosition(6)
 		oidArkayCurses_M = AddMenuOption("$mrt_MarkofArkay_ArkayCurses_M", sGetArkayCurses()[iArkayCurse], flags)
-		SetCursorPosition(8)
+		SetCursorPosition(10)
+		AddHeaderOption("$mrt_MarkofArkay_HEAD_Disease_Curse")
+		SetCursorPosition(12)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1)
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
-		oidDiseaseChanceSlider = AddSliderOption("$mrt_MarkofArkay_DiseaseChanceSlider_1",fDiseaseChanceSlider, "$mrt_MarkofArkay_DiseaseChanceSlider_2", flags)
-		SetCursorPosition(12)
-		AddHeaderOption("$mrt_MarkofArkay_HEAD_Skill_Reduction")
+		oidDiseaseCurse = AddToggleOption("$mrt_MarkofArkay_DiseaseCurse", bDiseaseCurse, flags)
 		SetCursorPosition(14)
-		oidSkillReduce_M = AddMenuOption("$mrt_MarkofArkay_SkillReduce_M", sGetSkills()[iReducedSkill], flags)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bDiseaseCurse
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidDisChanceSlider = AddSliderOption("$mrt_MarkofArkay_DisChanceSlider_1",fDisChanceSlider, "$mrt_MarkofArkay_DisChanceSlider_2", flags)
 		SetCursorPosition(16)
+		oidDisProgChanceSlider = AddSliderOption("$mrt_MarkofArkay_DisProgChanceSlider_1",fDisProgChanceSlider, "$mrt_MarkofArkay_DisProgChanceSlider_2", flags)
+		SetCursorPosition(18)
+		oidDisPriceSlider = AddSliderOption("$mrt_MarkofArkay_DisPriceSlider_1",fDisPriceSlider, "$mrt_MarkofArkay_DisPriceSlider_2", flags)
+		SetCursorPosition(20)
+		oidDisPriceMultSlider = AddSliderOption("$mrt_MarkofArkay_DisPriceMultSlider_1",fDisPriceMultSlider, "$mrt_MarkofArkay_DisPriceMultSlider_2", flags)
+		SetCursorPosition(22)
+		oidCureDisIfHasBlessing = AddToggleOption("$mrt_MarkofArkay_CureDisIfHasBlessing", bCureDisIfHasBlessing , flags)		
+		SetCursorPosition(24)
+		oidMultipleDis = AddToggleOption("$mrt_MarkofArkay_MultipleDis", bMultipleDis, flags)
+		SetCursorPosition(26)
+		oidMultipleDisProg = AddToggleOption("$mrt_MarkofArkay_MultipleDisProg", bMultipleDisProg, flags)
+		SetCursorPosition(28)
+		oidOnlyInfectIfHasBaseDis = AddToggleOption("$mrt_MarkofArkay_OnlyInfectIfHasBaseDis", bOnlyInfectIfHasBaseDis , flags)
+		SetCursorPosition(32)
+		AddHeaderOption("$mrt_MarkofArkay_HEAD_Skill_Reduction")
+		SetCursorPosition(34)
+		oidSkillReduce_M = AddMenuOption("$mrt_MarkofArkay_SkillReduce_M", sGetSkills()[iReducedSkill], flags)
+		SetCursorPosition(36)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1 ) && (iReducedSkill != 0)
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidOnlyLoseSkillXP = AddToggleOption("$mrt_MarkofArkay_OnlyLoseSkillXP", bOnlyLoseSkillXP, flags)
-		SetCursorPosition(18)
+		SetCursorPosition(38)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1 ) && (iReducedSkill != 0) && !bOnlyLoseSkillXP
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidLevelReduce = AddToggleOption("$mrt_MarkofArkay_LevelReduce", bLevelReduce, flags)
-		SetCursorPosition(20)
+		SetCursorPosition(40)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1 ) && (iReducedSkill != 0) && !bSkillReduceRandomVal && !bOnlyLoseSkillXP
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidSkillReduceValSlider = AddSliderOption("$mrt_MarkofArkay_SkillReduceValSlider_1", fSkillReduceValSlider, "$mrt_MarkofArkay_SkillReduceValSlider_2", flags)
-		SetCursorPosition(22)
+		SetCursorPosition(42)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1 ) && (iReducedSkill != 0) && !bOnlyLoseSkillXP
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidSkillReduceRandomVal = AddToggleOption("$mrt_MarkofArkay_SkillReduceRandomVal",bSkillReduceRandomVal, flags)
-		SetCursorPosition(24)
+		SetCursorPosition(44)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1 ) && (iReducedSkill != 0) && bSkillReduceRandomVal && !bOnlyLoseSkillXP
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidSkillReduceMinValSlider = AddSliderOption("$mrt_MarkofArkay_killReduceMinValSlider_1", fSkillReduceMinValSlider , "{0}", flags)
-		SetCursorPosition(26)
+		SetCursorPosition(46)
 		oidSkillReduceMaxValSlider = AddSliderOption("$mrt_MarkofArkay_killReduceMaxValSlider_1", fSkillReduceMaxValSlider , "{0}", flags)
-		SetCursorPosition(28)
+		SetCursorPosition(48)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1 ) && !bDisableUnsafe && (iReducedSkill != 0) && bDLIEOK && !bOnlyLoseSkillXP
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidLoseSkillForever = AddToggleOption("$mrt_MarkofArkay_LoseSkillForever",bLoseSkillForever, flags)
-		SetCursorPosition(32)
+		SetCursorPosition(52)
 		AddHeaderOption("$mrt_MarkofArkay_HEAD_Curse_Recovery")
-		SetCursorPosition(34)
+		SetCursorPosition(54)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidLostItemQuest = AddToggleOption("$mrt_MarkofArkay_LostItemQuest",bLostItemQuest,flags)
-		SetCursorPosition(36)
+		SetCursorPosition(56)
 		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1))
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidSoulMarkStay = AddToggleOption("$mrt_MarkofArkay_SoulMarkStay",bSoulMarkStay,flags)
-		SetCursorPosition(38)
+		SetCursorPosition(58)
 		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1)) && !bDisableUnsafe
 			flags =	OPTION_FLAG_NONE
 		Else
@@ -1583,6 +1623,23 @@ Event OnOptionSelect(Int option)
 	ElseIf (option == oidTeleportMenu)
 		bTeleportMenu = !bTeleportMenu
 		SetToggleOptionValue(oidTeleportMenu, bTeleportMenu)
+	ElseIf (option == oidMultipleDis)
+		bMultipleDis = !bMultipleDis
+		SetToggleOptionValue(oidMultipleDis, bMultipleDis)
+	ElseIf (option == oidDiseaseCurse)
+		bDiseaseCurse = !bDiseaseCurse
+		SetToggleOptionValue(oidDiseaseCurse, bDiseaseCurse)
+		ForcePageReset()
+	ElseIf (option == oidMultipleDisProg)
+		bMultipleDisProg = !bMultipleDisProg
+		SetToggleOptionValue(oidMultipleDisProg, bMultipleDisProg)
+	ElseIf (option == oidOnlyInfectIfHasBaseDis)
+		bOnlyInfectIfHasBaseDis = !bOnlyInfectIfHasBaseDis
+		SetToggleOptionValue(oidOnlyInfectIfHasBaseDis, bOnlyInfectIfHasBaseDis)
+	ElseIf (option == oidCureDisIfHasBlessing)
+		bCureDisIfHasBlessing = !bCureDisIfHasBlessing
+		moaCureDisIfHasBlessing.SetValue(bCureDisIfHasBlessing As Int)
+		SetToggleOptionValue(oidCureDisIfHasBlessing, bCureDisIfHasBlessing)
 	ElseIf (option == oidJail)
 		bSendToJail = !bSendToJail
 		SetToggleOptionValue(oidJail, bSendToJail)
@@ -2018,14 +2075,29 @@ Event OnOptionSliderOpen(Int option)
 		SetSliderDialogInterval(1.0)
 	ElseIf(option == oidRPMinDistanceSlider)
 		SetSliderDialogStartValue(fRPMinDistanceSlider)
-		SetSliderDialogDefaultValue(2500.0)
+		SetSliderDialogDefaultValue(2000.0)
 		SetSliderDialogRange(0.0, 10000.0)
 		SetSliderDialogInterval(250.0)
-	ElseIf(option == oidDiseaseChanceSlider)
-		SetSliderDialogStartValue(fDiseaseChanceSlider)
-		SetSliderDialogDefaultValue(0.0)
+	ElseIf(option == oidDisChanceSlider)
+		SetSliderDialogStartValue(fDisChanceSlider)
+		SetSliderDialogDefaultValue(25.0)
 		SetSliderDialogRange(0.0, 100.0)
 		SetSliderDialogInterval(1.0)
+	ElseIf(option == oidDisProgChanceSlider)
+		SetSliderDialogStartValue(fDisProgChanceSlider)
+		SetSliderDialogDefaultValue(50.0)
+		SetSliderDialogRange(0.0, 100.0)
+		SetSliderDialogInterval(1.0)
+	ElseIf(option == oidDisPriceSlider)
+		SetSliderDialogStartValue(fDisPriceSlider)
+		SetSliderDialogDefaultValue(100.0)
+		SetSliderDialogRange(0.0, 10000.0)
+		SetSliderDialogInterval(25)
+	ElseIf(option == oidDisPriceMultSlider)
+		SetSliderDialogStartValue(fDisPriceMultSlider)
+		SetSliderDialogDefaultValue(0.5)
+		SetSliderDialogRange(0.0, 10.0)
+		SetSliderDialogInterval(0.1)
 	ElseIf (option == oidSnoozeSlider)
 		SetSliderDialogStartValue(fValueSnoozeSlider)
 		SetSliderDialogDefaultValue(0.0)
@@ -2129,7 +2201,7 @@ Event OnOptionSliderOpen(Int option)
 	ElseIf (option == oidHealthTriggerSlider)
 		SetSliderDialogStartValue((fHealthPercTrigger * 100.0) As Int)
 		SetSliderDialogDefaultValue(0.0)
-		SetSliderDialogRange(0.0, 50.0)
+		SetSliderDialogRange(0.0, 25.0)
 		SetSliderDialogInterval(1.0)		
 	EndIf
 EndEvent
@@ -2216,12 +2288,23 @@ Event OnOptionSliderAccept(int option, Float value)
 		fRPMinDistanceSlider = value
 		moaRPMinDistance.SetValue(fRPMinDistanceSlider)
 		SetSliderOptionValue(oidRPMinDistanceSlider, fRPMinDistanceSlider, "{0}")
-	ElseIf (option == oidDiseaseChanceSlider)
-		fDiseaseChanceSlider = value
-		SetSliderOptionValue(oidDiseaseChanceSlider, fDiseaseChanceSlider, "$mrt_MarkofArkay_DiseaseChanceSlider_2")
+	ElseIf (option == oidDisChanceSlider)
+		fDisChanceSlider = value
+		SetSliderOptionValue(oidDisChanceSlider, fDisChanceSlider, "$mrt_MarkofArkay_DisChanceSlider_2")
+	ElseIf (option == oidDisProgChanceSlider)
+		fDisProgChanceSlider = value
+		SetSliderOptionValue(oidDisProgChanceSlider, fDisProgChanceSlider, "$mrt_MarkofArkay_DisProgChanceSlider_2")
+	ElseIf (option == oidDisPriceSlider)
+		fDisPriceSlider = value
+		recalcCursedDisCureCosts()
+		SetSliderOptionValue(oidDisPriceSlider, fDisPriceSlider, "$mrt_MarkofArkay_DisPriceSlider_2")
+	ElseIf (option == oidDisPriceMultSlider)
+		fDisPriceMultSlider = value
+		recalcCursedDisCureCosts()
+		SetSliderOptionValue(oidDisPriceMultSlider, fDisPriceMultSlider, "$mrt_MarkofArkay_DisPriceMultSlider_2")
 	ElseIf (option == oidSkillReduceValSlider)
 		fSkillReduceValSlider = value
-		SetSliderOptionValue(oidSkillReduceValSlider, fSkillReduceValSlider, "$mrt_MarkofArkay_SkillReduceValSlider_2")	
+		SetSliderOptionValue(oidSkillReduceValSlider, fSkillReduceValSlider, "$mrt_MarkofArkay_SkillReduceValSlider_2")
 	ElseIf (option == oidSkillReduceMaxValSlider)
 		fSkillReduceMaxValSlider = value
 		SetSliderOptionValue(oidSkillReduceMaxValSlider, fSkillReduceMaxValSlider, "{0}")
@@ -2571,12 +2654,23 @@ Event OnOptionDefault(Int option)
 		fRecoveryTimeSlider = 1.0
 		SetSliderOptionValue(oidRecoveryTime, fRecoveryTimeSlider, "$mrt_MarkofArkay_RecoveryTime_2")
 	ElseIf (option == oidRPMinDistanceSlider)
-		fRPMinDistanceSlider = 2500.0
+		fRPMinDistanceSlider = 2000.0
 		moaRPMinDistance.SetValue(fRPMinDistanceSlider)
 		SetSliderOptionValue(oidRPMinDistanceSlider, fRPMinDistanceSlider, "{0}")
-	ElseIf (option == oidDiseaseChanceSlider)
-		fDiseaseChanceSlider = 0.0
-		SetSliderOptionValue(oidDiseaseChanceSlider, fDiseaseChanceSlider, "$mrt_MarkofArkay_DiseaseChanceSlider_2")
+	ElseIf (option == oidDisChanceSlider)
+		fDisChanceSlider = 25.0
+		SetSliderOptionValue(oidDisChanceSlider, fDisChanceSlider, "$mrt_MarkofArkay_DisChanceSlider_2")
+	ElseIf (option == oidDisProgChanceSlider)
+		fDisProgChanceSlider = 50.0
+		SetSliderOptionValue(oidDisProgChanceSlider, fDisProgChanceSlider, "$mrt_MarkofArkay_DisProgChanceSlider_2")
+	ElseIf (option == oidDisPriceSlider)
+		fDisPriceSlider = 100.0
+		recalcCursedDisCureCosts()
+		SetSliderOptionValue(oidDisPriceSlider, fDisPriceSlider, "$mrt_MarkofArkay_DisPriceSlider_2")
+	ElseIf (option == oidDisPriceMultSlider)
+		fDisPriceMultSlider = 0.5
+		recalcCursedDisCureCosts()
+		SetSliderOptionValue(oidDisPriceMultSlider, fDisPriceMultSlider, "$mrt_MarkofArkay_DisPriceMultSlider_2")
 	ElseIf (option == oidBleedoutTime)
 		fBleedoutTimeSlider = 6.0
 		SetSliderOptionValue(oidBleedoutTime, fBleedoutTimeSlider, "$mrt_MarkofArkay_RecoveryTime_2")	
@@ -2649,6 +2743,23 @@ Event OnOptionDefault(Int option)
 	ElseIf (option == oidTeleportMenu)
 		bTeleportMenu = True
 		SetToggleOptionValue(oidTeleportMenu,bTeleportMenu)
+	ElseIf (option == oidMultipleDis)
+		bMultipleDis = True
+		SetToggleOptionValue(oidMultipleDis,bMultipleDis)
+	ElseIf (option == oidDiseaseCurse)
+		bDiseaseCurse = False
+		SetToggleOptionValue(oidDiseaseCurse,bDiseaseCurse)
+		ForcePageReset()
+	ElseIf (option == oidMultipleDisProg)
+		bMultipleDisProg = True
+		SetToggleOptionValue(oidMultipleDisProg,bMultipleDisProg)
+	ElseIf (option == oidOnlyInfectIfHasBaseDis)
+		bOnlyInfectIfHasBaseDis = True
+		SetToggleOptionValue(oidOnlyInfectIfHasBaseDis,bOnlyInfectIfHasBaseDis)
+	ElseIf (option == oidCureDisIfHasBlessing)
+		bCureDisIfHasBlessing = False
+		moaCureDisIfHasBlessing.SetValueInt(0)
+		SetToggleOptionValue(oidCureDisIfHasBlessing,bCureDisIfHasBlessing)
 	ElseIf (option == oidTotalCustomRPSlotSlider)
 		fTotalCustomRPSlotSlider = 1.0
 		SetCustomRPFlags()
@@ -3054,8 +3165,14 @@ Event OnOptionHighlight(Int option)
 		SetInfoText("$mrt_MarkofArkay_DESC_RecoveryTime")
 	ElseIf (option == oidRPMinDistanceSlider)
 		SetInfoText("$mrt_MarkofArkay_DESC_RPMinDistanceSlider")
-	ElseIf (option == oidDiseaseChanceSlider)
-		SetInfoText("$mrt_MarkofArkay_DESC_DiseaseChanceSlider")
+	ElseIf (option == oidDisChanceSlider)
+		SetInfoText("$mrt_MarkofArkay_DESC_DisChanceSlider")
+	ElseIf (option == oidDisProgChanceSlider)
+		SetInfoText("$mrt_MarkofArkay_DESC_DisProgChanceSlider")
+	ElseIf (option == oidDisPriceSlider)
+		SetInfoText("$mrt_MarkofArkay_DESC_DisPriceSlider")
+	ElseIf (option == oidDisPriceMultSlider)
+		SetInfoText("$mrt_MarkofArkay_DESC_DisPriceMultSlider")
 	ElseIf (option == oidBleedoutTime)
 		SetInfoText("$mrt_MarkofArkay_DESC_BleedoutTime")
 	ElseIf (option == oidLootChanceSlider)
@@ -3114,6 +3231,12 @@ Event OnOptionHighlight(Int option)
 		SetInfoText("$mrt_MarkofArkay_DESC_RespawnMenu")
 	ElseIf (option == oidTeleportMenu)
 		SetInfoText("$mrt_MarkofArkay_DESC_TeleportMenu")
+	ElseIf (option == oidMultipleDis)
+		SetInfoText("$mrt_MarkofArkay_DESC_MultipleDis")
+	ElseIf (option == oidDiseaseCurse)
+		SetInfoText("$mrt_MarkofArkay_DESC_DiseaseCurse")
+	ElseIf (option == oidMultipleDisProg)
+		SetInfoText("$mrt_MarkofArkay_DESC_MultipleDisProg")
 	ElseIf (option == oidJail)
 		SetInfoText("$mrt_MarkofArkay_DESC_Jail")
 	ElseIf (option == oidDoNotStopCombat)
@@ -3310,6 +3433,10 @@ Event OnOptionHighlight(Int option)
 		SetInfoText("$mrt_MarkofArkay_DESC_SpawnHostile")
 	ElseIf (option == oidAlwaysSpawn)
 		SetInfoText("$mrt_MarkofArkay_DESC_AlwaysSpawn")
+	ElseIf (option == oidOnlyInfectIfHasBaseDis)
+		SetInfoText("$mrt_MarkofArkay_DESC_OnlyInfectIfHasBaseDis")
+	ElseIf (option == oidCureDisIfHasBlessing)
+		SetInfoText("$mrt_MarkofArkay_DESC_CureDisIfHasBlessing")
 	EndIf
 EndEvent
 
@@ -3410,6 +3537,7 @@ Function moaStop(Bool bReset = False)
 		PlayerRef.RemoveSpell(ArkayCurseTempAlt)
 		PlayerRef.RemoveSpell(MoveCustomMarker)
 		PlayerRef.RemoveSpell(RecallMarker)
+		ReviveScript.DiseaseScript.cureAllDiseases()
 		DetachMarker1.MoveToMyEditorLocation()
 		DetachMarker2.MoveToMyEditorLocation()
 		DetachMarker3.MoveToMyEditorLocation()
@@ -3926,9 +4054,6 @@ Bool function bLoadUserSettings(String sFileName)
 	fGSoulgemPSlider = fiss.loadFloat("fGSoulgemPSlider")
 	fBSoulgemPSlider = fiss.loadFloat("fBSoulgemPSlider")
 	fBleedoutTimeSlider = fiss.loadFloat("fBleedoutTimeSlider")
-	;If fBleedoutTimeSlider < 6.0
-	;	bShowBleedoutTimeWarning = False
-	;EndIf	
 	fRecoveryTimeSlider = fiss.loadFloat("fRecoveryTimeSlider")
 	fLootChanceSlider = fiss.loadFloat("fLootChanceSlider")
 	moaLootChance.SetValue(100.0 -  fLootChanceSlider)
@@ -3941,6 +4066,12 @@ Bool function bLoadUserSettings(String sFileName)
 	bSendToJail = fiss.loadBool("bSendToJail")
 	bKillIfCantRespawn = fiss.loadBool("bKillIfCantRespawn")
 	bTeleportMenu = fiss.loadBool("bTeleportMenu")
+	bMultipleDis = fiss.loadBool("bMultipleDis")
+	bDiseaseCurse = fiss.loadBool("bDiseaseCurse")
+	bMultipleDisProg = fiss.loadBool("bMultipleDisProg")
+	bOnlyInfectIfHasBaseDis = fiss.loadBool("bOnlyInfectIfHasBaseDis")
+	bCureDisIfHasBlessing = fiss.loadBool("bCureDisIfHasBlessing")
+	moaCureDisIfHasBlessing.SetValueInt(bCureDisIfHasBlessing As Int)
 	bRespawnMenu = fiss.loadBool("bRespawnMenu")
 	bFollowerProtectPlayer = fiss.loadBool("bFollowerProtectPlayer")
 	bArkayCurse = fiss.loadBool("bArkayCurse")
@@ -3956,7 +4087,10 @@ Bool function bLoadUserSettings(String sFileName)
 	iExternalIndex = fiss.loadInt("iExternalIndex")
 	fRPMinDistanceSlider = fiss.loadFloat("fRPMinDistanceSlider")
 	moaRPMinDistance.SetValue(fRPMinDistanceSlider)
-	fDiseaseChanceSlider = fiss.loadFloat("fDiseaseChanceSlider")
+	fDisChanceSlider = fiss.loadFloat("fDisChanceSlider")
+	fDisPriceSlider = fiss.loadFloat("fDisPriceSlider")
+	fDisPriceMultSlider = fiss.loadFloat("fDisPriceMultSlider")
+	fDisProgChanceSlider = fiss.loadFloat("fDisProgChanceSlider")
 	bRespawnPointsFlags[0] = fiss.loadBool("bRespawnPointsFlags0")
 	bRespawnPointsFlags[1] = fiss.loadBool("bRespawnPointsFlags1")
 	bRespawnPointsFlags[2] = fiss.loadBool("bRespawnPointsFlags2")
@@ -4138,8 +4272,25 @@ Bool Function bCheckFissErrors(String strErrors)
 			bOnlyLoseSkillXP = False
 		ElseIf strError == "Element fHealthPercTrigger not found"
 			fHealthPercTrigger = 0.00
-		ElseIf strError == "Element fDiseaseChanceSlider not found"
-			fDiseaseChanceSlider = 0.00
+		ElseIf strError == "Element fDisChanceSlider not found"
+			fDisChanceSlider = 25.00
+		ElseIf strError == "Element fDisProgChanceSlider not found"
+			fDisProgChanceSlider = 50.00
+		ElseIf strError == "Element fDisPriceSlider not found"
+			fDisPriceSlider = 100.00
+		ElseIf strError == "Element fDisPriceMultSlider not found"
+			fDisPriceMultSlider = 0.5
+		ElseIf strError == "Element bMultipleDis not found"
+			bMultipleDis = True
+		ElseIf strError == "Element bDiseaseCurse not found"
+			bDiseaseCurse = False
+		ElseIf strError == "Element bMultipleDisProg not found"
+			bMultipleDisProg = True
+		ElseIf strError == "Element bOnlyInfectIfHasBaseDis not found"
+			bOnlyInfectIfHasBaseDis = True
+		ElseIf strError == "Element bCureDisIfHasBlessing not found"
+			bCureDisIfHasBlessing = False
+			moaCureDisIfHasBlessing.SetValueInt(0)
 		Else
 			Debug.Trace("Mark of Arkay: Error loading user settings -> " + strError)
 			Result = False
@@ -4206,6 +4357,11 @@ bool function bSaveUserSettings(String sFileName)
 	fiss.saveBool("bSendToJail", bSendToJail)
 	fiss.saveBool("bKillIfCantRespawn", bKillIfCantRespawn)
 	fiss.saveBool("bTeleportMenu", bTeleportMenu)
+	fiss.saveBool("bMultipleDis", bMultipleDis)
+	fiss.saveBool("bDiseaseCurse", bDiseaseCurse)
+	fiss.saveBool("bMultipleDisProg", bMultipleDisProg)
+	fiss.saveBool("bOnlyInfectIfHasBaseDis", bOnlyInfectIfHasBaseDis)
+	fiss.saveBool("bCureDisIfHasBlessing", bCureDisIfHasBlessing)
 	fiss.saveBool("bRespawnMenu", bRespawnMenu)
 	fiss.saveBool("bFollowerProtectPlayer", bFollowerProtectPlayer)
 	fiss.saveBool("bPlayerProtectFollower", bPlayerProtectFollower)
@@ -4225,7 +4381,10 @@ bool function bSaveUserSettings(String sFileName)
 	fiss.saveInt("iTeleportLocation", iTeleportLocation)
 	fiss.saveInt("iExternalIndex", iExternalIndex)
 	fiss.saveFloat("fRPMinDistanceSlider", fRPMinDistanceSlider)
-	fiss.saveFloat("fDiseaseChanceSlider", fDiseaseChanceSlider)
+	fiss.saveFloat("fDisChanceSlider", fDisChanceSlider)
+	fiss.saveFloat("fDisPriceSlider", fDisPriceSlider)
+	fiss.saveFloat("fDisPriceMultSlider", fDisPriceMultSlider)
+	fiss.saveFloat("fDisProgChanceSlider", fDisProgChanceSlider)
 	fiss.saveBool("bRespawnPointsFlags0", bRespawnPointsFlags[0])
 	fiss.saveBool("bRespawnPointsFlags1", bRespawnPointsFlags[1])
 	fiss.saveBool("bRespawnPointsFlags2", bRespawnPointsFlags[2])
@@ -4414,6 +4573,12 @@ function LoadDefaultSettings()
 	bDoNotStopCombatAfterRevival = True
 	bKillIfCantRespawn = False
 	bTeleportMenu = True
+	bMultipleDis = True
+	bDiseaseCurse = False
+	bMultipleDisProg = True
+	bOnlyInfectIfHasBaseDis = True
+	bCureDisIfHasBlessing = False
+	moaCureDisIfHasBlessing.SetValueInt(0)
 	bRespawnMenu = False
 	bFollowerProtectPlayer = False
 	bPlayerProtectFollower = False
@@ -4434,9 +4599,12 @@ function LoadDefaultSettings()
 	moaMoralityMatters.SetValue(bMoralityMatters As Int)
 	iTeleportLocation = 0
 	iExternalIndex = -1
-	fRPMinDistanceSlider = 2500.0
+	fRPMinDistanceSlider = 2000.0
 	moaRPMinDistance.SetValue(fRPMinDistanceSlider)
-	fDiseaseChanceSlider = 0.0
+	fDisChanceSlider = 25.0
+	fDisProgChanceSlider = 50.0
+	fDisPriceSlider = 100.0
+	fDisPriceMultSlider = 0.5
 	setRPFlags(True)
 	setSpawnCounts(True)
 	setSpawnWeights(True)
@@ -4829,5 +4997,13 @@ Function setTriggerMethod(Int iIndex)
 		moaNoKillMoveOnPlayer.SetValue(1)
 		moaHealthMonitor.Start()
 		ToggleDeferredKill(True)
+	EndIf
+EndFunction
+
+Function recalcCursedDisCureCosts()
+	Int handle = ModEvent.Create("MOA_RecalcCursedDisCureCost")
+	If (handle)
+		ModEvent.PushForm(handle, self)
+		ModEvent.Send(Handle)
 	EndIf
 EndFunction

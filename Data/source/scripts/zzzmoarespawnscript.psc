@@ -215,15 +215,12 @@ Bool Function bIsTeleportSafe(ObjectReference akMarker)
 		bFirstTryFailed = False
 		Return False
 	EndIf
-	;Return !(PlayerRef.GetActorValue("paralysis") || PlayerRef.GetAnimationVariableBool("bIsSynced"))
-	Debug.Trace( "IsAttached:"+akMarker.GetParentCell().IsAttached())
-	;Debug.Trace( "IsLoaded:"+akMarker.GetCurrentLocation().IsLoaded())
 	Return !(PlayerRef.GetAnimationVariableBool("bIsSynced") || (PlayerRef.GetActorValue("paralysis") != 0 && PlayerRef.GetActorValue("paralysis") != 1) || (PlayerRef.GetActorValue("paralysis") && akMarker.GetParentCell() && akMarker.GetParentCell().IsAttached()))
 EndFunction
 
 Bool Function bIsArrived(ObjectReference akMarker)
-	Float fMinDistance = 750.0
-	If ConfigMenu.bIsRagdollEnabled && !ConfigMenu.bDisableUnsafe
+	Float fMinDistance = 1000.0
+	If ConfigMenu.bIsRagdollEnabled
 		fMinDistance = 4000.0
 	EndIf
 	PlayerRef.DispelAllSpells()
@@ -248,7 +245,7 @@ Bool Function bIsArrived(ObjectReference akMarker)
 		Endwhile
 	EndIf
 	Float fTravel = PlayerMarker.GetDistance(akMarker)
-	PlayerRef.MoveTo(akMarker)
+	PlayerRef.MoveTo(akMarker,afZOffset = 15.0)
 	Utility.Wait(0.5)
 	Float fFrom = PlayerRef.GetDistance(PlayerMarker)
 	Float fTo = PlayerRef.GetDistance(akMarker)

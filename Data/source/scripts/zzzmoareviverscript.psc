@@ -7,6 +7,7 @@ zzzmoaitemcursescript Property ItemScript Auto Hidden
 zzzmoarespawnscript Property RespawnScript Auto Hidden
 zzzmoanpcscript Property NPCScript Auto Hidden
 zzzmoa_HealthMonitor Property HealthMonitorScript Auto
+zzzmoadiseasecursescript	Property DiseaseScript Auto
 Quest Property moaReviveMCMscript Auto
 Quest Property moaHostileNPCDetector Auto
 Quest Property moaHostileNPCDetector01 Auto
@@ -114,7 +115,6 @@ Bool Property bInBleedout = False Auto Hidden
 Bool Property bInBleedoutAnim = False Auto Hidden
 Perk Property Invulnerable Auto
 GlobalVariable Property moaIgnoreBleedout Auto
-FormList Property Diseases Auto
 Quest Property DGIntimidateQuest Auto
 Quest Property FreeformRiften19 Auto
 Float fHealrate = 0.0
@@ -191,8 +191,8 @@ Event OnInit()
 	ItemScript = GetOwningQuest() As zzzmoaitemcursescript
 	RespawnScript = GetOwningQuest() As zzzmoarespawnscript
 	NPCScript = GetOwningQuest() As zzzmoanpcscript
-	SetVars()
 	SetGameVars()
+	SetVars()
 	RegisterForSleep()
 	If ConfigMenu.bLevelReduce
 		SkillScript.RegisterForLevel()
@@ -217,6 +217,7 @@ Event OnPlayerLoadGame()
 		PlayerRef.AddPerk(Invulnerable) ;because when loading a save game usually npcs start moving before player
 	EndIf
 	SetGameVars()
+	DiseaseScript.RegisterForModEvent("MOA_RecalcCursedDisCureCost", "RecalcCursedDisCureCost")
 	RegisterForSingleUpdate(3.0)
 EndEvent
 
@@ -1169,9 +1170,6 @@ Function RevivePlayer(Bool bRevive)
 					RespawnScript.SelectRespawnPointbyMenu()
 				EndIf
 				Game.DisablePlayerControls()
-				If ConfigMenu.bShiftBackRespawn
-					ShiftBack()
-				EndIf
 				If ( !bWasSwimming && bIsConditionSafe )
 					If ( ConfigMenu.bInvisibility || ConfigMenu.bFadeToBlack )
 						If ConfigMenu.bDeathEffect
@@ -1204,6 +1202,9 @@ Function RevivePlayer(Bool bRevive)
 					If ConfigMenu.bInvisibility
 						PlayerRef.SetAlpha(0.0)
 					EndIf
+				EndIf
+				If ConfigMenu.bShiftBackRespawn
+					ShiftBack()
 				EndIf
 				If bLoseForever()
 					ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Destroying previously lost items...")
@@ -1381,6 +1382,11 @@ Function RevivePlayer(Bool bRevive)
 					MassHealing.Cast(PlayerRef)
 					ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Last attacker and other actors are healed.")
 				EndIf
+				If ConfigMenu.bDiseaseCurse
+					ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Infecting player with a cursed disease...")
+					DiseaseScript.infectPlayer()
+					ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Infection completed.")
+				EndIf
 				Utility.Wait(1.0)
 				RespawnScript.Respawn()
 				Utility.Wait(0.5)
@@ -1423,9 +1429,6 @@ Function RevivePlayer(Bool bRevive)
 						PlayerRef.ForceActorValue("paralysis",0)
 					EndIf
 					Utility.Wait(6.5)
-				EndIf
-				If ConfigMenu.fDiseaseChanceSlider && (Utility.RandomInt(0,99) < ConfigMenu.fDiseaseChanceSlider)
-					infectPlayer()
 				EndIf
 				If ( ConfigMenu.bFadeToBlack || ConfigMenu.bInvisibility || ConfigMenu.fRespawnTimeSlider)
 					RespawnScript.PassTime(ConfigMenu.fRespawnTimeSlider,6.0)
@@ -1589,6 +1592,18 @@ EndFunction
 
 Function SetGameVars()
 	ConfigMenu.checkMods()
+	If !SkillScript
+		SkillScript = GetOwningQuest() As zzzmoaskillcursescript
+	EndIf
+	If !ItemScript
+		ItemScript = GetOwningQuest() As zzzmoaitemcursescript
+	EndIf
+	If !RespawnScript
+		RespawnScript = GetOwningQuest() As zzzmoarespawnscript
+	EndIf
+	If !NPCScript
+		NPCScript = GetOwningQuest() As zzzmoanpcscript
+	EndIf
 	If (moaState.GetValue() == 1 )
 		If ConfigMenu.bTriggerOnBleedout && !PlayerRef.IsEssential()
 			PlayerRef.GetActorBase().SetEssential(True)
@@ -1734,27 +1749,6 @@ Function ToggleSaving(Bool bSave)
 		Else
 			Game.SetInChargen(abDisableSaving = True, abDisableWaiting = False, abShowControlsDisabledMessage = True)
 		EndIf
-	EndIf
-EndFunction
-
-Function infectPlayer()
-	If Diseases.GetSize() == 0
-		Return
-	EndIf
-	Int iIndex = Diseases.GetSize()
-	Bool[] bFlagArr = Utility.CreateBoolArray(iIndex)
-	Bool bCanInfect = False
-	While iIndex > 0
-		iIndex -= 1
-		If PlayerRef.HasSpell(Diseases.GetAt(iIndex) As Spell)
-			bFlagArr[iIndex] = False
-		Else
-			bFlagArr[iIndex] = True
-			bCanInfect = True
-		EndIf
-	EndWhile
-	If bCanInfect
-		PlayerRef.AddSpell(Diseases.GetAt(RandomIntWithExclusionArray( 0, Diseases.GetSize() - 1, bFlagArr)) As Spell)
 	EndIf
 EndFunction
 

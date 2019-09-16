@@ -15,6 +15,8 @@ akSpeaker.PlayIdle(Pray)
 Utility.Wait(3)
 zzzmoadiseasecursescript DiseaseScript = GetOwningQuest() As zzzmoadiseasecursescript
 DiseaseScript.cureAllDiseases()
+Utility.Wait(0.5)
+akSpeaker.PlayIdle(StopIdle)
 ;END CODE
 EndFunction
 ;END FRAGMENT

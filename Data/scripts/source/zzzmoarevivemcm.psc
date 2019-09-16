@@ -752,6 +752,11 @@ Event OnPageReset(String page)
 		SetCursorPosition(32)
 		AddHeaderOption("$mrt_MarkofArkay_HEAD_Skill_Reduction")
 		SetCursorPosition(34)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1)
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
 		oidSkillReduce_M = AddMenuOption("$mrt_MarkofArkay_SkillReduce_M", sGetSkills()[iReducedSkill], flags)
 		SetCursorPosition(36)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1 ) && (iReducedSkill != 0)

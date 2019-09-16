@@ -4238,6 +4238,7 @@ Bool function bLoadUserSettings(String sFileName)
 	bDoNotStopCombat = fiss.loadBool("bDoNotStopCombat")
 	bDoNotStopCombatAfterRevival = fiss.loadBool("bDoNotStopCombatAfterRevival")
 	SetCustomRPFlags()
+	recalcCursedDisCureCosts()
 	If bDisableUnsafe
 		bLoseForever = False
 		bLoseSkillForever = False
@@ -4278,8 +4279,10 @@ Bool Function bCheckFissErrors(String strErrors)
 			fDisProgChanceSlider = 50.00
 		ElseIf strError == "Element fDisPriceSlider not found"
 			fDisPriceSlider = 100.00
+			recalcCursedDisCureCosts()
 		ElseIf strError == "Element fDisPriceMultSlider not found"
 			fDisPriceMultSlider = 0.5
+			recalcCursedDisCureCosts()
 		ElseIf strError == "Element bMultipleDis not found"
 			bMultipleDis = True
 		ElseIf strError == "Element bDiseaseCurse not found"
@@ -4676,6 +4679,7 @@ function LoadDefaultSettings()
 	fTotalCustomRPSlotSlider = 1.0
 	iSelectedCustomRPSlot = 0
 	SetCustomRPFlags()
+	recalcCursedDisCureCosts()
 EndFunction
 
 Function ForceCloseMenu()

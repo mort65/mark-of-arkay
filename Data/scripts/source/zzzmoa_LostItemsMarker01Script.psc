@@ -44,6 +44,7 @@ Event OnActivate(ObjectReference akActionRef)
 			EndIf
 			ConfigMenu.ReviveScript.moaSoulMark01.Stop()
 			ConfigMenu.ReviveScript.moaThiefNPC01.Stop()
+			ConfigMenu.ReviveScript.moaBossChest01.Stop()
 		EndIf
 	EndIf
 	bIsActive = False

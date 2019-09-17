@@ -394,6 +394,8 @@ Function SendToNearbyLocation()
 		PlayerMarker.MoveTo(Caster)
 		PlayerMarker.SetPosition(Caster.GetPositionx(), Caster.GetPositiony(), Caster.GetPositionz())
 		PlayerMarker.SetAngle(0.0, 0.0, Caster.GetAnglez())
+		Utility.Wait(0.5)
+		ReviveScript.RespawnScript.findNearbyMarker()
 		If !bMoveByQuest(moaNearbyDetector,TeleportRef, 5)
 			SendToCheckPoint()
 		EndIf

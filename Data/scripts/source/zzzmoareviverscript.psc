@@ -115,11 +115,15 @@ Bool Property bInBleedout = False Auto Hidden
 Bool Property bInBleedoutAnim = False Auto Hidden
 Perk Property Invulnerable Auto
 GlobalVariable Property moaIgnoreBleedout Auto
+Quest Property moaBossChest01 Auto
 Quest Property DGIntimidateQuest Auto
 Quest Property FreeformRiften19 Auto
+Quest Property Favor017 Auto
+LocationAlias Property PlayerLocRef Auto
 Float fHealrate = 0.0
 Int iIsBeast = 0
 Bool bSheated = False
+Bool bSacrifice = False
 
 Bool bDidItemsRemoved
 Bool  bSeptimRevive  
@@ -350,13 +354,25 @@ Event OnLocationChange(Location akOldLoc, Location akNewLoc)
 			PlayerRef.GetActorBase().SetEssential(True)
 			PlayerRef.SetNoBleedoutRecovery(True)
 		EndIf
-		If ( moaThiefNPC01.IsRunning() )
+		If ( moaThiefNPC01.IsRunning() ) && !moaBossChest01.IsRunning()
 			If (moaThiefNPC01.GetStage() == 1) && !Thief || Thief.IsDisabled() || Thief.IsDeleted()
 				ConfigMenu.bIsLoggingEnabled && Debug.Trace( "MarkOfArkay: " +\
 				Thief + " who stoled player's items, is disabled, deleted or no longer exist." )
 				If ConfigMenu.bLoseForever && !ConfigMenu.bDisableUnsafe
 					StopAndConfirm(moaThiefNPC01, 3, 15)
 				Else
+					If Utility.RandomInt(0,99) < ConfigMenu.fBossChestChanceSlider
+						moaBossChest01.Start()
+						If moaBossChest01.IsRunning()
+							If moaThiefNPC01.IsRunning()
+								StopAndConfirm(moaThiefNPC01,3,25)
+							EndIf
+							StopAndConfirm(moaRetrieveLostItems,3,10)
+							StopAndConfirm(moaRetrieveLostItems01,3,10)
+							moaBossChest01.SetStage(5)
+							Return
+						EndIf
+					EndIf
 					If ConfigMenu.bSpawnHostile && (ThiefMarker.GetParentCell() != DefaultCell)
 						If moaThiefNPC01.IsRunning()
 							StopAndConfirm(moaThiefNPC01,3,25)
@@ -507,6 +523,9 @@ Function BleedoutHandler(String CurrentState)
 		stopBrawlQuest(FreeformRiften19,250)
 		GoToState("")
 		Return
+	ElseIf Favor017.GetStage() == 10
+		stopBrawlQuest(Favor017,200)
+		GoToState("")
 	EndIf
 	If ConfigMenu.bIsRagdollEnabled && \
 	(!PlayerRef.GetActorValue("paralysis") && !iIsBeast && !PlayerRef.GetAnimationVariableBool("bIsSynced"))
@@ -663,8 +682,9 @@ Function BleedoutHandler(String CurrentState)
 					EffectHealCirclFXS.Play(PlayerRef, ConfigMenu.fRecoveryTimeSlider + 1.0)
 				EndIf
 				Utility.Wait(ConfigMenu.fRecoveryTimeSlider)
-				ItemScript.RestoreLostItems(PlayerRef)
-				RequipSpells()
+				;ItemScript.RestoreLostItems(PlayerRef)
+				;RequipSpells()
+				bSacrifice = True
 				RevivePlayer(True)
 				If ConfigMenu.bIsEffectEnabled
 					moaReviveAfterEffect.Cast(PlayerRef)
@@ -698,7 +718,7 @@ Function BleedoutHandler(String CurrentState)
 							EffectHealCirclFXS.Play(PlayerRef, ConfigMenu.fRecoveryTimeSlider + 1)
 						EndIf
 						Utility.Wait(ConfigMenu.fRecoveryTimeSlider)
-						RequipSpells()
+						;RequipSpells()
 						ShowNotification()
 						ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Reviving player by trading with arkay (Menu is enabled)..." )
 						RevivePlayer(True)
@@ -756,7 +776,7 @@ Function BleedoutHandler(String CurrentState)
 							EffectHealCirclFXS.Play(PlayerRef, ConfigMenu.fRecoveryTimeSlider + 1)
 						EndIf
 						Utility.Wait(ConfigMenu.fRecoveryTimeSlider)
-						RequipSpells()
+						;RequipSpells()
 						ShowNotification()
 						ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Reviving player by trading with arkay (Menu is disabled)..." )
 						RevivePlayer(True)
@@ -1088,13 +1108,14 @@ Function RevivePlayer(Bool bRevive)
 		If ConfigMenu.bShiftBack
 			ShiftBack()
 		EndIf
-		If !bHasAutoReviveEffect
+		If !bHasAutoReviveEffect || bSacrifice
 			PlayerRef.DispelSpell(ArkayCurseTemp)
 			PlayerRef.DispelSpell(ArkayCurseTempAlt)
 			If ( PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt) )
 				PlayerRef.RemoveSpell(ArkayCurse)
 				PlayerRef.RemoveSpell(ArkayCurseAlt)
-				If !ItemScript.bIsItemsRemoved
+				If !LostItemsChest.GetNumItems() || bSacrifice
+					ItemScript.RestoreLostItems(PlayerRef)
 					If moaSoulMark01.IsRunning()
 						NPCScript.RemoveDeadClone()
 						moaSoulMark01.Stop()
@@ -1119,6 +1140,7 @@ Function RevivePlayer(Bool bRevive)
 					RemoveStolenItemMarkers(playerRef)
 				EndIf
 			EndIf
+			bSacrifice = False
 		EndIf
 		Restore(bRevivePlayer = True, bReviveFollower = ConfigMenu.bPlayerProtectFollower, bEffect = ConfigMenu.bIsEffectEnabled, fWait = 5, sTrace = "MarkOfArkay: Player is revived.")	
 		Return
@@ -1230,10 +1252,24 @@ Function RevivePlayer(Bool bRevive)
 					If moaThiefNPC01.IsRunning()
 						StopAndConfirm(moaThiefNPC01, 3, 25)
 					EndIf
+					If moaBossChest01.IsRunning()
+						StopAndConfirm(moaBossChest01, 3, 15)
+					EndIf
 					ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: previously lost items are destroyed.")
 				EndIf
 				bRemoveItems = ConfigMenu.bLoseItem
 				iReducedSkill = ConfigMenu.iReducedSkill
+				If !moaSoulMark01.IsRunning() && !moaThiefNPC01.IsRunning() &&  (!moaBossChest01.IsRunning() || moaBossChest01.GetStage() == 0)
+					StopAndConfirm(moaBossChest01)
+					If Utility.RandomInt(0,99) < ConfigMenu.fBossChestChanceSlider
+						If ConfigMenu.bBossChestOnlyCurLoc
+							PlayerLocRef.ForceLocationTo(PlayerRef.GetCurrentLocation())
+						Else
+							PlayerLocRef.ForceLocationTo(None)
+						EndIf
+						moaBossChest01.Start()
+					EndIf
+				EndIf
 				If ConfigMenu.iHostileOption == 2 && !moaSoulMark01.IsRunning()
 					If !moaThiefNPC01.IsRunning() || moaThiefNPC01.GetStage() == 1
 						ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Finding a hostile NPC who can steal from player ...")
@@ -1253,8 +1289,8 @@ Function RevivePlayer(Bool bRevive)
 					EndIf
 				EndIf
 				bSoulMark = bSoulMark()
-				If NPCScript.bInBeastForm() || (( ConfigMenu.iHostileOption == 2 && ( moaSoulMark01.IsRunning() || !moaThiefNPC01.IsRunning() || moaThiefNPC01.GetStage() != 1)) ||\
-						( ConfigMenu.iHostileOption != 2 && ( moaThiefNPC01.IsRunning() || ( ConfigMenu.iHostileOption == 1 && !NPCScript.bIsHostileNPCNearby() ))) || ( PlayerRef.GetParentCell() == DefaultCell ))
+				If NPCScript.bInBeastForm() || (!moaBossChest01.IsRunning() && (( ConfigMenu.iHostileOption == 2 && ( moaSoulMark01.IsRunning() || !moaThiefNPC01.IsRunning() || moaThiefNPC01.GetStage() != 1)) ||\
+						( ConfigMenu.iHostileOption != 2 && ( moaThiefNPC01.IsRunning() || ( ConfigMenu.iHostileOption == 1 && !NPCScript.bIsHostileNPCNearby() ))) || ( PlayerRef.GetParentCell() == DefaultCell )))
 					bRemoveItems = False
 				EndIf
 				If bRemoveItems
@@ -1313,7 +1349,8 @@ Function RevivePlayer(Bool bRevive)
 				If ( PlayerRef.GetParentCell() != DefaultCell )
 					If bCursed() || (ConfigMenu.bArkayCurse && !ConfigMenu.bIsArkayCurseTemporary );Something is removed or stats of player are reduced or going to be reduced
 						If ( bSoulMark || \
-								((( ConfigMenu.bArkayCurse && !ConfigMenu.bIsArkayCurseTemporary ) || bHasArkayCurse() ) && !moaThiefNPC01.IsRunning() )) ;Soul mark can be used
+								((( ConfigMenu.bArkayCurse && !ConfigMenu.bIsArkayCurseTemporary ) || bHasArkayCurse() ) && !moaThiefNPC01.IsRunning() && (!moaBossChest01.IsRunning() || LostItemsChest.GetNumItems() == 0))) ;Soul mark can be used
+							stopAndConfirm(moaBossChest01)
 							LostItemsMarker.Enable()
 							If !ConfigMenu.bSoulMarkStay || \
 								(( !NPCScript.SoulMark02.GetActorReference() || NPCScript.SoulMark02.GetActorReference().GetParentCell() == DefaultCell ) && \
@@ -1351,6 +1388,15 @@ Function RevivePlayer(Bool bRevive)
 						If (ThiefNPC01.GetReference() As Actor)
 							RemoveStolenItemMarkers(ThiefNPC01.GetReference() As Actor)
 						EndIf
+						StopAndConfirm(moaThiefNPC01, 3, 25)
+					EndIf
+				EndIf
+				If moaBossChest01.IsRunning() && moaThiefNPC01.IsRunning()
+					;if no physical item is removed boss chest quest not needed
+					If LostItemsChest.GetNumItems() == 0
+						stopAndConfirm(moaBossChest01)
+					Else
+						RemoveStolenItemMarkers(ThiefNPC.GetReference() As Actor)
 						StopAndConfirm(moaThiefNPC01, 3, 25)
 					EndIf
 				EndIf
@@ -1460,7 +1506,12 @@ Function RevivePlayer(Bool bRevive)
 					Thief && ItemScript.AddStolenItemMarker(Thief)
 				EndIf
 				If bCursed()
-					If moaSoulMark01.IsRunning()
+					If moaBossChest01.IsRunning()
+						If moaBossChest01.getStage() < 5
+							moaBossChest01.SetStage(5)
+							ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Boss Chest Quest Started.")
+						EndIf
+					ElseIf moaSoulMark01.IsRunning()
 						If ConfigMenu.bLostItemQuest
 							moaRetrieveLostItems.Start()
 							moaRetrieveLostItems.SetStage(1)
@@ -1476,6 +1527,8 @@ Function RevivePlayer(Bool bRevive)
 					If SkillScript.bSkillReduced()
 						SkillScript.DisableAllXP()
 					EndIf
+				Else
+					moaBossChest01.Stop()
 				EndIf
 				moaHostileNPCDetector.Stop()
 				moaHostileNPCDetector01.Stop()
@@ -1651,7 +1704,7 @@ Bool Function bIsCameraStateSafe()
 EndFunction
 
 Bool Function bSoulMark() ;Whether drop soul mark or not
-	Return (( ConfigMenu.iHostileOption == 2 && moaSoulMark01.IsRunning() ) ||\
+	Return !moaBossChest01.IsRunning() && (( ConfigMenu.iHostileOption == 2 && moaSoulMark01.IsRunning() ) ||\
 		( ConfigMenu.iHostileOption != 2 && !moaThiefNPC01.IsRunning() ))
 EndFunction
 

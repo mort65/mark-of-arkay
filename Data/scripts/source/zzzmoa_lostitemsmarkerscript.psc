@@ -26,6 +26,7 @@ Event OnActivate(ObjectReference akActionRef)
 			EndIf
 			ReviveScript.moaSoulMark01.Stop()
 			ReviveScript.moaThiefNPC01.Stop()
+			ReviveScript.moaBossChest01.Stop()
 			Self.Disable()
 		EndIf
 	EndIf

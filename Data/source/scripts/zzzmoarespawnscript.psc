@@ -71,8 +71,11 @@ ReferenceAlias Property RandomCityTeleportRef Auto
 GlobalVariable Property TimeScale Auto
 GlobalVariable Property moaRandomDestination Auto
 Float Property DefaultTimeScale = 20.0 Auto Hidden
+FormList Property InteriorMarkers Auto
+FormList Property ExteriorMarkers Auto
 ObjectReference Property TOWMarker Auto
 FormList property CustomRespawnPoints Auto
+ReferenceAlias Property PlayerRefMarker Auto
 Bool bFirstTry = False
 Bool bFirstTryFailed = False
 
@@ -1037,10 +1040,60 @@ Function SendToCheckPoint()
 	EndIf
 EndFunction
 
-Function SendToNearbyLocation()
-		If !bTryToMoveByQuest(moaNearbyDetector, TeleportRef, 5, FailedDestinations)
-			SendToCheckPoint()
+Bool Function bHasEditorLocation(ObjectReference akMarker,Location akLocation)
+	Return akMarker.GetEditorLocation() && akMarker.GetEditorLocation() == akLocation
+Endfunction
+
+Function findNearbyMarker()
+	Location Curlocation
+	If PlayerMarker.GetCurrentLocation()
+		Curlocation = PlayerMarker.GetCurrentLocation()
+	Else
+		PlayerRefMarker.ForceRefTo(PlayerMarker)
+		Return
+	EndIf
+	FormList Markers
+	If PlayerRef.IsInInterior()
+		Markers = InteriorMarkers
+	Else
+		Markers = ExteriorMarkers
+	EndIf
+	ObjectReference Marker
+	Marker = Game.FindClosestReferenceOfAnyTypeInListFromRef(Markers, PlayerMarker, 50000.0)
+	If !Marker || !bHasEditorLocation(Marker, Curlocation)
+		Int i
+		If Marker
+			ObjectReference[] PrevMarkers = New ObjectReference[5]
+			i = 5
+			While i > 0 && Marker && !bHasEditorLocation(Marker, Curlocation)
+				i -= 1
+				PrevMarkers[i] = Marker
+				Marker = Game.FindRandomReferenceOfAnyTypeInListFromRef(Markers, PrevMarkers[i], 50000.0)
+				If PrevMarkers.Find(Marker) > -1 || (PlayerMarker.GetDistance(Marker) > 50000.0)
+					Marker = None
+				EndIf
+			EndWhile
 		EndIf
+		If !Marker || !bHasEditorLocation(Marker, Curlocation)
+			i = 5
+			While i > 0 && (!Marker || !bHasEditorLocation(Marker, Curlocation))
+				i -= 1
+				Marker = Game.FindRandomReferenceOfAnyTypeInListFromRef(Markers, PlayerMarker, 50000.0)
+			EndWhile
+		EndIf
+	EndIf
+	If Marker && bHasEditorLocation(Marker, Curlocation)
+		PlayerRefMarker.ForceRefTo(Marker)
+	Else
+		PlayerRefMarker.ForceRefTo(PlayerMarker)
+	EndIf
+Endfunction
+
+Function SendToNearbyLocation()
+	findNearbyMarker()
+	If !bTryToMoveByQuest(moaNearbyDetector, TeleportRef, 5, FailedDestinations)
+		SendToCheckPoint()
+	EndIf
 Endfunction
 
 Int Function RespawnMenu(Int aiMessage = 0, Int aiButton = 0)

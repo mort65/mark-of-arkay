@@ -40,6 +40,9 @@ Function RestoreLostItems(Actor ActorRef)
 	If ReviveScript.moaThiefNPC01.IsRunning() && ReviveScript.moaThiefNPC01.GetStage() < 15
 		ReviveScript.moaThiefNPC01.SetStage(20)
 	EndIf
+	If ReviveScript.moaBossChest01.IsRunning() && ReviveScript.moaBossChest01.GetStage() < 15
+		ReviveScript.moaBossChest01.SetStage(20)
+	EndIf
 	ReviveScript.LostItemsMarker.MoveToMyEditorLocation()
 	ReviveScript.LostItemsMarker.Disable()
 	LostItemsChest.RemoveAllItems(ActorRef, True, True)
@@ -80,6 +83,9 @@ Function DestroyLostItems(Actor ActorRef)
 		ReviveScript.moaThiefNPC01.SetStage(15)
 	EndIf
 	ReviveScript.moaThiefNPC01.Stop()
+	If ReviveScript.moaBossChest01.IsRunning() && ReviveScript.moaBossChest01.GetStage() < 15
+		ReviveScript.moaBossChest01.SetStage(20)
+	EndIf
 	bIsItemsRemoved = False
 	ReviveScript.LostItemsMarker.MoveToMyEditorLocation()
 	ReviveScript.LostItemsMarker.Disable()

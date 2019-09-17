@@ -1721,8 +1721,8 @@ Bool Function bSoulMark() ;Whether drop soul mark or not
 EndFunction
 
 Function RemoveStolenItemMarkers(Actor ActorRef)
-	ActorRef.RemoveItem(StolenItemsMisc, ActorRef.GetItemCount(StolenItemsMisc), abSilent = True)
-	ActorRef.RemoveItem(StolenSoulsMisc, ActorRef.GetItemCount(StolenSoulsMisc), abSilent = True)
+	ActorRef && ActorRef.RemoveItem(StolenItemsMisc, ActorRef.GetItemCount(StolenItemsMisc), abSilent = True)
+	ActorRef && ActorRef.RemoveItem(StolenSoulsMisc, ActorRef.GetItemCount(StolenSoulsMisc), abSilent = True)
 EndFunction
 
 Function RefreshFace()	;for closed eye bug

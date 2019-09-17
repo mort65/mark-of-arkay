@@ -1260,7 +1260,7 @@ Function RevivePlayer(Bool bRevive)
 				bRemoveItems = ConfigMenu.bLoseItem
 				iReducedSkill = ConfigMenu.iReducedSkill
 				If !moaSoulMark01.IsRunning() && !moaThiefNPC01.IsRunning() &&  (!moaBossChest01.IsRunning() || moaBossChest01.GetStage() == 0)
-					StopAndConfirm(moaBossChest01)
+					moaBossChest01.IsRunning() && StopAndConfirm(moaBossChest01,3,25)
 					If Utility.RandomInt(0,99) < ConfigMenu.fBossChestChanceSlider
 						If ConfigMenu.bBossChestOnlyCurLoc
 							PlayerLocRef.ForceLocationTo(PlayerRef.GetCurrentLocation())
@@ -1350,7 +1350,11 @@ Function RevivePlayer(Bool bRevive)
 					If bCursed() || (ConfigMenu.bArkayCurse && !ConfigMenu.bIsArkayCurseTemporary );Something is removed or stats of player are reduced or going to be reduced
 						If ( bSoulMark || \
 								((( ConfigMenu.bArkayCurse && !ConfigMenu.bIsArkayCurseTemporary ) || bHasArkayCurse() ) && !moaThiefNPC01.IsRunning() && (!moaBossChest01.IsRunning() || LostItemsChest.GetNumItems() == 0))) ;Soul mark can be used
-							stopAndConfirm(moaBossChest01)
+							If moaBossChest01.GetStage() == 0
+								stopAndConfirm(moaBossChest01,3,25)
+							Else
+								stopAndConfirm(moaBossChest01,3,20)
+							EndIf
 							LostItemsMarker.Enable()
 							If !ConfigMenu.bSoulMarkStay || \
 								(( !NPCScript.SoulMark02.GetActorReference() || NPCScript.SoulMark02.GetActorReference().GetParentCell() == DefaultCell ) && \
@@ -1394,7 +1398,11 @@ Function RevivePlayer(Bool bRevive)
 				If moaBossChest01.IsRunning() && moaThiefNPC01.IsRunning()
 					;if no physical item is removed boss chest quest not needed
 					If LostItemsChest.GetNumItems() == 0
-						stopAndConfirm(moaBossChest01)
+						If moaBossChest01.GetStage() == 0
+							stopAndConfirm(moaBossChest01,3,25)
+						Else
+							stopAndConfirm(moaBossChest01,3,20)
+						EndIf
 					Else
 						RemoveStolenItemMarkers(ThiefNPC.GetReference() As Actor)
 						StopAndConfirm(moaThiefNPC01, 3, 25)
@@ -1528,7 +1536,11 @@ Function RevivePlayer(Bool bRevive)
 						SkillScript.DisableAllXP()
 					EndIf
 				Else
-					moaBossChest01.Stop()
+					If moaBossChest01.GetStage() == 0
+						stopAndConfirm(moaBossChest01,3,25)
+					Else
+						stopAndConfirm(moaBossChest01,3,20)
+					EndIf
 				EndIf
 				moaHostileNPCDetector.Stop()
 				moaHostileNPCDetector01.Stop()

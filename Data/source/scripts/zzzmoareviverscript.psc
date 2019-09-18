@@ -1245,13 +1245,13 @@ Function RevivePlayer(Bool bRevive)
 				bRemoveItems = ConfigMenu.bLoseItem
 				iReducedSkill = ConfigMenu.iReducedSkill
 				If !moaSoulMark01.IsRunning() && !moaThiefNPC01.IsRunning() &&  (!moaBossChest01.IsRunning() || moaBossChest01.GetStage() == 0)
-					moaBossChest01.IsRunning() && StopAndConfirm(moaBossChest01,3,25)
+					StopAndConfirm(moaBossChest01,3,25)
 					If Utility.RandomInt(0,99) < ConfigMenu.fBossChestChanceSlider
 						PlayerLocRef.ForceLocationTo(PlayerRef.GetCurrentLocation())
 						moaBossChest01.Start()
 					EndIf
 				EndIf
-				If ConfigMenu.iHostileOption == 2 && !moaSoulMark01.IsRunning()
+				If ConfigMenu.iHostileOption == 2 && !moaSoulMark01.IsRunning() && (!moaBossChest01.IsRunning() || !LostItemsChest.GetNumItems())
 					If !moaThiefNPC01.IsRunning() || moaThiefNPC01.GetStage() == 1
 						ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Finding a hostile NPC who can steal from player ...")
 						NPCScript.DetectThiefNPC()
@@ -1270,9 +1270,14 @@ Function RevivePlayer(Bool bRevive)
 					EndIf
 				EndIf
 				bSoulMark = bSoulMark()
-				If NPCScript.bInBeastForm() || (!moaBossChest01.IsRunning() && (( ConfigMenu.iHostileOption == 2 && ( moaSoulMark01.IsRunning() || !moaThiefNPC01.IsRunning() || moaThiefNPC01.GetStage() != 1)) ||\
-						( ConfigMenu.iHostileOption != 2 && ( moaThiefNPC01.IsRunning() || ( ConfigMenu.iHostileOption == 1 && !NPCScript.bIsHostileNPCNearby() ))) || ( PlayerRef.GetParentCell() == DefaultCell )))
-					bRemoveItems = False
+				Bool bRemoveItemTemp = True
+				If NPCScript.bInBeastForm() || (( ConfigMenu.iHostileOption == 2 && ( moaSoulMark01.IsRunning() || !moaThiefNPC01.IsRunning() || moaThiefNPC01.GetStage() != 1)) ||\
+						( ConfigMenu.iHostileOption != 2 && ( moaThiefNPC01.IsRunning() || ( ConfigMenu.iHostileOption == 1 && !NPCScript.bIsHostileNPCNearby()))) || ( PlayerRef.GetParentCell() == DefaultCell ))
+					If  (moaBossChest01.IsRunning() && moaBossChest01.GetStage() == 0)
+						bRemoveItemTemp = False
+					Else
+						bRemoveItems = False
+					EndIf
 				EndIf
 				If bRemoveItems
 					ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Removing items from the player...")
@@ -1297,7 +1302,13 @@ Function RevivePlayer(Bool bRevive)
 						Debug.Trace(str)
 					EndIf
 				EndIf
-				If iReducedSkill > 0
+				If  (moaBossChest01.IsRunning() && moaBossChest01.GetStage() == 0) && !LostItemsChest.GetNumItems()
+					If !bRemoveItemTemp
+						bRemoveItems = False ;No phycical item removed and nothing else can be removed
+					EndIf
+					stopAndConfirm(moaBossChest01,3,25)
+				EndIf
+				If iReducedSkill > 0 && bRemoveItems
 					ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Reducing player's Skills/Skill XPs...")
 					String Skill
 					If iReducedSkill < 19

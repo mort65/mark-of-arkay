@@ -70,6 +70,7 @@ Int oidArkayCurses_M
 Int oidInformation
 Int oidResetHistory
 Int oidRestoreItems
+Int oidResetPlayer
 Int oidHistory
 Int oidAutoSwitchRP
 int oidRecallCost
@@ -391,7 +392,7 @@ Float Property fMaxLoseArkayMarkSlider = 1.0 Auto Hidden
 Float Property fMaxLoseDragonSoulSlider = 1.0 Auto Hidden
 Float Property fMaxLoseBlackSoulGemSlider = 1.0 Auto Hidden
 Float Property fMaxLoseGrandSoulGemSlider = 1.0 Auto Hidden
-Float Property fMinLoseGoldSlider = 0.0 Auto Hidden
+Float Property fMinLoseGoldSlider = 50.0 Auto Hidden
 Float Property fMinLoseArkayMarkSlider = 0.0 Auto Hidden
 Float Property fMinLoseDragonSoulSlider = 0.0 Auto Hidden
 Float Property fMinLoseBlackSoulGemSlider = 0.0 Auto Hidden
@@ -598,31 +599,41 @@ Event OnPageReset(String page)
 		SetCursorPosition(10)
 		oidJail = AddToggleOption("$mrt_MarkofArkay_Jail",bSendToJail,flags)
 		SetCursorPosition(12)
-		oidDoNotStopCombat = AddToggleOption("$mrt_MarkofArkay_DoNotStopCombat",bDoNotStopCombat)
-		SetCursorPosition(14)
-		oidDoNotStopCombatAfterRevival = AddToggleOption("$mrt_MarkofArkay_DoNotStopCombatAfterRevival",bDoNotStopCombatAfterRevival)
-		SetCursorPosition(16)
-		oidKillIfCantRespawn = AddToggleOption("$mrt_MarkofArkay_KillIfCantRespawn",bKillIfCantRespawn,flags)
-		SetCursorPosition(18)
 		oidShowRaceMenu = AddToggleOption("$mrt_MarkofArkay_ShowRaceMenu", bShowRaceMenu,flags)
-		SetCursorPosition(20)
+		SetCursorPosition(14)
+		oidKillIfCantRespawn = AddToggleOption("$mrt_MarkofArkay_KillIfCantRespawn",bKillIfCantRespawn,flags)
+		SetCursorPosition(16)
 		If ( moaState.getValue() == 1 )
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidMoreRandomRespawn = AddToggleOption("$mrt_MarkofArkay_MoreRandomRespawn",bMoreRandomRespawn,flags)
-		SetCursorPosition(22)
+		SetCursorPosition(18)
 		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1))
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidCorpseAsSoulMark = AddToggleOption("$mrt_MarkofArkay_CorpseAsSoulMark", bCorpseAsSoulMark, flags)
-		SetCursorPosition(24)
+		SetCursorPosition(20)
 		oidHealActors = AddToggleOption("$mrt_MarkofArkay_HealActors",bHealActors,flags)
-		SetCursorPosition(26)
+		SetCursorPosition(22)
 		oidResurrectActors = AddToggleOption("$mrt_MarkofArkay_ResurrectActors",bResurrectActors,flags)
+		SetCursorPosition(24)
+		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled)
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidDoNotStopCombatAfterRevival = AddToggleOption("$mrt_MarkofArkay_DoNotStopCombatAfterRevival",bDoNotStopCombatAfterRevival, flags)
+		SetCursorPosition(26)
+		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1))
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidDoNotStopCombat = AddToggleOption("$mrt_MarkofArkay_DoNotStopCombat",bDoNotStopCombat, flags)
 		SetCursorPosition(1)
 		AddHeaderOption("$mrt_MarkofArkay_HEAD_Destination")
 		SetCursorPosition(3)
@@ -1091,84 +1102,86 @@ Event OnPageReset(String page)
 		SetCursorPosition(0)
 		AddHeaderOption("$Debug")
 		SetCursorPosition(2)
-		If moaState.getValue() == 0
-			oidStatus = AddTextOption("$mrt_MarkofArkay_Status_Off", "")
-		Else
-			oidStatus = AddTextOption("$mrt_MarkofArkay_Status_On", "")
-		EndIf
-		SetCursorPosition(4)
 		If ( moaState.getValue() == 1 )
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
-		oidReset = AddTextOption("$mrt_MarkofArkay_Reset", "", flags)
+		oidResetPlayer = addTextOption("$mrt_MarkofArkay_ResetPlayer", "", flags)
+		SetCursorPosition(4)
+		If moaState.getValue() == 0
+			oidStatus = AddTextOption("$mrt_MarkofArkay_Status_Off", "")
+		Else
+			oidStatus = AddTextOption("$mrt_MarkofArkay_Status_On", "")
+		EndIf
 		SetCursorPosition(6)
-		oidRestoreItems = AddTextOption("$mrt_MarkofArkay_RestoreItems", "", flags )
+		oidReset = AddTextOption("$mrt_MarkofArkay_Reset", "", flags)
 		SetCursorPosition(8)
+		oidRestoreItems = AddTextOption("$mrt_MarkofArkay_RestoreItems", "", flags )
+		SetCursorPosition(10)
+		AddHeaderOption("")
+		SetCursorPosition(12)
 		If ( PlayerRef.HasSpell(MoveCustomMarker ) || PlayerRef.HasSpell(RecallMarker ) )
 			oidToggleSpells = AddTextOption("$mrt_MarkofArkay_ToggleSpells1", "", flags) 
 		Else
 			oidToggleSpells = AddTextOption("$mrt_MarkofArkay_ToggleSpells2", "", flags) 
 		EndIf
-		SetCursorPosition(10)
+		SetCursorPosition(14)
 		If ( PlayerRef.HasSpell(RevivalPower) || PlayerRef.HasSpell(SacrificePower) )
 			oidTogglePowers = AddTextOption("$mrt_MarkofArkay_TogglePowers1", "", flags) 
 		Else
 			oidTogglePowers = AddTextOption("$mrt_MarkofArkay_TogglePowers2", "", flags) 
 		EndIf
-		SetCursorPosition(12)
+		SetCursorPosition(16)
 		sResetHistory = ""
 		oidResetHistory = AddTextOption("$mrt_MarkofArkay_ResetHistory", sResetHistory, flags)
-		SetCursorPosition(14)
-		AddHeaderOption("")
-		SetCursorPosition(16)
+		SetCursorPosition(18)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidDisableUnsafe = AddToggleOption("$mrt_MarkofArkay_DisableUnsafe", bDisableUnsafe, flags)
-		SetCursorPosition(18)
-		oidLogging = AddToggleOption("$mrt_MarkofArkay_Logging", bIsLoggingEnabled, flags )
 		SetCursorPosition(20)
+		oidLogging = AddToggleOption("$mrt_MarkofArkay_Logging", bIsLoggingEnabled, flags )
+		SetCursorPosition(22)
 		If ( moaState.getValue() == 1 )
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidInformation = AddToggleOption("$mrt_MarkofArkay_Info", bIsInfoEnabled, flags )
-		SetCursorPosition(22)
-		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled
-			flags =	OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		oidNotification = AddToggleOption("$mrt_MarkofArkay_Notification", bIsNotificationEnabled, flags )
 		SetCursorPosition(24)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
-		oidRagdollEffect = AddToggleOption("$mrt_MarkofArkay_RagdollEffect", bIsRagdollEnabled,flags)
+		oidNotification = AddToggleOption("$mrt_MarkofArkay_Notification", bIsNotificationEnabled, flags )
 		SetCursorPosition(26)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
-		oidFadeToBlack = AddToggleOption("$mrt_MarkofArkay_FadeToBlack", bFadeToBlack, flags )
+		oidRagdollEffect = AddToggleOption("$mrt_MarkofArkay_RagdollEffect", bIsRagdollEnabled,flags)
 		SetCursorPosition(28)
-		oidInvisibility = AddToggleOption("$mrt_MarkofArkay_Invisibility", bInvisibility, flags)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidFadeToBlack = AddToggleOption("$mrt_MarkofArkay_FadeToBlack", bFadeToBlack, flags )
 		SetCursorPosition(30)
+		oidInvisibility = AddToggleOption("$mrt_MarkofArkay_Invisibility", bInvisibility, flags)
+		SetCursorPosition(32)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && !bIsRagdollEnabled && (bFadeToBlack || bInvisibility)
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidDeathEffect = AddToggleOption("$mrt_MarkofArkay_DeathEffect", bDeathEffect,flags)		
-		SetCursorPosition(32)
+		SetCursorPosition(34)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && bARCCOK
 			flags =	OPTION_FLAG_NONE
 		Else
@@ -1460,18 +1473,18 @@ Event OnOptionSelect(Int option)
 		SetToggleOptionValue(oidTradeEnabled, bIsTradeEnabled)
 	ElseIf (option == oidTriggerOnBleedout)
 		If !bTriggerOnBleedout && self.ShowMessage("$Are_You_Sure", true, "$Yes", "$No")
+			moaIsBusy.SetValueInt(1)
 			bTriggerOnBleedout = True
 			bTriggerOnHealthPerc = False
-			moaIsBusy.SetValueInt(1)
 			ForceCloseMenu()
 			setTriggerMethod(1)
 			moaIsBusy.SetValueInt(0)
 		EndIf
 	ElseIf (option == oidTriggerOnHealthPerc)
 		If !bTriggerOnHealthPerc && self.ShowMessage("$Are_You_Sure", true, "$Yes", "$No")
+			moaIsBusy.SetValueInt(1)
 			bTriggerOnBleedout = False
 			bTriggerOnHealthPerc = True
-			moaIsBusy.SetValueInt(1)
 			ForceCloseMenu()
 			SetTriggerMethod(2)
 			moaIsBusy.SetValueInt(0)
@@ -1952,10 +1965,16 @@ Event OnOptionSelect(Int option)
 		If !self.ShowMessage("$Are_You_Sure", true, "$Yes", "$No")
 			Return
 		EndIf
-		SetTextOptionValue(option, "$mrt_MarkofArkay_Status_Busy",True)
 		moaIsBusy.SetValueInt(1)
+		;SetTextOptionValue(option, "$mrt_MarkofArkay_Status_Busy")
 		ForceCloseMenu()
 		ReviveScript.ItemScript.RestoreLostItems(PlayerRef)
+		If moaRetrieveLostItems.IsRunning()
+			moaRetrieveLostItems.SetStage(20)
+		EndIf
+		If moaRetrieveLostItems01.IsRunning()
+			moaRetrieveLostItems01.SetStage(20)
+		EndIf
 		moaIsBusy.SetValueInt(0)
 	ElseIf (option == oidLoadPreset1)
 		If !FISSFactory.getFISS()
@@ -2002,26 +2021,61 @@ Event OnOptionSelect(Int option)
 				Return
 			EndIf
 		EndIf
-		SetTextOptionValue(option, "$mrt_MarkofArkay_Status_Busy",True)
 		moaIsBusy.SetValueInt(1)
-		;ForcePageReset()
 		ForceCloseMenu()
 		If moaState.getValue() == 1
 			moaStop()
 		Else
 			moaStart()
 		EndIf
+		Utility.Wait(1)
 		moaIsBusy.SetValueInt(0)
 	ElseIf (option == oidReset)
 		If !self.ShowMessage("$Are_You_Sure", true, "$Yes", "$No")
 			Return
 		EndIf
-		SetTextOptionValue(option, "$mrt_MarkofArkay_Status_Busy",True)
 		moaIsBusy.SetValueInt(1)
-		;ForcePageReset()
 		ForceCloseMenu()
 		moaStop(True)
+		Utility.Wait(1)
 		moaStart()
+		moaIsBusy.SetValueInt(0)
+	ElseIf (option == oidResetPlayer)
+		If !self.ShowMessage("$Are_You_Sure", true, "$Yes", "$No")
+			Return
+		EndIf
+		moaIsBusy.SetValueInt(1)
+		ForceCloseMenu()
+		If moaState.GetValue() == 1
+			If bTriggerOnBleedout
+				setTriggerMethod(1)
+			ElseIf bTriggerOnHealthPerc
+				SetTriggerMethod(2)
+			EndIf
+			ReviveScript.RegisterForSleep()
+			If bLevelReduce
+				ReviveScript.SkillScript.RegisterForLevel()
+			EndIf
+		Else
+			setTriggerMethod(0)
+		EndIf
+		PlayerRef.SetAlpha(1.0)
+		PlayerRef.ResetHealthAndLimbs()
+		If PlayerRef.GetActorValue("paralysis")
+			PlayerRef.SetActorValue("paralysis",0)
+			If PlayerRef.GetActorValue("paralysis")
+				PlayerRef.ForceActorValue("paralysis",0)
+			EndIf
+		EndIf
+		Utility.Wait(0.5)
+		ReviveScript.RefreshFace()
+		If !ReviveScript.bIsCameraStateSafe()
+			Game.ForceThirdPerson()
+		EndIf
+		ReviveScript.LowHealthImod.Remove()
+		Game.EnablePlayerControls()
+		Game.EnableFastTravel(True)
+		PlayerRef.RemovePerk(ReviveScript.Invulnerable)
 		moaIsBusy.SetValueInt(0)
 	EndIf
 EndEvent
@@ -2155,14 +2209,14 @@ Event OnOptionSliderOpen(Int option)
 		SetSliderDialogInterval(1.0)
 	ElseIf (option == oidMinLoseGoldSlider)
 		SetSliderDialogStartValue(fMinLoseGoldSlider)
-		SetSliderDialogDefaultValue(0.0)
+		SetSliderDialogDefaultValue(50.0)
 		SetSliderDialogRange(0.0, 100000.0)
-		SetSliderDialogInterval(250.0)
+		SetSliderDialogInterval(50.0)
 	ElseIf (option == oidMaxLoseGoldSlider)
 		SetSliderDialogStartValue(fMaxLoseGoldSlider)
 		SetSliderDialogDefaultValue(250.0)
 		SetSliderDialogRange(1.0, 100000.0)
-		SetSliderDialogInterval(250.0)
+		SetSliderDialogInterval(50.0)
 	ElseIf (option == oidMinLoseArkayMarkSlider)
 		SetSliderDialogStartValue(fMinLoseArkayMarkSlider)
 		SetSliderDialogDefaultValue(0.0)
@@ -2907,7 +2961,7 @@ Event OnOptionDefault(Int option)
 		bMoreRandomRespawn = False
 		SetToggleOptionValue(oidMoreRandomRespawn,bMoreRandomRespawn)
 	ElseIf (option == oidMinLoseGoldSlider)
-		fMinLoseGoldSlider = 0.0
+		fMinLoseGoldSlider = 50.0
 		SetSliderOptionValue(oidMinLoseGoldSlider, fMinLoseGoldSlider, "{0}")
 	ElseIf (option == oidMaxLoseGoldSlider)
 		fMaxLoseGoldSlider = 250.0
@@ -3253,6 +3307,8 @@ Event OnOptionHighlight(Int option)
 		SetInfoText("$mrt_MarkofArkay_DESC_Status")
 	ElseIf (option == oidReset)
 		SetInfoText("$mrt_MarkofArkay_DESC_Reset")
+	ElseIf (option == oidResetPlayer)
+		SetInfoText("$mrt_MarkofArkay_DESC_ResetPlayer")
 	ElseIf (option == oidNoTradingAftermath_M)
 			SetInfoText("$mrt_MarkofArkay_DESC_NoTradingAftermath_M")
 	ElseIf (option == oidTeleportLocation_M)
@@ -3499,7 +3555,7 @@ EndEvent
 Function moaStart()
 	If moaState.GetValue() == 0
 		moaState.SetValue(1)
-		setPages()
+		;setPages()
 		moaBleedoutHandlerState.SetValue(0)
 		moaReviverQuest.Start()
 		moaLootChance.SetValue(100.0 - fLootChanceSlider)
@@ -3520,43 +3576,14 @@ Endfunction
 Function moaStop(Bool bReset = False)
 	ToggleFallDamage(False)
 	If moaState.GetValue() == 1
-		If (ReviveScript.ThiefNPC.GetReference() As Actor)
-			(ReviveScript.ThiefNPC.GetReference() As Actor).RemoveItem(ReviveScript.StolenItemsMisc,(ReviveScript.ThiefNPC.GetReference() As Actor ).GetItemCount(ReviveScript.StolenItemsMisc))
-			(ReviveScript.ThiefNPC.GetReference() As Actor).RemoveFromFaction(ReviveScript.PlayerEnemyFaction)
-		EndIf
-		If ReviveScript.Thief
-			ReviveScript.Thief.RemoveItem(ReviveScript.StolenItemsMisc,ReviveScript.Thief.GetItemCount(ReviveScript.StolenItemsMisc))
-			ReviveScript.Thief.RemoveFromFaction(ReviveScript.PlayerEnemyFaction)
-		EndIf
-		PlayerRef.RemoveItem(ReviveScript.StolenItemsMisc,playerRef.GetItemCount(ReviveScript.StolenItemsMisc),abSilent = True)
-		ReviveScript.Thief = None
-		LostItemsMarker.MoveToMyEditorLocation()
-		ReviveScript.NPCScript.RemoveDeadClone()
-		LostItemsMarker.Disable()
-		LostItemsChest.RemoveAllItems(PlayerRef, True, True)
-		If ReviveScript.ItemScript.fLostSouls > 0.0
-			PlayerRef.ModActorValue("DragonSouls", ReviveScript.ItemScript.fLostSouls)
-			ReviveScript.ItemScript.fLostSouls = 0.0
-		EndIf
-		ReviveScript.SkillScript.RestoreSkills()
-		ReviveScript.ItemScript.bIsItemsRemoved = False
+		moaState.SetValue(0)
+		ReviveScript.ItemScript.RestoreLostItems(PlayerRef)
+		ReviveScript.NPCScript.RemoveSpawnedThiefs()
 		If moaRetrieveLostItems.IsRunning()
 			moaRetrieveLostItems.SetStage(20)
 		EndIf
 		If moaRetrieveLostItems01.IsRunning()
 			moaRetrieveLostItems01.SetStage(20)
-		EndIf
-		ReviveScript.NPCScript.RemoveDeadClone()
-		StopAndConfirm(ReviveScript.moaSoulMark01)
-		If ( ReviveScript.ThiefNPC.GetReference() As Actor )
-			ReviveScript.RemoveStolenItemMarkers(ReviveScript.ThiefNPC.GetReference() As Actor)
-		EndIf
-		ReviveScript.NPCScript.RemoveSpawnedThiefs()
-		If ReviveScript.moaThiefNPC01.IsRunning()
-			StopAndConfirm(ReviveScript.moaThiefNPC01,30)
-		EndIf
-		If ReviveScript.moaBossChest01.IsRunning()
-			ReviveScript.moaBossChest01.SetStage(20)
 		EndIf
 		Int i = CustomRespawnPoints.GetSize()
 		While i > 0
@@ -3572,16 +3599,16 @@ Function moaStop(Bool bReset = False)
 		ReviveScript.BlackScreen.Remove()
 		ReviveScript.FadeIn.Remove()
 		PlayerRef.SetAlpha(1.0)
-		moaState.SetValue(0)
-		moaReviverQuest.Stop()
 		moaFollowerDetector.Stop()
 		moaHostileNPCDetector.Stop()
 		moaHostileNPCDetector01.Stop()
 		moaGuardDetector.Stop()
 		If !bReset
 			setTriggerMethod(0)
+		Else
+			StopAndConfirm(moaHealthMonitor,3)
 		EndIf
-		moaHealthMonitor.Stop()
+		StopAndConfirm(moaReviverQuest,3)
 		PlayerRef.GetActorBase().SetEssential(False)
 		PlayerRef.SetNoBleedoutRecovery(False)
 		PlayerRef.RemovePerk(ReviveScript.Invulnerable)
@@ -3613,7 +3640,6 @@ Function moaStop(Bool bReset = False)
 		CellLoadMarker2.Disable()
 		LocationMarker2.Disable()
 		ThiefMarker.Disable()
-		Debug.SetGodMode(False)
 		moaLootChance.SetValue(100.0)
 		moaScrollChance.SetValue(100.0)
 		SetInChargen(False,False,False)
@@ -3624,7 +3650,7 @@ Function moaStop(Bool bReset = False)
 EndFunction
 
 Int Function iGetModStatus()
-	If moaIsBusy.GetValue() || (moaState.GetValue() == 1 && (PlayerRef.IsBleedingOut() || moaBleedoutHandlerState.GetValue() != 0))
+	If moaIsBusy.GetValue() || (moaState.GetValue() == 1 && (PlayerRef.IsBleedingOut() || moaBleedoutHandlerState.GetValue() != 0 || ReviveScript.GetState() != ""))
 		Return 2
 	EndIf
 	PlayerRef.GetCombatState()
@@ -4703,7 +4729,7 @@ function LoadDefaultSettings()
 	bRandomItemCurse = False
 	bMoreRandomRespawn = False
 	iLoseInclusion = 0
-	fMinLoseGoldSlider = 0.0
+	fMinLoseGoldSlider = 50.0
 	fMaxLoseGoldSlider = 250.0
 	bLoseGoldAll = False
 	bLoseArkayMarkAll = False
@@ -5060,12 +5086,12 @@ Function setTriggerMethod(Int iIndex)
 	If iIndex == 0
 		PlayerRef.GetActorBase().SetEssential(False)
 		moaNoKillMoveOnPlayer.SetValue(0)
-		moaHealthMonitor.Stop()
+		StopAndConfirm(moaHealthMonitor)
 		ToggleDeferredKill(False)
 	ElseIf iIndex == 1
 		PlayerRef.GetActorBase().SetEssential(True)
 		PlayerRef.SetNoBleedoutRecovery(True)
-		moaHealthMonitor.Stop()
+		StopAndConfirm(moaHealthMonitor)
 		ToggleDeferredKill(False)
 	ElseIf iIndex == 2
 		PlayerRef.GetActorBase().SetEssential(False)

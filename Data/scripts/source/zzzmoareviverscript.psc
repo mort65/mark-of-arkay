@@ -1247,11 +1247,7 @@ Function RevivePlayer(Bool bRevive)
 				If !moaSoulMark01.IsRunning() && !moaThiefNPC01.IsRunning() &&  (!moaBossChest01.IsRunning() || moaBossChest01.GetStage() == 0)
 					moaBossChest01.IsRunning() && StopAndConfirm(moaBossChest01,3,25)
 					If Utility.RandomInt(0,99) < ConfigMenu.fBossChestChanceSlider
-						If ConfigMenu.bBossChestOnlyCurLoc
-							PlayerLocRef.ForceLocationTo(PlayerRef.GetCurrentLocation())
-						Else
-							PlayerLocRef.ForceLocationTo(None)
-						EndIf
+						PlayerLocRef.ForceLocationTo(PlayerRef.GetCurrentLocation())
 						moaBossChest01.Start()
 					EndIf
 				EndIf

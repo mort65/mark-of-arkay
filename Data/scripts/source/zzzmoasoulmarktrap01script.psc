@@ -11,42 +11,53 @@ Event OnInit()
 	Thiefs[0] && Thiefs[0].RegisterForSingleUpdate(5.0)
 	While i < Thiefs.Length
 		Thiefs[i] && Thiefs[i].RegisterForModEvent("moa_Disintegrate", "OnDisintegrating")
+		Thiefs[i] && Thiefs[i].RegisterForModEvent("moa_DisintegrateNow", "OnDisintegratingFast")
 		i += 1
 	EndWhile
 EndEvent
 
-Function StopQuest(Int iRestore = 0)
+Function StopQuest(Int iRestore = 0,Bool bRemoveFast = False)
 	If Self.IsRunning() && !bStopping
 		bStopping = True
-		Int handle = ModEvent.Create("moa_Disintegrate")
-		If (handle)
-			ModEvent.PushForm(handle, self)
-			ModEvent.Send(handle)
+		If bRemoveFast
+			Int handle = ModEvent.Create("moa_DisintegrateNow")
+			If (handle)
+				ModEvent.PushForm(handle, self)
+				ModEvent.Send(handle)
+			EndIf
+		Else
+			Int handle = ModEvent.Create("moa_Disintegrate")
+			If (handle)
+				ModEvent.PushForm(handle, self)
+				ModEvent.Send(handle)
+			EndIf
 		EndIf
-		If iRestore == 1
-			ReviveScript.ItemScript.RestoreLostItems(Game.GetPlayer())
-			If ReviveScript.moaRetrieveLostItems.IsRunning()
-				ReviveScript.moaRetrieveLostItems.SetStage(20)
-			EndIf
-			If ReviveScript.moaRetrieveLostItems01.IsRunning()
-				ReviveScript.moaRetrieveLostItems01.SetStage(20)
-			EndIf
-		ElseIf iRestore == -1
-			If ( ReviveScript.ConfigMenu.bLoseForever )
-				ReviveScript.ItemScript.DestroyLostItems(Game.GetPlayer())
-				If ReviveScript.moaRetrieveLostItems.IsRunning()
-					ReviveScript.moaRetrieveLostItems.SetStage(10)
-				EndIf
-				If ReviveScript.moaRetrieveLostItems01.IsRunning()
-					ReviveScript.moaRetrieveLostItems01.SetStage(10)
-				EndIf
-			Else
+		If !ReviveScript.ItemScript.bIsBusy
+			If iRestore == 1
 				ReviveScript.ItemScript.RestoreLostItems(Game.GetPlayer())
 				If ReviveScript.moaRetrieveLostItems.IsRunning()
 					ReviveScript.moaRetrieveLostItems.SetStage(20)
 				EndIf
 				If ReviveScript.moaRetrieveLostItems01.IsRunning()
 					ReviveScript.moaRetrieveLostItems01.SetStage(20)
+				EndIf
+			ElseIf iRestore == -1
+				If ( ReviveScript.ConfigMenu.bLoseForever )
+					ReviveScript.ItemScript.DestroyLostItems(Game.GetPlayer())
+					If ReviveScript.moaRetrieveLostItems.IsRunning()
+						ReviveScript.moaRetrieveLostItems.SetStage(10)
+					EndIf
+					If ReviveScript.moaRetrieveLostItems01.IsRunning()
+						ReviveScript.moaRetrieveLostItems01.SetStage(10)
+					EndIf
+				Else
+					ReviveScript.ItemScript.RestoreLostItems(Game.GetPlayer())
+					If ReviveScript.moaRetrieveLostItems.IsRunning()
+						ReviveScript.moaRetrieveLostItems.SetStage(20)
+					EndIf
+					If ReviveScript.moaRetrieveLostItems01.IsRunning()
+						ReviveScript.moaRetrieveLostItems01.SetStage(20)
+					EndIf
 				EndIf
 			EndIf
 		EndIf

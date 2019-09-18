@@ -365,7 +365,8 @@ Event OnLocationChange(Location akOldLoc, Location akNewLoc)
 						moaBossChest01.Start()
 						If moaBossChest01.IsRunning()
 							If moaThiefNPC01.IsRunning()
-								StopAndConfirm(moaThiefNPC01,3,25)
+								StopAndConfirm(moaThiefNPC01,3,27)
+								Utility.Wait(1.0)
 							EndIf
 							StopAndConfirm(moaRetrieveLostItems,3,10)
 							StopAndConfirm(moaRetrieveLostItems01,3,10)
@@ -375,7 +376,8 @@ Event OnLocationChange(Location akOldLoc, Location akNewLoc)
 					EndIf
 					If ConfigMenu.bSpawnHostile && (ThiefMarker.GetParentCell() != DefaultCell)
 						If moaThiefNPC01.IsRunning()
-							StopAndConfirm(moaThiefNPC01,3,25)
+							StopAndConfirm(moaThiefNPC01,3,27)
+							Utility.Wait(1.0)
 						EndIf
 						StopAndConfirm(moaRetrieveLostItems,3,10)
 						StopAndConfirm(moaRetrieveLostItems01,3,10)
@@ -682,8 +684,6 @@ Function BleedoutHandler(String CurrentState)
 					EffectHealCirclFXS.Play(PlayerRef, ConfigMenu.fRecoveryTimeSlider + 1.0)
 				EndIf
 				Utility.Wait(ConfigMenu.fRecoveryTimeSlider)
-				;ItemScript.RestoreLostItems(PlayerRef)
-				;RequipSpells()
 				bSacrifice = True
 				RevivePlayer(True)
 				If ConfigMenu.bIsEffectEnabled
@@ -1112,32 +1112,16 @@ Function RevivePlayer(Bool bRevive)
 			PlayerRef.DispelSpell(ArkayCurseTemp)
 			PlayerRef.DispelSpell(ArkayCurseTempAlt)
 			If ( PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt) )
-				PlayerRef.RemoveSpell(ArkayCurse)
-				PlayerRef.RemoveSpell(ArkayCurseAlt)
+					PlayerRef.RemoveSpell(ArkayCurse)
+					PlayerRef.RemoveSpell(ArkayCurseAlt)
 				If !LostItemsChest.GetNumItems() || bSacrifice
 					ItemScript.RestoreLostItems(PlayerRef)
-					If moaSoulMark01.IsRunning()
-						NPCScript.RemoveDeadClone()
-						moaSoulMark01.Stop()
-						LostItemsMarker.MoveToMyEditorLocation()
-						LostItemsMarker.Disable()
-					EndIf
 					If moaRetrieveLostItems.IsRunning()
 						moaRetrieveLostItems.SetStage(20)
 					EndIf
 					If moaRetrieveLostItems01.IsRunning()
 						moaRetrieveLostItems01.SetStage(20)
 					EndIf
-					If moaThiefNPC01.IsRunning()
-						If ( ThiefNPC.GetReference() As Actor )
-							RemoveStolenItemMarkers(ThiefNPC.GetReference() As Actor)
-						EndIf
-						StopAndConfirm(moaThiefNPC01, 3, 25)
-					EndIf
-					If Thief
-						RemoveStolenItemMarkers(Thief)
-					EndIf
-					RemoveStolenItemMarkers(playerRef)
 				EndIf
 			EndIf
 			bSacrifice = False
@@ -1250,7 +1234,8 @@ Function RevivePlayer(Bool bRevive)
 						LostItemsMarker.Disable()
 					EndIf
 					If moaThiefNPC01.IsRunning()
-						StopAndConfirm(moaThiefNPC01, 3, 25)
+						StopAndConfirm(moaThiefNPC01, 3, 27)
+						Utility.Wait(1.0) ;to remove spawn before starting the quest.
 					EndIf
 					If moaBossChest01.IsRunning()
 						StopAndConfirm(moaBossChest01, 3, 15)

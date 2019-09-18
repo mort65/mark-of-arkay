@@ -17,6 +17,7 @@ Float Property fLostSouls Auto Hidden
 Bool Property bIsItemsRemoved Auto Hidden
 Form[] Property Equipment Auto Hidden
 FormList Property QuestItems Auto
+Bool Property bIsBusy = False Auto Hidden
 
 
 Function SetVars()
@@ -26,6 +27,7 @@ Function SetVars()
 Endfunction
 
 Function RestoreLostItems(Actor ActorRef)
+	bIsBusy = True ;prevent loop if runed from thiefnpc
 	If (ReviveScript.ThiefNPC.GetReference() As Actor)
 		RemoveStolenItemMarkers(ReviveScript.ThiefNPC.GetReference() As Actor)
 	EndIf
@@ -36,13 +38,16 @@ Function RestoreLostItems(Actor ActorRef)
 	ReviveScript.Thief = None
 	ActorRef.RemoveSpell(ReviveScript.ArkayCurse)
 	ActorRef.RemoveSpell(ReviveScript.ArkayCurseAlt)
-	ReviveScript.moaSoulMark01.Stop()
+	If ReviveScript.moaSoulMark01.IsRunning()
+		stopandConfirm(ReviveScript.moaSoulMark01,1)
+		ReviveScript.NPCScript.RemoveDeadClone()
+		ReviveScript.LostItemsMarker.MoveToMyEditorLocation()
+		ReviveScript.LostItemsMarker.Disable()
+	EndIf
 	If ReviveScript.moaThiefNPC01.IsRunning() && ReviveScript.moaThiefNPC01.GetStage() < 15
-		ReviveScript.moaThiefNPC01.SetStage(20)
+		stopandConfirm(ReviveScript.moaThiefNPC01,1,25) ;Setting this to 15 or 20 would make a loop
 	EndIf
-	If ReviveScript.moaBossChest01.IsRunning() && ReviveScript.moaBossChest01.GetStage() < 15
-		ReviveScript.moaBossChest01.SetStage(20)
-	EndIf
+	stopandConfirm(ReviveScript.moaBossChest01,1,20)
 	ReviveScript.LostItemsMarker.MoveToMyEditorLocation()
 	ReviveScript.LostItemsMarker.Disable()
 	LostItemsChest.RemoveAllItems(ActorRef, True, True)
@@ -53,9 +58,11 @@ Function RestoreLostItems(Actor ActorRef)
 	ReviveScript.SkillScript.RestoreSkills()
 	bIsItemsRemoved = False
 	Debug.Notification("$mrt_MarkofArkay_Notification_RestoreLostItems")
+	bIsBusy = False
 EndFunction
 
 Function DestroyLostItems(Actor ActorRef)
+	bIsBusy = True
 	ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Destroying previously lost items...")
 	If ( ( LostItemsChest.GetNumItems() > 0 ) || ( fLostSouls > 0.0 ) )
 		If ConfigMenu.iDestroyedItems < 99999999
@@ -78,19 +85,22 @@ Function DestroyLostItems(Actor ActorRef)
 	ReviveScript.Thief = None
 	ActorRef.RemoveSpell(ReviveScript.ArkayCurse)
 	ActorRef.RemoveSpell(ReviveScript.ArkayCurseAlt)
-	ReviveScript.moaSoulMark01.Stop()
+	If ReviveScript.moaSoulMark01.IsRunning()
+		stopandConfirm(ReviveScript.moaSoulMark01,1)
+		ReviveScript.NPCScript.RemoveDeadClone()
+		ReviveScript.LostItemsMarker.MoveToMyEditorLocation()
+		ReviveScript.LostItemsMarker.Disable()
+	EndIf
 	If ReviveScript.moaThiefNPC01.IsRunning() && ReviveScript.moaThiefNPC01.GetStage() < 15
-		ReviveScript.moaThiefNPC01.SetStage(15)
+		stopandConfirm(ReviveScript.moaThiefNPC01,1,25)
 	EndIf
-	ReviveScript.moaThiefNPC01.Stop()
-	If ReviveScript.moaBossChest01.IsRunning() && ReviveScript.moaBossChest01.GetStage() < 15
-		ReviveScript.moaBossChest01.SetStage(20)
-	EndIf
+	stopandConfirm(ReviveScript.moaBossChest01,1,15)
 	bIsItemsRemoved = False
 	ReviveScript.LostItemsMarker.MoveToMyEditorLocation()
 	ReviveScript.LostItemsMarker.Disable()
 	LostItemsChest.RemoveAllItems(ActorRef, True, True)
 	ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Previously lost items are destroyed.")
+	bIsBusy = False
 EndFunction
 
 Form[] Function RegisterEquipments(Actor refActor, Bool bRightArm, Bool bLeftArm)
@@ -195,17 +205,18 @@ Function LoseItems()
 			ElseIf PlayerRef.GetActorValue("DragonSouls")
 				Int iMin = ConfigMenu.fMinLoseDragonSoulSlider As Int
 				Int iMax = ConfigMenu.fMaxLoseDragonSoulSlider As Int
-				If (iMin > 0 || iMax > 0)
-					If iMax > iItemCount
+				If iMin > iItemCount
+					iAmount = 0
+				Else
+					If iMax == 0
 						iMax = iItemCount
-					EndIf
-					If iMin > iItemCount
-						iMin = iItemCount
-					EndIf
-					If iMax < iMin
+					ElseIf iMax < iMin
 						Int tmp = iMin
 						iMin = iMax
 						iMax = tmp
+					EndIf
+					If iMax > iItemCount
+						iMax = iItemCount
 					EndIf
 					iAmount = Utility.RandomInt(iMin,iMax)
 				EndIf
@@ -255,19 +266,20 @@ Function LoseItem(Form kItem,Bool bLoseAll,Int iMin,Int iMax)
 	If bLoseAll
 		iAmount = iItemCount
 	ElseIf PlayerRef.GetItemCount(kItem)
-		If (iMin > 0 || iMax > 0)
-			If iMax > iItemCount
+		If iMin > iItemCount
+			iAmount = 0
+		Else
+			If iMax == 0
 				iMax = iItemCount
-			EndIf
-			If iMin > iItemCount
-				iMin = iItemCount
-			EndIf
-			If iMax < iMin
+			ElseIf iMax < iMin
 				Int tmp = iMin
 				iMin = iMax
 				iMax = tmp
 			EndIf
-		iAmount = Utility.RandomInt(iMin,iMax)
+			If iMax > iItemCount
+				iMax = iItemCount
+			EndIf
+			iAmount = Utility.RandomInt(iMin,iMax)
 		EndIf
 	EndIf
 	If iAmount > 0

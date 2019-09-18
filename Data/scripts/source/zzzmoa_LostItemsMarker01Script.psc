@@ -42,9 +42,6 @@ Event OnActivate(ObjectReference akActionRef)
 			If moaRetrieveLostItems01.IsRunning()
 				moaRetrieveLostItems01.SetStage(20)
 			EndIf
-			ConfigMenu.ReviveScript.moaSoulMark01.Stop()
-			ConfigMenu.ReviveScript.moaThiefNPC01.Stop()
-			ConfigMenu.ReviveScript.moaBossChest01.Stop()
 		EndIf
 	EndIf
 	bIsActive = False

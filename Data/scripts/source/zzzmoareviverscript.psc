@@ -237,6 +237,8 @@ EndFunction
 Event OnEnterBleedout()
 	If !bInBleedout
 		bInBleedout = True
+		fHealrate = PlayerRef.GetActorValue("HealRate")
+		PlayerRef.SetActorValue("HealRate",0.0)
 		PlayerRef.AddPerk(Invulnerable)
 		Game.DisablePlayerControls()
 		iIsBeast = NPCScript.iInBeastForm()
@@ -247,6 +249,7 @@ Event OnEnterBleedout()
 			ToggleSaving(True)
 			moaBleedoutHandlerState.SetValue(0)
 			LowHealthImod.Remove()
+			PlayerRef.SetActorValue("HealRate",fHealrate)
 			RegisterForSingleUpdate(5.0)
 			bInBleedout = False
 		EndIf

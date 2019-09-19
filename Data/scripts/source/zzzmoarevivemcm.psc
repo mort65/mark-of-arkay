@@ -183,6 +183,8 @@ Int oidCureDisIfHasBlessing
 Int oidDiseaseCurse
 Int oidBossChestChanceSlider
 Int oidBossChestOnlyCurLoc
+Int oidBossChestNotClearedLoc
+Bool Property bBossChestNotInClearedLoc = False Auto Hidden
 Bool Property bBossChestOnlyCurLoc = False Auto Hidden
 Float Property fBossChestChanceSlider = 0.0 Auto Hidden
 Float Property fDisChanceSlider = 25.0 Auto Hidden
@@ -206,6 +208,7 @@ Int[] Property iSpawnCounts Auto Hidden
 Int[] Property iValidTypes Auto Hidden
 Actor Property PlayerRef Auto
 GlobalVariable Property moaOnlyInCurLocChest Auto
+GlobalVariable Property moaBossChestNotInclearedLoc Auto
 GlobalVariable Property moaState Auto
 GlobalVariable Property moaLootChance Auto
 GlobalVariable Property moaScrollChance Auto
@@ -1098,6 +1101,8 @@ Event OnPageReset(String page)
 		oidBossChestChanceSlider = AddSliderOption("$mrt_MarkofArkay_BossChestChanceSlider_1", fBossChestChanceSlider, "$mrt_MarkofArkay_BossChestChanceSlider_2", flags)
 		SetCursorPosition(13)
 		oidBossChestOnlyCurLoc = AddToggleOption("$mrt_MarkofArkay_BossChestOnlyCurLoc",bBossChestOnlyCurLoc,flags)
+		SetCursorPosition(15)
+		oidBossChestNotClearedLoc = AddToggleOption("$mrt_MarkofArkay_BossChestNotClearedLoc", bBossChestNotInClearedLoc, flags)
 	ElseIf (page == "$Debug")
 		SetCursorPosition(0)
 		AddHeaderOption("$Debug")
@@ -1794,6 +1799,10 @@ Event OnOptionSelect(Int option)
 		bBossChestOnlyCurLoc = !bBossChestOnlyCurLoc
 		moaOnlyInCurLocChest.SetValueInt(bBossChestOnlyCurLoc As Int)
 		SetToggleOptionValue(oidBossChestOnlyCurLoc,bBossChestOnlyCurLoc)
+	ElseIf (option == oidBossChestNotClearedLoc)
+		bBossChestNotInClearedLoc = !bBossChestNotInClearedLoc
+		moaBossChestNotInclearedLoc.SetValueInt(bBossChestNotInClearedLoc As Int)
+		SetToggleOptionValue(oidBossChestNotClearedLoc,bBossChestNotInClearedLoc)
 	ElseIf (option == oidAlwaysSpawn)
 		bAlwaysSpawn = !bAlwaysSpawn
 		SetToggleOptionValue(oidAlwaysSpawn,bAlwaysSpawn)
@@ -2943,6 +2952,10 @@ Event OnOptionDefault(Int option)
 		bBossChestOnlyCurLoc = False
 		moaOnlyInCurLocChest.SetValueInt(0)
 		SetToggleOptionValue(oidBossChestOnlyCurLoc ,bBossChestOnlyCurLoc)
+	ElseIf (option == oidBossChestNotClearedLoc )
+		bBossChestNotInClearedLoc = False
+		moaBossChestNotInclearedLoc.SetValueInt(0)
+		SetToggleOptionValue(oidBossChestNotClearedLoc ,bBossChestNotInClearedLoc)
 	ElseIf (option == oidAlwaysSpawn )
 		bAlwaysSpawn = False
 		SetToggleOptionValue(oidAlwaysSpawn ,bAlwaysSpawn)
@@ -3543,6 +3556,8 @@ Event OnOptionHighlight(Int option)
 		SetInfoText("$mrt_MarkofArkay_DESC_SpawnHostile")
 	ElseIf (option == oidBossChestOnlyCurLoc)
 		SetInfoText("$mrt_MarkofArkay_DESC_BossChestOnlyCurLoc")
+	ElseIf (option == oidBossChestNotClearedLoc)
+		SetInfoText("$mrt_MarkofArkay_DESC_BossChestNotClearedLoc")
 	ElseIf (option == oidAlwaysSpawn)
 		SetInfoText("$mrt_MarkofArkay_DESC_AlwaysSpawn")
 	ElseIf (option == oidOnlyInfectIfHasBaseDis)
@@ -4319,6 +4334,8 @@ Bool function bLoadUserSettings(String sFileName)
 	bSpawnHostile = fiss.loadBool("bSpawnHostile")
 	bBossChestOnlyCurLoc = fiss.loadBool("bBossChestOnlyCurLoc")
 	moaOnlyInCurLocChest.SetValueInt(bBossChestOnlyCurLoc As Int)
+	bBossChestNotInClearedLoc = fiss.loadBool("bBossChestNotInClearedLoc")
+	moaBossChestNotInclearedLoc.SetValue(bBossChestNotInClearedLoc As Int)
 	bAlwaysSpawn = fiss.loadBool("bAlwaysSpawn")
 	bDisableUnsafe = fiss.loadBool("bDisableUnsafe")
 	iSelectedCustomRPSlot = fiss.loadInt("iSelectedCustomRPSlot")
@@ -4387,6 +4404,9 @@ Bool Function bCheckFissErrors(String strErrors)
 		ElseIf strError == "Element bBossChestOnlyCurLoc not found"
 			bBossChestOnlyCurLoc = False
 			moaOnlyInCurLocChest.SetValueInt(0)
+		ElseIf strError == "Element bBossChestNotInClearedLoc not found"
+			bBossChestNotInClearedLoc = False
+			moaBossChestNotInclearedLoc.SetValueInt(0)
 		Else
 			Debug.Trace("Mark of Arkay: Error loading user settings -> " + strError)
 			Result = False
@@ -4613,6 +4633,7 @@ bool function bSaveUserSettings(String sFileName)
 	fiss.SaveFloat("fTotalCustomRPSlotSlider",fTotalCustomRPSlotSlider)
 	fiss.SaveBool("bSpawnHostile", bSpawnHostile)
 	fiss.SaveBool("bBossChestOnlyCurLoc", bBossChestOnlyCurLoc)
+	fiss.SaveBool("bBossChestNotInClearedLoc", bBossChestNotInClearedLoc)
 	fiss.SaveBool("bAlwaysSpawn", bAlwaysSpawn)
 	fiss.saveBool("bDoNotStopCombat", bDoNotStopCombat)
 	fiss.saveBool("bDoNotStopCombatAfterRevival", bDoNotStopCombatAfterRevival)
@@ -4772,6 +4793,7 @@ function LoadDefaultSettings()
 	bOnlyLoseSkillXP = False
 	bSpawnHostile = False
 	bBossChestOnlyCurLoc = False
+	bBossChestNotInClearedLoc = False
 	bAlwaysSpawn = False
 	fTotalCustomRPSlotSlider = 1.0
 	iSelectedCustomRPSlot = 0

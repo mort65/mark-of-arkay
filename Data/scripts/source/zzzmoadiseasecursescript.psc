@@ -40,12 +40,6 @@ Function infectPlayer()
 		iIndex -= 1
 		iStage = bGetDiseaseStage(iIndex)
 		If iStage > -1
-			If iStage == 3
-				bFlagArr[iIndex] = False
-			EndIf
-			If !ConfigMenu.fDisProgChanceSlider
-				bFlagArr[iIndex] = False
-			EndIf
 			If !bHasCursedDisease
 				bHasCursedDisease = True
 			EndIf

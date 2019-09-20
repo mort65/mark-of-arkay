@@ -26,6 +26,7 @@ Event OnActivate(ObjectReference akActionRef)
 	EndIf
 	If (akActionRef As Actor) == PlayerRef
 		If ConfigMenu.ReviveScript.ItemScript.bIsItemsRemoved || PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt) || ConfigMenu.ReviveScript.skillscript.bSkillReduced()
+			Debug.Notification("$mrt_MarkofArkay_Notification_SoulMark_Activated")
 			GetActorReference().SetCriticalStage(GetActorReference().CritStage_DisintegrateStart)
 			TurnUnDisintegrate01FXS.Play(GetActorReference(),2.0)
 			Utility.Wait(2.0)
@@ -35,7 +36,6 @@ Event OnActivate(ObjectReference akActionRef)
 			Utility.Wait(0.5)
 			GetActorReference().MoveTo(ConfigMenu.ReviveScript.LostItemsChest)			
 			ConfigMenu.ReviveScript.ItemScript.RestoreLostItems(PlayerRef)
-			Debug.Notification("$mrt_MarkofArkay_Notification_SoulMark_Activated")
 			If moaRetrieveLostItems.IsRunning()
 				moaRetrieveLostItems.SetStage(20)
 			EndIf

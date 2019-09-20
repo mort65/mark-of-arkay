@@ -551,7 +551,7 @@ Function BleedoutHandler(String CurrentState)
 	EndIf
 	moaHostileNPCDetector.Stop()
 	moaHostileNPCDetector01.Stop()
-	If Attacker
+	If Attacker && Attacker != PlayerRef
 		AttackerActor.ForceRefTo(Attacker)
 		AttackerActor01.ForceRefTo(Attacker)
 		ConfigMenu.bIsLoggingEnabled && Debug.Trace( "MarkOfArkay: Last attacker = ( '" +\
@@ -559,6 +559,7 @@ Function BleedoutHandler(String CurrentState)
 			"', " + Attacker + ", " +\
 			Attacker.GetRace() + ", )" ) 
 	Else
+		Attacker = None
 		AttackerActor.Clear()
 		AttackerActor01.Clear()
 	EndIf
@@ -1282,9 +1283,10 @@ Function RevivePlayer(Bool bRevive)
 				EndIf
 				bSoulMark = bSoulMark()
 				Bool bRemoveItemTemp = True
-				If NPCScript.bInBeastForm() || (( ConfigMenu.iHostileOption == 2 && ( moaSoulMark01.IsRunning() || !moaThiefNPC01.IsRunning() || moaThiefNPC01.GetStage() != 1)) ||\
+				Bool bInBeastForm = NPCScript.bInBeastForm()
+				If bInBeastForm || (( ConfigMenu.iHostileOption == 2 && ( moaSoulMark01.IsRunning() || !moaThiefNPC01.IsRunning() || moaThiefNPC01.GetStage() != 1)) ||\
 						( ConfigMenu.iHostileOption != 2 && ( moaThiefNPC01.IsRunning() || ( ConfigMenu.iHostileOption == 1 && !NPCScript.bIsHostileNPCNearby()))) || ( PlayerRef.GetParentCell() == DefaultCell ))
-					If  (moaBossChest01.IsRunning() && moaBossChest01.GetStage() == 0)
+					If  (moaBossChest01.IsRunning() && moaBossChest01.GetStage() == 0) && !bInBeastForm
 						bRemoveItemTemp = False
 					Else
 						bRemoveItems = False

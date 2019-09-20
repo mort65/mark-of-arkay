@@ -184,7 +184,7 @@ Int oidDiseaseCurse
 Int oidBossChestChanceSlider
 Int oidBossChestOnlyCurLoc
 Int oidBossChestNotClearedLoc
-Bool Property bBossChestNotInClearedLoc = False Auto Hidden
+Bool Property bBossChestNotInClearedLoc = True Auto Hidden
 Bool Property bBossChestOnlyCurLoc = False Auto Hidden
 Float Property fBossChestChanceSlider = 0.0 Auto Hidden
 Float Property fDisChanceSlider = 25.0 Auto Hidden
@@ -2953,7 +2953,7 @@ Event OnOptionDefault(Int option)
 		moaOnlyInCurLocChest.SetValueInt(0)
 		SetToggleOptionValue(oidBossChestOnlyCurLoc ,bBossChestOnlyCurLoc)
 	ElseIf (option == oidBossChestNotClearedLoc )
-		bBossChestNotInClearedLoc = False
+		bBossChestNotInClearedLoc = True
 		moaBossChestNotInclearedLoc.SetValueInt(0)
 		SetToggleOptionValue(oidBossChestNotClearedLoc ,bBossChestNotInClearedLoc)
 	ElseIf (option == oidAlwaysSpawn )
@@ -4405,7 +4405,7 @@ Bool Function bCheckFissErrors(String strErrors)
 			bBossChestOnlyCurLoc = False
 			moaOnlyInCurLocChest.SetValueInt(0)
 		ElseIf strError == "Element bBossChestNotInClearedLoc not found"
-			bBossChestNotInClearedLoc = False
+			bBossChestNotInClearedLoc = True
 			moaBossChestNotInclearedLoc.SetValueInt(0)
 		Else
 			Debug.Trace("Mark of Arkay: Error loading user settings -> " + strError)
@@ -4793,7 +4793,7 @@ function LoadDefaultSettings()
 	bOnlyLoseSkillXP = False
 	bSpawnHostile = False
 	bBossChestOnlyCurLoc = False
-	bBossChestNotInClearedLoc = False
+	bBossChestNotInClearedLoc = True
 	bAlwaysSpawn = False
 	fTotalCustomRPSlotSlider = 1.0
 	iSelectedCustomRPSlot = 0

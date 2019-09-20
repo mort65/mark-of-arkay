@@ -1020,7 +1020,7 @@ Event OnPageReset(String page)
 		EndIf
 		oidHostileOptions_M = AddMenuOption("$mrt_MarkofArkay_HostileOptions_M", sGetHostileOptions()[iHostileOption], flags)
 		SetCursorPosition(4)
-		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1)) && !bAlwaysSpawn
+		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1))
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
@@ -1100,9 +1100,14 @@ Event OnPageReset(String page)
 		EndIf
 		oidBossChestChanceSlider = AddSliderOption("$mrt_MarkofArkay_BossChestChanceSlider_1", fBossChestChanceSlider, "$mrt_MarkofArkay_BossChestChanceSlider_2", flags)
 		SetCursorPosition(13)
-		oidBossChestOnlyCurLoc = AddToggleOption("$mrt_MarkofArkay_BossChestOnlyCurLoc",bBossChestOnlyCurLoc,flags)
-		SetCursorPosition(15)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && fBossChestChanceSlider > 0.0
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf		
 		oidBossChestNotClearedLoc = AddToggleOption("$mrt_MarkofArkay_BossChestNotClearedLoc", bBossChestNotInClearedLoc, flags)
+		SetCursorPosition(15)
+		oidBossChestOnlyCurLoc = AddToggleOption("$mrt_MarkofArkay_BossChestOnlyCurLoc",bBossChestOnlyCurLoc,flags)
 	ElseIf (page == "$Debug")
 		SetCursorPosition(0)
 		AddHeaderOption("$Debug")
@@ -1806,7 +1811,6 @@ Event OnOptionSelect(Int option)
 	ElseIf (option == oidAlwaysSpawn)
 		bAlwaysSpawn = !bAlwaysSpawn
 		SetToggleOptionValue(oidAlwaysSpawn,bAlwaysSpawn)
-		ForcePageReset()
 	ElseIf (option == oidMoralityMatters)
 		bMoralityMatters = !bMoralityMatters
 		moaMoralityMatters.SetValue(bMoralityMatters As Int)
@@ -2453,6 +2457,7 @@ Event OnOptionSliderAccept(int option, Float value)
 	ElseIf (option == oidBossChestChanceSlider)
 		fBossChestChanceSlider = value
 		SetSliderOptionValue(oidBossChestChanceSlider, fBossChestChanceSlider, "$mrt_MarkofArkay_BossChestChanceSlider_2")
+		ForcePageReset()
 	ElseIf (option == oidTotalCustomRPSlotSlider)
 		fTotalCustomRPSlotSlider = value
 		SetCustomRPFlags()
@@ -2959,7 +2964,6 @@ Event OnOptionDefault(Int option)
 	ElseIf (option == oidAlwaysSpawn )
 		bAlwaysSpawn = False
 		SetToggleOptionValue(oidAlwaysSpawn ,bAlwaysSpawn)
-		ForcePageReset()
 	ElseIf (option == oidMoralityMatters )
 		bMoralityMatters = True
 		moaMoralityMatters.SetValue(bMoralityMatters As Int)
@@ -3035,6 +3039,7 @@ Event OnOptionDefault(Int option)
 	ElseIf (option == oidBossChestChanceSlider)
 		fBossChestChanceSlider = 0.0
 		SetSliderOptionValue(oidBossChestChanceSlider, fBossChestChanceSlider, "$mrt_MarkofArkay_BossChestChanceSlider_2")
+		ForcePageReset()
 	ElseIf (option == oidHealthTriggerSlider)
 		fHealthPercTrigger = 0.00
 		SetSliderOptionValue(oidHealthTriggerSlider, fHealthPercTrigger * 100, "mrt_MarkofArkay_HealthPercSlider_2")

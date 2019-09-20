@@ -205,21 +205,7 @@ Function LoseItems()
 			ElseIf PlayerRef.GetActorValue("DragonSouls")
 				Int iMin = ConfigMenu.fMinLoseDragonSoulSlider As Int
 				Int iMax = ConfigMenu.fMaxLoseDragonSoulSlider As Int
-				If iMin > iItemCount
-					iAmount = 0
-				Else
-					If iMax == 0
-						iMax = iItemCount
-					ElseIf iMax < iMin
-						Int tmp = iMin
-						iMin = iMax
-						iMax = tmp
-					EndIf
-					If iMax > iItemCount
-						iMax = iItemCount
-					EndIf
-					iAmount = Utility.RandomInt(iMin,iMax)
-				EndIf
+				iAmount = randIntFromlimitedRange(iMin,iMax,iItemCount,0,iItemCount)
 			EndIf
 			If iAmount > 0
 				PlayerRef.ModActorValue("DragonSouls", -(iAmount As Float))
@@ -265,22 +251,8 @@ Function LoseItem(Form kItem,Bool bLoseAll,Int iMin,Int iMax)
 	Int iAmount = 0
 	If bLoseAll
 		iAmount = iItemCount
-	ElseIf PlayerRef.GetItemCount(kItem)
-		If iMin > iItemCount
-			iAmount = 0
-		Else
-			If iMax == 0
-				iMax = iItemCount
-			ElseIf iMax < iMin
-				Int tmp = iMin
-				iMin = iMax
-				iMax = tmp
-			EndIf
-			If iMax > iItemCount
-				iMax = iItemCount
-			EndIf
-			iAmount = Utility.RandomInt(iMin,iMax)
-		EndIf
+	ElseIf iItemCount > 0
+		iAmount = randIntFromlimitedRange(iMin,iMax,iItemCount,0,iItemCount)
 	EndIf
 	If iAmount > 0
 		PlayerRef.RemoveItem(kItem,iAmount,True,LostItemsChest)

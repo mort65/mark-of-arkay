@@ -261,3 +261,27 @@ Function stopBrawlQuest(Quest akBrawlQuest, Int akEndStage) Global
 	Game.GetPlayer().ResetHealthAndLimbs()
 	Game.GetPlayer().StopCombatAlarm()
 EndFunction
+
+Int Function randIntFromlimitedRange(Int iMin, Int iMax, Int iLimit, Int iMinValue, Int iMaxValue) Global
+	Int MinAmount = iMin
+	Int MaxAmount = iMax
+	If MinAmount > iLimit
+		Return 0
+	Else
+		If MinAmount > iMaxValue
+			MinAmount = iMaxValue
+		EndIf
+		If MinAmount < iMinValue
+			MinAmount = iMinValue
+		EndIf
+		If MaxAmount > iMaxValue || MaxAmount <= iMinValue
+			MaxAmount = iMaxValue
+		EndIf
+		If MaxAmount < MinAmount
+			Int tmp = MinAmount
+			MinAmount = MaxAmount
+			MaxAmount = tmp
+		EndIf
+	EndIf
+	Return Utility.RandomInt(MinAmount,MaxAmount)
+EndFunction

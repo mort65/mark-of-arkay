@@ -1371,7 +1371,7 @@ Function RevivePlayer(Bool bRevive)
 								ElseIf ConfigMenu.bCorpseAsSoulMark
 									LostItemsMarker.MoveToMyEditorLocation()
 									NPCScript.RemoveDeadClone()
-									NPCScript.bringDeadClone()	
+									NPCScript.bringDeadClone()
 								EndIf
 								moaSoulMark01.Start()
 								ConfigMenu.bIsLoggingEnabled && !ConfigMenu.bCorpseAsSoulMark && \

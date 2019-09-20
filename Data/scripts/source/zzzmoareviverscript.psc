@@ -120,6 +120,8 @@ Quest Property DGIntimidateQuest Auto
 Quest Property FreeformRiften19 Auto
 Quest Property Favor017 Auto
 LocationAlias Property PlayerLocRef Auto
+Location Property EmptyLocation Auto
+LocationRefType Property BossContainer Auto
 Float fHealrate = 0.0
 Int iIsBeast = 0
 Bool bSheated = False
@@ -1250,7 +1252,13 @@ Function RevivePlayer(Bool bRevive)
 				If !moaSoulMark01.IsRunning() && !moaThiefNPC01.IsRunning() &&  (!moaBossChest01.IsRunning() || moaBossChest01.GetStage() == 0)
 					StopAndConfirm(moaBossChest01,3,25)
 					If Utility.RandomInt(0,99) < ConfigMenu.fBossChestChanceSlider
-						PlayerLocRef.ForceLocationTo(PlayerRef.GetCurrentLocation())
+						Location curLoc = PlayerRef.GetCurrentLocation()
+						If !curLoc || !curLoc.HasKeyWord(NPCScript.LocTypeDungeon) || !curLoc.HasRefType(BossContainer)
+						(ConfigMenu.moaBossChestNotInclearedLoc.GetValueInt() && curLoc.IsCleared())
+							PlayerLocRef.ForceLocationTo(EmptyLocation)
+						Else
+							PlayerLocRef.ForceLocationTo(PlayerRef.GetCurrentLocation())
+						EndIf
 						moaBossChest01.Start()
 					EndIf
 				EndIf

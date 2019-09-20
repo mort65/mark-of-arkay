@@ -1254,7 +1254,7 @@ Function RevivePlayer(Bool bRevive)
 					StopAndConfirm(moaBossChest01,3,25)
 					If Utility.RandomInt(0,99) < ConfigMenu.fBossChestChanceSlider
 						Location curLoc = PlayerRef.GetCurrentLocation()
-						If !curLoc || !curLoc.HasKeyWord(NPCScript.LocTypeDungeon) || !curLoc.HasRefType(BossContainer)
+						If !curLoc || !curLoc.HasKeyWord(NPCScript.LocTypeDungeon) || !curLoc.HasRefType(BossContainer) || \
 						(ConfigMenu.moaBossChestNotInclearedLoc.GetValueInt() && curLoc.IsCleared())
 							PlayerLocRef.ForceLocationTo(EmptyLocation)
 						Else

@@ -80,6 +80,7 @@ ReferenceAlias[] Property ThiefActors Auto
 ReferenceAlias Property HostileActor01 Auto
 ReferenceAlias Property GuardNPC Auto
 ReferenceAlias Property SoulMark02 Auto
+ReferenceAlias Property ItemMarker02 Auto
 Actor[] Property FollowerArr Auto Hidden
 Faction Property PlayerFollowerFaction Auto
 Faction Property CurrentFollowerFaction Auto
@@ -100,6 +101,7 @@ Spell Property WontSteal Auto
 Int[] Property iSpawnArr Auto Hidden
 Int Property iSpawnpool Auto Hidden
 Int Property iTotalSpawns = 0 Auto Hidden
+Actor Property DeadClone Auto Hidden
 
 Function addToSpawnPool(Int iSpawnIndex)
 	Int iEmpty = iSpawnArr.Find(-1)
@@ -1076,6 +1078,7 @@ Function bringDeadClone()
 	Form[] MyEquipment = ReviveScript.ItemScript.Equipment
 	Form[] Clones = bCloneActor(PlayerRef, ReviveScript.LostItemsChest, abDead = False)
 	Actor Clone = Clones[0] As Actor
+	DeadClone = Clone
 	Clone.AddSpell(WontSteal)
 	Clone.RemoveAllItems()
 	Int i = MyEquipment.Length
@@ -1101,18 +1104,28 @@ Function bringDeadClone()
 	Clone.SetHeadTracking(False)
 	Clone.SetGhost(True)
 	Clone.Enable()
+	If !ReviveScript.moaSoulMark01.IsRunning()
+		ReviveScript.moaSoulMark01.Start()
+	EndIf
 	SoulMark02.ForceRefTo(Clone)
+	If ReviveScript.moaRetrieveLostItems.IsRunning()
+		ItemMarker02.ForceRefTo(DeadClone)
+	EndIf
 	SoulMark02.RegisterForSingleUpdate(30.0)
 EndFunction
 
 Function RemoveDeadClone()
-	If !SoulMark02.GetActorReference()
+	If !SoulMark02.GetActorReference() && !DeadClone
 		Return
 	EndIf
 	Actor Clone = SoulMark02.GetActorReference()
+	If !Clone
+		Clone = DeadClone
+	EndIf
 	Clone.MoveTo(ReviveScript.LostItemsChest)		
 	Clone.SetCriticalStage(Clone.CritStage_DisintegrateEnd)
 	Clone.DisableNoWait()
+	DeadClone = None
 	SoulMark02.UnregisterForUpdate()
 EndFunction
 

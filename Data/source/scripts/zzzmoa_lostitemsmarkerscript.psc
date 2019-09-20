@@ -15,9 +15,9 @@ Event OnActivate(ObjectReference akActionRef)
 	EndIf
 	If (akActionRef As Actor) == PlayerRef
 		If ReviveScript.ItemScript.bIsItemsRemoved || PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt) || ReviveScript.skillscript.bSkillReduced()
+			Debug.Notification("$mrt_MarkofArkay_Notification_SoulMark_Activated")
 			Self.MoveToMyEditorLocation()
 			ReviveScript.ItemScript.RestoreLostItems(PlayerRef)
-			Debug.Notification("$mrt_MarkofArkay_Notification_SoulMark_Activated")
 			If moaRetrieveLostItems.IsRunning()
 				moaRetrieveLostItems.SetStage(20)
 			EndIf

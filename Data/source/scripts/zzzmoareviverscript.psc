@@ -120,6 +120,8 @@ Quest Property DGIntimidateQuest Auto
 Quest Property FreeformRiften19 Auto
 Quest Property Favor017 Auto
 LocationAlias Property PlayerLocRef Auto
+Location Property EmptyLocation Auto
+LocationRefType Property BossContainer Auto
 Float fHealrate = 0.0
 Int iIsBeast = 0
 Bool bSheated = False
@@ -237,6 +239,8 @@ EndFunction
 Event OnEnterBleedout()
 	If !bInBleedout
 		bInBleedout = True
+		fHealrate = PlayerRef.GetActorValue("HealRate")
+		PlayerRef.SetActorValue("HealRate",0.0)
 		PlayerRef.AddPerk(Invulnerable)
 		Game.DisablePlayerControls()
 		iIsBeast = NPCScript.iInBeastForm()
@@ -247,6 +251,7 @@ Event OnEnterBleedout()
 			ToggleSaving(True)
 			moaBleedoutHandlerState.SetValue(0)
 			LowHealthImod.Remove()
+			PlayerRef.SetActorValue("HealRate",fHealrate)
 			RegisterForSingleUpdate(5.0)
 			bInBleedout = False
 		EndIf
@@ -546,7 +551,7 @@ Function BleedoutHandler(String CurrentState)
 	EndIf
 	moaHostileNPCDetector.Stop()
 	moaHostileNPCDetector01.Stop()
-	If Attacker
+	If Attacker && Attacker != PlayerRef
 		AttackerActor.ForceRefTo(Attacker)
 		AttackerActor01.ForceRefTo(Attacker)
 		ConfigMenu.bIsLoggingEnabled && Debug.Trace( "MarkOfArkay: Last attacker = ( '" +\
@@ -554,6 +559,7 @@ Function BleedoutHandler(String CurrentState)
 			"', " + Attacker + ", " +\
 			Attacker.GetRace() + ", )" ) 
 	Else
+		Attacker = None
 		AttackerActor.Clear()
 		AttackerActor01.Clear()
 	EndIf
@@ -1247,7 +1253,13 @@ Function RevivePlayer(Bool bRevive)
 				If !moaSoulMark01.IsRunning() && !moaThiefNPC01.IsRunning() &&  (!moaBossChest01.IsRunning() || moaBossChest01.GetStage() == 0)
 					StopAndConfirm(moaBossChest01,3,25)
 					If Utility.RandomInt(0,99) < ConfigMenu.fBossChestChanceSlider
-						PlayerLocRef.ForceLocationTo(PlayerRef.GetCurrentLocation())
+						Location curLoc = PlayerRef.GetCurrentLocation()
+						If !curLoc || !curLoc.HasKeyWord(NPCScript.LocTypeDungeon) || !curLoc.HasRefType(BossContainer) || \
+						(ConfigMenu.moaBossChestNotInclearedLoc.GetValueInt() && curLoc.IsCleared())
+							PlayerLocRef.ForceLocationTo(EmptyLocation)
+						Else
+							PlayerLocRef.ForceLocationTo(PlayerRef.GetCurrentLocation())
+						EndIf
 						moaBossChest01.Start()
 					EndIf
 				EndIf
@@ -1271,9 +1283,10 @@ Function RevivePlayer(Bool bRevive)
 				EndIf
 				bSoulMark = bSoulMark()
 				Bool bRemoveItemTemp = True
-				If NPCScript.bInBeastForm() || (( ConfigMenu.iHostileOption == 2 && ( moaSoulMark01.IsRunning() || !moaThiefNPC01.IsRunning() || moaThiefNPC01.GetStage() != 1)) ||\
+				Bool bInBeastForm = NPCScript.bInBeastForm()
+				If bInBeastForm || (( ConfigMenu.iHostileOption == 2 && ( moaSoulMark01.IsRunning() || !moaThiefNPC01.IsRunning() || moaThiefNPC01.GetStage() != 1)) ||\
 						( ConfigMenu.iHostileOption != 2 && ( moaThiefNPC01.IsRunning() || ( ConfigMenu.iHostileOption == 1 && !NPCScript.bIsHostileNPCNearby()))) || ( PlayerRef.GetParentCell() == DefaultCell ))
-					If  (moaBossChest01.IsRunning() && moaBossChest01.GetStage() == 0)
+					If  (moaBossChest01.IsRunning() && moaBossChest01.GetStage() == 0) && !bInBeastForm
 						bRemoveItemTemp = False
 					Else
 						bRemoveItems = False

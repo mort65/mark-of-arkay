@@ -183,6 +183,8 @@ Int oidCureDisIfHasBlessing
 Int oidDiseaseCurse
 Int oidBossChestChanceSlider
 Int oidBossChestOnlyCurLoc
+Int oidBossChestNotClearedLoc
+Bool Property bBossChestNotInClearedLoc = True Auto Hidden
 Bool Property bBossChestOnlyCurLoc = False Auto Hidden
 Float Property fBossChestChanceSlider = 0.0 Auto Hidden
 Float Property fDisChanceSlider = 25.0 Auto Hidden
@@ -206,6 +208,7 @@ Int[] Property iSpawnCounts Auto Hidden
 Int[] Property iValidTypes Auto Hidden
 Actor Property PlayerRef Auto
 GlobalVariable Property moaOnlyInCurLocChest Auto
+GlobalVariable Property moaBossChestNotInclearedLoc Auto
 GlobalVariable Property moaState Auto
 GlobalVariable Property moaLootChance Auto
 GlobalVariable Property moaScrollChance Auto
@@ -1017,7 +1020,7 @@ Event OnPageReset(String page)
 		EndIf
 		oidHostileOptions_M = AddMenuOption("$mrt_MarkofArkay_HostileOptions_M", sGetHostileOptions()[iHostileOption], flags)
 		SetCursorPosition(4)
-		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1)) && !bAlwaysSpawn
+		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1))
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
@@ -1097,6 +1100,13 @@ Event OnPageReset(String page)
 		EndIf
 		oidBossChestChanceSlider = AddSliderOption("$mrt_MarkofArkay_BossChestChanceSlider_1", fBossChestChanceSlider, "$mrt_MarkofArkay_BossChestChanceSlider_2", flags)
 		SetCursorPosition(13)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && fBossChestChanceSlider > 0.0
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf		
+		oidBossChestNotClearedLoc = AddToggleOption("$mrt_MarkofArkay_BossChestNotClearedLoc", bBossChestNotInClearedLoc, flags)
+		SetCursorPosition(15)
 		oidBossChestOnlyCurLoc = AddToggleOption("$mrt_MarkofArkay_BossChestOnlyCurLoc",bBossChestOnlyCurLoc,flags)
 	ElseIf (page == "$Debug")
 		SetCursorPosition(0)
@@ -1794,10 +1804,13 @@ Event OnOptionSelect(Int option)
 		bBossChestOnlyCurLoc = !bBossChestOnlyCurLoc
 		moaOnlyInCurLocChest.SetValueInt(bBossChestOnlyCurLoc As Int)
 		SetToggleOptionValue(oidBossChestOnlyCurLoc,bBossChestOnlyCurLoc)
+	ElseIf (option == oidBossChestNotClearedLoc)
+		bBossChestNotInClearedLoc = !bBossChestNotInClearedLoc
+		moaBossChestNotInclearedLoc.SetValueInt(bBossChestNotInClearedLoc As Int)
+		SetToggleOptionValue(oidBossChestNotClearedLoc,bBossChestNotInClearedLoc)
 	ElseIf (option == oidAlwaysSpawn)
 		bAlwaysSpawn = !bAlwaysSpawn
 		SetToggleOptionValue(oidAlwaysSpawn,bAlwaysSpawn)
-		ForcePageReset()
 	ElseIf (option == oidMoralityMatters)
 		bMoralityMatters = !bMoralityMatters
 		moaMoralityMatters.SetValue(bMoralityMatters As Int)
@@ -2200,7 +2213,7 @@ Event OnOptionSliderOpen(Int option)
 	ElseIf (option == oidSkillReduceMaxValSlider)
 		SetSliderDialogStartValue(fSkillReduceMaxValSlider)
 		SetSliderDialogDefaultValue(1.0)
-		SetSliderDialogRange(1.0, 99.0)
+		SetSliderDialogRange(0.0, 99.0)
 		SetSliderDialogInterval(1.0)
 	ElseIf (option == oidSkillReduceMinValSlider)
 		SetSliderDialogStartValue(fSkillReduceMinValSlider)
@@ -2215,7 +2228,7 @@ Event OnOptionSliderOpen(Int option)
 	ElseIf (option == oidMaxLoseGoldSlider)
 		SetSliderDialogStartValue(fMaxLoseGoldSlider)
 		SetSliderDialogDefaultValue(250.0)
-		SetSliderDialogRange(1.0, 100000.0)
+		SetSliderDialogRange(0.0, 100000.0)
 		SetSliderDialogInterval(50.0)
 	ElseIf (option == oidMinLoseArkayMarkSlider)
 		SetSliderDialogStartValue(fMinLoseArkayMarkSlider)
@@ -2225,7 +2238,7 @@ Event OnOptionSliderOpen(Int option)
 	ElseIf (option == oidMaxLoseArkayMarkSlider)
 		SetSliderDialogStartValue(fMaxLoseArkayMarkSlider)
 		SetSliderDialogDefaultValue(1.0)
-		SetSliderDialogRange(1.0, 100.0)
+		SetSliderDialogRange(0.0, 100.0)
 		SetSliderDialogInterval(1.0)
 	ElseIf (option == oidMinLoseDragonSoulSlider)
 		SetSliderDialogStartValue(fMinLoseDragonSoulSlider)
@@ -2235,7 +2248,7 @@ Event OnOptionSliderOpen(Int option)
 	ElseIf (option == oidMaxLoseDragonSoulSlider)
 		SetSliderDialogStartValue(fMaxLoseDragonSoulSlider)
 		SetSliderDialogDefaultValue(1.0)
-		SetSliderDialogRange(1.0, 100.0)
+		SetSliderDialogRange(0.0, 100.0)
 		SetSliderDialogInterval(1.0)
 	ElseIf (option == oidMinLoseBlackSoulGemSlider)
 		SetSliderDialogStartValue(fMinLoseBlackSoulGemSlider)
@@ -2245,7 +2258,7 @@ Event OnOptionSliderOpen(Int option)
 	ElseIf (option == oidMaxLoseBlackSoulGemSlider)
 		SetSliderDialogStartValue(fMaxLoseBlackSoulGemSlider)
 		SetSliderDialogDefaultValue(1.0)
-		SetSliderDialogRange(1.0, 100.0)
+		SetSliderDialogRange(0.0, 100.0)
 		SetSliderDialogInterval(1.0)
 	ElseIf (option == oidMinLoseGrandSoulGemSlider)
 		SetSliderDialogStartValue(fMinLoseGrandSoulGemSlider)
@@ -2255,7 +2268,7 @@ Event OnOptionSliderOpen(Int option)
 	ElseIf (option == oidMaxLoseGrandSoulGemSlider)
 		SetSliderDialogStartValue(fMaxLoseGrandSoulGemSlider)
 		SetSliderDialogDefaultValue(1.0)
-		SetSliderDialogRange(1.0, 100.0)
+		SetSliderDialogRange(0.0, 100.0)
 		SetSliderDialogInterval(1.0)
 	ElseIf (option == oidLoseOtherMinValueSlider)
 		SetSliderDialogStartValue(fLoseOtherMinValueSlider)
@@ -2444,6 +2457,7 @@ Event OnOptionSliderAccept(int option, Float value)
 	ElseIf (option == oidBossChestChanceSlider)
 		fBossChestChanceSlider = value
 		SetSliderOptionValue(oidBossChestChanceSlider, fBossChestChanceSlider, "$mrt_MarkofArkay_BossChestChanceSlider_2")
+		ForcePageReset()
 	ElseIf (option == oidTotalCustomRPSlotSlider)
 		fTotalCustomRPSlotSlider = value
 		SetCustomRPFlags()
@@ -2943,10 +2957,13 @@ Event OnOptionDefault(Int option)
 		bBossChestOnlyCurLoc = False
 		moaOnlyInCurLocChest.SetValueInt(0)
 		SetToggleOptionValue(oidBossChestOnlyCurLoc ,bBossChestOnlyCurLoc)
+	ElseIf (option == oidBossChestNotClearedLoc )
+		bBossChestNotInClearedLoc = True
+		moaBossChestNotInclearedLoc.SetValueInt(0)
+		SetToggleOptionValue(oidBossChestNotClearedLoc ,bBossChestNotInClearedLoc)
 	ElseIf (option == oidAlwaysSpawn )
 		bAlwaysSpawn = False
 		SetToggleOptionValue(oidAlwaysSpawn ,bAlwaysSpawn)
-		ForcePageReset()
 	ElseIf (option == oidMoralityMatters )
 		bMoralityMatters = True
 		moaMoralityMatters.SetValue(bMoralityMatters As Int)
@@ -3022,6 +3039,7 @@ Event OnOptionDefault(Int option)
 	ElseIf (option == oidBossChestChanceSlider)
 		fBossChestChanceSlider = 0.0
 		SetSliderOptionValue(oidBossChestChanceSlider, fBossChestChanceSlider, "$mrt_MarkofArkay_BossChestChanceSlider_2")
+		ForcePageReset()
 	ElseIf (option == oidHealthTriggerSlider)
 		fHealthPercTrigger = 0.00
 		SetSliderOptionValue(oidHealthTriggerSlider, fHealthPercTrigger * 100, "mrt_MarkofArkay_HealthPercSlider_2")
@@ -3543,6 +3561,8 @@ Event OnOptionHighlight(Int option)
 		SetInfoText("$mrt_MarkofArkay_DESC_SpawnHostile")
 	ElseIf (option == oidBossChestOnlyCurLoc)
 		SetInfoText("$mrt_MarkofArkay_DESC_BossChestOnlyCurLoc")
+	ElseIf (option == oidBossChestNotClearedLoc)
+		SetInfoText("$mrt_MarkofArkay_DESC_BossChestNotClearedLoc")
 	ElseIf (option == oidAlwaysSpawn)
 		SetInfoText("$mrt_MarkofArkay_DESC_AlwaysSpawn")
 	ElseIf (option == oidOnlyInfectIfHasBaseDis)
@@ -4319,6 +4339,8 @@ Bool function bLoadUserSettings(String sFileName)
 	bSpawnHostile = fiss.loadBool("bSpawnHostile")
 	bBossChestOnlyCurLoc = fiss.loadBool("bBossChestOnlyCurLoc")
 	moaOnlyInCurLocChest.SetValueInt(bBossChestOnlyCurLoc As Int)
+	bBossChestNotInClearedLoc = fiss.loadBool("bBossChestNotInClearedLoc")
+	moaBossChestNotInclearedLoc.SetValue(bBossChestNotInClearedLoc As Int)
 	bAlwaysSpawn = fiss.loadBool("bAlwaysSpawn")
 	bDisableUnsafe = fiss.loadBool("bDisableUnsafe")
 	iSelectedCustomRPSlot = fiss.loadInt("iSelectedCustomRPSlot")
@@ -4387,6 +4409,9 @@ Bool Function bCheckFissErrors(String strErrors)
 		ElseIf strError == "Element bBossChestOnlyCurLoc not found"
 			bBossChestOnlyCurLoc = False
 			moaOnlyInCurLocChest.SetValueInt(0)
+		ElseIf strError == "Element bBossChestNotInClearedLoc not found"
+			bBossChestNotInClearedLoc = True
+			moaBossChestNotInclearedLoc.SetValueInt(0)
 		Else
 			Debug.Trace("Mark of Arkay: Error loading user settings -> " + strError)
 			Result = False
@@ -4613,6 +4638,7 @@ bool function bSaveUserSettings(String sFileName)
 	fiss.SaveFloat("fTotalCustomRPSlotSlider",fTotalCustomRPSlotSlider)
 	fiss.SaveBool("bSpawnHostile", bSpawnHostile)
 	fiss.SaveBool("bBossChestOnlyCurLoc", bBossChestOnlyCurLoc)
+	fiss.SaveBool("bBossChestNotInClearedLoc", bBossChestNotInClearedLoc)
 	fiss.SaveBool("bAlwaysSpawn", bAlwaysSpawn)
 	fiss.saveBool("bDoNotStopCombat", bDoNotStopCombat)
 	fiss.saveBool("bDoNotStopCombatAfterRevival", bDoNotStopCombatAfterRevival)
@@ -4772,6 +4798,7 @@ function LoadDefaultSettings()
 	bOnlyLoseSkillXP = False
 	bSpawnHostile = False
 	bBossChestOnlyCurLoc = False
+	bBossChestNotInClearedLoc = True
 	bAlwaysSpawn = False
 	fTotalCustomRPSlotSlider = 1.0
 	iSelectedCustomRPSlot = 0

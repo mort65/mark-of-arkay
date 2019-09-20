@@ -12,10 +12,10 @@ EndIf
 akSpeaker.PlayIdle(StopIdle)
 Utility.Wait(0.5)
 akSpeaker.PlayIdle(Pray)
-Utility.Wait(3)
+Utility.Wait(Utility.RandomFloat(2.5,3.5))
 zzzmoadiseasecursescript DiseaseScript = GetOwningQuest() As zzzmoadiseasecursescript
 DiseaseScript.cureAllDiseases()
-Utility.Wait(0.5)
+Utility.Wait((Utility.RandomFloat(0.5,1.0)))
 akSpeaker.PlayIdle(StopIdle)
 ;END CODE
 EndFunction

@@ -287,23 +287,9 @@ Function ReduceSkills(String Skill = "Random",Int Percent = -1, Int  MinAmount =
 						If Percent > 0
 							If iCurrent > 0
 								num = (( Percent * (iCurrent- 1 )) / 100 ) As Int
-								;If num < 1
-								;	num = 1
-								;EndIf
 							EndIf
 						Else
-							If MaxAmount >= iCurrent
-								MaxAmount = iCurrent - 1
-							EndIf
-							If MinAmount >= iCurrent
-								MinAmount = iCurrent - 1
-							EndIf
-							If MaxAmount < MinAmount
-								Int tmp = MinAmount
-								MinAmount = MaxAmount
-								MaxAmount = tmp
-							EndIf
-							num = Utility.RandomInt(MinAmount,MaxAmount)
+							num = randIntFromlimitedRange(MinAmount,MaxAmount,iCurrent,0,iCurrent - 1)
 						EndIf
 					EndIf
 					iNum[i] = num
@@ -399,28 +385,13 @@ Float[] Function ReduceSkill(String Skill ,Int Percent = -1, Int  MinAmount = 1,
 		If Percent > 0
 			If currentSkillLevel > 0
 				_amount = (( Percent * ( currentSkillLevel - 1 )) / 100 ) As Int
-				;If _amount < 1
-				;	_amount = 1
-				;EndIf
 			EndIf
 		Else
-			If MaxAmount >= currentSkillLevel
-				MaxAmount = currentSkillLevel - 1
-			EndIf
-			If MinAmount >= currentSkillLevel
-				MinAmount = currentSkillLevel - 1
-			EndIf
-			If MaxAmount < MinAmount
-				Int tmp = MinAmount
-				MinAmount = MaxAmount
-				MaxAmount = tmp
-			EndIf
-			_amount = Utility.RandomInt(MinAmount,MaxAmount)
+			_amount = randIntFromlimitedRange(MinAmount,MaxAmount,currentSkillLevel,0,currentSkillLevel - 1)
 		EndIf
 		If _amount > 0
 			Int iIndex = sSkillName.Find(Skill)
 			If iIndex > -1
-				;ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Trying to reduce " + Skill + "(" + PlayerRef.GetActorValue(Skill) + ")" + " by " + _amount + " level...")
 				ActorValueInfo skillInfo = ActorValueInfo.GetActorValueInfoByName(Skill)
 				float fXPPerSkillRank = Game.GetGameSettingFloat("fXPPerSkillRank")
 				float fXPToLose = currentSkillLevel * fXPPerSkillRank

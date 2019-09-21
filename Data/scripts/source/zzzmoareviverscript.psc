@@ -315,12 +315,12 @@ Event OnUpdate()
 				Game.EnablePlayerControls()
 				Form rw = PlayerRef.GetEquippedObject(1)
 				If rw
-					PlayerRef.UnequipItem(rw,abPreventEquip = True, abSilent = True)
-					PlayerRef.EquipItem(rw, abPreventRemoval = false, abSilent = True)
+					PlayerRef.UnequipItemEx(rw, equipSlot = 1, preventEquip = False)
+					PlayerRef.EquipItemEx(rw, equipSlot = 1, preventUnequip = False, equipSound = True)
 				Else
 					playerRef.AddItem(DummySword As form, abSilent = True)
-					PlayerRef.EquipItem(DummySword, abPreventRemoval = True, abSilent = True)
-					PlayerRef.UnEquipItem(DummySword, abPreventEquip = True, abSilent = True)
+					PlayerRef.EquipItemEx(DummySword, equipSlot = 1, preventUnequip = True, equipSound = True)
+					PlayerRef.UnequipItemEx(DummySword, equipSlot = 1, preventEquip = True)
 					PlayerRef.RemoveItem(DummySword As Form, PlayerRef.GetItemCount(DummySword As Form), abSilent = True)
 				EndIf
 			EndIf

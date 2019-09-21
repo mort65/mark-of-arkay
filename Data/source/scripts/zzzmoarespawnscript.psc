@@ -228,7 +228,9 @@ Bool Function bIsArrived(ObjectReference akMarker)
 	EndIf
 	PlayerRef.DispelAllSpells()
 	If PlayerRef.IsBleedingOut() || (PlayerRef.GetActorValue("Health") < PlayerRef.GetBaseActorValue("Health"))
+		PlayerRef.DispelSpell(ReviveScript.Bleed)
 		PlayerRef.ResetHealthAndLimbs()
+		PlayerRef.RestoreActorValue("health",10000)
 	EndIf
 	If !ReviveScript.bIsCameraStateSafe()
 		Game.ForceThirdPerson()

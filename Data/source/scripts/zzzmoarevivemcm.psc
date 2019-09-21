@@ -2073,6 +2073,8 @@ Event OnOptionSelect(Int option)
 			setTriggerMethod(0)
 		EndIf
 		PlayerRef.SetAlpha(1.0)
+		PlayerRef.DispelSpell(ReviveScript.Bleed)
+		PlayerRef.RemoveSpell(ReviveScript.Bleed)
 		PlayerRef.ResetHealthAndLimbs()
 		If PlayerRef.GetActorValue("paralysis")
 			PlayerRef.SetActorValue("paralysis",0)
@@ -3692,7 +3694,10 @@ Function ToggleDeferredKill(Bool bToggle)
 		Utility.Wait(0.1)
 		PlayerRef.DamageActorValue("health", 10000)
 		Utility.Wait(0.1)
+		PlayerRef.DispelSpell(ReviveScript.Bleed)
+		PlayerRef.RemoveSpell(ReviveScript.Bleed)
 		PlayerRef.ResetHealthAndLimbs()
+		PlayerRef.RestoreActorValue("health",10000)
 		If !bWasEssential
 			Utility.Wait(0.1)
 			PlayerRef.GetActorBase().SetEssential(False)
@@ -4894,7 +4899,6 @@ EndFunction
 Bool Function bCheckDLIE()
 	Return bSKSELoaded && SKSE.GetPluginVersion("DSL Level Up Event Plugin") != -1 && DSL_LevelIncreaseEvent.bIsDLIELoaded()
 EndFunction
-
 
 Function ShowLostItems()
 	UIListMenu ListMenu = uiextensions.GetMenu("UIListMenu", True) as UIListMenu

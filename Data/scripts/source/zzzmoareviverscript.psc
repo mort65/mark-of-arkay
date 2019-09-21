@@ -488,6 +488,9 @@ Function checkHealth()
 				bInBleedoutAnim = True
 				bSheathed = False
 				iIsBeast = NPCScript.iInBeastForm()
+				If !bIsCameraStateSafe()
+					Game.ForceThirdPerson()
+				EndIf
 				If ConfigMenu.bIsRagdollEnabled
 					BleedoutHandler(ToggleState())
 				Else
@@ -1769,7 +1772,7 @@ EndFunction
 
 Bool Function bIsCameraStateSafe()
 	Int CameraState = Game.GetCameraState()
-	Return (( CameraState == 0 && !ConfigMenu.bECOK) || ( CameraState == 9 ) || ( CameraState == 11 )) ;if enhanced camera installed must switch to 3thperson before respawn
+	Return (( CameraState == 9 ) || ( CameraState == 11 ))
 EndFunction
 
 Bool Function bSoulMark() ;Whether drop soul mark or not

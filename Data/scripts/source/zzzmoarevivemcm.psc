@@ -388,7 +388,6 @@ Bool Property bARCCOK Auto Hidden
 Bool Property bFISSOK Auto Hidden
 Bool Property bDLIEOK Auto Hidden
 Bool Property bUIEOK Auto Hidden
-Bool Property bECOK Auto Hidden
 Bool Property bClone = True Auto Hidden
 Bool Property bCorpseAsSoulMark = False Auto Hidden
 Float Property fMaxLoseGoldSlider = 250.0 Auto Hidden
@@ -4868,7 +4867,6 @@ Function checkMods()
 	bUIEOK = bCheckUIE()
 	bFISSOK = bCheckFISS()
 	bARCCOK = bCheckARCC()
-	bECOK = bCheckEC()
 EndFunction
 
 Bool Function bCheckSKSE()
@@ -4900,10 +4898,6 @@ EndFunction
 
 Bool Function bCheckDLIE()
 	Return bSKSELoaded && SKSE.GetPluginVersion("DSL Level Up Event Plugin") != -1 && DSL_LevelIncreaseEvent.bIsDLIELoaded()
-EndFunction
-
-Bool Function bCheckEC()
-	Return bSKSELoaded && SKSE.GetPluginVersion("EnhancedCamera") != -1
 EndFunction
 
 Function ShowLostItems()

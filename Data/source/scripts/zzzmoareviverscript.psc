@@ -249,7 +249,7 @@ Event OnEnterBleedout()
 		bInBleedout = True
 		bInBleedoutAnim = False
 		bSheathed = False
-		Game.DisablePlayerControls()
+		Game.DisablePlayerControls(abMovement = True, abFighting = True, abCamSwitch = False, abLooking = False, abSneaking = True, abMenu = True, abActivate = True, abJournalTabs = False, aiDisablePOVType = 0)
 		fHealrate = PlayerRef.GetActorValue("HealRate")
 		PlayerRef.DispelAllSpells()
 		PlayerRef.SetActorValue("HealRate",0.0)
@@ -479,7 +479,7 @@ Function checkHealth()
 		If playerRef.GetActorValuePercentage("Health") <= ConfigMenu.fHealthPercTrigger
 			If !bInBleedout && !moaIgnoreBleedout.GetValue()
 				bInBleedout = True
-				Game.DisablePlayerControls()
+				Game.DisablePlayerControls(abMovement = True, abFighting = True, abCamSwitch = False, abLooking = False, abSneaking = True, abMenu = True, abActivate = True, abJournalTabs = False, aiDisablePOVType = 0)
 				PlayerRef.DamageActorValue("Health",9999.0)
 				fHealrate = PlayerRef.GetActorValue("HealRate")
 				PlayerRef.DispelallSpells()
@@ -580,7 +580,7 @@ Function BleedoutHandler(String CurrentState)
 	Else
 		bParalyzed = False
 	EndIf
-	Game.DisablePlayerControls()
+	Game.DisablePlayerControls(abMovement = True, abFighting = True, abCamSwitch = False, abLooking = False, abSneaking = True, abMenu = True, abActivate = True, abJournalTabs = False, aiDisablePOVType = 0)
 	ToggleSaving(False)
 	Game.EnableFastTravel(False)
 	If ConfigMenu.iTotalBleedOut < 99999999
@@ -1232,7 +1232,7 @@ Function RevivePlayer(Bool bRevive)
 				If ( ConfigMenu.bRespawnMenu )
 					RespawnScript.SelectRespawnPointbyMenu()
 				EndIf
-				Game.DisablePlayerControls()
+				Game.DisablePlayerControls(abMovement = True, abFighting = True, abCamSwitch = False, abLooking = False, abSneaking = True, abMenu = True, abActivate = True, abJournalTabs = False, aiDisablePOVType = 0)
 				If ( !bWasSwimming && bIsConditionSafe )
 					If ( ConfigMenu.bInvisibility || ConfigMenu.bFadeToBlack )
 						If ConfigMenu.bDeathEffect
@@ -1834,7 +1834,7 @@ Function ShiftBack()
 	If ( WerewolfQuest.IsRunning() )
 		;Debug.SetGodMode(True)
 		PlayerRef.DispelSpell(BleedoutProtection)
-		Game.DisablePlayerControls()
+		Game.DisablePlayerControls(abMovement = True, abFighting = True, abCamSwitch = False, abLooking = False, abSneaking = True, abMenu = True, abActivate = True, abJournalTabs = False, aiDisablePOVType = 0)
 		WerewolfQuest.SetStage(100)
 		While (PlayerRef.GetAnimationVariableBool("bIsSynced") && (i > 0.0))
 			Utility.Wait(0.2)
@@ -1845,7 +1845,7 @@ Function ShiftBack()
 	ElseIf ( VampireLordQuest.IsRunning() )
 		;Debug.SetGodMode(True)
 		PlayerRef.DispelSpell(BleedoutProtection)
-		Game.DisablePlayerControls()
+		Game.DisablePlayerControls(abMovement = True, abFighting = True, abCamSwitch = False, abLooking = False, abSneaking = True, abMenu = True, abActivate = True, abJournalTabs = False, aiDisablePOVType = 0)
 		VampireLordQuest.SetStage(100) ; shift back
 		While (PlayerRef.GetAnimationVariableBool("bIsSynced") && (i > 0.0))
 			Utility.Wait(0.2)

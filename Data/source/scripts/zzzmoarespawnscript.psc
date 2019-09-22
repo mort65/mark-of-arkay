@@ -218,7 +218,7 @@ Bool Function bIsTeleportSafe(ObjectReference akMarker)
 		bFirstTryFailed = False
 		Return False
 	EndIf
-	Return !(PlayerRef.GetAnimationVariableBool("bIsSynced") || (PlayerRef.GetActorValue("paralysis") != 0 && PlayerRef.GetActorValue("paralysis") != 1) || (PlayerRef.GetActorValue("paralysis") && akMarker.GetParentCell() && akMarker.GetParentCell().IsAttached()))
+	Return !(PlayerRef.GetAnimationVariableBool("bIsSynced") || PlayerRef.GetActorValue("paralysis"))
 EndFunction
 
 Bool Function bIsArrived(ObjectReference akMarker)

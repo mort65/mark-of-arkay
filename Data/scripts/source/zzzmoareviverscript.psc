@@ -194,6 +194,7 @@ Event OnInit()
 		PlayerRef.SetNoBleedoutRecovery(True)
 	ElseIf ConfigMenu.bTriggerOnHealthPerc
 		PlayerRef.StartDeferredKill()
+		ConfigMenu.moaHealthMonitor.Start()
 	EndIf
 	moaBleedoutHandlerState.SetValue(0)
 	PriorityArray = New Float[5]

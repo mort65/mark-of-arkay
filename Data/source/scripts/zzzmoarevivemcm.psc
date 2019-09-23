@@ -3585,11 +3585,6 @@ Function moaStart()
 		ToggleFallDamage(True)
 		ToggleFallDamage(False)
 		SetSavingOption(iSaveOption)
-		If bTriggerOnBleedout
-			setTriggerMethod(1)
-		ElseIf bTriggerOnHealthPerc
-			setTriggerMethod(2)
-		EndIf
 		Utility.Wait(1.0)
 		Debug.notification("$mrt_MarkofArkay_Notification_Started")
 	EndIf
@@ -3636,6 +3631,7 @@ Function moaStop(Bool bReset = False)
 		PlayerRef.RemovePerk(ReviveScript.Invulnerable)
 		moaBleedoutHandlerState.SetValue(0)
 		PlayerRef.DispelSpell(ArkayBlessing)
+		PlayerRef.RemoveSpell(ReviveScript.Bleed)
 		PlayerRef.DispelSpell(RevivalPower)
 		PlayerRef.RemoveSpell(SacrificePower)
 		PlayerRef.RemoveSpell(RevivalPower)

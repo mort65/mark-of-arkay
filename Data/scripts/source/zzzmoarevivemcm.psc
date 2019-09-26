@@ -184,6 +184,16 @@ Int oidDiseaseCurse
 Int oidBossChestChanceSlider
 Int oidBossChestOnlyCurLoc
 Int oidBossChestNotClearedLoc
+Int oidMarkScaleSlider
+Int oidGSoulScaleGemSlider
+Int oidBSoulScaleGemSlider
+int oidDragonScaleSoulSlider
+Int oidGoldScaleSlider
+Float Property fValueMarkScaleSlider = 0.0 Auto Hidden
+Float Property fValueGSoulGemScaleSlider = 0.0 Auto Hidden
+Float Property fValueBSoulGemScaleSlider = 0.0 Auto Hidden
+Float Property fValueSoulScaleSlider = 0.0 Auto Hidden
+Float Property fValueGoldScaleSlider = 0.0 Auto Hidden
 Bool Property bBossChestNotInClearedLoc = True Auto Hidden
 Bool Property bBossChestOnlyCurLoc = False Auto Hidden
 Float Property fBossChestChanceSlider = 0.0 Auto Hidden
@@ -488,6 +498,16 @@ Event OnPageReset(String page)
 		oidDragonSoulSlider = AddSliderOption("$mrt_MarkofArkay_DragonSoulSlider_1", fValueSoulSlider, "$mrt_MarkofArkay_DragonSoulSlider_2", flags)
 		SetCursorPosition(21)
 		oidGoldSlider = AddSliderOption("$mrt_MarkofArkay_GoldSlider_1", fValueGoldSlider, "$mrt_MarkofArkay_GoldSlider_2", flags)
+		SetCursorPosition(25)
+		oidMarkScaleSlider = AddSliderOption("$mrt_MarkofArkay_MarkScaleSlider_1", fValueMarkScaleSlider, "$mrt_MarkofArkay_MarkScaleSlider_2", flags)
+		SetCursorPosition(27)
+		oidGSoulScaleGemSlider = AddSliderOption("$mrt_MarkofArkay_GSoulGemScaleSlider_1", fValueGSoulGemScaleSlider, "$mrt_MarkofArkay_GSoulGemScaleSlider_2", flags)
+		SetCursorPosition(29)
+		oidBSoulScaleGemSlider = AddSliderOption("$mrt_MarkofArkay_BSoulGemScaleSlider_1", fValueBSoulGemScaleSlider, "$mrt_MarkofArkay_BSoulGemScaleSlider_2", flags)
+		SetCursorPosition(31)
+		oidDragonScaleSoulSlider = AddSliderOption("$mrt_MarkofArkay_DragonSoulScaleSlider_1", fValueSoulScaleSlider, "$mrt_MarkofArkay_DragonSoulScaleSlider_2", flags)
+		SetCursorPosition(33)
+		oidGoldScaleSlider = AddSliderOption("$mrt_MarkofArkay_GoldScaleSlider_1", fValueGoldScaleSlider, "$mrt_MarkofArkay_GoldScaleSlider_2", flags)
 	ElseIf (page == "$Extra")
 		SetCursorPosition(0)
 		AddHeaderOption("$Extra")
@@ -1617,45 +1637,29 @@ Event OnOptionSelect(Int option)
 			SetTextOptionValue(option, ( (iExternalIndex + 1) As String ))
 		EndIf
 	ElseIf (option == oidRespawnPoint0)
-		;If !( (iGetRespawnPointsCount() < 3) && bRespawnPointsFlags[0])
-			bRespawnPointsFlags[0] = !bRespawnPointsFlags[0]
-			SetToggleOptionValue(oidRespawnPoint0,bRespawnPointsFlags[0])
-		;EndIf
+		bRespawnPointsFlags[0] = !bRespawnPointsFlags[0]
+		SetToggleOptionValue(oidRespawnPoint0,bRespawnPointsFlags[0])
 	ElseIf (option == oidRespawnPoint1)
-		;If !( (iGetRespawnPointsCount() < 3) && bRespawnPointsFlags[1])
-			bRespawnPointsFlags[1] = !bRespawnPointsFlags[1]
-			SetToggleOptionValue(oidRespawnPoint1,bRespawnPointsFlags[1])
-		;EndIf
+		bRespawnPointsFlags[1] = !bRespawnPointsFlags[1]
+		SetToggleOptionValue(oidRespawnPoint1,bRespawnPointsFlags[1])
 	ElseIf (option == oidRespawnPoint2)
-		;If !( (iGetRespawnPointsCount() < 3) && bRespawnPointsFlags[2])
-			bRespawnPointsFlags[2] = !bRespawnPointsFlags[2]
-			SetToggleOptionValue(oidRespawnPoint2,bRespawnPointsFlags[2])
-		;EndIf
+		bRespawnPointsFlags[2] = !bRespawnPointsFlags[2]
+		SetToggleOptionValue(oidRespawnPoint2,bRespawnPointsFlags[2])
 	ElseIf (option == oidRespawnPoint3)
-		;If !( (iGetRespawnPointsCount() < 3) && bRespawnPointsFlags[3])
-			bRespawnPointsFlags[3] = !bRespawnPointsFlags[3]
-			SetToggleOptionValue(oidRespawnPoint3,bRespawnPointsFlags[3])
-		;EndIf
+		bRespawnPointsFlags[3] = !bRespawnPointsFlags[3]
+		SetToggleOptionValue(oidRespawnPoint3,bRespawnPointsFlags[3])
 	ElseIf (option == oidRespawnPoint4)
-		;If !( (iGetRespawnPointsCount() < 3) && bRespawnPointsFlags[4])
-			bRespawnPointsFlags[4] = !bRespawnPointsFlags[4]
-			SetToggleOptionValue(oidRespawnPoint4,bRespawnPointsFlags[4])
-		;EndIf
+		bRespawnPointsFlags[4] = !bRespawnPointsFlags[4]
+		SetToggleOptionValue(oidRespawnPoint4,bRespawnPointsFlags[4])
 	ElseIf (option == oidRespawnPoint5)
-		;If !( (iGetRespawnPointsCount() < 3) && bRespawnPointsFlags[5])
-			bRespawnPointsFlags[5] = !bRespawnPointsFlags[5]
-			SetToggleOptionValue(oidRespawnPoint5,bRespawnPointsFlags[5])
-		;EndIf
+		bRespawnPointsFlags[5] = !bRespawnPointsFlags[5]
+		SetToggleOptionValue(oidRespawnPoint5,bRespawnPointsFlags[5])
 	ElseIf (option == oidRespawnPoint6)
-		;If !( (iGetRespawnPointsCount() < 3) && bRespawnPointsFlags[6])
-			bRespawnPointsFlags[6] = !bRespawnPointsFlags[6]
-			SetToggleOptionValue(oidRespawnPoint6,bRespawnPointsFlags[6])
-		;EndIf
+		bRespawnPointsFlags[6] = !bRespawnPointsFlags[6]
+		SetToggleOptionValue(oidRespawnPoint6,bRespawnPointsFlags[6])
 	ElseIf (option == oidRespawnPoint7)
-		;If !( (iGetRespawnPointsCount() < 3) && bRespawnPointsFlags[7])
-			bRespawnPointsFlags[7] = !bRespawnPointsFlags[7]
-			SetToggleOptionValue(oidRespawnPoint7,bRespawnPointsFlags[7])
-		;EndIf
+		bRespawnPointsFlags[7] = !bRespawnPointsFlags[7]
+		SetToggleOptionValue(oidRespawnPoint7,bRespawnPointsFlags[7])
 	ElseIf (option == oidRespawnNaked)
 		bRespawnNaked = !bRespawnNaked
 		SetToggleOptionValue(oidRespawnNaked, bRespawnNaked)
@@ -1979,7 +1983,6 @@ Event OnOptionSelect(Int option)
 			Return
 		EndIf
 		moaIsBusy.SetValueInt(1)
-		;SetTextOptionValue(option, "$mrt_MarkofArkay_Status_Busy")
 		ForceCloseMenu()
 		ReviveScript.ItemScript.RestoreLostItems(PlayerRef)
 		If moaRetrieveLostItems.IsRunning()
@@ -2311,7 +2314,32 @@ Event OnOptionSliderOpen(Int option)
 		SetSliderDialogStartValue((fHealthPercTrigger * 100.0) As Int)
 		SetSliderDialogDefaultValue(0.0)
 		SetSliderDialogRange(0.0, 25.0)
-		SetSliderDialogInterval(1.0)		
+		SetSliderDialogInterval(1.0)	
+	ElseIf(option == oidMarkScaleSlider)
+		SetSliderDialogStartValue(fValueMarkScaleSlider)
+		SetSliderDialogDefaultValue(0.0)
+		SetSliderDialogRange(0.0, 10.0)
+		SetSliderDialogInterval(0.1)
+	ElseIf(option == oidGSoulScaleGemSlider)
+		SetSliderDialogStartValue(fValueGSoulGemScaleSlider)
+		SetSliderDialogDefaultValue(0.0)
+		SetSliderDialogRange(0.0, 10.0)
+		SetSliderDialogInterval(0.1)	
+	ElseIf(option == oidBSoulScaleGemSlider)
+		SetSliderDialogStartValue(fValueBSoulGemScaleSlider)
+		SetSliderDialogDefaultValue(0.0)
+		SetSliderDialogRange(0.0, 10.0)
+		SetSliderDialogInterval(0.1)	
+	ElseIf(option == oidDragonScaleSoulSlider)
+		SetSliderDialogStartValue(fValueSoulScaleSlider)
+		SetSliderDialogDefaultValue(0.0)
+		SetSliderDialogRange(0.0, 10.0)
+		SetSliderDialogInterval(0.1)	
+	ElseIf(option == oidGoldScaleSlider)
+		SetSliderDialogStartValue(fValueGoldScaleSlider)
+		SetSliderDialogDefaultValue(0.0)
+		SetSliderDialogRange(0.0, 10.0)
+		SetSliderDialogInterval(0.1)			
 	EndIf
 EndEvent
 
@@ -2411,6 +2439,21 @@ Event OnOptionSliderAccept(int option, Float value)
 		fDisPriceMultSlider = value
 		recalcCursedDisCureCosts()
 		SetSliderOptionValue(oidDisPriceMultSlider, fDisPriceMultSlider, "$mrt_MarkofArkay_DisPriceMultSlider_2")
+	ElseIf (option == oidMarkScaleSlider)
+		fValueMarkScaleSlider = value
+		SetSliderOptionValue(oidMarkScaleSlider, fValueMarkScaleSlider, "$mrt_MarkofArkay_MarkScaleSlider_2")
+	ElseIf (option == oidGSoulScaleGemSlider)
+		fValueGSoulGemScaleSlider = value
+		SetSliderOptionValue(oidGSoulScaleGemSlider, fValueGSoulGemScaleSlider, "$mrt_MarkofArkay_GSoulGemScaleSlider_2")
+	ElseIf (option == oidBSoulScaleGemSlider)
+		fValueBSoulGemScaleSlider = value
+		SetSliderOptionValue(oidBSoulScaleGemSlider, fValueBSoulGemScaleSlider, "$mrt_MarkofArkay_BSoulGemScaleSlider_2")
+	ElseIf (option == oidDragonScaleSoulSlider)
+		fValueSoulScaleSlider = value
+		SetSliderOptionValue(oidDragonScaleSoulSlider, fValueSoulScaleSlider, "$mrt_MarkofArkay_DragonSoulScaleSlider_2")
+	ElseIf (option == oidGoldScaleSlider)
+		fValueGoldScaleSlider = value
+		SetSliderOptionValue(oidGoldScaleSlider, fValueGoldScaleSlider, "$mrt_MarkofArkay_GoldScaleSlider_2")
 	ElseIf (option == oidSkillReduceValSlider)
 		fSkillReduceValSlider = value
 		SetSliderOptionValue(oidSkillReduceValSlider, fSkillReduceValSlider, "$mrt_MarkofArkay_SkillReduceValSlider_2")
@@ -2784,6 +2827,21 @@ Event OnOptionDefault(Int option)
 		fDisPriceMultSlider = 0.5
 		recalcCursedDisCureCosts()
 		SetSliderOptionValue(oidDisPriceMultSlider, fDisPriceMultSlider, "$mrt_MarkofArkay_DisPriceMultSlider_2")
+	ElseIf (option == oidMarkScaleSlider)
+		fValueMarkScaleSlider = 0.0
+		SetSliderOptionValue(oidMarkScaleSlider, fValueMarkScaleSlider, "$mrt_MarkofArkay_MarkScaleSlider_2")
+	ElseIf (option == oidGSoulScaleGemSlider)
+		fValueGSoulGemScaleSlider = 0.0
+		SetSliderOptionValue(oidGSoulScaleGemSlider, fValueGSoulGemScaleSlider, "$mrt_MarkofArkay_GSoulGemScaleSlider_2")
+	ElseIf (option == oidBSoulScaleGemSlider)
+		fValueBSoulGemScaleSlider = 0.0
+		SetSliderOptionValue(oidBSoulScaleGemSlider, fValueBSoulGemScaleSlider, "$mrt_MarkofArkay_BSoulGemScaleSlider_2")
+	ElseIf (option == oidDragonScaleSoulSlider)
+		fValueSoulScaleSlider = 0.0
+		SetSliderOptionValue(oidDragonScaleSoulSlider, fValueSoulScaleSlider, "$mrt_MarkofArkay_DragonSoulScaleSlider_2")
+	ElseIf (option == oidGoldScaleSlider)
+		fValueGoldScaleSlider = 0.0
+		SetSliderOptionValue(oidGoldScaleSlider, fValueGoldScaleSlider, "$mrt_MarkofArkay_GoldScaleSlider_2")
 	ElseIf (option == oidBleedoutTime)
 		fBleedoutTimeSlider = 6.0
 		SetSliderOptionValue(oidBleedoutTime, fBleedoutTimeSlider, "$mrt_MarkofArkay_RecoveryTime_2")	
@@ -3297,6 +3355,16 @@ Event OnOptionHighlight(Int option)
 		SetInfoText("$mrt_MarkofArkay_DESC_DisPriceSlider")
 	ElseIf (option == oidDisPriceMultSlider)
 		SetInfoText("$mrt_MarkofArkay_DESC_DisPriceMultSlider")
+	ElseIf (option == oidMarkScaleSlider)
+		SetInfoText("$mrt_MarkofArkay_DESC_MarkScaleSlider")
+	ElseIf (option == oidGSoulScaleGemSlider )
+		SetInfoText("$mrt_MarkofArkay_DESC_GSoulScaleGemSlider")
+	ElseIf (option == oidBSoulScaleGemSlider)
+		SetInfoText("$mrt_MarkofArkay_DESC_BSoulScaleGemSlider")
+	ElseIf (option == oidDragonScaleSoulSlider)
+		SetInfoText("$mrt_MarkofArkay_DESC_DragonScaleSoulSlider")
+	ElseIf (option == oidGoldScaleSlider)
+		SetInfoText("$mrt_MarkofArkay_DESC_GoldScaleSlider")
 	ElseIf (option == oidBleedoutTime)
 		SetInfoText("$mrt_MarkofArkay_DESC_BleedoutTime")
 	ElseIf (option == oidLootChanceSlider)
@@ -4195,6 +4263,11 @@ Bool function bLoadUserSettings(String sFileName)
 	moaRPMinDistance.SetValue(fRPMinDistanceSlider)
 	fDisChanceSlider = fiss.loadFloat("fDisChanceSlider")
 	fDisPriceSlider = fiss.loadFloat("fDisPriceSlider")
+	fValueMarkScaleSlider = fiss.loadFloat("fValueMarkScaleSlider")
+	fValueGSoulGemScaleSlider = fiss.loadFloat("fValueGSoulGemScaleSlider")
+	fValueBSoulGemScaleSlider = fiss.loadFloat("fValueBSoulGemScaleSlider")
+	fValueSoulScaleSlider = fiss.loadFloat("fValueSoulScaleSlider")
+	fValueGoldScaleSlider = fiss.loadFloat("fValueGoldScaleSlider")
 	fDisPriceMultSlider = fiss.loadFloat("fDisPriceMultSlider")
 	fDisProgChanceSlider = fiss.loadFloat("fDisProgChanceSlider")
 	bRespawnPointsFlags[0] = fiss.loadBool("bRespawnPointsFlags0")
@@ -4391,6 +4464,16 @@ Bool Function bCheckFissErrors(String strErrors)
 		ElseIf strError == "Element fDisPriceSlider not found"
 			fDisPriceSlider = 100.00
 			recalcCursedDisCureCosts()
+		ElseIf strError == "Element fValueMarkScaleSlider not found"
+			fValueMarkScaleSlider = 0.00
+		ElseIf strError == "Element fValueGSoulGemScaleSlider,  not found"
+			fValueGSoulGemScaleSlider  = 0.00
+		ElseIf strError == "Element fValueBSoulGemScaleSlider not found"
+			fValueBSoulGemScaleSlider = 0.00
+		ElseIf strError == "Element fValueSoulScaleSlider,  not found"
+			fValueSoulScaleSlider = 0.00
+		ElseIf strError == "Element fValueGoldScaleSlider,  not found"
+			fValueGoldScaleSlider = 0.00
 		ElseIf strError == "Element fDisPriceMultSlider not found"
 			fDisPriceMultSlider = 0.5
 			recalcCursedDisCureCosts()
@@ -4505,6 +4588,11 @@ bool function bSaveUserSettings(String sFileName)
 	fiss.saveFloat("fRPMinDistanceSlider", fRPMinDistanceSlider)
 	fiss.saveFloat("fDisChanceSlider", fDisChanceSlider)
 	fiss.saveFloat("fDisPriceSlider", fDisPriceSlider)
+	fiss.saveFloat("fValueMarkScaleSlider", fValueMarkScaleSlider)
+	fiss.saveFloat("fValueGSoulGemScaleSlider", fValueGSoulGemScaleSlider)
+	fiss.saveFloat("fValueBSoulGemScaleSlider", fValueBSoulGemScaleSlider)
+	fiss.saveFloat("fValueSoulScaleSlider", fValueSoulScaleSlider)
+	fiss.saveFloat("fValueGoldScaleSlider", fValueGoldScaleSlider)
 	fiss.saveFloat("fDisPriceMultSlider", fDisPriceMultSlider)
 	fiss.saveFloat("fDisProgChanceSlider", fDisProgChanceSlider)
 	fiss.saveBool("bRespawnPointsFlags0", bRespawnPointsFlags[0])
@@ -4730,6 +4818,11 @@ function LoadDefaultSettings()
 	fDisProgChanceSlider = 50.0
 	fDisPriceSlider = 100.0
 	fDisPriceMultSlider = 0.5
+	fValueMarkScaleSlider = 0.0
+	fValueGSoulGemScaleSlider = 0.0
+	fValueBSoulGemScaleSlider = 0.0
+	fValueSoulScaleSlider = 0.0
+	fValueGoldScaleSlider = 0.0
 	setRPFlags(True)
 	setSpawnCounts(True)
 	setSpawnWeights(True)

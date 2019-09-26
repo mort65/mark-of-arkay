@@ -107,6 +107,11 @@ Int Property iBSoulGemCount = 0 Auto Hidden
 Int Property iGSoulGemCount = 0 Auto Hidden
 Float Property fDragonSoulCount = 0.0 Auto Hidden
 Int Property iSeptimCount = 0 Auto Hidden
+Int Property iSeptimCost = 0 Auto Hidden
+Int Property iBSoulGemCost = 0 Auto Hidden
+Int Property iGSoulGemCost = 0 Auto Hidden
+Int Property iDragonSoulCost = 0 Auto Hidden
+Int Property iArkayMarkCost = 0 Auto Hidden
 Bool Property bCidhnaJail = False Auto Hidden
 Bool Property bRemoveItems Auto Hidden
 Int Property iReducedSkill Auto Hidden
@@ -953,33 +958,33 @@ Int Function RemoveItemByMenu(String curState) ;trade by using menu
 	Int iRevive = 0
 	Bool bBreak = False
 	While !bBreak
-		iChoice = moaReviveMenu1.Show(iArkayMarkCount,iBSoulGemCount,fDragonSoulCount As Int,iGSoulGemCount,iSeptimCount)
+		iChoice = moaReviveMenu1.Show(iSeptimCost,iArkayMarkCost,iArkayMarkCount,iDragonSoulCost,fDragonSoulCount As Int,iBSoulGemCost,iBSoulGemCount,iGSoulGemCost,iGSoulGemCount)
 		If (iChoice == -1)
-		ElseIf ((iChoice == 0) && bArkayMarkRevive)
-			PlayerRef.RemoveItem(MarkOfArkay,(ConfigMenu.fValueMarkSlider As Int),True)
-			iRevive = 1
-			bBreak = True
-			strRemovedItem = "Arkay Mark"
-		ElseIf ((iChoice == 1) && bBSoulGemRevive)
-			PlayerRef.RemoveItem(BlackFilledGem,(ConfigMenu.fValueBSoulGemSlider As Int),True)
-			iRevive = 1
-			bBreak = True
-			strRemovedItem = "Black Soul Gem"
-		ElseIf ((iChoice == 2) && bDragonSoulRevive)
-			PlayerRef.ModActorValue("DragonSouls", -ConfigMenu.fValueSoulSlider)
-			iRevive = 1
-			bBreak = True
-			strRemovedItem = "Dragon Soul"
-		ElseIf ((iChoice == 3) && bGSoulGemRevive)
-			PlayerRef.RemoveItem(GrandFilledGem,(ConfigMenu.fValueGSoulGemSlider As Int),True)
-			iRevive = 1
-			bBreak = True
-			strRemovedItem = "Grand Soul Gem"
-		ElseIf ((iChoice == 4) && bSeptimRevive)
-			PlayerRef.RemoveItem(Gold001,(ConfigMenu.fValueGoldSlider As Int),True)
+		ElseIf ((iChoice == 0) && bSeptimRevive)
+			PlayerRef.RemoveItem(Gold001,iSeptimCost,!ConfigMenu.bIsNotificationEnabled)
 			iRevive = 1
 			bBreak = True
 			strRemovedItem = "Septim"
+		ElseIf ((iChoice == 1) && bArkayMarkRevive)
+			PlayerRef.RemoveItem(MarkOfArkay,iArkayMarkCost,!ConfigMenu.bIsNotificationEnabled)
+			iRevive = 1
+			bBreak = True
+			strRemovedItem = "Arkay Mark"
+		ElseIf ((iChoice == 2) && bDragonSoulRevive)
+			PlayerRef.ModActorValue("DragonSouls", -1 * iDragonSoulCost)
+			iRevive = 1
+			bBreak = True
+			strRemovedItem = "Dragon Soul"
+		ElseIf ((iChoice == 3) && bBSoulGemRevive)
+			PlayerRef.RemoveItem(BlackFilledGem,iBSoulGemCost,!ConfigMenu.bIsNotificationEnabled)
+			iRevive = 1
+			bBreak = True
+			strRemovedItem = "Black Soul Gem"
+		ElseIf ((iChoice == 4) && bGSoulGemRevive)
+			PlayerRef.RemoveItem(GrandFilledGem,iGSoulGemCost,!ConfigMenu.bIsNotificationEnabled)
+			iRevive = 1
+			bBreak = True
+			strRemovedItem = "Grand Soul Gem"
 		ElseIf (iChoice == 5) ;Snooze
 			bInBleedout = False
 			Utility.Wait(ConfigMenu.fValueSnoozeSlider)
@@ -1057,19 +1062,19 @@ EndFunction
 
 Function AutoRemoveItemByIndex(Int iIndex) ; removing item at iIndex
 	If (PriorityArray[iIndex]>50) && bGSoulGemRevive
-		PlayerRef.RemoveItem(GrandFilledGem,(ConfigMenu.fValueGSoulGemSlider As Int),True)
+		PlayerRef.RemoveItem(GrandFilledGem,iGSoulGemCost,!ConfigMenu.bIsNotificationEnabled)
 		strRemovedItem = "Grand Soul Gem"
 	ElseIf (PriorityArray[iIndex]>40) && (PriorityArray[iIndex]<50) && bArkayMarkRevive
-		PlayerRef.RemoveItem(MarkOfArkay,(ConfigMenu.fValueMarkSlider As Int),True)
+		PlayerRef.RemoveItem(MarkOfArkay,iArkayMarkCost,!ConfigMenu.bIsNotificationEnabled)
 		strRemovedItem = "Arkay Mark"
 	ElseIf (PriorityArray[iIndex]>30) && (PriorityArray[iIndex]<40) && bBSoulGemRevive
-		PlayerRef.RemoveItem(BlackFilledGem,(ConfigMenu.fValueBSoulGemSlider As Int),True)
+		PlayerRef.RemoveItem(BlackFilledGem,iBSoulGemCost,!ConfigMenu.bIsNotificationEnabled)
 		strRemovedItem = "Black Soul Gem"
 	ElseIf (PriorityArray[iIndex]>20) && (PriorityArray[iIndex]<30) && bDragonSoulRevive
-		PlayerRef.ModActorValue("DragonSouls", -ConfigMenu.fValueSoulSlider)
+		PlayerRef.ModActorValue("DragonSouls", -1 * iDragonSoulCost)
 		strRemovedItem = "Dragon Soul"
 	ElseIf (PriorityArray[iIndex]>10) && (PriorityArray[iIndex]<20) && bSeptimRevive
-		PlayerRef.RemoveItem(Gold001,(ConfigMenu.fValueGoldSlider As Int),True)
+		PlayerRef.RemoveItem(Gold001,iSeptimCost,!ConfigMenu.bIsNotificationEnabled)
 		strRemovedItem = "Septim"
 	EndIf
 EndFunction
@@ -1082,56 +1087,56 @@ Function ShowNotification()
 	SetVars()
 	If ( ConfigMenu.bIsRevivalEnabled )
 		If !(strRemovedItem == "")
-			If (strRemovedItem == "Arkay Mark")
-				Debug.Notification("$mrt_MarkofArkay_Notification_ArkayMark_Removed" )
-				Debug.Notification( ConfigMenu.fValueMarkSlider As Int )
-			ElseIf (strRemovedItem == "Black Soul Gem") 
-				Debug.Notification( "$mrt_MarkofArkay_Notification_BSoulGem_Removed"  )
-				Debug.Notification( ConfigMenu.fValueBSoulGemSlider As Int )
-			ElseIf (strRemovedItem == "Grand Soul Gem")
-				Debug.Notification( "$mrt_MarkofArkay_Notification_GSoulGem_Removed" )
-				Debug.Notification( ConfigMenu.fValueGSoulGemSlider As Int )
-			ElseIf (strRemovedItem == "Dragon Soul")
+			If (strRemovedItem == "Dragon Soul")
 				Debug.Notification( "$mrt_MarkofArkay_Notification_DragonSoul_Removed" )
-				Debug.Notification( ConfigMenu.fValueSoulSlider As Int )
-			ElseIf (strRemovedItem == "Septim")
-				Debug.Notification( "$mrt_MarkofArkay_Notification_Septim_Removed" )
-				Debug.Notification( ConfigMenu.fValueGoldSlider As Int )
+				Debug.Notification( iDragonSoulCost )
+			;ElseIf (strRemovedItem == "Arkay Mark")
+			;	Debug.Notification("$mrt_MarkofArkay_Notification_ArkayMark_Removed" )
+			;	Debug.Notification( iArkayMarkCost)
+			;ElseIf (strRemovedItem == "Black Soul Gem") 
+			;	Debug.Notification( "$mrt_MarkofArkay_Notification_BSoulGem_Removed"  )
+			;	Debug.Notification( iBSoulGemCost )
+			;ElseIf (strRemovedItem == "Grand Soul Gem")
+			;	Debug.Notification( "$mrt_MarkofArkay_Notification_GSoulGem_Removed" )
+			;	Debug.Notification(iGSoulGemCost )
+			;ElseIf (strRemovedItem == "Septim")
+			;	Debug.Notification( "$mrt_MarkofArkay_Notification_Septim_Removed" )
+			;	Debug.Notification( iSeptimCost )
 			EndIf
 		EndIf
 		If (bArkayMarkRevive)
 			If ConfigMenu.fValueMarkSlider == 0.0
 				Return
 			Else
-				totalRemainingLives += ( iArkayMarkCount / ConfigMenu.fValueMarkSlider ) As Int
+				totalRemainingLives += ( iArkayMarkCount / iArkayMarkCost ) As Int
 			EndIf
 		EndIf
 		If ( bBSoulGemRevive )
 			If ConfigMenu.fValueBSoulGemSlider == 0.0
 				Return
 			Else
-				totalRemainingLives += ( iBSoulGemCount / ConfigMenu.fValueBSoulGemSlider ) As Int
+				totalRemainingLives += ( iBSoulGemCount / iBSoulGemCost ) As Int
 			EndIf
 		EndIf
 		If ( bGSoulGemRevive )
 			If ConfigMenu.fValueGSoulGemSlider == 0.0
 				Return
 			Else
-				totalRemainingLives += ( iGSoulGemCount / ConfigMenu.fValueGSoulGemSlider ) As Int
+				totalRemainingLives += ( iGSoulGemCount / iGSoulGemCost ) As Int
 			EndIf
 		EndIf
 		If ( bDragonSoulRevive )
 			If ConfigMenu.fValueSoulSlider == 0.0
 				Return
 			Else
-				totalRemainingLives += ( fDragonSoulCount / ConfigMenu.fValueSoulSlider ) As Int
+				totalRemainingLives += ( fDragonSoulCount / iDragonSoulCost ) As Int
 			EndIf
 		EndIf
 		If ( bSeptimRevive )
 			If ConfigMenu.fValueGoldSlider == 0.0
 				Return
 			Else
-				totalRemainingLives += ( iSeptimCount / ConfigMenu.fValueGoldSlider ) As Int
+				totalRemainingLives += ( iSeptimCount / iSeptimCost ) As Int
 			EndIf
 		EndIf
 		If ( totalRemainingLives > 0 )
@@ -1672,11 +1677,16 @@ Function SetVars()
 	iArkayMarkCount = PlayerRef.GetItemCount(MarkOfArkay) 
 	iBSoulGemCount = PlayerRef.GetItemCount(BlackFilledGem)
 	iGSoulGemCount = PlayerRef.GetItemCount(GrandFilledGem)
-	bSeptimRevive = ((iSeptimCount >= ConfigMenu.fValueGoldSlider ) && ConfigMenu.bIsGoldEnabled)
-	bDragonSoulRevive = ((fDragonSoulCount >= ConfigMenu.fValueSoulSlider) && ConfigMenu.bIsDragonSoulEnabled)
-	bBSoulGemRevive = ((iBSoulGemCount >= ConfigMenu.fValueBSoulGemSlider) && ConfigMenu.bIsBSoulGemEnabled) 
-	bGSoulGemRevive = ((iGSoulGemCount >= ConfigMenu.fValueGSoulGemSlider) && ConfigMenu.bIsGSoulGemEnabled) 
-	bArkayMarkRevive = ((iArkayMarkCount >= ConfigMenu.fValueMarkSlider) && ConfigMenu.bIsMarkEnabled)
+	iSeptimCost = iCalcReviveCost(ConfigMenu.fValueGoldSlider,ConfigMenu.fValueGoldScaleSlider)
+	iArkayMarkCost = iCalcReviveCost(ConfigMenu.fValueMarkSlider,ConfigMenu.fValueMarkScaleSlider)
+	iBSoulGemCost = iCalcReviveCost(ConfigMenu.fValueBSoulGemSlider,ConfigMenu.fValueBSoulGemScaleSlider)
+	iGSoulGemCost = iCalcReviveCost(ConfigMenu.fValueGSoulGemSlider,ConfigMenu.fValueGSoulGemScaleSlider)
+	iDragonSoulCost = iCalcReviveCost(ConfigMenu.fValueSoulSlider,ConfigMenu.fValueSoulScaleSlider)
+	bSeptimRevive = ConfigMenu.bIsGoldEnabled && (iSeptimCost <= iSeptimCount)
+	bDragonSoulRevive = ConfigMenu.bIsDragonSoulEnabled && (iDragonSoulCost <= fDragonSoulCount)
+	bBSoulGemRevive = ConfigMenu.bIsBSoulGemEnabled && (iBSoulGemCost <= iBSoulGemCount)
+	bGSoulGemRevive = ConfigMenu.bIsGSoulGemEnabled && (iGSoulGemCost <= iGSoulGemCount)
+	bArkayMarkRevive = ConfigMenu.bIsMarkEnabled && (iArkayMarkCost <= iArkayMarkCount)
 	bPotionRevive = ConfigMenu.bIsPotionEnabled
 	ItemScript.SetVars()
 	RespawnScript.SetVars()
@@ -1880,3 +1890,6 @@ Function ToggleSaving(Bool bSave)
 	EndIf
 EndFunction
 
+Int Function iCalcReviveCost(Float fValue,Float fScale)
+	Return imax(0,(fValue + ((fScale * (PlayerRef.GetLevel() - 1)) * fValue)) As Int)
+EndFunction

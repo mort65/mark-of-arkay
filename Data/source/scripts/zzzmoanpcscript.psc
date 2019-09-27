@@ -102,6 +102,32 @@ Int[] Property iSpawnArr Auto Hidden
 Int Property iSpawnpool Auto Hidden
 Int Property iTotalSpawns = 0 Auto Hidden
 Actor Property DeadClone Auto Hidden
+Race Property AtronachFlameRace Auto
+Race Property AtronachFrostRace Auto
+Race Property AtronachStormRace Auto
+Faction Property  DragonPriestFaction Auto
+Faction Property DragonFaction Auto
+Faction Property DraugrFaction Auto
+Faction Property DremoraFaction Auto
+Faction Property DwarvenAutomatonFaction Auto
+Faction Property FalmerFaction Auto
+Faction Property GiantFaction Auto
+Faction Property HagravenFaction Auto
+Faction Property SkeletonFaction Auto
+Faction Property SprigganFaction Auto
+Faction Property SprigganPredatorFaction Auto
+Faction Property TrollFaction Auto
+Faction Property VampireFaction Auto
+Faction Property WerewolfFaction Auto
+Faction Property WispFaction Auto
+Faction Property DA13AfflictedFaction Auto
+Faction Property BanditFaction Auto
+Faction Property ForswornFaction Auto
+Faction Property SilverHandFaction Auto
+Faction Property ThalmorFaction Auto
+Faction Property WarlockFaction Auto
+Faction Property NecromancerFaction Auto
+Faction Property DLC1HunterFaction Auto
 
 Function addToSpawnPool(Int iSpawnIndex)
 	Int iEmpty = iSpawnArr.Find(-1)
@@ -139,7 +165,7 @@ Bool Function bIsSpawnEnabled(Bool[] bFlagArr, Int iIndex)
 	Return True
 EndFunction
 
-FormList Function SelectSpawnList(ObjectReference akMarker,  Int aiIndex = -2, Bool[] SpawnFlags)
+FormList Function SelectSpawnList(ObjectReference akMarker,  Int aiIndex = -2, Bool[] SpawnFlags, Actor ActorRef = None)
 	If !akMarker
 		Return None
 	EndIf
@@ -157,6 +183,101 @@ FormList Function SelectSpawnList(ObjectReference akMarker,  Int aiIndex = -2, B
 	EndIf
 	Bool bIsPlayerVampire = bIsPlayerVampire()
 	Bool bIsPlayerWereWolf = bIsPlayerWereWolf()
+	If ConfigMenu.bSpawnCheckRelation && ActorRef
+		clearSpawnPool()
+		If ConfigMenu.bCreaturesCanSteal
+			If !ReviveScript.RespawnScript.IsInInteriorActual(akMarker)
+				If ActorRef.IsInFaction(GiantFaction)
+					addToSpawnPool(14)
+				EndIf
+				If (ActorRef.IsInFaction(DragonFaction) || ActorRef.HasKeywordString("ActorTypeDragon"))
+					addToSpawnPool(7)
+				EndIf
+			EndIf
+			If (ActorRef.GetRace() == AtronachFlameRace) || (ActorRef.GetRace() == AtronachFrostRace) || (ActorRef.GetRace() == AtronachStormRace)
+				addToSpawnPool(2)
+			EndIf			
+			If ActorRef.IsInFaction(ChaurusFaction)
+				addToSpawnPool(4)
+			EndIf
+			If ActorRef.IsInFaction(DragonPriestFaction)
+				addToSpawnPool(6)
+			EndIf
+			If ActorRef.IsInFaction(DraugrFaction)
+				addToSpawnPool(8)
+			EndIf
+			If ActorRef.IsInFaction(DremoraFaction)
+				addToSpawnPool(9)
+			EndIf
+			If ActorRef.IsInFaction(DwarvenAutomatonFaction)
+				addToSpawnPool(10)
+			EndIf
+			If ActorRef.IsInFaction(FalmerFaction)
+				addToSpawnPool(11)
+			EndIf
+			If ActorRef.HasKeywordString("ActorTypeGhost")
+				addToSpawnPool(13)
+			EndIf				
+			If ActorRef.IsInFaction(HagravenFaction)
+				addToSpawnPool(15)
+			EndIf
+			If ActorRef.IsInFaction(SkeletonFaction)
+				addToSpawnPool(17)
+			EndIf
+			If ActorRef.IsInFaction(SpiderFaction)
+				addToSpawnPool(18)
+			EndIf
+			If ActorRef.IsInFaction(SprigganFaction) ||  ActorRef.IsInFaction(SprigganPredatorFaction)
+				addToSpawnPool(19)
+			EndIf
+			If ActorRef.IsInFaction(TrollFaction)
+				addToSpawnPool(22)
+			EndIf
+			If ActorRef.IsInFaction(VampireFaction)
+				addToSpawnPool(23)
+			EndIf
+			If ActorRef.IsInFaction(WerewolfFaction)
+				addToSpawnPool(25)
+			EndIf
+			If ActorRef.IsInFaction(WispFaction)
+				addToSpawnPool(26)
+			EndIf
+		EndIf
+		If ActorRef.IsInFaction(DA13AfflictedFaction)
+			addToSpawnPool(0)
+		EndIf
+		If ActorRef.IsInFaction(DarkBrotherHoodFaction)
+			addToSpawnPool(1)
+		EndIf
+
+		If ActorRef.IsInFaction(BanditFaction)
+			addToSpawnPool(3)
+		EndIf
+		If ActorRef.IsInFaction(DLC1HunterFaction) && bIsPlayerVampire
+			addToSpawnPool(5)
+		EndIf
+		If ActorRef.IsInFaction(ForswornFaction)
+			addToSpawnPool(12)
+		EndIf
+		If ActorRef.IsInFaction(SilverHandFaction) && bIsPlayerWereWolf
+			addToSpawnPool(16)
+		EndIf
+		If ActorRef.IsInFaction(ThalmorFaction)
+			addToSpawnPool(20)
+		EndIf
+		If ActorRef.IsInFaction(ThievesGuildFaction)
+			addToSpawnPool(21)
+		EndIf
+		If ActorRef.IsInFaction(WarlockFaction) || ActorRef.IsInFaction(NecromancerFaction)
+			addToSpawnPool(24)
+		EndIf
+		If ActorRef.IsInFaction(HagravenFaction)
+			addToSpawnPool(27)
+		EndIf
+		If iSpawnPool > 0
+			Return getFromSpawnPool()
+		EndIf
+	EndIf
 	If ConfigMenu.bSpawnByLocation
 		clearSpawnPool()
 		Location akLocation = akMarker.GetCurrentLocation()
@@ -170,7 +291,7 @@ FormList Function SelectSpawnList(ObjectReference akMarker,  Int aiIndex = -2, B
 						addToSpawnPool(16)
 					EndIf
 					If bIsSpawnEnabled(SpawnFlags,23)
-						If ConfigMenu.bCreaturesCanSteal && !bIsPlayerVampire && ReviveScript.RespawnScript.IsInInteriorActual(akMarker)
+						If ConfigMenu.bCreaturesCanSteal && !bIsPlayerVampire
 							addToSpawnPool(23)
 						EndIf
 					EndIf
@@ -284,6 +405,9 @@ FormList Function SelectSpawnList(ObjectReference akMarker,  Int aiIndex = -2, B
 				EndIf
 				If bIsSpawnEnabled(SpawnFlags,13)
 					addToSpawnPool(13)
+				EndIf
+				If bIsSpawnEnabled(SpawnFlags,3)
+					addToSpawnPool(3)
 				EndIf
 			EndIf
 			If akLocation.HasKeyword(LocTypeDragonPriestLair)
@@ -431,13 +555,12 @@ FormList Function SelectSpawnList(ObjectReference akMarker,  Int aiIndex = -2, B
 	If ConfigMenu.bSpawnCheckRelation
 		If bIsPlayerVampire
 			bIsSpawnEnabled(SpawnFlags,5) && addToSpawnPool(5)
-		ElseIf ConfigMenu.bCreaturesCanSteal && ReviveScript.RespawnScript.IsInInteriorActual(akMarker)
+		ElseIf ConfigMenu.bCreaturesCanSteal
 			bIsSpawnEnabled(SpawnFlags,23) && addToSpawnPool(23)
 		EndIf
 	Else
 		bIsSpawnEnabled(SpawnFlags,5) && addToSpawnPool(5)
-		If bIsSpawnEnabled(SpawnFlags,23) && ConfigMenu.bCreaturesCanSteal && \
-			ReviveScript.RespawnScript.IsInInteriorActual(akMarker)
+		If bIsSpawnEnabled(SpawnFlags,23) && ConfigMenu.bCreaturesCanSteal
 			addToSpawnPool(23)
 		EndIf
 	EndIf
@@ -542,6 +665,7 @@ EndFunction
 
 Function DetectThiefNPC()
 	Int i
+	Bool bFound = False
 	ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Finding a Thief (Phase 0)...")
 	If ReviveScript.bCursed() && ReviveScript.moaThiefNPC01.IsRunning()
 		If ReviveScript.Thief && !ReviveScript.Thief.IsDisabled() && !ReviveScript.Thief.GetActorBase().IsInvulnerable() && \
@@ -564,7 +688,7 @@ Function DetectThiefNPC()
 		Return
 	EndIf
 	ReviveScript.Thief = None
-	If !ConfigMenu.bSpawnHostile || !ConfigMenu.bAlwaysSpawn
+	If !ConfigMenu.bSpawnHostile || !ConfigMenu.bOnlySpawn
 		ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Finding a Thief (Phase 1)...")
 		Actor akHostile
 		If moaHostileNPCDetector.IsRunning() && HostileActor.GetReference() As Actor
@@ -573,47 +697,64 @@ Function DetectThiefNPC()
 				ReviveScript.Thief = akHostile
 				ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Detected Thief in phase 1: ( '" +\
 					ReviveScript.Thief.GetActorBase().GetName() + "', "  + ReviveScript.Thief + ", " + ReviveScript.Thief.GetRace() + ", )" )
-				Return
+				If !ConfigMenu.bAlwaysSpawn || !ConfigMenu.bSpawnHostile
+					Return
+				EndIf
+				bFound = True
 			EndIf
 		EndIf
-		stopAndConfirm(moaHostileNPCDetector,3)
-		moaHostileNPCDetector.Start()
-		akHostile = HostileActor.GetReference() As Actor
-		If akHostile &&\
-			!bIsDying(akHostile) && !akHostile.GetActorBase().IsInvulnerable()
-			ReviveScript.Thief = akHostile
-			ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Detected Thief in phase 1: ( '" +\
-				ReviveScript.Thief.GetActorBase().GetName() + "', "  + ReviveScript.Thief + ", " + ReviveScript.Thief.GetRace() + ", )" )
-			Return
-		EndIf
-		ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Finding a Thief (Phase 2)...")
-		Actor RandActor = Game.FindClosestActorFromRef(PlayerRef,2000)
-		If RandActor
-			If bCanSteal(RandActor)
-				ReviveScript.Thief = RandActor
-				HostileActor.ForceRefTo(ReviveScript.Thief)
-				ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Detected Thief in phase 2: ( '" +\
-					RandActor.GetActorBase().GetName() + "', "  + RandActor + ", " + RandActor.GetRace() + ", )" )
-				Return
+		If !bFound
+			stopAndConfirm(moaHostileNPCDetector,3)
+			moaHostileNPCDetector.Start()
+			akHostile = HostileActor.GetReference() As Actor
+			If akHostile &&\
+				!bIsDying(akHostile) && !akHostile.GetActorBase().IsInvulnerable()
+				ReviveScript.Thief = akHostile
+				ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Detected Thief in phase 1: ( '" +\
+					ReviveScript.Thief.GetActorBase().GetName() + "', "  + ReviveScript.Thief + ", " + ReviveScript.Thief.GetRace() + ", )" )
+				If !ConfigMenu.bAlwaysSpawn || !ConfigMenu.bSpawnHostile
+					Return
+				EndIf
+				bFound = True
 			EndIf
-			i = 0
-			While ( i < 15 )
-				i += 1
-				RandActor = Game.FindRandomActorFromRef(PlayerRef,2000)
-				If RandActor
-					If bCanSteal(RandActor)
-						ReviveScript.Thief = RandActor
-						HostileActor.ForceRefTo(ReviveScript.Thief)
-						ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Detected Thief in phase 2: ( '" +\
-							RandActor.GetActorBase().GetName() + "', "  + RandActor + ", " + RandActor.GetRace() + ", )" )
+		EndIf
+		If !bFound
+			ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Finding a Thief (Phase 2)...")
+			Actor RandActor = Game.FindClosestActorFromRef(PlayerRef,2000)
+			If RandActor
+				If bCanSteal(RandActor)
+					ReviveScript.Thief = RandActor
+					HostileActor.ForceRefTo(ReviveScript.Thief)
+					ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Detected Thief in phase 2: ( '" +\
+						RandActor.GetActorBase().GetName() + "', "  + RandActor + ", " + RandActor.GetRace() + ", )" )
+					If !ConfigMenu.bAlwaysSpawn || !ConfigMenu.bSpawnHostile
 						Return
 					EndIf
 				EndIf
-			EndWhile
-			ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: No hostile NPC who can steal detected.")
+				i = 0
+				While ( i < 15 ) && !bFound
+					i += 1
+					RandActor = Game.FindRandomActorFromRef(PlayerRef,2000)
+					If RandActor
+						If bCanSteal(RandActor)
+							ReviveScript.Thief = RandActor
+							HostileActor.ForceRefTo(ReviveScript.Thief)
+							ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Detected Thief in phase 2: ( '" +\
+								RandActor.GetActorBase().GetName() + "', "  + RandActor + ", " + RandActor.GetRace() + ", )" )
+							If !ConfigMenu.bAlwaysSpawn || !ConfigMenu.bSpawnHostile
+								Return
+							EndIf
+							bFound = True
+						EndIf
+					EndIf
+				EndWhile
+				If !bFound && ConfigMenu.bIsLoggingEnabled
+					 Debug.Trace("MarkOfArkay: No hostile NPC who can steal detected.")
+				EndIf
+			EndIf
 		EndIf
 	EndIf
-	If !ConfigMenu.bSpawnHostile || !bSpawnThief(PlayerRef As ObjectReference)
+	If !ConfigMenu.bSpawnHostile || (!bSpawnThief(PlayerRef As ObjectReference,bFound) && !bFound)
 		;No NPC is around the player
 		ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: No hostile NPC found/spawned.")
 		Return
@@ -633,14 +774,16 @@ Bool Function FollowerCanProtectPlayer()
 				i -= 1
 				If bIsFollower(FollowerArr[i])
 					If ( FollowerArr[i].Is3DLoaded() && !bIsDying(FollowerArr[i]) && !FollowerArr[i].IsBleedingOut() && !FollowerArr[i].IsHostileToActor(PlayerRef) )
-						If (( FollowerArr[i].GetCombatState() == 1 ) && ( FollowerArr[i].GetDistance(PlayerRef) <= 3000.0 ))
+						If (( FollowerArr[i].GetCombatState() ) && ( FollowerArr[i].GetDistance(PlayerRef) <= 3000.0 ))
 							bInCombat = True
-						ElseIf ( ReviveScript.Attacker != FollowerArr[i] ) && ( ReviveScript.Attacker.GetDistance(PlayerRef) <= 10000.0 ) && ( bIsDying(ReviveScript.Attacker) || ReviveScript.Attacker.IsBleedingOut() )
-							If ConfigMenu.bIsNotificationEnabled
-								Debug.Notification("$mrt_MarkofArkay_Notification_Follower_Avenged")
+						ElseIf ( ReviveScript.Attacker != FollowerArr[i] ) && ( ReviveScript.Attacker.GetDistance(PlayerRef) <= 10000.0 )
+							If ( bIsDying(ReviveScript.Attacker) || ReviveScript.Attacker.IsBleedingOut() )
+								ConfigMenu.bIsNotificationEnabled && Debug.Notification("$mrt_MarkofArkay_Notification_Follower_Avenged")
+								ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Someone avenged your defeat.")
+								Return True
+							ElseIf ReviveScript.Attacker.IsInCombat()
+								bInCombat = True
 							EndIf
-							ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Followers avenged your defeat.")
-							Return True
 						EndIf
 					EndIf
 				EndIf
@@ -653,16 +796,12 @@ Bool Function FollowerCanProtectPlayer()
 					If bIsFollower(FollowerArr[i])
 						If ( FollowerArr[i].Is3DLoaded() && !bIsDying(FollowerArr[i]) && !FollowerArr[i].IsBleedingOut() && !FollowerArr[i].IsHostileToActor(PlayerRef) )
 							If (( FollowerArr[i].GetCombatState() == 1 ) && ( FollowerArr[i].GetDistance(PlayerRef) <= 3000.0 ))
-								If ConfigMenu.bIsNotificationEnabled
-									Debug.Notification("$mrt_MarkofArkay_Notification_Follower_In_Combat")
-								EndIf
+								ConfigMenu.bIsNotificationEnabled && Debug.Notification("$mrt_MarkofArkay_Notification_Follower_In_Combat")
 								ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Followers are still fighting.")
 								Return True
 							ElseIf ( ( ReviveScript.Attacker != FollowerArr[i] ) && ( ReviveScript.Attacker.IsDead() || ( ReviveScript.Attacker.GetActorValue("Health") <= 0 ) || ReviveScript.Attacker.IsBleedingOut() ) )
-								If ConfigMenu.bIsNotificationEnabled
-									Debug.Notification("$mrt_MarkofArkay_Notification_Follower_Avenged")
-								EndIf
-								ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Followers avenged your defeat.")
+								ConfigMenu.bIsNotificationEnabled && Debug.Notification("$mrt_MarkofArkay_Notification_Follower_Avenged")
+								ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Someone avenged your defeat.")
 								Return True
 							EndIf
 						EndIf
@@ -760,23 +899,27 @@ Function ToggleFollower(Bool bEnable)
 EndFunction
 
 
-Bool Function bSpawnThief(ObjectReference akMarkerRef)
+Bool Function bSpawnThief(ObjectReference akMarkerRef,Bool bExtra = False)
 	ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Trying to spawning a hostile NPC...")
-	ReviveScript.Thief = None
+	If !bExtra
+		ReviveScript.Thief = None
+	EndIf
 	Bool[] bSpawnFlags = Utility.CreateBoolArray(ConfigMenu.iSpawnCounts.Length)
 	Int i = 0
 	While i < ConfigMenu.iSpawnWeights.Length
 		bSpawnFlags[i] = ConfigMenu.iSpawnWeights[i] As Bool
 		i += 1
 	EndWhile
-	Form[] RandActors = SpawnActorsFromList(aiActors = SelectSpawnList(akMarkerRef, SpawnFlags = bSpawnFlags), akMarker = akMarkerRef, aiCount = -1, aiMinLevel = ConfigMenu.iSpawnMinLevel, aiMaxLevel = ConfigMenu.iSpawnMaxLevel, abMix = ConfigMenu.bSpawnBringAllies)
+	Form[] RandActors = SpawnActorsFromList(aiActors = SelectSpawnList(akMarkerRef, SpawnFlags = bSpawnFlags,ActorRef=ReviveScript.Thief), akMarker = akMarkerRef, aiCount = -1, aiMinLevel = ConfigMenu.iSpawnMinLevel, aiMaxLevel = ConfigMenu.iSpawnMaxLevel, abMix = ConfigMenu.bSpawnBringAllies)
 	If RandActors
 		Actor RandActor = RandActors[0] As Actor
-		ReviveScript.Thief = RandActor
-		HostileActor.Clear()
-		ReviveScript.ThiefNPC01.Clear()
-		ReviveScript.ThiefNPC.Clear()
-		stopAndConfirm(moaHostileNPCDetector,3)
+		If !bExtra || !ReviveScript.Thief
+			ReviveScript.Thief = RandActor
+			HostileActor.Clear()
+			ReviveScript.ThiefNPC01.Clear()
+			ReviveScript.ThiefNPC.Clear()
+			stopAndConfirm(moaHostileNPCDetector,3)
+		EndIf
 		i = 0
 		While i < ThiefActors.Length
 			If i < RandActors.Length

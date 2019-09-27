@@ -5,6 +5,9 @@ zzzmoaReviveMCM Property ConfigMenu Auto
 zzzmoaReviverScript Property ReviveScript Auto
 
 Event OnEffectStart(Actor akTarget, Actor akCaster)
+	If akCaster != Game.GetPlayer()
+		Return
+	EndIf
 	Int iListIndex = -1
 	Int iCount = 1
 	Int iLevel = 2
@@ -53,11 +56,11 @@ Event OnEffectStart(Actor akTarget, Actor akCaster)
 			iCount = sResult As Int
 		EndIf
 		TextMenu.ResetMenu()
-		SpawnList = ReviveScript.NPCScript.SelectSpawnList(akCaster As ObjectReference, iListIndex, bSpawnFlags)
+		SpawnList = ReviveScript.NPCScript.SelectSpawnList(Game.GetPlayer() As ObjectReference, iListIndex, bSpawnFlags)
 	Else
-		SpawnList = ReviveScript.NPCScript.SelectSpawnList(akCaster As ObjectReference, -1, bSpawnFlags)
+		SpawnList = ReviveScript.NPCScript.SelectSpawnList(Game.GetPlayer() As ObjectReference, -1, bSpawnFlags)
 	EndIf
 	If SpawnList && iCount > 0 && iLevel >= 0 && iLevel <= 4
-		ReviveScript.NPCScript.SpawnActorsFromList(SpawnList, akCaster As ObjectReference, iCount, iLevel,iLevel)
+		ReviveScript.NPCScript.SpawnActorsFromList(SpawnList, Game.GetPlayer() As ObjectReference, iCount, iLevel,iLevel)
 	EndIf
 EndEvent

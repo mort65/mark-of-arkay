@@ -170,6 +170,7 @@ Int oidExcludeQuestItems
 Int oidTriggerOnHealthPerc
 Int oidTriggerOnBleedout
 Int oidAlwaysSpawn
+Int oidOnlySpawn
 Int oidHealthTriggerSlider
 Int oidDisChanceSlider
 Int oidOnlyLoseSkillXP
@@ -368,6 +369,7 @@ Bool Property bIsUpdating = False Auto Hidden
 Bool Property bTriggerOnHealthPerc = False Auto Hidden
 Bool Property bTriggerOnBleedout = True Auto Hidden
 Bool Property bAlwaysSpawn = False Auto Hidden
+Bool Property bOnlySpawn = False Auto Hidden
 Float Property fHealthPercTrigger = 0.00 Auto Hidden
 Bool Property bLoseItem = False Auto Hidden
 Bool Property bLoseGold = True Auto Hidden
@@ -1063,41 +1065,43 @@ Event OnPageReset(String page)
 		EndIf
 		oidSpawnHostile = AddToggleOption("$mrt_MarkofArkay_SpawnHostile",bSpawnHostile, flags)
 		SetCursorPosition(14)
-		oidAlwaysSpawn = AddToggleOption("$mrt_MarkofArkay_AlwaysSpawn",bAlwaysSpawn, flags)
+		oidOnlySpawn = AddToggleOption("$mrt_MarkofArkay_OnlySpawn",bOnlySpawn, flags)
 		SetCursorPosition(16)
+		oidAlwaysSpawn = AddToggleOption("$mrt_MarkofArkay_AlwaysSpawn",bAlwaysSpawn, flags)
+		SetCursorPosition(18)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && iHostileOption == 2 &&  bSpawnHostile
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidSpawnByLocation = AddToggleOption("$mrt_MarkofArkay_SpawnByLocation", bSpawnByLocation, flags)
-		SetCursorPosition(18)
+		SetCursorPosition(20)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && iHostileOption == 2 &&  bSpawnHostile && bSpawnByLocation
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidRetrySpawnWithoutLocation = AddToggleOption("$mrt_MarkofArkay_RetrySpawnWithoutLocation", bRetrySpawnWithoutLocation, flags)
-		SetCursorPosition(20)
+		SetCursorPosition(22)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && iHostileOption == 2 && bSpawnHostile
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidSpawnCheckRelation = AddToggleOption("$mrt_MarkofArkay_SpawnCheckRelation", bSpawnCheckRelation, flags)
-		SetCursorPosition(22)
-		oidSpawnBringAllies = AddToggleOption("$mrt_MarkofArkay_SpawnBringAllies", bSpawnBringAllies, flags)
 		SetCursorPosition(24)
-		oidSpawnMinLevel_M = AddMenuOption("$mrt_MarkofArkay_SpawnMinLevel_M", sGetSpawnLevels()[iSpawnMinLevel], flags)
+		oidSpawnBringAllies = AddToggleOption("$mrt_MarkofArkay_SpawnBringAllies", bSpawnBringAllies, flags)
 		SetCursorPosition(26)
-		oidSpawnMaxLevel_M = AddMenuOption("$mrt_MarkofArkay_SpawnMaxLevel_M", sGetSpawnLevels()[iSpawnMaxLevel], flags)
+		oidSpawnMinLevel_M = AddMenuOption("$mrt_MarkofArkay_SpawnMinLevel_M", sGetSpawnLevels()[iSpawnMinLevel], flags)
 		SetCursorPosition(28)
-		AddHeaderOption("")
+		oidSpawnMaxLevel_M = AddMenuOption("$mrt_MarkofArkay_SpawnMaxLevel_M", sGetSpawnLevels()[iSpawnMaxLevel], flags)
 		SetCursorPosition(30)
-		oidSpawns_M = AddMenuOption("$mrt_MarkofArkay_Spawns_M", sGetSpawns()[iSpawn], flags)
+		AddHeaderOption("")
 		SetCursorPosition(32)
-		oidSpawnWeightSlider = AddSliderOption("$mrt_MarkofArkay_SpawnWeightSlider_1", iSpawnWeights[iSpawn], "$mrt_MarkofArkay_SpawnWeightSlider_2", flags)
+		oidSpawns_M = AddMenuOption("$mrt_MarkofArkay_Spawns_M", sGetSpawns()[iSpawn], flags)
 		SetCursorPosition(34)
+		oidSpawnWeightSlider = AddSliderOption("$mrt_MarkofArkay_SpawnWeightSlider_1", iSpawnWeights[iSpawn], "$mrt_MarkofArkay_SpawnWeightSlider_2", flags)
+		SetCursorPosition(36)
 		oidSpawnCountSlider = AddSliderOption("$mrt_MarkofArkay_SpawnCountSlider_1", iSpawnCounts[iSpawn], "$mrt_MarkofArkay_SpawnCountSlider_2", flags)		
 		SetCursorPosition(1)
 		AddHeaderOption("$Follower")
@@ -1815,6 +1819,9 @@ Event OnOptionSelect(Int option)
 	ElseIf (option == oidAlwaysSpawn)
 		bAlwaysSpawn = !bAlwaysSpawn
 		SetToggleOptionValue(oidAlwaysSpawn,bAlwaysSpawn)
+	ElseIf (option == oidOnlySpawn)
+		bOnlySpawn = !bOnlySpawn
+		SetToggleOptionValue(oidOnlySpawn,bOnlySpawn)
 	ElseIf (option == oidMoralityMatters)
 		bMoralityMatters = !bMoralityMatters
 		moaMoralityMatters.SetValue(bMoralityMatters As Int)
@@ -2094,6 +2101,8 @@ Event OnOptionSelect(Int option)
 		Game.EnablePlayerControls()
 		Game.EnableFastTravel(True)
 		PlayerRef.RemovePerk(ReviveScript.Invulnerable)
+		Debug.SetGodMode(False)
+		PlayerRef.SetGhost(False)
 		moaIsBusy.SetValueInt(0)
 	EndIf
 EndEvent
@@ -2279,7 +2288,7 @@ Event OnOptionSliderOpen(Int option)
 		SetSliderDialogStartValue(fLoseOtherMinValueSlider)
 		SetSliderDialogDefaultValue(0.0)
 		SetSliderDialogRange(0.0, 1000.0)
-		SetSliderDialogInterval(25.0)
+		SetSliderDialogInterval(1.0)
 	ElseIf (option == oidLoseOtherTotalValueSlider)
 		SetSliderDialogStartValue(fLoseOtherTotalValueSlider)
 		SetSliderDialogDefaultValue(0.0)
@@ -3024,6 +3033,9 @@ Event OnOptionDefault(Int option)
 	ElseIf (option == oidAlwaysSpawn )
 		bAlwaysSpawn = False
 		SetToggleOptionValue(oidAlwaysSpawn ,bAlwaysSpawn)
+	ElseIf (option == oidOnlySpawn )
+		bOnlySpawn = False
+		SetToggleOptionValue(oidOnlySpawn ,bOnlySpawn)
 	ElseIf (option == oidMoralityMatters )
 		bMoralityMatters = True
 		moaMoralityMatters.SetValue(bMoralityMatters As Int)
@@ -3635,6 +3647,8 @@ Event OnOptionHighlight(Int option)
 		SetInfoText("$mrt_MarkofArkay_DESC_BossChestNotClearedLoc")
 	ElseIf (option == oidAlwaysSpawn)
 		SetInfoText("$mrt_MarkofArkay_DESC_AlwaysSpawn")
+	ElseIf (option == oidOnlySpawn)
+		SetInfoText("$mrt_MarkofArkay_DESC_OnlySpawn")
 	ElseIf (option == oidOnlyInfectIfHasBaseDis)
 		SetInfoText("$mrt_MarkofArkay_DESC_OnlyInfectIfHasBaseDis")
 	ElseIf (option == oidCureDisIfHasBlessing)
@@ -3730,6 +3744,8 @@ Function moaStop(Bool bReset = False)
 		moaScrollChance.SetValue(100.0)
 		SetInChargen(False,False,False)
 		moaPraytoSave.SetValue(0.0)
+		Debug.SetGodMode(False)
+		PlayerRef.SetGhost(False)
 		Utility.Wait(1.0)
 		Debug.notification("$mrt_MarkofArkay_Notification_Stopped")
 	EndIf
@@ -4416,6 +4432,7 @@ Bool function bLoadUserSettings(String sFileName)
 	bBossChestNotInClearedLoc = fiss.loadBool("bBossChestNotInClearedLoc")
 	moaBossChestNotInclearedLoc.SetValue(bBossChestNotInClearedLoc As Int)
 	bAlwaysSpawn = fiss.loadBool("bAlwaysSpawn")
+	bOnlySpawn = fiss.loadBool("bOnlySpawn")
 	bDisableUnsafe = fiss.loadBool("bDisableUnsafe")
 	iSelectedCustomRPSlot = fiss.loadInt("iSelectedCustomRPSlot")
 	fTotalCustomRPSlotSlider = fiss.loadFloat("fTotalCustomRPSlotSlider")
@@ -4453,6 +4470,8 @@ Bool Function bCheckFissErrors(String strErrors)
 			bDoNotStopCombatAfterRevival = True
 		ElseIf strError == "Element bAlwaysSpawn not found"
 			bAlwaysSpawn = False
+		ElseIf strError == "Element bOnlySpawn not found"
+			bOnlySpawn = False
 		ElseIf strError == "Element bOnlyLoseSkillXP not found"
 			bOnlyLoseSkillXP = False
 		ElseIf strError == "Element fHealthPercTrigger not found"
@@ -4729,6 +4748,7 @@ bool function bSaveUserSettings(String sFileName)
 	fiss.SaveBool("bBossChestOnlyCurLoc", bBossChestOnlyCurLoc)
 	fiss.SaveBool("bBossChestNotInClearedLoc", bBossChestNotInClearedLoc)
 	fiss.SaveBool("bAlwaysSpawn", bAlwaysSpawn)
+	fiss.SaveBool("bOnlySpawn", bOnlySpawn)
 	fiss.saveBool("bDoNotStopCombat", bDoNotStopCombat)
 	fiss.saveBool("bDoNotStopCombatAfterRevival", bDoNotStopCombatAfterRevival)
 	String Result = fiss.endSave()
@@ -4894,6 +4914,7 @@ function LoadDefaultSettings()
 	bBossChestOnlyCurLoc = False
 	bBossChestNotInClearedLoc = True
 	bAlwaysSpawn = False
+	bOnlySpawn = False
 	fTotalCustomRPSlotSlider = 1.0
 	iSelectedCustomRPSlot = 0
 	SetCustomRPFlags()

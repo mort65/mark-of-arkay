@@ -262,6 +262,7 @@ Event OnEnterBleedout()
 		PlayerRef.RemoveSpell(Bleed)
 		PlayerRef.AddSpell(Bleed,False)
 		PlayerRef.AddPerk(Invulnerable)
+		Debug.SetGodMode(True)
 		iIsBeast = NPCScript.iInBeastForm()
 		BleedoutHandler(ToggleState())
 		If GetState() == ""
@@ -280,7 +281,13 @@ EndEvent
 
 Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile, Bool abPowerattack, Bool abSneakAttack, Bool abBashAttack, Bool abHitBlocked)
 	If GetState() == ""
-		Attacker = akAggressor As Actor
+		If (akAggressor As Actor)
+			If (akAggressor As Actor) != PlayerRef
+				Attacker = akAggressor As Actor
+			EndIf
+		Else
+			Attacker = None
+		EndIf
 		checkHealth()
 	EndIf
 EndEvent
@@ -334,6 +341,7 @@ Event OnUpdate()
 		bParalyzed = False
 		bSheathed = False
 		PlayerRef.RemovePerk(Invulnerable)
+		Debug.SetGodMode(False)
 	EndIf
 EndEvent
 
@@ -491,6 +499,7 @@ Function checkHealth()
 				PlayerRef.DispelallSpells()
 				PlayerRef.SetActorValue("HealRate",0.0)
 				PlayerRef.AddPerk(Invulnerable)
+				Debug.SetGodMode(True) ;still needed for when dying because of traps
 				bInBleedoutAnim = True
 				bSheathed = False
 				iIsBeast = NPCScript.iInBeastForm()
@@ -694,9 +703,11 @@ Function BleedoutHandler(String CurrentState)
 				Game.EnablePlayerControls(abMovement = False, abFighting = False, abCamSwitch = False, abLooking = False, abSneaking = False,\
 				abMenu = True, abActivate = False, abJournalTabs = False)
 				PlayerRef.RemovePerk(Invulnerable)
+				Debug.SetGodMode(False)
 			Else
 				Game.EnablePlayerControls()
 				PlayerRef.RemovePerk(Invulnerable)
+				Debug.SetGodMode(False)
 			EndIf
 			Utility.Wait(ConfigMenu.fBleedoutTimeSlider)
 		EndIf
@@ -708,6 +719,7 @@ Function BleedoutHandler(String CurrentState)
 			Return
 		Else
 			PlayerRef.AddPerk(Invulnerable)
+			Debug.SetGodMode(True)
 			bInBleedout = True
 			If bHasAutoReviveEffect ;player has cast a revive spell or scroll
 				ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Reviving player by an auto revival spell or scroll...")
@@ -1327,13 +1339,16 @@ Function RevivePlayer(Bool bRevive)
 						ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Finding a hostile NPC who can steal from player ...")
 						NPCScript.DetectThiefNPC()
 						If Thief
-							If !ThiefNPC01.GetActorReference()
+							If !ThiefNPC01.GetActorReference() || (ConfigMenu.bAlwaysSpawn && (ThiefNPC01.GetActorReference() != Thief))
 								ThiefNPC.ForceRefTo(Thief)
 							EndIf
 							If !moaThiefNPC01.IsRunning()
 								moaThiefNPC01.Start()
 							EndIf
 							ThiefMarker.MoveTo(Thief)
+							If ThiefNPC01.GetActorReference() && (ThiefNPC.GetActorReference() && (Thief ==  ThiefNPC.GetActorReference()))
+								RemoveStolenItemMarkers(ThiefNPC01.GetActorReference())
+							EndIf
 						ElseIf moaThiefNPC01.IsRunning() && !bCursed() ;if cursed, location change event will respawn or stop the quest
 							RemoveStolenItemMarkers(ThiefNPC.GetReference() As Actor)
 							StopAndConfirm(moaThiefNPC01, 3, 25)

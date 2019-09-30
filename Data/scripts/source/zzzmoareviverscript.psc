@@ -532,16 +532,26 @@ Function checkHealth()
 	EndIf
 EndFunction
 
-Function restore(Bool bRevivePlayer = True, Bool bReviveFollower = True, Bool bEffect = False, Int iPotionIndex = -1, Bool bWait = False, String sTrace = "")
+Function restore(Int iRevivePlayer = 1, Bool bReviveFollower = True, Bool bEffect = False, Int iPotionIndex = -1, Bool bWait = False, String sTrace = "")
 	If !PlayerRef.IsDead()
 		If bEffect
 			moaReviveAfterEffect.Cast(PlayerRef)
 		EndIf
 		RequipSpells()
 		PlayerRef.DispelSpell(Bleed)
-		If bRevivePlayer
+		If iRevivePlayer != 0
 			PlayerRef.ResetHealthAndLimbs()
 			PlayerRef.RestoreActorValue("health",10000)
+		EndIf
+		If iRevivePlayer == 2
+			Utility.Wait(0.5)
+			Float fOldHP = PlayerRef.GetActorValue("Health")
+			Float fNewHP = fMax( 60.0, ((PlayerRef.GetBaseActorValue("Health") * 0.5) + 10.0 ))
+			If fOldHP > fNewHP
+				PlayerRef.DamageActorValue("Health",fOldHP - fNewHP)
+			Else
+				PlayerRef.RestoreActorValue("Health",fNewHP - fOldHP)
+			EndIf
 		EndIf
 		If iPotionIndex > -1
 			Utility.Wait(0.1)
@@ -564,7 +574,7 @@ Function restore(Bool bRevivePlayer = True, Bool bReviveFollower = True, Bool bE
 			PlayerRef.ForceActorValue("paralysis",0)
 		EndIf					
 	EndIf
-	If bEffect && bRevivePlayer && !PlayerRef.IsDead()
+	If bEffect && (iRevivePlayer == 1) && !PlayerRef.IsDead()
 		BleedoutProtection.Cast(PlayerRef)
 	EndIf
 	bWait && Utility.Wait(5.0)
@@ -639,7 +649,7 @@ Function BleedoutHandler(String CurrentState)
 	LowHealthImod.Remove()
 	SetVars()
 	If !ConfigMenu.bIsRevivalEnabled
-		restore(bRevivePlayer = False, bReviveFollower = False, sTrace = "MarkOfArkay: Player won't be revived because revival is not enabled.")
+		restore(iRevivePlayer = 0, bReviveFollower = False, sTrace = "MarkOfArkay: Player won't be revived because revival is not enabled.")
 		Return
 	EndIf
 	NPCScript.DetectFollowers()
@@ -669,6 +679,17 @@ Function BleedoutHandler(String CurrentState)
 			PlayerRef.DamageActorValue( "health", PlayerRef.GetActorValue("health") -  fHealth)
 		EndIf
 	EndIf
+	If NPCScript.FollowerCanProtectPlayer()
+		Utility.Wait(ConfigMenu.fBleedoutTimeSlider)
+		If ConfigMenu.iRevivesByFollower < 99999999
+			ConfigMenu.iRevivesByFollower += 1
+		EndIf
+		If ConfigMenu.iTotalRevives < 99999999
+			ConfigMenu.iTotalRevives += 1
+		EndIf
+		Restore(iRevivePlayer = 2, bReviveFollower = ConfigMenu.bPlayerProtectFollower, bEffect = False, bWait = PlayerRef.GetActorValue("Paralysis") As Bool, sTrace = "MarkOfArkay: Player is alive because of followers.")
+		Return
+	EndIf
 	If ConfigMenu.bAutoDrinkPotion && !NPCScript.bInBeastForm()
 		Int iPotion = iHasHealingPotion()
 		If iPotion > -1
@@ -678,7 +699,7 @@ Function BleedoutHandler(String CurrentState)
 				If ConfigMenu.iTotalRevives < 99999999
 					ConfigMenu.iTotalRevives += 1
 				EndIf
-				Restore(bRevivePlayer = True, bReviveFollower = ConfigMenu.bPlayerProtectFollower, bEffect = ConfigMenu.bIsEffectEnabled, bWait = PlayerRef.GetActorValue("Paralysis") As Bool, sTrace = "MarkOfArkay: Player revived before starting of the revival by auto drinking healing potions.")
+				Restore(iRevivePlayer = 1, bReviveFollower = ConfigMenu.bPlayerProtectFollower, bEffect = ConfigMenu.bIsEffectEnabled, bWait = PlayerRef.GetActorValue("Paralysis") As Bool, sTrace = "MarkOfArkay: Player revived before starting of the revival by auto drinking healing potions.")
 				Return
 			Else	
 				If ConfigMenu.bIsNotificationEnabled
@@ -690,7 +711,7 @@ Function BleedoutHandler(String CurrentState)
 				If ConfigMenu.iTotalRevives < 99999999
 					ConfigMenu.iTotalRevives += 1
 				EndIf
-				Restore(bRevivePlayer = True, bReviveFollower = ConfigMenu.bPlayerProtectFollower, bEffect = ConfigMenu.bIsEffectEnabled, bWait = PlayerRef.GetActorValue("Paralysis") As Bool, iPotionIndex = iPotion, sTrace = "MarkOfArkay: Player revived by auto drinking a healing potion.")								
+				Restore(iRevivePlayer = 1, bReviveFollower = ConfigMenu.bPlayerProtectFollower, bEffect = ConfigMenu.bIsEffectEnabled, bWait = PlayerRef.GetActorValue("Paralysis") As Bool, iPotionIndex = iPotion, sTrace = "MarkOfArkay: Player revived by auto drinking a healing potion.")								
 				Return
 			EndIf
 		EndIf
@@ -715,7 +736,7 @@ Function BleedoutHandler(String CurrentState)
 			If ConfigMenu.iTotalRevives < 99999999
 				ConfigMenu.iTotalRevives += 1
 			EndIf
-			Restore(bRevivePlayer = True, bReviveFollower = ConfigMenu.bPlayerProtectFollower, bEffect = ConfigMenu.bIsEffectEnabled, bWait = PlayerRef.GetActorValue("Paralysis") As Bool, sTrace = "MarkOfArkay: Player is not in bleedout. (probably revived by manual drinking of a healing potion.)")
+			Restore(iRevivePlayer = 1, bReviveFollower = ConfigMenu.bPlayerProtectFollower, bEffect = ConfigMenu.bIsEffectEnabled, bWait = PlayerRef.GetActorValue("Paralysis") As Bool, sTrace = "MarkOfArkay: Player is not in bleedout. (probably revived by manual drinking of a healing potion.)")
 			Return
 		Else
 			PlayerRef.AddPerk(Invulnerable)
@@ -879,7 +900,7 @@ Function BleedoutHandler(String CurrentState)
 			If ConfigMenu.iTotalRevives < 99999999
 				ConfigMenu.iTotalRevives += 1
 			EndIf
-			Restore(bRevivePlayer = False, bReviveFollower = False, bEffect = False, bWait = PlayerRef.GetActorValue("Paralysis") As Bool, sTrace = "MarkOfArkay: Player can't be revived but isn't in bleedout.")
+			Restore(iRevivePlayer = 0, bReviveFollower = False, bEffect = False, bWait = PlayerRef.GetActorValue("Paralysis") As Bool, sTrace = "MarkOfArkay: Player can't be revived but isn't in bleedout.")
 			Return
 		Else
 			ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Player can't be revived..." )
@@ -1010,7 +1031,7 @@ Int Function RemoveItemByMenu(String curState) ;trade by using menu
 				EndIf
 				iRevive = -1
 				bBreak = True
-				Restore(bRevivePlayer = False, bReviveFollower = False, bEffect = False, bwait = PlayerRef.GetActorValue("Paralysis") As Bool, sTrace = "MarkOfArkay: Player revived before showing the trade menu.")
+				Restore(iRevivePlayer = 0, bReviveFollower = False, bEffect = False, bwait = PlayerRef.GetActorValue("Paralysis") As Bool, sTrace = "MarkOfArkay: Player revived before showing the trade menu.")
 			Else
 				bInBleedout = True
 				SetVars()
@@ -1199,36 +1220,17 @@ Function RevivePlayer(Bool bRevive)
 			EndIf
 			bSacrifice = False
 		EndIf
-		Restore(bRevivePlayer = True, bReviveFollower = ConfigMenu.bPlayerProtectFollower, bEffect = ConfigMenu.bIsEffectEnabled, bWait = PlayerRef.GetActorValue("Paralysis") As Bool, sTrace = "MarkOfArkay: Player is revived.")	
+		Restore(iRevivePlayer = 1, bReviveFollower = ConfigMenu.bPlayerProtectFollower, bEffect = ConfigMenu.bIsEffectEnabled, bWait = PlayerRef.GetActorValue("Paralysis") As Bool, sTrace = "MarkOfArkay: Player is revived.")	
 		Return
 	Else
-		If NPCScript.FollowerCanProtectPlayer() || \
-		( !ConfigMenu.bKillIfCantRespawn && ConfigMenu.iNotTradingAftermath == 1 && !RespawnScript.bCanTeleport() )
-			PlayerRef.DispelSpell(Bleed)
-			PlayerRef.ResetHealthAndLimbs()
-			PlayerRef.RestoreActorValue("health",10000)
-			Utility.Wait(0.5)
-			Float fOldHP = PlayerRef.GetActorValue("Health")
-			Float fNewHP = fMax( 60.0, ((PlayerRef.GetBaseActorValue("Health") * 0.5) + 10.0 ))
-			If fOldHP > fNewHP
-				PlayerRef.DamageActorValue("Health",fOldHP - fNewHP)
-			Else
-				PlayerRef.RestoreActorValue("Health",fNewHP - fOldHP)
-			EndIf
+		If ( !ConfigMenu.bKillIfCantRespawn && ConfigMenu.iNotTradingAftermath == 1 && !RespawnScript.bCanTeleport() )
 			If ConfigMenu.iRevivesByFollower < 99999999
 				ConfigMenu.iRevivesByFollower += 1
 			EndIf
 			If ConfigMenu.iTotalRevives < 99999999
 				ConfigMenu.iTotalRevives += 1
 			EndIf
-			If ConfigMenu.bIsLoggingEnabled 
-				If NPCScript.FollowerCanProtectPlayer() 
-					Debug.Trace("MarkOfArkay: Player is alive because of followers.")
-				Else
-					Debug.Trace("MarkOfArkay: Player is revived because respawn is currently disabled.")
-				EndIf
-			EndIf
-			Restore(bRevivePlayer = False, bReviveFollower = ConfigMenu.bPlayerProtectFollower, bEffect = False, bWait = PlayerRef.GetActorValue("Paralysis") As Bool)
+			Restore(iRevivePlayer = 2, bReviveFollower = ConfigMenu.bPlayerProtectFollower, bEffect = False, bWait = PlayerRef.GetActorValue("Paralysis") As Bool, sTrace = "MarkOfArkay: Player is revived because respawn is currently disabled.")
 			Return
 		Else
 			NPCScript.HoldFollowers()

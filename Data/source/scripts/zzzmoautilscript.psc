@@ -285,3 +285,13 @@ Int Function randIntFromlimitedRange(Int iMin, Int iMax, Int iLimit, Int iMinVal
 	EndIf
 	Return Utility.RandomInt(MinAmount,MaxAmount)
 EndFunction
+
+Function killPlayer() Global
+	Actor player = Game.GetPlayer()
+	ActorBase playerBase = player.GetBaseObject() As ActorBase
+	Debug.SetGodMode(False)
+	playerBase.SetInvulnerable(False)
+	playerBase.SetEssential(0)
+	player.Kill()
+EndFunction
+	

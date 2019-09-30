@@ -310,10 +310,11 @@ EndFunction
 
 Function SendToDefaultMarker()
 	If ConfigMenu.bKillIfCantRespawn
+		ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Player is dying because respawn is not possible.")
 		PlayerRef.EndDeferredKill()
 		Utility.Wait(0.1)
 		If !PlayerRef.IsDead()
-			PlayerRef.KillEssential()
+			killPlayer()
 		EndIf
 	Else
 		If PlayerMarker.GetParentCell() != ReviveScript.DefaultCell

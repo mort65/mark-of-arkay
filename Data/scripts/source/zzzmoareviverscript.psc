@@ -251,7 +251,7 @@ Function clearAll()
 EndFunction
 
 Event OnEnterBleedout()
-	If !bInBleedout && !moaIgnoreBleedout.GetValue()
+	If !PlayerRef.IsDead() && !bInBleedout && !moaIgnoreBleedout.GetValue()
 		bInBleedout = True
 		bInBleedoutAnim = False
 		bSheathed = False
@@ -490,7 +490,7 @@ EndFunction
 
 Function checkHealth()
 	If ConfigMenu.bTriggerOnHealthPerc && ConfigMenu.bIsRevivalEnabled
-		If playerRef.GetActorValuePercentage("Health") <= ConfigMenu.fHealthPercTrigger
+		If !PlayerRef.IsDead() && (playerRef.GetActorValuePercentage("Health") <= ConfigMenu.fHealthPercTrigger)
 			If !bInBleedout && !moaIgnoreBleedout.GetValue()
 				bInBleedout = True
 				Game.DisablePlayerControls(abMovement = True, abFighting = True, abCamSwitch = False, abLooking = False, abSneaking = True, abMenu = True, abActivate = True, abJournalTabs = False, aiDisablePOVType = 0)
@@ -1243,7 +1243,7 @@ Function RevivePlayer(Bool bRevive)
 				PlayerRef.EndDeferredKill()
 				Utility.Wait(0.1)
 				If !PlayerRef.IsDead()
-					PlayerRef.KillEssential()
+					killPlayer()
 				EndIf
 				ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Player died.")
 				GoToState("")
@@ -1528,6 +1528,8 @@ Function RevivePlayer(Bool bRevive)
 				RespawnScript.Respawn()
 				Utility.Wait(0.5)
 				If PlayerRef.IsDead()
+					PlayerRef.SetAlpha(1.0)
+					BlackScreen.Remove()
 					Return
 				EndIf
 				Attacker = None

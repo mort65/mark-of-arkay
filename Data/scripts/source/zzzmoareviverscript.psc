@@ -255,7 +255,8 @@ Event OnEnterBleedout()
 		bInBleedout = True
 		bInBleedoutAnim = False
 		bSheathed = False
-		Game.DisablePlayerControls(abMovement = True, abFighting = True, abCamSwitch = False, abLooking = False, abSneaking = True, abMenu = True, abActivate = True, abJournalTabs = False, aiDisablePOVType = 0)
+		Game.DisablePlayerControls()
+		;Game.DisablePlayerControls(abMovement = True, abFighting = True, abCamSwitch = False, abLooking = False, abSneaking = True, abMenu = True, abActivate = True, abJournalTabs = False, aiDisablePOVType = 0)
 		fHealrate = PlayerRef.GetActorValue("HealRate")
 		PlayerRef.DispelAllSpells()
 		PlayerRef.SetActorValue("HealRate",0.0)
@@ -493,7 +494,8 @@ Function checkHealth()
 		If !PlayerRef.IsDead() && (playerRef.GetActorValuePercentage("Health") <= ConfigMenu.fHealthPercTrigger)
 			If !bInBleedout && !moaIgnoreBleedout.GetValue()
 				bInBleedout = True
-				Game.DisablePlayerControls(abMovement = True, abFighting = True, abCamSwitch = False, abLooking = False, abSneaking = True, abMenu = True, abActivate = True, abJournalTabs = False, aiDisablePOVType = 0)
+				Game.DisablePlayerControls()
+				;Game.DisablePlayerControls(abMovement = True, abFighting = True, abCamSwitch = False, abLooking = False, abSneaking = True, abMenu = True, abActivate = True, abJournalTabs = False, aiDisablePOVType = 0)
 				PlayerRef.DamageActorValue("Health",9999.0)
 				fHealrate = PlayerRef.GetActorValue("HealRate")
 				PlayerRef.DispelallSpells()
@@ -503,9 +505,6 @@ Function checkHealth()
 				bInBleedoutAnim = True
 				bSheathed = False
 				iIsBeast = NPCScript.iInBeastForm()
-				If !bIsCameraStateSafe()
-					Game.ForceThirdPerson()
-				EndIf
 				If ConfigMenu.bIsRagdollEnabled
 					BleedoutHandler(ToggleState())
 				Else
@@ -597,6 +596,10 @@ Function BleedoutHandler(String CurrentState)
 		stopBrawlQuest(Favor017,200)
 		GoToState("")
 	EndIf
+	If !bIsCameraStateSafe()
+		Game.ForceThirdPerson()
+	EndIf
+	Game.DisablePlayerControls(abMovement = True, abFighting = True, abCamSwitch = False, abLooking = False, abSneaking = True, abMenu = True, abActivate = True, abJournalTabs = False, aiDisablePOVType = 0)
 	If ConfigMenu.bIsRagdollEnabled && \
 	(!PlayerRef.GetActorValue("paralysis") && !iIsBeast && !PlayerRef.GetAnimationVariableBool("bIsSynced"))
 		PlayerRef.PushActorAway(PlayerRef,0)
@@ -605,7 +608,6 @@ Function BleedoutHandler(String CurrentState)
 	Else
 		bParalyzed = False
 	EndIf
-	Game.DisablePlayerControls(abMovement = True, abFighting = True, abCamSwitch = False, abLooking = False, abSneaking = True, abMenu = True, abActivate = True, abJournalTabs = False, aiDisablePOVType = 0)
 	ToggleSaving(False)
 	Game.EnableFastTravel(False)
 	If ConfigMenu.iTotalBleedOut < 99999999
@@ -680,7 +682,7 @@ Function BleedoutHandler(String CurrentState)
 		EndIf
 	EndIf
 	If NPCScript.FollowerCanProtectPlayer()
-		Utility.Wait(ConfigMenu.fBleedoutTimeSlider)
+		;Utility.Wait(ConfigMenu.fBleedoutTimeSlider)
 		If ConfigMenu.iRevivesByFollower < 99999999
 			ConfigMenu.iRevivesByFollower += 1
 		EndIf

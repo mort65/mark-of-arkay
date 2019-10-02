@@ -19,10 +19,10 @@ Event OnEffectStart(Actor akTarget, Actor akCaster)
 	While !bBreak
 		iIndex = moaMarkMenu.Show(ConfigMenu.iSelectedCustomRPSlot + 1)
 		If iIndex == -1
-		ElseIf iIndex < 6
-			iIndex = iIndex / 2 ;(0,1)=0,(2,3)=1,(4,5)=2
+		ElseIf iIndex < 8
+			iIndex = iIndex / 2 ;(0,1)=0,(2,3)=1,(4,5)=2,(6,7)=3
 			bBreak = True
-		ElseIf iIndex == 6
+		ElseIf iIndex == 8
 			ConfigMenu.ShowCustomSlotsInfo()
 		Else
 			bBreak = True

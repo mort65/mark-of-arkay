@@ -774,7 +774,7 @@ Bool Function FollowerCanProtectPlayer()
 				i -= 1
 				If bIsFollower(FollowerArr[i])
 					If ( FollowerArr[i].Is3DLoaded() && !bIsDying(FollowerArr[i]) && !FollowerArr[i].IsBleedingOut() && !FollowerArr[i].IsHostileToActor(PlayerRef) )
-						If (( FollowerArr[i].GetCombatState() ) && ( FollowerArr[i].GetDistance(PlayerRef) <= 2000.0 ))
+						If (( FollowerArr[i].GetCombatState() ) && ( FollowerArr[i].GetDistance(PlayerRef) <= 2500.0 ))
 							bInCombat = True
 						ElseIf ( ReviveScript.Attacker != FollowerArr[i] ) && ( ReviveScript.Attacker.GetDistance(PlayerRef) <= 10000.0 )
 							If ( bIsDying(ReviveScript.Attacker) || ReviveScript.Attacker.IsBleedingOut() )
@@ -789,13 +789,13 @@ Bool Function FollowerCanProtectPlayer()
 				EndIf
 			EndWhile
 			If bInCombat
-				Utility.Wait(3.0)
+				Utility.Wait(5.0)
 				i = FollowerArr.Length
 				While i > 0
 					i -= 1
 					If bIsFollower(FollowerArr[i])
 						If ( FollowerArr[i].Is3DLoaded() && !bIsDying(FollowerArr[i]) && !FollowerArr[i].IsBleedingOut() && !FollowerArr[i].IsHostileToActor(PlayerRef) )
-							If (( FollowerArr[i].GetCombatState() == 1 ) && ( FollowerArr[i].GetDistance(PlayerRef) <= 2000.0 ))
+							If (( FollowerArr[i].GetCombatState() == 1 ) && ( FollowerArr[i].GetDistance(PlayerRef) <= 2500.0 ))
 								ConfigMenu.bIsNotificationEnabled && Debug.Notification("$mrt_MarkofArkay_Notification_Follower_In_Combat")
 								ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Followers are still fighting.")
 								Return True

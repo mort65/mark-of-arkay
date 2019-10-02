@@ -190,6 +190,8 @@ Int oidGSoulScaleGemSlider
 Int oidBSoulScaleGemSlider
 int oidDragonScaleSoulSlider
 Int oidGoldScaleSlider
+Int oidMaxItemsToCheckSlider
+Float Property fMaxItemsToCheckSlider = 1000.0 Auto Hidden
 Float Property fValueMarkScaleSlider = 0.0 Auto Hidden
 Float Property fValueGSoulGemScaleSlider = 0.0 Auto Hidden
 Float Property fValueBSoulGemScaleSlider = 0.0 Auto Hidden
@@ -1005,31 +1007,33 @@ Event OnPageReset(String page)
 		SetCursorPosition(71)
 		oidLoseOtherTotalValueSlider = AddSliderOption("$mrt_MarkofArkay_LoseOtherTotalValueSlider", fLoseOtherTotalValueSlider, "{0}", flags)
 		SetCursorPosition(73)
-		AddHeaderOption("")
+		oidMaxItemsToCheckSlider = AddSliderOption("$mrt_MarkofArkay_MaxItemsToCheckSlider", fMaxItemsToCheckSlider, "{0}", flags)
 		SetCursorPosition(75)
-		oidLoseArmor = AddToggleOption("$mrt_MarkofArkay_LoseArmor", bLoseArmor,flags)
+		AddHeaderOption("")
 		SetCursorPosition(77)
-		oidLoseWeapon = AddToggleOption("$mrt_MarkofArkay_LoseWeapon", bLoseWeapon,flags)
+		oidLoseArmor = AddToggleOption("$mrt_MarkofArkay_LoseArmor", bLoseArmor,flags)
 		SetCursorPosition(79)
-		oidLoseAmmo = AddToggleOption("$mrt_MarkofArkay_LoseAmmo", bLoseAmmo,flags)
+		oidLoseWeapon = AddToggleOption("$mrt_MarkofArkay_LoseWeapon", bLoseWeapon,flags)
 		SetCursorPosition(81)
+		oidLoseAmmo = AddToggleOption("$mrt_MarkofArkay_LoseAmmo", bLoseAmmo,flags)
+		SetCursorPosition(83)
 		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bLoseItem && bLoseOthers && (iLoseInclusion != 1))
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidLoseBook = AddToggleOption("$mrt_MarkofArkay_LoseBook", bLoseBook,flags)
-		SetCursorPosition(83)
-		oidLoseMisc = AddToggleOption("$mrt_MarkofArkay_LoseMisc", bLoseMisc,flags)
 		SetCursorPosition(85)
-		oidLoseKey = AddToggleOption("$mrt_MarkofArkay_LoseKey", bLoseKey,flags)
+		oidLoseMisc = AddToggleOption("$mrt_MarkofArkay_LoseMisc", bLoseMisc,flags)
 		SetCursorPosition(87)
-		oidLoseSoulgem = AddToggleOption("$mrt_MarkofArkay_LoseSoulgem", bLoseSoulgem,flags)
+		oidLoseKey = AddToggleOption("$mrt_MarkofArkay_LoseKey", bLoseKey,flags)
 		SetCursorPosition(89)
-		oidLosePotion = AddToggleOption("$mrt_MarkofArkay_LosePotion", bLosePotion,flags)
+		oidLoseSoulgem = AddToggleOption("$mrt_MarkofArkay_LoseSoulgem", bLoseSoulgem,flags)
 		SetCursorPosition(91)
-		oidLoseScroll = AddToggleOption("$mrt_MarkofArkay_LoseScroll", bLoseScroll,flags)
+		oidLosePotion = AddToggleOption("$mrt_MarkofArkay_LosePotion", bLosePotion,flags)
 		SetCursorPosition(93)
+		oidLoseScroll = AddToggleOption("$mrt_MarkofArkay_LoseScroll", bLoseScroll,flags)
+		SetCursorPosition(95)
 		oidLoseIngredient = AddToggleOption("$mrt_MarkofArkay_LoseIngredient", bLoseIngredient,flags)
 	ElseIf (page == "NPC")
 		SetCursorPosition(0)
@@ -2294,6 +2298,11 @@ Event OnOptionSliderOpen(Int option)
 		SetSliderDialogDefaultValue(0.0)
 		SetSliderDialogRange(0.0, 1000000.0)
 		SetSliderDialogInterval(25.0)
+	ElseIf (option == oidMaxItemsToCheckSlider)
+		SetSliderDialogStartValue(fMaxItemsToCheckSlider)
+		SetSliderDialogDefaultValue(1000.0)
+		SetSliderDialogRange(0.0, 1000000.0)
+		SetSliderDialogInterval(10.0)
 	ElseIf (option == oidBossChestChanceSlider)
 		SetSliderDialogStartValue(fBossChestChanceSlider)
 		SetSliderDialogDefaultValue(0.0)
@@ -2508,6 +2517,9 @@ Event OnOptionSliderAccept(int option, Float value)
 	ElseIf (option == oidLoseOtherTotalValueSlider)
 		fLoseOtherTotalValueSlider = value
 		SetSliderOptionValue(oidLoseOtherTotalValueSlider, fLoseOtherTotalValueSlider, "{0}")
+	ElseIf (option == oidMaxItemsToCheckSlider)
+		fMaxItemsToCheckSlider = value
+		SetSliderOptionValue(oidMaxItemsToCheckSlider, fMaxItemsToCheckSlider, "{0}")
 	ElseIf (option == oidBossChestChanceSlider)
 		fBossChestChanceSlider = value
 		SetSliderOptionValue(oidBossChestChanceSlider, fBossChestChanceSlider, "$mrt_MarkofArkay_BossChestChanceSlider_2")
@@ -3108,6 +3120,9 @@ Event OnOptionDefault(Int option)
 	ElseIf (option == oidLoseOtherTotalValueSlider)
 		fLoseOtherTotalValueSlider = 0.0
 		SetSliderOptionValue(oidLoseOtherTotalValueSlider, fLoseOtherTotalValueSlider, "{0}")
+	ElseIf (option == oidMaxItemsToCheckSlider)
+		fMaxItemsToCheckSlider = 1000.0
+		SetSliderOptionValue(oidMaxItemsToCheckSlider, fMaxItemsToCheckSlider, "{0}")
 	ElseIf (option == oidBossChestChanceSlider)
 		fBossChestChanceSlider = 0.0
 		SetSliderOptionValue(oidBossChestChanceSlider, fBossChestChanceSlider, "$mrt_MarkofArkay_BossChestChanceSlider_2")
@@ -3580,7 +3595,9 @@ Event OnOptionHighlight(Int option)
 	ElseIf (option == oidLoseOtherMinValueSlider)
 		SetInfoText("$mrt_MarkofArkay_DESC_LoseOtherMinValueSlider")	
 	ElseIf (option == oidLoseOtherTotalValueSlider)
-		SetInfoText("$mrt_MarkofArkay_DESC_LoseOtherTotalValueSlider")	
+		SetInfoText("$mrt_MarkofArkay_DESC_LoseOtherTotalValueSlider")
+	ElseIf (option == oidMaxItemsToCheckSlider)
+		SetInfoText("$mrt_MarkofArkay_DESC_MaxItemsToCheckSlider")	
 	ElseIf (option == oidBossChestChanceSlider)
 		SetInfoText("$mrt_MarkofArkay_DESC_BossChestChanceSlider")	
 	ElseIf (option == oidHealthTriggerSlider)
@@ -4401,6 +4418,7 @@ Bool function bLoadUserSettings(String sFileName)
 	fMinLoseGrandSoulGemSlider = fiss.loadFloat("fMinLoseGrandSoulGemSlider")
 	fLoseOtherMinValueSlider = fiss.loadFloat("fLoseOtherMinValueSlider")
 	fLoseOtherTotalValueSlider = fiss.loadFloat("fLoseOtherTotalValueSlider")
+	fMaxItemsToCheckSlider = fiss.loadFloat("fMaxItemsToCheckSlider")
 	fHealthPercTrigger = fiss.loadFloat("fHealthPercTrigger")
 	fBossChestChanceSlider = fiss.loadFloat("fBossChestChanceSlider")
 	bLoseItem = fiss.loadBool("bLoseItem")
@@ -4720,6 +4738,7 @@ bool function bSaveUserSettings(String sFileName)
 	fiss.saveFloat("fMinLoseGrandSoulGemSlider",fMinLoseGrandSoulGemSlider)
 	fiss.saveFloat("fLoseOtherMinValueSlider",fLoseOtherMinValueSlider)
 	fiss.saveFloat("fLoseOtherTotalValueSlider",fLoseOtherTotalValueSlider)
+	fiss.saveFloat("fMaxItemsToCheckSlider",fMaxItemsToCheckSlider)
 	fiss.saveFloat("fBossChestChanceSlider",fBossChestChanceSlider)
 	fiss.saveFloat("fHealthPercTrigger",fHealthPercTrigger)
 	fiss.saveBool("bExcludeQuestItems",bExcludeQuestItems)
@@ -4888,6 +4907,7 @@ function LoadDefaultSettings()
 	fMinLoseGrandSoulGemSlider = 0.0
 	fLoseOtherMinValueSlider = 0.0
 	fLoseOtherTotalValueSlider = 0.0
+	fMaxItemsToCheckSlider = 1000.0
 	fBossChestChanceSlider = 0.0
 	fHealthPercTrigger = 0.00
 	bExcludeQuestItems = True

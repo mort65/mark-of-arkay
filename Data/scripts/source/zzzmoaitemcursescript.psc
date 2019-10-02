@@ -315,15 +315,21 @@ Function LoseOtherItems()
 			PlayerRef.RemoveAllItems(LostItemsChest, True, !ConfigMenu.bExcludeQuestItems)
 		Else
 			Int iTotal = PlayerRef.GetNumItems()
+			Int iCheckLimit = ConfigMenu.fMaxItemsToCheckSlider As Int
+			If (iCheckLimit == 0) || (iCheckLimit > iTotal)
+				iCheckLimit = iTotal
+			EndIf
 			iIndex = Utility.RandomInt(0,iTotal - 1)
 			Int iLast
 			If iIndex > 0
 				iLast = iIndex - 1
 			Else
-				iLast = iTotal - 1
+				iLast = -1
 			EndIf
+			Int iChecked = 0
 			Int iTotalValues = 0
 			Bool bContinue = False
+			Bool bNext = False
 			Bool bBreak = False
 			kItem = None
 			Int iValue = 0
@@ -336,6 +342,7 @@ Function LoseOtherItems()
 				EndIf
 			EndIf
 			While (!bBreak )
+				bNext = True
 				If bContinue
 					bContinue = False
 				EndIf
@@ -425,6 +432,12 @@ Function LoseOtherItems()
 				EndIf
 				If !bContinue
 					PlayerRef.RemoveItem(kItem, iToRemove, True, LostItemsChest )
+					If PlayerRef.GetNthForm(iIndex) && (kItem != PlayerRef.GetNthForm(iIndex)) ;size of inventory reduced
+						bNext = False ;item at current index is another item, because the size of inventory reduced
+						If iIndex < iLast ;item with an index lower tan ilast removed so index of ilast decreased
+							iLast -= 1
+						EndIf
+					EndIf
 					ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: " + iToRemove + " (" + kItem + "," + kItem.GetName() + ") removed. Values = (" + iTotalValues + "+" + iValue + ")" )	
 					If ConfigMenu.fLoseOtherTotalValueSlider > 0  
 						iTotalValues = iTotalValues + (iValue * iToRemove)
@@ -440,10 +453,18 @@ Function LoseOtherItems()
 						EndIf
 					EndIf						
 				EndIf
-				If !bBreak
-					If (iIndex == iLast)
+				iChecked += 1
+				If iChecked > (iCheckLimit - 1)
+					ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: "+iChecked+" items checked.")
+					bBreak = True
+				EndIf
+				If !bBreak && bNext
+					iTotal = PlayerRef.GetNumItems()
+					If iTotal == 0 ;Everything removed
 						bBreak = True
-					ElseIf iIndex == iTotal - 1
+					ElseIf iIndex == iLast ;not starting from beginning and all items checked
+						bBreak = True
+					ElseIf iIndex > (iTotal - 2) ;End of array
 						iIndex = 0
 					Else
 						iIndex += 1

@@ -406,7 +406,7 @@ Endfunction
 Function SendToCheckPoint()
 	Float fDistance
 	ObjectReference Marker
-	DynamicMarkerList = New ObjectReference[11]
+	DynamicMarkerList = New ObjectReference[12]
 	DynamicMarkerList[0] = CellLoadMarker2
 	DynamicMarkerList[1] = DetachMarker3
 	DynamicMarkerList[2] = LocationMarker2
@@ -418,6 +418,7 @@ Function SendToCheckPoint()
 	DynamicMarkerList[8] = CustomRespawnPoints.GetAt(0) As ObjectReference
 	DynamicMarkerList[9] = CustomRespawnPoints.GetAt(1) As ObjectReference
 	DynamicMarkerList[10] = CustomRespawnPoints.GetAt(2) As ObjectReference
+	DynamicMarkerList[11] = CustomRespawnPoints.GetAt(3) As ObjectReference
 	
 	Int iIndex = DynamicMarkerList.Length
 	While iIndex > 0
@@ -594,11 +595,11 @@ Int Function TeleportMenu(Int aiMessage = 0, Int aiButton = 0)
 		ElseIf aiMessage == 2 ;Custom
 			aiButton = moaCustomRecallMenu.Show(ConfigMenu.iSelectedCustomRPSlot + 1)
 			If aiButton == -1
-			ElseIf aiButton == 3 ;Details
+			ElseIf aiButton == 4 ;Details
 				ConfigMenu.ShowCustomSlotsInfo()
-			ElseIf aiButton == 4 ;Back
+			ElseIf aiButton == 5 ;Back
 				aiMessage = 1
-			ElseIf aiButton == 5 ;Cancel
+			ElseIf aiButton == 6 ;Cancel
 				Return -2
 			Else
 				Return -3 - aiButton ;0-> -3, 1-> -4, 2-> -5

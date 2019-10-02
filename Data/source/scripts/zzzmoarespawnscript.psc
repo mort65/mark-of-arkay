@@ -999,7 +999,7 @@ Function InitializeExcludedMarkers()
 Endfunction
 
 Function InitializeDynamicMarkers()
-	DynamicMarkerList = New ObjectReference[11]
+	DynamicMarkerList = New ObjectReference[12]
 	DynamicMarkerList[0] = CellLoadMarker2
 	DynamicMarkerList[1] = DetachMarker3
 	DynamicMarkerList[2] = LocationMarker2
@@ -1011,6 +1011,7 @@ Function InitializeDynamicMarkers()
 	DynamicMarkerList[8] = CustomRespawnPoints.GetAt(0) As ObjectReference
 	DynamicMarkerList[9] = CustomRespawnPoints.GetAt(1) As ObjectReference
 	DynamicMarkerList[10] = CustomRespawnPoints.GetAt(2) As ObjectReference
+	DynamicMarkerList[11] = CustomRespawnPoints.GetAt(3) As ObjectReference
 EndFunction
 
 Function SendToCheckPoint()
@@ -1126,9 +1127,9 @@ Int Function RespawnMenu(Int aiMessage = 0, Int aiButton = 0)
 		ElseIf aiMessage == 2 ;Custom
 			aiButton = moaCustomRespawnMenu.Show(ConfigMenu.iSelectedCustomRPSlot + 1)
 			If aiButton == -1
-			ElseIf aiButton == 3 ;Details
+			ElseIf aiButton == 4 ;Details
 				ConfigMenu.ShowCustomSlotsInfo()
-			ElseIf aiButton == 4 ;Back
+			ElseIf aiButton == 5 ;Back
 				aiMessage = 1
 			Else
 				Return -3 - aiButton ;0-> -3, 1-> -4, 2-> -5

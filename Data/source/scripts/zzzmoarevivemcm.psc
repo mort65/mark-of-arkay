@@ -2312,7 +2312,7 @@ Event OnOptionSliderOpen(Int option)
 	ElseIf (option == oidTotalCustomRPSlotSlider)
 		SetSliderDialogStartValue(fTotalCustomRPSlotSlider)
 		SetSliderDialogDefaultValue(1.0)
-		SetSliderDialogRange(1.0,3.0)
+		SetSliderDialogRange(1.0,4.0)
 		SetSliderDialogInterval(1.0)
 	ElseIf (option == oidSpawnWeightSlider)
 		SetSliderDialogStartValue(iSpawnWeights[iSpawn])
@@ -3819,10 +3819,11 @@ Function SetSavingOption(Int iIndex)
 EndFunction
 
 Function SetCustomRPFlags()
-	Bool[] bSlotflags = New Bool[3]
+	Bool[] bSlotflags = New Bool[4]
 	bSlotflags[0] = False
 	bSlotflags[1] = False
 	bSlotflags[2] = False
+	bSlotflags[3] = False
 	Int i = 0
 	While i < fTotalCustomRPSlotSlider As Int
 		bSlotflags[i] = True
@@ -4038,10 +4039,11 @@ String[] Function sGetSkills()
 EndFunction
 
 String[] Function sGetCustomRPs()
-	String[] sGetCustomRPSlot = New String[3]
+	String[] sGetCustomRPSlot = New String[4]
 	sGetCustomRPSlot[0] = "$CustopRP_Slot1"
 	sGetCustomRPSlot[1] = "$CustopRP_Slot2"
 	sGetCustomRPSlot[2] = "$CustopRP_Slot3"
+	sGetCustomRPSlot[3] = "$CustopRP_Slot4"
 	Return sGetCustomRPSlot
 Endfunction
 

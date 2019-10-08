@@ -2,6 +2,7 @@ ScriptName zzzmoaReviverScript Extends ReferenceAlias
 
 Import zzzmoautilscript
 zzzmoaReviveMCM Property ConfigMenu Auto
+zzzmoaPermaDeathScript Property PermaDeathScript Auto Hidden
 zzzmoaskillcursescript Property SkillScript Auto Hidden
 zzzmoaitemcursescript Property ItemScript Auto Hidden
 zzzmoarespawnscript Property RespawnScript Auto Hidden
@@ -13,6 +14,7 @@ Quest Property moaHostileNPCDetector Auto
 Quest Property moaHostileNPCDetector01 Auto
 Quest Property moaThiefNPC01 Auto
 Quest Property moaSoulMark01 Auto
+Quest Property PermaDeathQuest Auto
 Message Property moaReviveMenu1 Auto
 GlobalVariable Property moaState Auto
 GlobalVariable Property moaArkayMarkRevive  Auto
@@ -128,13 +130,16 @@ LocationAlias Property PlayerLocRef Auto
 Location Property EmptyLocation Auto
 LocationRefType Property BossContainer Auto
 Weapon Property DummySword Auto
-Message Property DeathMessage Auto
 Spell Property Bleed Auto
+Bool Property bFinished = False Auto Hidden
+GlobalVariable Property moaLockReset Auto
+Message Property DeathMessage Auto
 Float fHealrate = 0.0
 Int iIsBeast = 0
 Bool bSheathed = False
 Bool bSacrifice = False
 Bool bParalyzed = False
+Bool UnarmedAttacker = False
 
 Bool bDidItemsRemoved
 Bool  bSeptimRevive  
@@ -153,6 +158,9 @@ String strRemovedItem
 State Bleedout1
 	Event OnPlayerLoadGame()
 		SetGameVars()
+		If PermaDeathScript.bCheckPermaDeath()
+			Return
+		EndIf
 	EndEvent
 	
 	Event OnObjectUnequipped(Form akBaseObject, ObjectReference akReference)
@@ -174,6 +182,9 @@ EndState
 State Bleedout2
 	Event OnPlayerLoadGame()
 		SetGameVars()
+		If PermaDeathScript.bCheckPermaDeath()
+			Return
+		EndIf
 	EndEvent
 	
 	Event OnObjectUnequipped(Form akBaseObject, ObjectReference akReference)
@@ -207,6 +218,7 @@ Event OnInit()
 	ItemScript = GetOwningQuest() As zzzmoaitemcursescript
 	RespawnScript = GetOwningQuest() As zzzmoarespawnscript
 	NPCScript = GetOwningQuest() As zzzmoanpcscript
+	PermaDeathScript = PermaDeathQuest As zzzmoaPermaDeathScript
 	SetGameVars()
 	SetVars()
 	RegisterForSleep()
@@ -233,6 +245,19 @@ Event OnPlayerLoadGame()
 		PlayerRef.AddPerk(Invulnerable) ;because when loading a save game usually npcs start moving before player
 	EndIf
 	SetGameVars()
+	If moaLockReset.GetValueInt() == 1
+		ConfigMenu.bMarkRecallCostLock = False
+		ConfigMenu.bTradeLock = False
+		ConfigMenu.bLootChanceLock = False
+		ConfigMenu.bCurseLock = False
+		ConfigMenu.bSaveLock = False
+		ConfigMenu.bRespawnCounter = False
+		ConfigMenu.bLockPermaDeath = False
+		moaLockReset.SetValue(0)
+	EndIf
+	If PermaDeathScript.bCheckPermaDeath()
+		Return
+	EndIf
 	DiseaseScript.RegisterForModEvent("MOA_RecalcCursedDisCureCost", "RecalcCursedDisCureCost")
 	RegisterForSingleUpdate(3.0)
 EndEvent
@@ -242,7 +267,19 @@ Event OnDying(Actor akKiller)
 EndEvent
 
 Event OnDeath(Actor akKiller)
-	DeathMessage.Show()
+	If bFinished
+		Game.SetGameSettingFloat("fPlayerDeathReloadTime", 5.00000)
+		Game.FadeOutGame(False, True, 2.50000, 3.0000)
+		If ConfigMenu.bLockPermaDeath
+			PermaDeathScript.PermaDeathMessage.Show()
+			Game.PlayBink("CreditsRoll.bik", True, True, False, False)
+			Game.QuitToMainMenu()
+		Else
+			PermaDeathScript.NoRespawnMessage.Show()
+		EndIf
+	Else
+		DeathMessage.Show()
+	EndIf
 EndEvent
 
 Function clearAll()
@@ -267,6 +304,7 @@ Event OnEnterBleedout()
 		iIsBeast = NPCScript.iInBeastForm()
 		BleedoutHandler(ToggleState())
 		If GetState() == ""
+			Attacker = None
 			PlayerRef.RemoveSpell(Bleed)
 			PlayerRef.SetActorValue("HealRate",fHealrate)
 			Game.EnablePlayerControls()
@@ -285,6 +323,9 @@ Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile,
 		If (akAggressor As Actor)
 			If (akAggressor As Actor) != PlayerRef
 				Attacker = akAggressor As Actor
+				If !ConfigMenu.bCanBeKilledbyUnarmed
+					UnarmedAttacker = (!Attacker.GetEquippedItemType(0) && !Attacker.GetEquippedItemType(1))
+				EndIf
 			EndIf
 		Else
 			Attacker = None
@@ -517,6 +558,7 @@ Function checkHealth()
 					bSafe && Debug.SendAnimationEvent(PlayerRef, "BleedoutStop")
 				EndIf
 				If GetState() == ""
+					Attacker = None
 					PlayerRef.SetActorValue("HealRate",fHealrate)
 					Game.EnablePlayerControls()
 					LowHealthImod.Remove()
@@ -586,15 +628,25 @@ EndFunction
 Function BleedoutHandler(String CurrentState)
 	If DGIntimidateQuest.IsRunning()
 		stopBrawlQuest(DGIntimidateQuest,180)
+		ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Player revived after defeat in brawl: DGIntimidateQuest.")
 		GoToState("")
 		Return
 	ElseIf FreeformRiften19.GetStage() == 30
 		stopBrawlQuest(FreeformRiften19,250)
+		ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Player revived after defeat in brawl: FreeformRiften19.")
 		GoToState("")
 		Return
 	ElseIf Favor017.GetStage() == 10
 		stopBrawlQuest(Favor017,200)
+		ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Player revived after defeat in brawl: Favor017.")
 		GoToState("")
+		Return
+	ElseIf !ConfigMenu.bCanbeKilledbyUnarmed && UnarmedAttacker && Attacker && Attacker.HasKeyWordString("ActorTypeNPC")
+		PlayerRef.ResetHealthAndLimbs()
+		PlayerRef.StopCombatAlarm()
+		ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Player revived after being defeated by an unarmed NPC: "+Attacker)
+		GoToState("")
+		Return
 	EndIf
 	If !bIsCameraStateSafe()
 		Game.ForceThirdPerson()
@@ -1225,7 +1277,7 @@ Function RevivePlayer(Bool bRevive)
 		Restore(iRevivePlayer = 1, bReviveFollower = ConfigMenu.bPlayerProtectFollower, bEffect = ConfigMenu.bIsEffectEnabled, bWait = PlayerRef.GetActorValue("Paralysis") As Bool, sTrace = "MarkOfArkay: Player is revived.")	
 		Return
 	Else
-		If ( !ConfigMenu.bKillIfCantRespawn && ConfigMenu.iNotTradingAftermath == 1 && !RespawnScript.bCanTeleport() )
+		If ( !ConfigMenu.bKillIfCantRespawn && ConfigMenu.iNotTradingAftermath == 1 && !RespawnScript.bCanTeleport() && ConfigMenu.bCanContinue())
 			If ConfigMenu.iRevivesByFollower < 99999999
 				ConfigMenu.iRevivesByFollower += 1
 			EndIf
@@ -1236,7 +1288,7 @@ Function RevivePlayer(Bool bRevive)
 			Return
 		Else
 			NPCScript.HoldFollowers()
-			If ( ConfigMenu.iNotTradingAftermath == 0 ) || ( ConfigMenu.iNotTradingAftermath == 1 && !RespawnScript.bCanTeleport() )
+			If ConfigMenu.bCanContinue() && (( ConfigMenu.iNotTradingAftermath == 0 ) || ( ConfigMenu.iNotTradingAftermath == 1 && !RespawnScript.bCanTeleport() ))
 				ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Player is dying...")
 				Attacker = None
 				PlayerRef.DispelAllSpells()
@@ -1249,7 +1301,7 @@ Function RevivePlayer(Bool bRevive)
 				EndIf
 				ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Player died.")
 				GoToState("")
-			ElseIf ( ConfigMenu.iNotTradingAftermath == 1)
+			ElseIf ConfigMenu.bCanContinue() && ( ConfigMenu.iNotTradingAftermath == 1)
 				ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Respawning the player...")
 				If ( ConfigMenu.bRespawnMenu )
 					RespawnScript.SelectRespawnPointbyMenu()
@@ -1655,6 +1707,14 @@ Function RevivePlayer(Bool bRevive)
 				If ConfigMenu.iTotalRespawn < 99999999
 					ConfigMenu.iTotalRespawn += 1
 				EndIf
+				If ConfigMenu.bRespawnCounter
+					ConfigMenu.fRespawnCounterSlider -= 1
+					If ConfigMenu.bIsNotificationEnabled
+						Debug.Notification("$mrt_MarkofArkay_Notification_totalRemainingRespawns")
+						Debug.Notification(ConfigMenu.fRespawnCounterSlider As Int)
+					EndIf
+					ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: You have "+ConfigMenu.fRespawnCounterSlider As Int +" more respawns.")
+				EndIf
 				ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Respawn finished.")
 				If ConfigMenu.bShowRaceMenu
 					Utility.Wait(2.0)
@@ -1662,6 +1722,14 @@ Function RevivePlayer(Bool bRevive)
 				EndIf
 				GoToState("")
 			Else
+				If !ConfigMenu.bCanContinue()
+					If ConfigMenu.bLockPermaDeath && ConfigMenu.bPUOK
+						PermaDeathScript.lockGameLoad()
+					EndIf
+					bFinished = True
+					KillPlayer()
+					Return
+				EndIf
 				ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Exiting to the Main menu...")
 				Game.EnablePlayerControls()
 				Game.EnableFastTravel(True)
@@ -1748,6 +1816,7 @@ Function SetVars()
 EndFunction
 
 Function SetGameVars()
+	Game.SetGameSettingFloat("fPlayerDeathReloadTime", 5.00000)
 	ConfigMenu.checkMods()
 	If !SkillScript
 		SkillScript = GetOwningQuest() As zzzmoaskillcursescript
@@ -1760,6 +1829,9 @@ Function SetGameVars()
 	EndIf
 	If !NPCScript
 		NPCScript = GetOwningQuest() As zzzmoanpcscript
+	EndIf
+	If !PermaDeathScript
+		PermaDeathScript = PermaDeathQuest As zzzmoaPermaDeathScript
 	EndIf
 	If (moaState.GetValue() == 1 )
 		If ConfigMenu.bTriggerOnBleedout && !PlayerRef.IsEssential()
@@ -1914,3 +1986,4 @@ EndFunction
 Int Function iCalcReviveCost(Float fValue,Float fScale)
 	Return imax(0,(fValue + ((fScale * (PlayerRef.GetLevel() - 1)) * fValue)) As Int)
 EndFunction
+

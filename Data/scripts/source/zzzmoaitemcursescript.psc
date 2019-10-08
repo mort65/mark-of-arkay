@@ -320,11 +320,6 @@ Function LoseOtherItems()
 				iCheckLimit = iTotal
 			EndIf
 			iIndex = Utility.RandomInt(0,iTotal - 1)
-			Form[] Tradables = New Form[4]
-			Tradables[0] = Gold001 As Form
-			Tradables[1] = MarkOfArkay As Form
-			Tradables[2] = BlackFilledGem As Form
-			Tradables[3] = GrandFilledGem As Form
 			Int iLast
 			If iIndex > 0
 				iLast = iIndex - 1
@@ -355,12 +350,6 @@ Function LoseOtherItems()
 				If (!kItem)
 					ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Unknown item at index(" + iIndex + ")")	
 					bContinue = True
-				EndIf
-				If !bContinue
-					If Tradables.Find(kItem) > -1
-						ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: (" + kItem + "," + kItem.GetName()+ ") Skipped -> IsTradable()")
-						bContinue = True
-					EndIf
 				EndIf
 				If !bContinue
 					If QuestItems.HasForm(kItem)

@@ -191,6 +191,22 @@ Int oidBSoulScaleGemSlider
 int oidDragonScaleSoulSlider
 Int oidGoldScaleSlider
 Int oidMaxItemsToCheckSlider
+Int oidCanbeKilledbyUnarmed
+Int oidTradeLock
+Int oidCurseLock
+Int oidMarkRecallCostLock
+Int oidLootChanceLock
+Int oidSaveLock
+Int oidRespawnCounter
+Int oidLockPermaDeath
+Bool Property bLockPermaDeath = False Auto Hidden
+Bool Property bRespawnCounter = False Auto Hidden
+Float Property fRespawnCounterSlider = 0.0 Auto Hidden
+Bool Property bSaveLock = False Auto Hidden
+Bool Property bLootChanceLock = False Auto Hidden
+Bool Property bTradeLock = False Auto Hidden
+Bool Property bCurseLock = False Auto Hidden
+Bool Property bMarkRecallCostLock = False Auto Hidden
 Float Property fMaxItemsToCheckSlider = 1000.0 Auto Hidden
 Float Property fValueMarkScaleSlider = 0.0 Auto Hidden
 Float Property fValueGSoulGemScaleSlider = 0.0 Auto Hidden
@@ -220,6 +236,7 @@ Bool[] Property bRespawnPointsFlags Auto Hidden
 Int[] Property iSpawnCounts Auto Hidden
 Int[] Property iValidTypes Auto Hidden
 Actor Property PlayerRef Auto
+Bool Property bCanbeKilledbyUnarmed = True auto Hidden
 GlobalVariable Property moaOnlyInCurLocChest Auto
 GlobalVariable Property moaBossChestNotInclearedLoc Auto
 GlobalVariable Property moaState Auto
@@ -398,10 +415,11 @@ Bool Property bMoreRandomRespawn = False Auto Hidden
 Bool Property bRandomItemCurse = False Auto Hidden
 Bool Property bSKSEOK Auto Hidden
 Bool Property bSKSELoaded Auto Hidden
-Bool Property bARCCOK Auto Hidden
-Bool Property bFISSOK Auto Hidden
-Bool Property bDLIEOK Auto Hidden
-Bool Property bUIEOK Auto Hidden
+Bool Property bARCCOK Auto Hidden ;ARCC
+Bool Property bFISSOK Auto Hidden ;FISS
+Bool Property bDLIEOK Auto Hidden ;Level Up Event Plugin
+Bool Property bUIEOK Auto Hidden ;uiextensions
+Bool Property bPUOK Auto Hidden ;papyrusutil
 Bool Property bClone = True Auto Hidden
 Bool Property bCorpseAsSoulMark = False Auto Hidden
 Float Property fMaxLoseGoldSlider = 250.0 Auto Hidden
@@ -425,6 +443,7 @@ Bool Property bOnlyLoseSkillXP = False Auto Hidden
 Message Property ModVersionError Auto
 GlobalVariable Property moaIsBusy Auto
 GlobalVariable Property moaNoKillMoveOnPlayer Auto
+Int Property iNameTagBackup Auto Hidden
 
 Event OnPageReset(String page)
 	setArrays()
@@ -462,6 +481,11 @@ Event OnPageReset(String page)
 		EndIf
 		oidTradeEnabled = AddToggleOption("$mrt_MarkofArkay_TradeEnabled", bIsTradeEnabled, flags )
 		SetCursorPosition(12)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && !bTradeLock
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
 		oidMarkOfArkayRevivalEnabled = AddToggleOption("$mrt_MarkofArkay_MarkOfArkayRevivalEnabled", bIsMarkEnabled, flags )
 		SetCursorPosition(14)
 		oidGSoulGemRevivalEnabled = AddToggleOption("$mrt_MarkofArkay_GSoulGemRevivalEnabled", bIsGSoulGemEnabled, flags )
@@ -488,7 +512,7 @@ Event OnPageReset(String page)
 		EndIf
 		oidHealthTriggerSlider = AddSliderOption("$mrt_MarkofArkay_HealthPercSlider_1", fHealthPercTrigger * 100.0, "$mrt_MarkofArkay_HealthPercSlider_2", flags)
 		SetCursorPosition(13)
-		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && !bTradeLock
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
@@ -516,13 +540,18 @@ Event OnPageReset(String page)
 		SetCursorPosition(0)
 		AddHeaderOption("$Extra")
 		SetCursorPosition(2)
-		If ( moaState.getValue() == 1 )
+		If ( moaState.getValue() == 1 ) && !bSaveLock
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidEnableSave_M = AddMenuOption("$mrt_MarkofArkay_EnableSave_M", sGetSaveOptions()[iSaveOption], flags)
 		SetCursorPosition(4)
+		If ( moaState.getValue() == 1 )
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
 		oidNoFallDamageEnabled = AddToggleOption("$mrt_MarkofArkay_NoFallDamageEnabled", bIsNoFallDamageEnabled, flags )
 		SetCursorPosition(6)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled
@@ -561,6 +590,11 @@ Event OnPageReset(String page)
 		SetCursorPosition(20)
 		oidAutoSwitchRP = AddToggleOption("$mrt_MarkofArkay_AutoSwitchRP",bAutoSwitchRP,flags)
 		SetCursorPosition(22)
+		If ( moaState.getValue() == 1 ) && !bMarkRecallCostLock
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
 		oidMarkCost = AddSliderOption("$mrt_MarkofArkay_MarkCast",fMarkCastSlider,"$mrt_MarkofArkay_MarkSlider_2", flags)
 		SetCursorPosition(3)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled
@@ -594,7 +628,7 @@ Event OnPageReset(String page)
 		SetCursorPosition(17)
 		oidRecoveryTime = AddSliderOption("$mrt_MarkofArkay_RecoveryTime_1", fRecoveryTimeSlider, "$mrt_MarkofArkay_RecoveryTime_2", flags)
 		SetCursorPosition(19)
-		If ( moaState.getValue() == 1 )
+		If ( moaState.getValue() == 1 ) && !bLootChanceLock
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
@@ -603,6 +637,11 @@ Event OnPageReset(String page)
 		SetCursorPosition(21)
 		oidScrollChanceSlider = AddSliderOption("$mrt_MarkofArkay_ScrollChanceSlider_1" ,fScrollChanceSlider,"$mrt_MarkofArkay_LootChanceSlider_2", flags)
 		SetCursorPosition(23)
+		If ( moaState.getValue() == 1 ) && !bMarkRecallCostLock
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
 		oidRecallCost = AddSliderOption("$mrt_MarkofArkay_RecallCast",fRecallCastSlider,"$mrt_MarkofArkay_MarkSlider_2", flags)
 	ElseIf (page == "$Aftermath")
 		SetCursorPosition(0)
@@ -630,31 +669,33 @@ Event OnPageReset(String page)
 		SetCursorPosition(14)
 		oidKillIfCantRespawn = AddToggleOption("$mrt_MarkofArkay_KillIfCantRespawn",bKillIfCantRespawn,flags)
 		SetCursorPosition(16)
+		oidCanbeKilledbyUnarmed = AddToggleOption("$mrt_MarkofArkay_CanbeKilledbyUnarmed",bCanbeKilledbyUnarmed,flags)
+		SetCursorPosition(18)
 		If ( moaState.getValue() == 1 )
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidMoreRandomRespawn = AddToggleOption("$mrt_MarkofArkay_MoreRandomRespawn",bMoreRandomRespawn,flags)
-		SetCursorPosition(18)
+		SetCursorPosition(20)
 		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1))
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidCorpseAsSoulMark = AddToggleOption("$mrt_MarkofArkay_CorpseAsSoulMark", bCorpseAsSoulMark, flags)
-		SetCursorPosition(20)
-		oidHealActors = AddToggleOption("$mrt_MarkofArkay_HealActors",bHealActors,flags)
 		SetCursorPosition(22)
-		oidResurrectActors = AddToggleOption("$mrt_MarkofArkay_ResurrectActors",bResurrectActors,flags)
+		oidHealActors = AddToggleOption("$mrt_MarkofArkay_HealActors",bHealActors,flags)
 		SetCursorPosition(24)
+		oidResurrectActors = AddToggleOption("$mrt_MarkofArkay_ResurrectActors",bResurrectActors,flags)
+		SetCursorPosition(26)
 		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled)
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidDoNotStopCombatAfterRevival = AddToggleOption("$mrt_MarkofArkay_DoNotStopCombatAfterRevival",bDoNotStopCombatAfterRevival, flags)
-		SetCursorPosition(26)
+		SetCursorPosition(28)
 		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1))
 			flags =	OPTION_FLAG_NONE
 		Else
@@ -748,14 +789,14 @@ Event OnPageReset(String page)
 		SetCursorPosition(0)
 		AddHeaderOption("$Curse")
 		SetCursorPosition(2)
-		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && !bCurseLock
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidArkayCurse = AddToggleOption("$mrt_MarkofArkay_ArkayCurse", bArkayCurse, flags)
 		SetCursorPosition(4)
-		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bArkayCurse)
+		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bArkayCurse) && !bCurseLock
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
@@ -766,14 +807,14 @@ Event OnPageReset(String page)
 		SetCursorPosition(10)
 		AddHeaderOption("$mrt_MarkofArkay_HEAD_Disease_Curse")
 		SetCursorPosition(12)
-		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && !bCurseLock
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidDiseaseCurse = AddToggleOption("$mrt_MarkofArkay_DiseaseCurse", bDiseaseCurse, flags)
 		SetCursorPosition(14)
-		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bDiseaseCurse
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bDiseaseCurse && !bCurseLock
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
@@ -796,42 +837,42 @@ Event OnPageReset(String page)
 		SetCursorPosition(32)
 		AddHeaderOption("$mrt_MarkofArkay_HEAD_Skill_Reduction")
 		SetCursorPosition(34)
-		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && !bCurseLock
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidSkillReduce_M = AddMenuOption("$mrt_MarkofArkay_SkillReduce_M", sGetSkills()[iReducedSkill], flags)
 		SetCursorPosition(36)
-		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1 ) && (iReducedSkill != 0)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1 ) && (iReducedSkill != 0) && !bCurseLock
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidOnlyLoseSkillXP = AddToggleOption("$mrt_MarkofArkay_OnlyLoseSkillXP", bOnlyLoseSkillXP, flags)
 		SetCursorPosition(38)
-		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1 ) && (iReducedSkill != 0) && !bOnlyLoseSkillXP
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1 ) && (iReducedSkill != 0) && !bOnlyLoseSkillXP && !bCurseLock
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidLevelReduce = AddToggleOption("$mrt_MarkofArkay_LevelReduce", bLevelReduce, flags)
 		SetCursorPosition(40)
-		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1 ) && (iReducedSkill != 0) && !bSkillReduceRandomVal && !bOnlyLoseSkillXP
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1 ) && (iReducedSkill != 0) && !bSkillReduceRandomVal && !bOnlyLoseSkillXP && !bCurseLock
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidSkillReduceValSlider = AddSliderOption("$mrt_MarkofArkay_SkillReduceValSlider_1", fSkillReduceValSlider, "$mrt_MarkofArkay_SkillReduceValSlider_2", flags)
 		SetCursorPosition(42)
-		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1 ) && (iReducedSkill != 0) && !bOnlyLoseSkillXP
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1 ) && (iReducedSkill != 0) && !bOnlyLoseSkillXP && !bCurseLock
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidSkillReduceRandomVal = AddToggleOption("$mrt_MarkofArkay_SkillReduceRandomVal",bSkillReduceRandomVal, flags)
 		SetCursorPosition(44)
-		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1 ) && (iReducedSkill != 0) && bSkillReduceRandomVal && !bOnlyLoseSkillXP
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1 ) && (iReducedSkill != 0) && bSkillReduceRandomVal && !bOnlyLoseSkillXP && !bCurseLock
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
@@ -840,7 +881,7 @@ Event OnPageReset(String page)
 		SetCursorPosition(46)
 		oidSkillReduceMaxValSlider = AddSliderOption("$mrt_MarkofArkay_killReduceMaxValSlider_1", fSkillReduceMaxValSlider , "{0}", flags)
 		SetCursorPosition(48)
-		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1 ) && !bDisableUnsafe && (iReducedSkill != 0) && bDLIEOK && !bOnlyLoseSkillXP
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1 ) && !bDisableUnsafe && (iReducedSkill != 0) && bDLIEOK && !bOnlyLoseSkillXP && !bCurseLock
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
@@ -856,14 +897,14 @@ Event OnPageReset(String page)
 		EndIf
 		oidLostItemQuest = AddToggleOption("$mrt_MarkofArkay_LostItemQuest",bLostItemQuest,flags)
 		SetCursorPosition(56)
-		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1))
+		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1)) && !bCurseLock
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidSoulMarkStay = AddToggleOption("$mrt_MarkofArkay_SoulMarkStay",bSoulMarkStay,flags)
 		SetCursorPosition(58)
-		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1)) && !bDisableUnsafe
+		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1)) && !bDisableUnsafe && !bCurseLock
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
@@ -872,7 +913,7 @@ Event OnPageReset(String page)
 		SetCursorPosition(1)
 		AddHeaderOption("$mrt_MarkofArkay_HEAD_Item_Curse")
 		SetCursorPosition(3)
-		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1))
+		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1)) && !bCurseLock
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
@@ -881,7 +922,7 @@ Event OnPageReset(String page)
 		SetCursorPosition(5)
 		AddHeaderOption("")
 		SetCursorPosition(7)
-		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bLoseItem)
+		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bLoseItem) && !bCurseLock
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
@@ -890,7 +931,7 @@ Event OnPageReset(String page)
 		SetCursorPosition(9)
 		oidLoseGoldAll = AddToggleOption("$mrt_MarkofArkay_LoseGoldAll", bLoseGoldAll,flags)
 		SetCursorPosition(11)
-		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bLoseItem && !bLoseGoldAll)
+		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bLoseItem && !bLoseGoldAll) && !bCurseLock
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
@@ -901,7 +942,7 @@ Event OnPageReset(String page)
 		SetCursorPosition(15)
 		AddHeaderOption("")
 		SetCursorPosition(17)
-		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bLoseItem )
+		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bLoseItem ) && !bCurseLock
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
@@ -910,7 +951,7 @@ Event OnPageReset(String page)
 		SetCursorPosition(19)
 		oidLoseArkayMarkAll = AddToggleOption("$mrt_MarkofArkay_LoseArkayMarkAll", bLoseArkayMarkAll,flags)
 		SetCursorPosition(21)
-		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bLoseItem && !bLoseArkayMarkAll)
+		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bLoseItem && !bLoseArkayMarkAll) && !bCurseLock
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
@@ -921,7 +962,7 @@ Event OnPageReset(String page)
 		SetCursorPosition(25)
 		AddHeaderOption("")
 		SetCursorPosition(27)
-		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bLoseItem)
+		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bLoseItem) && !bCurseLock
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
@@ -930,7 +971,7 @@ Event OnPageReset(String page)
 		SetCursorPosition(29)
 		oidLoseDragonSoulAll = AddToggleOption("$mrt_MarkofArkay_LoseDragonSoulAll", bLoseDragonSoulAll,flags)
 		SetCursorPosition(31)
-		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bLoseItem && !bLoseDragonSoulAll)
+		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bLoseItem && !bLoseDragonSoulAll) && !bCurseLock
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
@@ -941,7 +982,7 @@ Event OnPageReset(String page)
 		SetCursorPosition(35)
 		AddHeaderOption("")
 		SetCursorPosition(37)
-		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bLoseItem)
+		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bLoseItem) && !bCurseLock
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
@@ -950,7 +991,7 @@ Event OnPageReset(String page)
 		SetCursorPosition(39)
 		oidLoseBlackSoulGemAll = AddToggleOption("$mrt_MarkofArkay_LoseBlackSoulGemAll", bLoseBlackSoulGemAll,flags)
 		SetCursorPosition(41)
-		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bLoseItem && !bLoseBlackSoulGemAll)
+		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bLoseItem && !bLoseBlackSoulGemAll) && !bCurseLock
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
@@ -961,7 +1002,7 @@ Event OnPageReset(String page)
 		SetCursorPosition(45)
 		AddHeaderOption("")
 		SetCursorPosition(47)
-		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bLoseItem)
+		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bLoseItem) && !bCurseLock
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
@@ -970,7 +1011,7 @@ Event OnPageReset(String page)
 		SetCursorPosition(49)
 		oidLoseGrandSoulGemAll = AddToggleOption("$mrt_MarkofArkay_LoseGrandSoulGemAll", bLoseGrandSoulGemAll,flags)
 		SetCursorPosition(51)
-		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bLoseItem && !bLoseGrandSoulGemAll)
+		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bLoseItem && !bLoseGrandSoulGemAll) && !bCurseLock
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
@@ -981,14 +1022,14 @@ Event OnPageReset(String page)
 		SetCursorPosition(55)
 		AddHeaderOption("$mrt_MarkofArkay_HEAD_Extra_Item_Curse")
 		SetCursorPosition(57)
-		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bLoseItem)
+		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bLoseItem) && !bCurseLock
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidLoseOthers = AddToggleOption("$mrt_MarkofArkay_LoseOthers", bLoseOthers,flags)
 		SetCursorPosition(59)
-		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bLoseItem && bLoseOthers)
+		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bLoseItem && bLoseOthers) && !bCurseLock
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
@@ -1017,7 +1058,7 @@ Event OnPageReset(String page)
 		SetCursorPosition(81)
 		oidLoseAmmo = AddToggleOption("$mrt_MarkofArkay_LoseAmmo", bLoseAmmo,flags)
 		SetCursorPosition(83)
-		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bLoseItem && bLoseOthers && (iLoseInclusion != 1))
+		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bLoseItem && bLoseOthers && (iLoseInclusion != 1)) && !bCurseLock
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
@@ -1046,7 +1087,7 @@ Event OnPageReset(String page)
 		EndIf
 		oidHostileOptions_M = AddMenuOption("$mrt_MarkofArkay_HostileOptions_M", sGetHostileOptions()[iHostileOption], flags)
 		SetCursorPosition(4)
-		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1))
+		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && (iHostileOption == 2))
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
@@ -1155,10 +1196,20 @@ Event OnPageReset(String page)
 		SetCursorPosition(6)
 		oidReset = AddTextOption("$mrt_MarkofArkay_Reset", "", flags)
 		SetCursorPosition(8)
+		If ( moaState.getValue() == 1 ) && !bCurseLock
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
 		oidRestoreItems = AddTextOption("$mrt_MarkofArkay_RestoreItems", "", flags )
 		SetCursorPosition(10)
 		AddHeaderOption("")
 		SetCursorPosition(12)
+		If ( moaState.getValue() == 1 )
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
 		If ( PlayerRef.HasSpell(MoveCustomMarker ) || PlayerRef.HasSpell(RecallMarker ) )
 			oidToggleSpells = AddTextOption("$mrt_MarkofArkay_ToggleSpells1", "", flags) 
 		Else
@@ -1226,6 +1277,57 @@ Event OnPageReset(String page)
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidAltEyeFix = AddToggleOption("$mrt_MarkofArkay_AltEyeFix", bAltEyeFix, flags)
+		SetCursorPosition(36)
+		AddHeaderOption("$mrt_MarkofArkay_Locks")
+		SetCursorPosition(38)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && !bTradeLock
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidTradeLock = AddToggleOption("$mrt_MarkofArkay_TradeLock",bTradeLock,flags)
+		SetCursorPosition(40)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && !bCurseLock
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidCurseLock = AddToggleOption("$mrt_MarkofArkay_CurseLock",bCurseLock,flags)
+		SetCursorPosition(42)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && !bSaveLock
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidSaveLock = AddToggleOption("$mrt_MarkofArkay_SaveLock",bSaveLock,flags)
+		SetCursorPosition(44)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && !bLootChanceLock
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidLootChanceLock = AddToggleOption("$mrt_MarkofArkay_LootChanceLock",bLootChanceLock,flags)
+		SetCursorPosition(46)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && !bMarkRecallCostLock
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidMarkRecallCostLock = AddToggleOption("$mrt_MarkofArkay_MarkRecallCostLock",bMarkRecallCostLock,flags)
+		SetCursorPosition(48)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && (iNotTradingAftermath == 1) && !bRespawnCounter
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidRespawnCounter = AddSliderOption("$mrt_MarkofArkay_RespawnCounter1", fRespawnCounterSlider, "$mrt_MarkofArkay_RespawnCounter2", flags)
+		SetCursorPosition(50)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && !bLockPermaDeath && bPUOK
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidLockPermaDeath = AddToggleOption("$mrt_MarkofArkay_PermaDeathLock",bLockPermaDeath,flags)
 		SetCursorPosition(1)
 		If  ( iNotTradingAftermath == 1 && !ReviveScript.RespawnScript.bCanTeleport() )
 			AddHeaderOption("$mrt_MarkofArkay_HEAD_CanNotRespawn")
@@ -1453,20 +1555,35 @@ Event OnPageReset(String page)
 		SetCursorPosition(0)
 		AddHeaderOption("$Presets")
 		SetCursorPosition(2)
-		If moaState.getValue() == 1 && bFISSOK
+		If moaState.getValue() == 1 && bFISSOK && !bIsLocked()
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidLoadPreset_M = AddMenuOption("$mrt_MarkofArkay_Preset_M", sGetPresets()[iLoadPreset], flags)
 		SetCursorPosition(3)
+		If moaState.getValue() == 1 && bFISSOK
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
 		oidSavePreset_M = AddMenuOption("$mrt_MarkofArkay_Preset_M", sGetPresets()[iSavePreset], flags)
 		SetCursorPosition(4)
+		If moaState.getValue() == 1 && bFISSOK && !bIsLocked()
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
 		oidLoadPreset1 = AddTextOption("$mrt_MarkofArkay_Load_Preset", "", flags)
 		SetCursorPosition(5)
+		If moaState.getValue() == 1 && bFISSOK
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
 		oidSavePreset1 = AddTextOption("$mrt_MarkofArkay_Save_Preset", "", flags)
 		SetCursorPosition(8)
-		If moaState.getValue()
+		If moaState.getValue() == 1 && !bIsLocked()
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
@@ -1526,6 +1643,38 @@ Event OnOptionSelect(Int option)
 			ForceCloseMenu()
 			SetTriggerMethod(2)
 			moaIsBusy.SetValueInt(0)
+		EndIf
+	ElseIf (option == oidTradeLock)
+		If !bTradeLock && self.ShowMessage("$Are_You_Sure_Lock_Trade", true, "$Yes", "$No")
+			bTradeLock = True
+			ForcePageReset()
+		EndIf
+	ElseIf (option == oidCurseLock)
+		If !bCurseLock && self.ShowMessage("$Are_You_Sure_Lock_Curse", true, "$Yes", "$No")
+			bCurseLock = True
+			ForcePageReset()
+		EndIf
+	ElseIf (option == oidMarkRecallCostLock)
+		If !bMarkRecallCostLock && self.ShowMessage("$Are_You_Sure_Lock_MarkRecallCost", true, "$Yes", "$No")
+			bMarkRecallCostLock = True
+			ForcePageReset()
+		EndIf
+	ElseIf (option == oidLootChanceLock)
+		If !bLootChanceLock && self.ShowMessage("$Are_You_Sure_Lock_LootChance", true, "$Yes", "$No")
+			bLootChanceLock = True
+			ForcePageReset()
+		EndIf
+	ElseIf (option == oidLockPermaDeath)
+		If !bLockPermaDeath && self.ShowMessage("$Are_You_Sure_Lock_Death", true, "$Yes", "$No")
+			bLockPermaDeath = True
+			bCanbeKilledbyUnarmed = False
+			bKillIfCantRespawn = False
+			ForcePageReset()
+		EndIf
+	ElseIf (option == oidSaveLock)
+		If !bSaveLock && self.ShowMessage("$Are_You_Sure_Lock_SaveLock", true, "$Yes", "$No")
+			bSaveLock = True
+			ForcePageReset()
 		EndIf
 	ElseIf (option == oidGoldRevivalEnabled)
 		bIsGoldEnabled = !bIsGoldEnabled
@@ -1709,6 +1858,9 @@ Event OnOptionSelect(Int option)
 	ElseIf (option == oidKillIfCantRespawn)
 		bKillIfCantRespawn = !bKillIfCantRespawn
 		SetToggleOptionValue(oidKillIfCantRespawn, bKillIfCantRespawn)
+	ElseIf (option == oidCanbeKilledbyUnarmed)
+		bCanbeKilledbyUnarmed = !bCanbeKilledbyUnarmed
+		SetToggleOptionValue(oidCanbeKilledbyUnarmed, bCanbeKilledbyUnarmed)
 	ElseIf (option == oidLoseSkillForever)
 		bLoseSkillForever = !bLoseSkillForever
 		SetToggleOptionValue(oidLoseSkillForever, bLoseSkillForever)
@@ -2096,17 +2248,22 @@ Event OnOptionSelect(Int option)
 				PlayerRef.ForceActorValue("paralysis",0)
 			EndIf
 		EndIf
-		Utility.Wait(0.5)
 		ReviveScript.RefreshFace()
-		If !ReviveScript.bIsCameraStateSafe()
-			Game.ForceThirdPerson()
+		If PlayerRef.IsSwimming()
+			Debug.SendAnimationEvent(PlayerRef, "SwimStart")
+		Else
+			Debug.SendAnimationEvent(PlayerRef, "SwimStop")
 		EndIf
+		PlayerRef.DispelAllSpells()
+		PlayerRef.ClearExtraArrows()
 		ReviveScript.LowHealthImod.Remove()
 		Game.EnablePlayerControls()
 		Game.EnableFastTravel(True)
 		PlayerRef.RemovePerk(ReviveScript.Invulnerable)
 		Debug.SetGodMode(False)
 		PlayerRef.SetGhost(False)
+		Utility.Wait(0.5)
+		Game.ForceThirdPerson()
 		moaIsBusy.SetValueInt(0)
 	EndIf
 EndEvent
@@ -2303,6 +2460,11 @@ Event OnOptionSliderOpen(Int option)
 		SetSliderDialogDefaultValue(1000.0)
 		SetSliderDialogRange(0.0, 1000000.0)
 		SetSliderDialogInterval(10.0)
+	ElseIf (option == oidRespawnCounter)
+		SetSliderDialogStartValue(100)
+		SetSliderDialogDefaultValue(100.0)
+		SetSliderDialogRange(0.0, 1000.0)
+		SetSliderDialogInterval(1.0)
 	ElseIf (option == oidBossChestChanceSlider)
 		SetSliderDialogStartValue(fBossChestChanceSlider)
 		SetSliderDialogDefaultValue(0.0)
@@ -2520,6 +2682,16 @@ Event OnOptionSliderAccept(int option, Float value)
 	ElseIf (option == oidMaxItemsToCheckSlider)
 		fMaxItemsToCheckSlider = value
 		SetSliderOptionValue(oidMaxItemsToCheckSlider, fMaxItemsToCheckSlider, "{0}")
+	ElseIf (option == oidRespawnCounter)
+		If !Self.ShowMessage("$mrt_MarkofArkay_MESG_RespawnCounterConfirm", True, "$Yes", "$No")
+			Return
+		EndIf
+		fRespawnCounterSlider = value
+		SetSliderOptionValue(oidRespawnCounter, fRespawnCounterSlider, "$mrt_MarkofArkay_RespawnCounter2")
+		bRespawnCounter = True
+		bCanbeKilledbyUnarmed = False
+		bKillIfCantRespawn = False
+		ForcePageReset()
 	ElseIf (option == oidBossChestChanceSlider)
 		fBossChestChanceSlider = value
 		SetSliderOptionValue(oidBossChestChanceSlider, fBossChestChanceSlider, "$mrt_MarkofArkay_BossChestChanceSlider_2")
@@ -2972,6 +3144,9 @@ Event OnOptionDefault(Int option)
 	ElseIf (option == oidKillIfCantRespawn)
 		bKillIfCantRespawn = False
 		SetToggleOptionValue(oidKillIfCantRespawn,bKillIfCantRespawn)
+	ElseIf (option == oidCanbeKilledbyUnarmed)
+		bCanbeKilledbyUnarmed = True
+		SetToggleOptionValue(oidCanbeKilledbyUnarmed,bCanbeKilledbyUnarmed)
 	ElseIf (option == oidLoseSkillForever)
 		bLoseSkillForever = False
 		SetToggleOptionValue(oidLoseSkillForever,bLoseSkillForever)
@@ -3466,6 +3641,8 @@ Event OnOptionHighlight(Int option)
 		SetInfoText("$mrt_MarkofArkay_DESC_DoNotStopCombatAfterRevival")
 	ElseIf (option == oidKillIfCantRespawn)
 		SetInfoText("$mrt_MarkofArkay_DESC_KillIfCantRespawn")
+	ElseIf (option == oidCanbeKilledbyUnarmed)
+		SetInfoText("$mrt_MarkofArkay_DESC_CanbeKilledbyUnarmed")
 	ElseIf (option == oidLoseSkillForever)
 		SetInfoText("$mrt_MarkofArkay_DESC_LoseSkillForever")
 	ElseIf (option == oidHealActors)
@@ -3550,6 +3727,8 @@ Event OnOptionHighlight(Int option)
 		SetInfoText("$mrt_MarkofArkay_DESC_RagdollEffect")
 	ElseIf (option == oidRespawnTimeSlider)
 		SetInfoText("$mrt_MarkofArkay_DESC_RespawnTimeSlider")
+	ElseIf (option == oidRespawnCounter)
+		SetInfoText("$mrt_MarkofArkay_DESC_RespawnCounter")
 	ElseIf (option == oidSpawnCountSlider)
 		SetInfoText("$mrt_MarkofArkay_DESC_SpawnCountSlider")
 	ElseIf (option == oidSpawnWeightSlider)
@@ -3670,6 +3849,18 @@ Event OnOptionHighlight(Int option)
 		SetInfoText("$mrt_MarkofArkay_DESC_OnlyInfectIfHasBaseDis")
 	ElseIf (option == oidCureDisIfHasBlessing)
 		SetInfoText("$mrt_MarkofArkay_DESC_CureDisIfHasBlessing")
+	ElseIf (option == oidTradeLock)
+		SetInfoText("$mrt_MarkofArkay_DESC_TradeLock")
+	ElseIf (option == oidCurseLock)
+		SetInfoText("$mrt_MarkofArkay_DESC_CurseLock")
+	ElseIf (option == oidMarkRecallCostLock)
+		SetInfoText("$mrt_MarkofArkay_DESC_MarkRecallCostLock")
+	ElseIf (option == oidLootChanceLock)
+		SetInfoText("$mrt_MarkofArkay_DESC_LootChanceLock")
+	ElseIf (option == oidLockPermaDeath)
+		SetInfoText("$mrt_MarkofArkay_DESC_LockDeath")
+	ElseIf (option == oidSaveLock)
+		SetInfoText("$mrt_MarkofArkay_DESC_SaveLock")
 	EndIf
 EndEvent
 
@@ -4274,6 +4465,7 @@ Bool function bLoadUserSettings(String sFileName)
 	bCorpseAsSoulMark = fiss.loadBool("bCorpseAsSoulMark")
 	bSendToJail = fiss.loadBool("bSendToJail")
 	bKillIfCantRespawn = fiss.loadBool("bKillIfCantRespawn")
+	bCanbeKilledbyUnarmed = fiss.loadBool("bCanbeKilledbyUnarmed")
 	bTeleportMenu = fiss.loadBool("bTeleportMenu")
 	bMultipleDis = fiss.loadBool("bMultipleDis")
 	bDiseaseCurse = fiss.loadBool("bDiseaseCurse")
@@ -4535,6 +4727,10 @@ Bool Function bCheckFissErrors(String strErrors)
 		ElseIf strError == "Element bBossChestNotInClearedLoc not found"
 			bBossChestNotInClearedLoc = True
 			moaBossChestNotInclearedLoc.SetValueInt(0)
+		ElseIf strError == "Element fMaxItemsToCheckSlider not found"
+			fMaxItemsToCheckSlider = 1000.0
+		ElseIf strError == "Element bCanbeKilledbyUnarmed not found"
+			bCanbeKilledbyUnarmed = True
 		Else
 			Debug.Trace("Mark of Arkay: Error loading user settings -> " + strError)
 			Result = False
@@ -4600,6 +4796,7 @@ bool function bSaveUserSettings(String sFileName)
 	fiss.saveBool("bCorpseAsSoulMark", bCorpseAsSoulMark)
 	fiss.saveBool("bSendToJail", bSendToJail)
 	fiss.saveBool("bKillIfCantRespawn", bKillIfCantRespawn)
+	fiss.saveBool("bCanbeKilledbyUnarmed", bCanbeKilledbyUnarmed)
 	fiss.saveBool("bTeleportMenu", bTeleportMenu)
 	fiss.saveBool("bMultipleDis", bMultipleDis)
 	fiss.saveBool("bDiseaseCurse", bDiseaseCurse)
@@ -4999,6 +5196,7 @@ Function checkMods()
 	bUIEOK = bCheckUIE()
 	bFISSOK = bCheckFISS()
 	bARCCOK = bCheckARCC()
+	bPUOK = bCheckPUtil()
 EndFunction
 
 Bool Function bCheckSKSE()
@@ -5030,6 +5228,10 @@ EndFunction
 
 Bool Function bCheckDLIE()
 	Return bSKSELoaded && SKSE.GetPluginVersion("DSL Level Up Event Plugin") != -1 && DSL_LevelIncreaseEvent.bIsDLIELoaded()
+EndFunction
+
+Bool Function bCheckPUtil()
+	Return bSKSELoaded && SKSE.GetPluginVersion("papyrusutil plugin") != -1
 EndFunction
 
 Function ShowLostItems()
@@ -5270,4 +5472,12 @@ Function recalcCursedDisCureCosts()
 		ModEvent.PushForm(handle, self)
 		ModEvent.Send(Handle)
 	EndIf
+EndFunction
+
+Bool Function bIsLocked()
+	Return (bMarkRecallCostLock || bTradeLock || bLootChanceLock || bCurseLock || bSaveLock)
+EndFunction
+
+Bool Function bCanContinue()
+	Return ((!bRespawnCounter && !bLockPermaDeath) || (fRespawnCounterSlider > 0))
 EndFunction

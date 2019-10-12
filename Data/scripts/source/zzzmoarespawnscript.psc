@@ -54,8 +54,22 @@ Message Property moaRespawnMenu1 Auto
 Message Property moaRespawnMenu13 Auto
 Message Property moaRespawnMenu13_Alt Auto
 Message Property moaCustomRespawnMenu Auto
+Message Property moaRespawnMenu10 Auto
+Message Property moaRespawnMenu11 Auto
+Message Property moaRespawnMenu110 Auto
+Message Property moaRespawnMenu111 Auto
+Message Property moaRespawnMenu112 Auto
+Message Property moaRespawnMenu113 Auto
+Message Property moaRespawnMenu114 Auto
+Message Property moaRespawnMenu115 Auto
+Message Property moaRespawnMenu116 Auto
+Message Property moaRespawnMenu117 Auto
+Message Property moaRespawnMenu118 Auto
+Message Property moaRespawnMenu1180 Auto
+Message Property moaRespawnMenu1181 Auto
 GlobalVariable Property moaERPCount Auto
 Int Property iTeleportLocation Auto Hidden
+Int Property iTavernIndex Auto Hidden
 Int Property iCustomRPSlot Auto Hidden
 Int Property iExternalIndex Auto Hidden
 Actor Property PlayerRef Auto
@@ -76,6 +90,16 @@ FormList Property ExteriorMarkers Auto
 ObjectReference Property TOWMarker Auto
 FormList property CustomRespawnPoints Auto
 ReferenceAlias Property PlayerRefMarker Auto
+FormList Property InnLocations Auto
+FormList Property InnLocationsCapital Auto
+FormList Property ExtInnMarkers Auto
+FormList Property InnHoldLocations Auto
+FormList Property InnParentLocations Auto
+Quest Property DestinationCenterDetector Auto
+LocationAlias Property DestinationLocation Auto
+ReferenceAlias Property DestinationCenter Auto
+Form[] Property TavernMarkers Auto Hidden
+Form[] Property TavernCapitalMarkers Auto Hidden
 Bool bFirstTry = False
 Bool bFirstTryFailed = False
 
@@ -84,7 +108,51 @@ Function SetVars()
 	fRPMinDistance = ConfigMenu.fRPMinDistanceSlider
 	iTeleportLocation = ConfigMenu.iTeleportLocation
 	iExternalIndex = ConfigMenu.iExternalIndex
+	iTavernIndex = ConfigMenu.iTavernIndex
 	iCustomRPSlot = ConfigMenu.iSelectedCustomRPSlot
+Endfunction
+
+Bool Function bCheckTavernMarkers()
+	If TavernMarkers.Length != InnLocations.GetSize()
+		Return False
+	EndIf
+	If TavernCapitalMarkers.Length != InnLocationsCapital.GetSize()
+		Return False
+	EndIf
+	Int i = TavernMarkers.Length
+	Int j = TavernCapitalMarkers.Length
+	While i > 0
+		i -= 1
+		If !TavernMarkers[i] As ObjectReference
+			Return False
+		EndIf
+		If j > 0
+			j -= 1
+			If !TavernCapitalMarkers[j] As ObjectReference
+				Return False
+			EndIf
+		EndIf
+	EndWhile
+	Return True
+Endfunction
+
+Function setTavernMarkers(Bool bReset = False)
+	If !bReset && bCheckTavernMarkers()
+		ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: All Inn Markers are OK.")
+		Return
+	EndIf
+	TavernMarkers = Utility.CreateFormArray(InnLocations.GetSize())
+	TavernCapitalMarkers = Utility.CreateFormArray(InnLocationsCapital.GetSize())
+	Int i = InnLocations.GetSize()
+	Int j = InnLocationsCapital.GetSize()
+	While i > 0
+		i -= 1
+		TavernMarkers[i] = getCenterMarker(InnLocations.GetAt(i) As Location)
+		If j > 0
+			j -= 1
+			TavernCapitalMarkers[j] = getCenterMarker(InnLocationsCapital.GetAt(j) As Location)
+		EndIf
+	Endwhile
 Endfunction
 
 Function RandomTeleport()
@@ -97,6 +165,12 @@ Function RandomTeleport()
 				DisabledLocations.AddForm(LocationsList.GetAt(i) As Location)
 			EndIf
 		Endwhile
+		If !ConfigMenu.bRespawnPointsFlags[8]
+			DisabledLocations.AddForm(InnHoldLocations.GetAt(8) As Location)
+		EndIf
+		If !ConfigMenu.bRespawnPointsFlags[9]
+			DisabledLocations.AddForm(InnHoldLocations.GetAt(9) As Location)
+		EndIf
 		If bTryToMoveByQuest(moaRandomMarkerDetector,RandomTeleportRef, 7, FailedDestinations)
 			Return
 		EndIf
@@ -104,11 +178,19 @@ Function RandomTeleport()
 	Destinations.Revert()
 	int iIndex = 0
 	Int iRandom = 0
-	While iIndex < ConfigMenu.bRespawnPointsFlags.Length
+	While iIndex < MarkerList.GetSize()
 		If ConfigMenu.bRespawnPointsFlags[iIndex] && PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As Objectreference) >= fRPMinDistance
 			Destinations.AddForm(MarkerList.GetAt(iIndex) As Objectreference)
 		EndIf
 		iIndex += 1
+	Endwhile
+	Bool[] bInnFlags = bGetTavernFlags()
+	iIndex = InnLocations.GetSize()
+	While iIndex > 0
+		iIndex -= 1
+		If bInnFlags[iIndex]
+			Destinations.AddForm(TavernMarkers[iIndex] As ObjectReference)
+		EndIf
 	Endwhile
 	If bCanTeleportToDynMarker(SleepMarker) && PlayerMarker.GetDistance(SleepMarker) >= fRPMinDistance
 		Destinations.AddForm(SleepMarker)
@@ -371,6 +453,12 @@ Function Teleport()
 					DisabledLocations.AddForm(LocationsList.GetAt(i) As Location)
 				EndIf
 			Endwhile
+			If !ConfigMenu.bRespawnPointsFlags[8]
+				DisabledLocations.AddForm(InnHoldLocations.GetAt(8) As Location)
+			EndIf
+			If !ConfigMenu.bRespawnPointsFlags[9]
+				DisabledLocations.AddForm(InnHoldLocations.GetAt(9) As Location)
+			EndIf
 			If bTryToMoveByQuest(moaRandomCityDetector, RandomCityTeleportRef, 7, FailedDestinations)
 				Return
 			EndIf
@@ -386,6 +474,19 @@ Function Teleport()
 		sendToNearbyCity()
 	ElseIf iTeleportLocation == (ConfigMenu.getRandCityRPIndex())
 		sendToRandomCity()
+	ElseIf iTeleportLocation == (ConfigMenu.getTavernRPIndex())
+		If iTavernIndex == ConfigMenu.getNearbyInnRPIndex()
+			sendToNearbyInn()
+		ElseIf iTavernIndex == ConfigMenu.getRandInnRPIndex()
+			sendToRandomInn()
+		Else
+			ObjectReference Marker = TavernMarkers[iTavernIndex] As ObjectReference
+			If (PlayerMarker.GetDistance(Marker) >= fRPMinDistance) && bIsArrived(Marker)
+				Return
+			Else
+				SendToAnotherLocation()	
+			EndIf
+		EndIf
 	ElseIf iTeleportLocation == (ConfigMenu.getSleepRPIndex())
 		If !bSendToSleepMarker()
 			If !bSendToCustomMarker(iCustomRPSlot)
@@ -421,7 +522,10 @@ Function Teleport()
 	PlayerMarker.Disable()
 EndFunction
 
-Bool Function bIsCurrentCell(int iIndex)
+Bool Function bIsCurrentCell(int iIndex, Bool bTavernMarker = False)
+	If bTavernMarker
+		Return ((TavernMarkers[iIndex]  As Objectreference).GetParentCell() == PlayerMarker.GetParentCell())
+	EndIf
 	Return ((( MarkerList.GetAt(iIndex))  As Objectreference ).GetParentCell() == PlayerMarker.GetParentCell() )
 EndFunction
 
@@ -564,59 +668,197 @@ ObjectReference Function FindCityMarkerByLocation()
 		iIndex -= 1
 		If (iIndex == 3)
 			If bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(DLC1HunterHQLocation) ;Riften or Dayspring Canyon
-				If ConfigMenu.bRespawnPointsFlags[iIndex]
+				;If ConfigMenu.bRespawnPointsFlags[iIndex]
 					If ( PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference) >= fRPMinDistance )
 						Return MarkerList.GetAt(iIndex) As ObjectReference
 					EndIf
-				EndIf
+				;EndIf
 			EndIf
 		ElseIf ( iIndex == 4 )
 			If bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(HjaalmarchHoldLocation) || bInSameLocation(DLC1VampireCastleLocation) ;Solitude or Morthal or Castle Volkihar
-				If ConfigMenu.bRespawnPointsFlags[iIndex]
+				;If ConfigMenu.bRespawnPointsFlags[iIndex]
 					If ( PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference) >= fRPMinDistance )
 						Return MarkerList.GetAt(iIndex) As ObjectReference
 					EndIf
-				EndIf
+				;EndIf
 			EndIf
 		ElseIf ( iIndex == 6 )
 			If ( bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(PaleHoldLocation) ) ;Winterhold or Dawnstar
-				If ConfigMenu.bRespawnPointsFlags[iIndex]
+				;If ConfigMenu.bRespawnPointsFlags[iIndex]
 					If ( PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference) >= fRPMinDistance )
 						Return MarkerList.GetAt(iIndex) As ObjectReference
 					EndIf
-				EndIf
+				;EndIf
 			EndIf
 		ElseIf bInSameLocation(LocationsList.GetAt(iIndex) As Location)
-			If ConfigMenu.bRespawnPointsFlags[iIndex]
+			;If ConfigMenu.bRespawnPointsFlags[iIndex]
 				If ( PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference) >= fRPMinDistance )
 					Return MarkerList.GetAt(iIndex) As ObjectReference
 				EndIf
-			EndIf
+			;EndIf
 		EndIf
 	EndWhile
 	Return None
 Endfunction
 
 Function SendToNearbyCity()
-	ObjectReference Marker = FindCityMarkerByLocation()
-	If Marker && bIsArrived(Marker)
-		Return 
-	EndIf
+	ObjectReference Marker
 	If !IsInInteriorActual(PlayerMarker)
 		Marker = FindCityMarkerByDistance(500000.0)
 		If Marker && bIsArrived(Marker)
 			Return 
 		EndIf
 	EndIf
-	sendToRandomCity()
-Endfunction
-
-Function SendToAnotherLocation()
-	ObjectReference Marker = FindCityMarkerByLocation()
+	Marker = FindCityMarkerByLocation()
 	If Marker && bIsArrived(Marker)
 		Return 
 	EndIf
 	sendToRandomCity()
+Endfunction
+
+Bool[] Function bGetTavernFlags()
+	Bool[] flagArr = Utility.CreateBoolArray(InnLocations.GetSize(),True)
+	Int i = InnLocations.GetSize()
+	While i > 0
+		i -= 1
+		If PlayerRef.IsInLocation(InnLocations.GetAt(i) As Location)
+			flagArr[i] = False
+		EndIf
+	Endwhile
+	If !ConfigMenu.bRespawnPointsFlags[0] ;Whiterun
+		flagArr[0] = False ;Sleeping Giant Inn
+		flagArr[1] = False ;The Bannered Mare
+		flagArr[2] = False ;Frostfruit Inn
+	EndIf
+	If !ConfigMenu.bRespawnPointsFlags[1] ;Falkreath
+		flagArr[3] = False ;Dead Man's Drink
+	EndIf
+	If !ConfigMenu.bRespawnPointsFlags[2] ;Markarth
+		flagArr[4] = False ;Silver-Blood Inn
+		flagArr[5] = False ;Old Hroldan Inn
+	EndIf
+	If !ConfigMenu.bRespawnPointsFlags[3] ;Riften
+		flagArr[6] = False ;The Bee and Barb
+	EndIf
+	If !ConfigMenu.bRespawnPointsFlags[4] ;Solitude
+		flagArr[7] = False ;The Winking Skeever
+		flagArr[8] = False ;Four Shields Tavern
+	EndIf
+	If !ConfigMenu.bRespawnPointsFlags[5] ;Windhelm
+		flagArr[9] = False ;Candlehearth Hall
+		flagArr[10] = False ;Braidwood Inn
+	EndIf
+	If !ConfigMenu.bRespawnPointsFlags[6] ;Winterhold
+		flagArr[11] = False ;The Frozen Hearth
+	EndIf
+	If !ConfigMenu.bRespawnPointsFlags[7] ;RavenRock
+		flagArr[12] = False ;The Retching Netch
+	EndIf
+	If !ConfigMenu.bRespawnPointsFlags[8] ;Morthal
+		flagArr[13] = False ;Moorside Inn
+	EndIf
+	If !ConfigMenu.bRespawnPointsFlags[9] ;Dawnstar
+		flagArr[14] = False ;Windpeak Inn
+		flagArr[15] = False ;Nightgate Inn
+	EndIf
+	Return flagArr
+Endfunction
+
+Function sendToRandomInn()
+	Int i = iGetRandomWithExclusionArray(0,InnLocations.GetSize() - 1,bGetTavernFlags(),True)
+	If (i > -1) && bIsArrived( TavernMarkers[i] As ObjectReference )
+		Return
+	Else
+		sendToRandomCity()
+	EndIf
+EndFunction
+
+ObjectReference Function getCenterMarker(Location Loc)
+	stopAndConfirm(DestinationCenterDetector)
+	DestinationLocation.ForceLocationTo(Loc)
+	DestinationCenterDetector.Start()
+	Return DestinationCenter.GetReference() As ObjectReference
+Endfunction
+
+ObjectReference Function FindInnMarkerByLocation()
+	ObjectReference akMarker
+	Int iIndex = InnLocations.GetSize()
+	While iIndex > 0
+		iIndex -= 1
+		If PlayerMarker.IsInLocation(InnLocations.GetAt(iIndex) As Location) || PlayerMarker.IsInLocation(InnParentLocations.GetAt(iIndex) As Location)
+			akMarker = TavernMarkers[iIndex] As ObjectReference
+			If ( PlayerMarker.GetDistance(akMarker) >= fRPMinDistance )
+				Return akMarker
+			EndIf
+		EndIf
+	Endwhile
+	iIndex = InnHoldLocations.GetSize()
+	While iIndex > 0
+		iIndex -= 1
+		akMarker = TavernCapitalMarkers[iIndex] As ObjectReference
+		If (iIndex == 3)
+			If bInSameLocation(InnHoldLocations.GetAt(iIndex) As Location) || bInSameLocation(DLC1HunterHQLocation) ;Riften or Dayspring Canyon
+				If ( PlayerMarker.GetDistance(akMarker) >= fRPMinDistance )
+					Return akMarker
+				EndIf
+			EndIf
+		ElseIf ( iIndex == 4 )
+			If bInSameLocation(InnHoldLocations.GetAt(iIndex) As Location) || bInSameLocation(DLC1VampireCastleLocation) ;Solitude or Castle Volkihar
+				If ( PlayerMarker.GetDistance(akMarker) >= fRPMinDistance )
+					Return akMarker
+				EndIf
+			EndIf
+		ElseIf bInSameLocation(InnHoldLocations.GetAt(iIndex) As Location)
+			If ( PlayerMarker.GetDistance(akMarker) >= fRPMinDistance )
+				Return akMarker
+			EndIf
+		EndIf
+	Endwhile
+	Return None
+Endfunction
+
+ObjectReference Function FindInnMarkerByDistance(float fMaxDistance = 100000.0)
+	float fDistance
+	Int MarkerIndex
+	Int iIndex
+	ObjectReference Marker
+	If !PlayerMarker.IsInInterior()
+		iIndex = ExtInnMarkers.GetSize()
+		While iIndex > 0
+			iIndex -= 1
+			If ( !fDistance || ( fDistance > PlayerMarker.GetDistance(ExtInnMarkers.GetAt(iIndex) As ObjectReference) ) )
+				fDistance = PlayerMarker.GetDistance(ExtInnMarkers.GetAt(iIndex) As ObjectReference)
+				MarkerIndex = iIndex
+			EndIf
+		EndWhile
+	EndIf
+	If ( fDistance && fDistance <= fMaxDistance )
+		Return TavernMarkers[MarkerIndex] As ObjectReference
+	EndIf
+	Return None
+Endfunction
+
+Function SendToNearbyInn()
+	ObjectReference Marker
+	If !IsInInteriorActual(PlayerMarker)
+		Marker = FindInnMarkerByDistance(500000.0)
+		If Marker && bIsArrived(Marker)
+			Return 
+		EndIf
+	EndIf
+	Marker = FindInnMarkerByLocation()
+	If Marker && bIsArrived(Marker)
+		Return 
+	EndIf
+	sendToRandomInn()
+Endfunction
+
+Function SendToAnotherLocation()
+	ObjectReference Marker = FindInnMarkerByLocation()
+	If Marker && bIsArrived(Marker)
+		Return 
+	EndIf
+	sendToRandomInn()
 EndFunction
 
 Bool Function IsInInteriorActual(ObjectReference akObjectReference)
@@ -676,7 +918,7 @@ ObjectReference Function FindCityMarkerByDistance(float fMaxDistance = 100000.0)
 		While iIndex > 0
 			iIndex -= 1
 			If( ExcludedMarkerList.find( ExternalMarkerList.GetAt( iIndex ) As ObjectReference ) < 0 )
-				If ( !fDistance || ( fDistance > PlayerMarker.GetDistance( ExternalMarkerList.GetAt( iIndex ) As ObjectReference ) ) )
+				If ( !fDistance || ( fDistance > PlayerMarker.GetDistance( ExternalMarkerList.GetAt( iIndex ) As ObjectReference ) ) ) && (PlayerMarker.GetDistance( ExternalMarkerList.GetAt( iIndex ) As ObjectReference ) >= fRPMinDistance)
 					fDistance = PlayerMarker.GetDistance( ExternalMarkerList.GetAt( iIndex ) As ObjectReference )
 					Marker = ExternalMarkerList.GetAt( iIndex ) As ObjectReference
 				EndIf
@@ -687,27 +929,27 @@ ObjectReference Function FindCityMarkerByDistance(float fMaxDistance = 100000.0)
 		iIndex = MarkerList.GetSize()
 		While iIndex > 0
 			iIndex -= 1
-			If ConfigMenu.bRespawnPointsFlags[iIndex]
+			;If ConfigMenu.bRespawnPointsFlags[iIndex]
 				If ( PlayerMarker.GetParentCell() == ( MarkerList.GetAt(iIndex) As ObjectReference ).GetParentCell() )
 					If( ExcludedMarkerList.find( MarkerList.GetAt(iIndex) As ObjectReference ) < 0 )
-						If ( !fDistance || ( fDistance > PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference) ) )
+						If ( !fDistance || ( fDistance > PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference) ) ) && (PlayerMarker.GetDistance( MarkerList.GetAt( iIndex ) As ObjectReference ) >= fRPMinDistance)
 							fDistance = PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference)
 							Marker = MarkerList.GetAt(iIndex) As ObjectReference
 						EndIf
 					EndIf
 				EndIf
-			EndIf
+			;EndIf
 		EndWhile
 	Else
 		iIndex = CityMarkersList.GetSize()
 		While iIndex > 0
 			iIndex -= 1
-			If ConfigMenu.bRespawnPointsFlags[iIndex]
+			;If ConfigMenu.bRespawnPointsFlags[iIndex]
 				If ( !fDistance || ( fDistance > PlayerMarker.GetDistance(CityMarkersList.GetAt(iIndex) As ObjectReference) ) )
 					fDistance = PlayerMarker.GetDistance(CityMarkersList.GetAt(iIndex) As ObjectReference)
 					Marker = MarkerList.GetAt(iIndex) As ObjectReference
 				EndIf
-			EndIf
+			;EndIf
 		EndWhile
 	EndIf
 	If ( Marker && fDistance && fDistance <= fMaxDistance )
@@ -1115,12 +1357,16 @@ Int Function RespawnMenu(Int aiMessage = 0, Int aiButton = 0)
 		ElseIf aiMessage == 1
 			aiButton = moaRespawnMenu1.Show()
 			If aiButton == -1
+			ElseIf aiButton == 0 ;City
+				aiMessage = 4
+			ElseIf aiButton == 1 ;Inn
+				aiMessage = 5
 			ElseIf aiButton == 3 ;Custom
 				aiMessage = 2
 			ElseIf aiButton == 4
 				aiMessage = 3 ;External
 			ElseIf aiButton < 9 ;Nearby City,...,TOW
-				Return ( aiButton + ConfigMenu.getNearbyCityRPIndex())
+				Return ( aiButton + ConfigMenu.getRandCityRPIndex()) ;aibutton+9
 			ElseIf aiButton == 9 ;Less
 				aiMessage = 0
 			EndIf
@@ -1160,11 +1406,153 @@ Int Function RespawnMenu(Int aiMessage = 0, Int aiButton = 0)
 					aiMessage = 1
 				EndIf
 			EndIf
+		ElseIf aiMessage == 4
+			aiButton = moaRespawnMenu10.Show()
+			If aiButton == -1
+			ElseIf aiButton == 0
+				Return ConfigMenu.getNearbyCityRPIndex()
+			ElseIf aiButton == 1
+				Return ConfigMenu.getRandCityRPIndex()
+			ElseIf aiButton == 2
+				aiMessage = 1
+			EndIf
+		ElseIf aiMessage == 5
+			aiButton = moaRespawnMenu11.Show()
+			If aiButton == -1
+			ElseIf aiButton == 0
+				aiMessage = 6
+			ElseIf aiButton == 1
+				aiMessage = 7				
+			ElseIf aiButton == 2
+				aiMessage = 8				
+			ElseIf aiButton == 3
+				aiMessage = 9					
+			ElseIf aiButton == 4
+				aiMessage = 10		
+			ElseIf aiButton == 5
+				aiMessage = 11
+			ElseIf aiButton == 6
+				aiMessage = 12
+			ElseIf aiButton == 7
+				aiMessage = 13
+			ElseIf aiButton == 8 ;more
+				aiMessage = 14
+			ElseIf aiButton == 9 ;back
+				aiMessage = 1
+			EndIf
+		ElseIf aiMessage == 6 ;Whiterun Inns (3)
+			aiButton = moaRespawnMenu110.Show()
+			If aiButton == -1
+			ElseIf aiButton < 3
+				iTavernIndex = aiButton
+				Return ConfigMenu.getTavernRPIndex()
+			ElseIf aiButton == 3
+				aiMessage = 5
+			EndIf
+		ElseIf aiMessage == 7 ;Falkreath Inn (1)
+			aiButton = moaRespawnMenu111.Show()
+			If aiButton == -1
+			ElseIf aiButton < 1
+				iTavernIndex = aiButton + 3
+				Return ConfigMenu.getTavernRPIndex()
+			ElseIf aiButton == 1
+				aiMessage = 5
+			EndIf	
+		ElseIf aiMessage == 8 ;Markarth Inn (2)
+			aiButton = moaRespawnMenu112.Show()
+			If aiButton == -1
+			ElseIf aiButton < 2
+				iTavernIndex = aiButton + 4
+				Return ConfigMenu.getTavernRPIndex()
+			ElseIf aiButton == 2
+				aiMessage = 5
+			EndIf				
+		ElseIf aiMessage == 9 ;Riften Inn (1)
+			aiButton = moaRespawnMenu113.Show()
+			If aiButton == -1
+			ElseIf aiButton < 1
+				iTavernIndex = aiButton + 6
+				Return ConfigMenu.getTavernRPIndex()
+			ElseIf aiButton == 1
+				aiMessage = 5
+			EndIf	
+		ElseIf aiMessage == 10 ;Solitude Inn (2)
+			aiButton = moaRespawnMenu114.Show()
+			If aiButton == -1
+			ElseIf aiButton < 2
+				iTavernIndex = aiButton + 7
+				Return ConfigMenu.getTavernRPIndex()
+			ElseIf aiButton == 2
+				aiMessage = 5
+			EndIf
+		ElseIf aiMessage == 11 ;Windhelm Inn (2)
+			aiButton = moaRespawnMenu115.Show()
+			If aiButton == -1
+			ElseIf aiButton < 2
+				iTavernIndex = aiButton + 9
+				Return ConfigMenu.getTavernRPIndex()
+			ElseIf aiButton == 2
+				aiMessage = 5
+			EndIf
+		ElseIf aiMessage == 12 ;Winterhold Inn (1)
+			aiButton = moaRespawnMenu116.Show()
+			If aiButton == -1
+			ElseIf aiButton < 1
+				iTavernIndex = aiButton + 11
+				Return ConfigMenu.getTavernRPIndex()
+			ElseIf aiButton == 1
+				aiMessage = 5
+			EndIf
+		ElseIf aiMessage == 13 ;Raven Rock Inn (1)
+			aiButton = moaRespawnMenu117.Show()
+			If aiButton == -1
+			ElseIf aiButton < 1
+				iTavernIndex = aiButton + 12
+				Return ConfigMenu.getTavernRPIndex()
+			ElseIf aiButton == 1
+				aiMessage = 5
+			EndIf
+		ElseIf aiMessage == 14
+			aiButton = moaRespawnMenu118.Show()
+			If aiButton == -1
+			ElseIf aiButton == 0 ;morthal inn
+				aiMessage = 15
+			ElseIf aiButton == 1 ;dawnstar inn
+				aiMessage = 16
+			ElseIf aiButton == 2
+				iTavernIndex = ConfigMenu.getNearbyInnRPIndex()
+				Return ConfigMenu.getTavernRPIndex()		
+			ElseIf aiButton == 3
+				iTavernIndex = ConfigMenu.getRandInnRPIndex()
+				Return ConfigMenu.getTavernRPIndex()
+			ElseIf aiButton == 4 ;Less
+				aiMessage = 5
+			ElseIf aiButton == 5 ;Back
+				aiMessage = 1
+			EndIf
+		ElseIf aiMessage == 15
+			aiButton = moaRespawnMenu1180.Show() ;Morthal Inn (1)
+			If aiButton == -1
+			ElseIf aiButton < 1
+				iTavernIndex = aiButton + 13
+				Return ConfigMenu.getTavernRPIndex()
+			ElseIf aiButton == 1
+				aiMessage = 5
+			EndIf	
+		ElseIf aiMessage == 16
+			aiButton = moaRespawnMenu1181.Show() ;Dawnstar Inn (2)
+			If aiButton == -1
+			ElseIf aiButton < 2
+				iTavernIndex = aiButton + 14
+				Return ConfigMenu.getTavernRPIndex()
+			ElseIf aiButton == 2
+				aiMessage = 5
+			EndIf
 		EndIf
 	EndWhile
 EndFunction
 
-Int Function iGetRandomWithExclusionArray( Int iFrom, Int iTo, Bool[] iFlagArray) 
+Int Function iGetRandomWithExclusionArray( Int iFrom, Int iTo, Bool[] iFlagArray, Bool bTavern = False) 
 	If iFrom == iTo
 		If iFlagArray[iFrom]
 			Return iFrom
@@ -1178,7 +1566,7 @@ Int Function iGetRandomWithExclusionArray( Int iFrom, Int iTo, Bool[] iFlagArray
 	Int ExcludeCount = 0
 	int iIndex = iFrom
 	While iIndex <= iTo
-		If (!iFlagArray[iIndex] || bIsCurrentCell(iIndex))
+		If (!iFlagArray[iIndex] || bIsCurrentCell(iIndex,bTavern))
 			ExcludeCount += 1
 		EndIf
 		iIndex += 1
@@ -1191,7 +1579,7 @@ Int Function iGetRandomWithExclusionArray( Int iFrom, Int iTo, Bool[] iFlagArray
 	 While (iIndex <= iTo)
 		If ( iRandom < iIndex )
 			Return iRandom
-		ElseIf (( iRandom >= iIndex ) && (!iFlagArray[iIndex] || bIsCurrentCell(iIndex) ))
+		ElseIf (( iRandom >= iIndex ) && (!iFlagArray[iIndex] || bIsCurrentCell(iIndex,bTavern) ))
 			iRandom += 1
 		EndIf
 		iIndex += 1

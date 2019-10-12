@@ -1420,6 +1420,9 @@ Function RevivePlayer(Bool bRevive)
 						bRemoveItemTemp = False
 					Else
 						bRemoveItems = False
+						If !ConfigMenu.bOnlyLoseSkillXP && !(ConfigMenu.bLoseSkillForever && !ConfigMenu.bDisableUnsafe && ConfigMenu.bDLIEOK)
+							iReducedSkill = 0
+						EndIf
 					EndIf
 				EndIf
 				If bRemoveItems
@@ -1448,10 +1451,13 @@ Function RevivePlayer(Bool bRevive)
 				If  (moaBossChest01.IsRunning() && moaBossChest01.GetStage() == 0) && !LostItemsChest.GetNumItems()
 					If !bRemoveItemTemp
 						bRemoveItems = False ;No phycical item removed and nothing else can be removed
+						If !ConfigMenu.bOnlyLoseSkillXP && !(ConfigMenu.bLoseSkillForever && !ConfigMenu.bDisableUnsafe && ConfigMenu.bDLIEOK)
+							iReducedSkill = 0
+						EndIf
 					EndIf
 					stopAndConfirm(moaBossChest01,3,25)
 				EndIf
-				If iReducedSkill > 0 && bRemoveItems
+				If iReducedSkill > 0
 					ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Reducing player's Skills/Skill XPs...")
 					String Skill
 					If iReducedSkill < 19
@@ -1842,6 +1848,7 @@ Function SetGameVars()
 	Else
 		ConfigMenu.ToggleFallDamage(False)
 	EndIf
+	RespawnScript.setTavernMarkers(ConfigMenu.moaIsBusy.GetValue() As Bool) ;If initing, reset markers
 EndFunction
 
 Bool Function bIsRevivable() ;if player can be revived by trading

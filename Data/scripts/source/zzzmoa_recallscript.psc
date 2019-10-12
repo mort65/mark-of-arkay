@@ -39,6 +39,7 @@ ReferenceAlias Property RandomTeleportRef Auto
 ReferenceAlias Property RandomCityTeleportRef Auto
 ObjectReference Property PlayerMarker Auto
 GlobalVariable Property moaRandomDestination Auto
+Int iTavernIndex
 Actor Caster
 Int iMarkerIndex
 
@@ -97,6 +98,20 @@ Event OnEffectStart(Actor akTarget, Actor akCaster)
 					SendToNearbyCity()
 				ElseIf iTeleportLocation == ConfigMenu.getRandCityRPIndex()
 					SendToRandomCity()
+				ElseIf iTeleportLocation == (ConfigMenu.getTavernRPIndex())
+					If iTavernIndex == ConfigMenu.getNearbyInnRPIndex()
+						ReviveScript.RespawnScript.sendToNearbyInn()
+					ElseIf iTavernIndex == ConfigMenu.getRandInnRPIndex()
+						ReviveScript.RespawnScript.sendToRandomInn()
+					Else
+						ObjectReference Marker = ReviveScript.RespawnScript.getCenterMarker(ReviveScript.RespawnScript.InnLocations.GetAt(iTavernIndex) As Location)
+						If Marker
+							Caster.MoveTo(Marker)
+							Return
+						Else
+							SendToAnotherLocation()	
+						EndIf
+					EndIf
 				ElseIf iTeleportLocation == ConfigMenu.getSleepRPIndex()
 					If !bSendToSleepMarker()
 						If !bSendToCustomMarker(iCustomRPSlot)
@@ -194,6 +209,12 @@ Function SendToRandomCity()
 				DisabledLocations.AddForm(LocationsList.GetAt(i) As Location)
 			EndIf
 		Endwhile
+		If !ConfigMenu.bRespawnPointsFlags[8]
+			DisabledLocations.AddForm(ReviveScript.RespawnScript.InnHoldLocations.GetAt(8) As Location)
+		EndIf
+		If !ConfigMenu.bRespawnPointsFlags[9]
+			DisabledLocations.AddForm(ReviveScript.RespawnScript.InnHoldLocations.GetAt(9) As Location)
+		EndIf
 		Bool bResult = bMoveByQuest(moaRandomCityDetector,RandomCityTeleportRef, 5)
 		PlayerMarker.MoveToMyEditorLocation()
 		PlayerMarker.Disable()
@@ -221,6 +242,12 @@ Function RandomTeleport()
 				DisabledLocations.AddForm(LocationsList.GetAt(i) As Location)
 			EndIf
 		Endwhile
+		If !ConfigMenu.bRespawnPointsFlags[8]
+			DisabledLocations.AddForm(ReviveScript.RespawnScript.InnHoldLocations.GetAt(8) As Location)
+		EndIf
+		If !ConfigMenu.bRespawnPointsFlags[9]
+			DisabledLocations.AddForm(ReviveScript.RespawnScript.InnHoldLocations.GetAt(9) As Location)
+		EndIf
 		Bool bResult = bMoveByQuest(moaRandomMarkerDetector,RandomTeleportRef, 5)
 		PlayerMarker.MoveToMyEditorLocation()
 		PlayerMarker.Disable()
@@ -231,12 +258,20 @@ Function RandomTeleport()
 	Destinations.Revert()
 	int iIndex = 0
 	Int iRandom = 0
-	While iIndex < ConfigMenu.bRespawnPointsFlags.Length
+	While iIndex < MarkerList.GetSize()
 		If ConfigMenu.bRespawnPointsFlags[iIndex] && Caster.GetDistance(MarkerList.GetAt(iIndex) As Objectreference) >= ConfigMenu.fRPMinDistanceSlider
 			Destinations.AddForm(MarkerList.GetAt(iIndex) As Objectreference)
 		EndIf
 		iIndex += 1
 	Endwhile
+	Bool[] bInnFlags = ReviveScript.RespawnScript.bGetTavernFlags()
+	iIndex = ReviveScript.RespawnScript.InnLocations.GetSize()
+	While iIndex > 0
+		iIndex -= 1
+		If bInnFlags[iIndex]
+			Destinations.AddForm(ReviveScript.RespawnScript.TavernMarkers[iIndex] As ObjectReference)
+		EndIf
+	Endwhile	
 	If !SleepMarker.Isdisabled() && ( SleepMarker.GetParentCell() != ReviveScript.DefaultCell ) && Caster.GetDistance(SleepMarker) >= ConfigMenu.fRPMinDistanceSlider
 		Destinations.AddForm(SleepMarker)
 	EndIf
@@ -295,34 +330,34 @@ ObjectReference Function findCityMarkerByLocation()
 		iIndex -= 1
 		If ( iIndex == 3 )
 			If bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(DLC1HunterHQLocation) ;Riften or Dayspring Canyon
-				If ConfigMenu.bRespawnPointsFlags[iIndex]
+			;	If ConfigMenu.bRespawnPointsFlags[iIndex]
 					If ( Caster.GetDistance( MarkerList.GetAt(iIndex) As ObjectReference ) >= ConfigMenu.fRPMinDistanceSlider )
 						Return MarkerList.GetAt(iIndex) As ObjectReference
 					EndIf
 				EndIf
-			EndIf
+			;EndIf
 		ElseIf ( iIndex == 4 )
 			If bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(HjaalmarchHoldLocation) || bInSameLocation(DLC1VampireCastleLocation) ;Solitude or Morthal or Castle Volkihar
-				If ConfigMenu.bRespawnPointsFlags[iIndex]
+			;	If ConfigMenu.bRespawnPointsFlags[iIndex]
 					If ( Caster.GetDistance( MarkerList.GetAt(iIndex) As ObjectReference ) >= ConfigMenu.fRPMinDistanceSlider )
 						Return MarkerList.GetAt(iIndex) As ObjectReference
 					EndIf
 				EndIf
-			EndIf
+			;EndIf
 		ElseIf ( iIndex == 6 )
 			If ( bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(PaleHoldLocation) ) ;Winterhold or Dawnstar
-				If ConfigMenu.bRespawnPointsFlags[iIndex]
+			;	If ConfigMenu.bRespawnPointsFlags[iIndex]
 					If ( Caster.GetDistance( MarkerList.GetAt(iIndex) As ObjectReference ) >= ConfigMenu.fRPMinDistanceSlider )
 						Return MarkerList.GetAt(iIndex) As ObjectReference
 					EndIf
 				EndIf
-			EndIf
+			;EndIf
 		ElseIf bInSameLocation(LocationsList.GetAt(iIndex) As Location)
-			If ConfigMenu.bRespawnPointsFlags[iIndex]
+			;If ConfigMenu.bRespawnPointsFlags[iIndex]
 				If ( Caster.GetDistance( MarkerList.GetAt(iIndex) As ObjectReference ) >= ConfigMenu.fRPMinDistanceSlider )
 					Return MarkerList.GetAt(iIndex) As ObjectReference
 				EndIf
-			EndIf
+			;EndIf
 		EndIf
 	EndWhile
 	Return None
@@ -351,25 +386,25 @@ Function SendToNearbyCity()
 			iIndex = MarkerList.GetSize()
 			While iIndex > 0
 				iIndex -= 1
-				If ConfigMenu.bRespawnPointsFlags[iIndex]
+				;If ConfigMenu.bRespawnPointsFlags[iIndex]
 					If ( PlayerMarker.GetParentCell() == ( MarkerList.GetAt(iIndex) As ObjectReference ).GetParentCell() )
 						If ( !fDistance || ( fDistance > PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference) ) )
 							fDistance = PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference)
 							Marker = MarkerList.GetAt(iIndex) As ObjectReference
 						EndIf
 					EndIf
-				EndIf
+				;EndIf
 			EndWhile
 		Else
 			iIndex = CityMarkersList.GetSize()
 			While iIndex > 0
 				iIndex -= 1
-				If ConfigMenu.bRespawnPointsFlags[iIndex]
+				;If ConfigMenu.bRespawnPointsFlags[iIndex]
 					If ( !fDistance || ( fDistance > PlayerMarker.GetDistance(CityMarkersList.GetAt(iIndex) As ObjectReference) ) )
 						fDistance = PlayerMarker.GetDistance(CityMarkersList.GetAt(iIndex) As ObjectReference)
 						Marker = MarkerList.GetAt(iIndex) As ObjectReference
 					EndIf
-				EndIf
+				;EndIf
 			EndWhile
 		EndIf
 		If ( Marker && fDistance && fDistance < 500001 )
@@ -381,12 +416,12 @@ Function SendToNearbyCity()
 Endfunction
 
 Function SendToAnotherLocation()
-	ObjectReference Marker = FindCityMarkerByLocation()
+	ObjectReference Marker = ReviveScript.RespawnScript.FindInnMarkerByLocation()
 	If Marker
 		Caster.MoveTo(Marker)
 		Return 
 	EndIf
-	SendToRandomCity()
+	ReviveScript.RespawnScript.sendToRandomInn()
 EndFunction
 
 Function SendToNearbyLocation()
@@ -583,12 +618,16 @@ Int Function TeleportMenu(Int aiMessage = 0, Int aiButton = 0)
 		ElseIf aiMessage == 1
 			aiButton = moaTeleportMenu1.Show()
 			If aiButton == -1
+			ElseIf aiButton == 0 ;City
+				aiMessage = 4
+			ElseIf aiButton == 1 ;Inn
+				aiMessage = 5
 			ElseIf aiButton == 3 ;Custom
 				aiMessage = 2
 			ElseIf aiButton == 4 ;External
 				aiMessage = 3
-			ElseIf aiButton < 9 ;Nearby City,...,Throat of the World
-				Return aiButton + ConfigMenu.getNearbyCityRPIndex()
+			ElseIf aiButton < 9 ;City,...,Throat of the World
+				Return aiButton + ConfigMenu.getRandCityRPIndex()
 			ElseIf aiButton == 9 ;Less
 				aiMessage = 0
 			EndIf
@@ -629,6 +668,148 @@ Int Function TeleportMenu(Int aiMessage = 0, Int aiButton = 0)
 				ElseIf aiButton == 9 ;Back
 					aiMessage = 1
 				EndIf
+			EndIf
+		ElseIf aiMessage == 4
+			aiButton = ReviveScript.RespawnScript.moaRespawnMenu10.Show()
+			If aiButton == -1
+			ElseIf aiButton == 0
+				Return ConfigMenu.getNearbyCityRPIndex()
+			ElseIf aiButton == 1
+				Return ConfigMenu.getRandCityRPIndex()
+			ElseIf aiButton == 2
+				aiMessage = 1
+			EndIf
+		ElseIf aiMessage == 5
+			aiButton = ReviveScript.RespawnScript.moaRespawnMenu11.Show()
+			If aiButton == -1
+			ElseIf aiButton == 0
+				aiMessage = 6
+			ElseIf aiButton == 1
+				aiMessage = 7				
+			ElseIf aiButton == 2
+				aiMessage = 8				
+			ElseIf aiButton == 3
+				aiMessage = 9					
+			ElseIf aiButton == 4
+				aiMessage = 10		
+			ElseIf aiButton == 5
+				aiMessage = 11
+			ElseIf aiButton == 6
+				aiMessage = 12
+			ElseIf aiButton == 7
+				aiMessage = 13
+			ElseIf aiButton == 8 ;more
+				aiMessage = 14
+			ElseIf aiButton == 9 ;back
+				aiMessage = 1
+			EndIf
+		ElseIf aiMessage == 6 ;Whiterun Inns (3)
+			aiButton = ReviveScript.RespawnScript.moaRespawnMenu110.Show()
+			If aiButton == -1
+			ElseIf aiButton < 3
+				iTavernIndex = aiButton
+				Return ConfigMenu.getTavernRPIndex()
+			ElseIf aiButton == 3
+				aiMessage = 5
+			EndIf
+		ElseIf aiMessage == 7 ;Falkreath Inn (1)
+			aiButton = ReviveScript.RespawnScript.moaRespawnMenu111.Show()
+			If aiButton == -1
+			ElseIf aiButton < 1
+				iTavernIndex = aiButton + 3
+				Return ConfigMenu.getTavernRPIndex()
+			ElseIf aiButton == 1
+				aiMessage = 5
+			EndIf	
+		ElseIf aiMessage == 8 ;Markarth Inn (2)
+			aiButton = ReviveScript.RespawnScript.moaRespawnMenu112.Show()
+			If aiButton == -1
+			ElseIf aiButton < 2
+				iTavernIndex = aiButton + 4
+				Return ConfigMenu.getTavernRPIndex()
+			ElseIf aiButton == 2
+				aiMessage = 5
+			EndIf				
+		ElseIf aiMessage == 9 ;Riften Inn (1)
+			aiButton = ReviveScript.RespawnScript.moaRespawnMenu113.Show()
+			If aiButton == -1
+			ElseIf aiButton < 1
+				iTavernIndex = aiButton + 6
+				Return ConfigMenu.getTavernRPIndex()
+			ElseIf aiButton == 1
+				aiMessage = 5
+			EndIf	
+		ElseIf aiMessage == 10 ;Solitude Inn (2)
+			aiButton = ReviveScript.RespawnScript.moaRespawnMenu114.Show()
+			If aiButton == -1
+			ElseIf aiButton < 2
+				iTavernIndex = aiButton + 7
+				Return ConfigMenu.getTavernRPIndex()
+			ElseIf aiButton == 2
+				aiMessage = 5
+			EndIf
+		ElseIf aiMessage == 11 ;Windhelm Inn (2)
+			aiButton = ReviveScript.RespawnScript.moaRespawnMenu115.Show()
+			If aiButton == -1
+			ElseIf aiButton < 2
+				iTavernIndex = aiButton + 9
+				Return ConfigMenu.getTavernRPIndex()
+			ElseIf aiButton == 2
+				aiMessage = 5
+			EndIf
+		ElseIf aiMessage == 12 ;Winterhold Inn (1)
+			aiButton = ReviveScript.RespawnScript.moaRespawnMenu116.Show()
+			If aiButton == -1
+			ElseIf aiButton < 1
+				iTavernIndex = aiButton + 11
+				Return ConfigMenu.getTavernRPIndex()
+			ElseIf aiButton == 1
+				aiMessage = 5
+			EndIf
+		ElseIf aiMessage == 13 ;Raven Rock Inn (1)
+			aiButton = ReviveScript.RespawnScript.moaRespawnMenu117.Show()
+			If aiButton == -1
+			ElseIf aiButton < 1
+				iTavernIndex = aiButton + 12
+				Return ConfigMenu.getTavernRPIndex()
+			ElseIf aiButton == 1
+				aiMessage = 5
+			EndIf
+		ElseIf aiMessage == 14
+			aiButton = ReviveScript.RespawnScript.moaRespawnMenu118.Show()
+			If aiButton == -1
+			ElseIf aiButton == 0 ;morthal inn
+				aiMessage = 15
+			ElseIf aiButton == 1 ;dawnstar inn
+				aiMessage = 16
+			ElseIf aiButton == 2
+				iTavernIndex = ConfigMenu.getNearbyInnRPIndex()
+				Return ConfigMenu.getTavernRPIndex()		
+			ElseIf aiButton == 3
+				iTavernIndex = ConfigMenu.getRandInnRPIndex()
+				Return ConfigMenu.getTavernRPIndex()				
+			ElseIf aiButton == 4 ;Less
+				aiMessage = 5
+			ElseIf aiButton == 5 ;Back
+				aiMessage = 1
+			EndIf
+		ElseIf aiMessage == 15
+			aiButton = ReviveScript.RespawnScript.moaRespawnMenu1180.Show() ;Morthal Inn (1)
+			If aiButton == -1
+			ElseIf aiButton < 1
+				iTavernIndex = aiButton + 13
+				Return ConfigMenu.getTavernRPIndex()
+			ElseIf aiButton == 1
+				aiMessage = 5
+			EndIf	
+		ElseIf aiMessage == 16
+			aiButton = ReviveScript.RespawnScript.moaRespawnMenu1181.Show() ;Dawnstar Inn (2)
+			If aiButton == -1
+			ElseIf aiButton < 2
+				iTavernIndex = aiButton + 14
+				Return ConfigMenu.getTavernRPIndex()
+			ElseIf aiButton == 2
+				aiMessage = 5
 			EndIf
 		EndIf
 	EndWhile

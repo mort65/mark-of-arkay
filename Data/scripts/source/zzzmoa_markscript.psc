@@ -40,7 +40,7 @@ Event OnEffectStart(Actor akTarget, Actor akCaster)
 	Marker.SetPosition(Caster.GetPositionx(), Caster.GetPositiony(), Caster.GetPositionz())
 	Marker.SetAngle(0.0, 0.0, Caster.GetAnglez())
 	If ConfigMenu.bAutoSwitchRP
-		ConfigMenu.iTeleportLocation = ( ConfigMenu.sRespawnPoints.Length - 5 )
+		ConfigMenu.iTeleportLocation = ConfigMenu.getCustomRPIndex()
 		ConfigMenu.iSelectedCustomRPSlot = iIndex
 		ConfigMenu.SetCustomRPFlags()
 	EndIf

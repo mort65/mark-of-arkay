@@ -134,6 +134,7 @@ Spell Property Bleed Auto
 Bool Property bFinished = False Auto Hidden
 GlobalVariable Property moaLockReset Auto
 Message Property DeathMessage Auto
+Bool bIsBusy = False
 Float fHealrate = 0.0
 Int iIsBeast = 0
 Bool bSheathed = False
@@ -157,10 +158,11 @@ String strRemovedItem
 
 State Bleedout1
 	Event OnPlayerLoadGame()
-		SetGameVars()
+		ConfigMenu.checkMods()
 		If PermaDeathScript.bCheckPermaDeath()
 			Return
 		EndIf
+		SetGameVars()
 	EndEvent
 	
 	Event OnObjectUnequipped(Form akBaseObject, ObjectReference akReference)
@@ -181,10 +183,11 @@ EndState
 
 State Bleedout2
 	Event OnPlayerLoadGame()
-		SetGameVars()
+		ConfigMenu.checkMods()
 		If PermaDeathScript.bCheckPermaDeath()
 			Return
 		EndIf
+		SetGameVars()
 	EndEvent
 	
 	Event OnObjectUnequipped(Form akBaseObject, ObjectReference akReference)
@@ -204,6 +207,11 @@ State Bleedout2
 EndState
 
 Event OnInit()
+	Utility.Wait(0.1)
+	If bIsBusy
+		Return
+	EndIf
+	bIsBusy = True
 	moaState.SetValue(1)
 	If ConfigMenu.bTriggerOnBleedout
 		PlayerRef.GetActorBase().SetEssential(True)
@@ -219,6 +227,7 @@ Event OnInit()
 	RespawnScript = GetOwningQuest() As zzzmoarespawnscript
 	NPCScript = GetOwningQuest() As zzzmoanpcscript
 	PermaDeathScript = PermaDeathQuest As zzzmoaPermaDeathScript
+	ConfigMenu.checkMods()
 	SetGameVars()
 	SetVars()
 	RegisterForSleep()
@@ -234,9 +243,14 @@ Event OnInit()
 		Runil.AddToFaction(RunilMerchantFaction)
 		Runil.GetActorBase().SetEssential(True)
 	EndIf
+	bIsBusy = False
 EndEvent
 
 Event OnPlayerLoadGame()
+	ConfigMenu.checkMods()
+	If PermaDeathScript.bCheckPermaDeath()
+		Return
+	EndIf
 	ConfigMenu.OnGameReload()
 	If ( ConfigMenu.iSaveOption > 1 )
 		Game.SetInChargen(abDisableSaving = True, abDisableWaiting = False, abShowControlsDisabledMessage = True)
@@ -254,9 +268,6 @@ Event OnPlayerLoadGame()
 		ConfigMenu.bRespawnCounter = False
 		ConfigMenu.bLockPermaDeath = False
 		moaLockReset.SetValue(0)
-	EndIf
-	If PermaDeathScript.bCheckPermaDeath()
-		Return
 	EndIf
 	DiseaseScript.RegisterForModEvent("MOA_RecalcCursedDisCureCost", "RecalcCursedDisCureCost")
 	RegisterForSingleUpdate(3.0)
@@ -1823,7 +1834,6 @@ EndFunction
 
 Function SetGameVars()
 	Game.SetGameSettingFloat("fPlayerDeathReloadTime", 5.00000)
-	ConfigMenu.checkMods()
 	If !SkillScript
 		SkillScript = GetOwningQuest() As zzzmoaskillcursescript
 	EndIf

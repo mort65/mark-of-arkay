@@ -858,6 +858,10 @@ Function SendToAnotherLocation()
 	If Marker && bIsArrived(Marker)
 		Return 
 	EndIf
+	Marker = FindCityMarkerByLocation()
+	If Marker && bIsArrived(Marker)
+		Return 
+	EndIf
 	sendToRandomInn()
 EndFunction
 

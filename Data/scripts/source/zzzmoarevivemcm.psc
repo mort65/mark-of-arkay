@@ -4115,6 +4115,7 @@ Function SetCustomRPFlags()
 EndFunction
 
 Event OnConfigInit()
+	Utility.Wait(0.1)
 	If moaIsBusy.GetValue()
 		Return
 	EndIf

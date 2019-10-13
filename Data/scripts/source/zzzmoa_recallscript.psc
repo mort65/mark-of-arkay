@@ -421,6 +421,11 @@ Function SendToAnotherLocation()
 		Caster.MoveTo(Marker)
 		Return 
 	EndIf
+	Marker = FindCityMarkerByLocation()
+	If Marker
+		Caster.MoveTo(Marker)
+		Return 
+	EndIf	
 	ReviveScript.RespawnScript.sendToRandomInn()
 EndFunction
 

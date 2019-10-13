@@ -134,6 +134,7 @@ Spell Property Bleed Auto
 Bool Property bFinished = False Auto Hidden
 GlobalVariable Property moaLockReset Auto
 Message Property DeathMessage Auto
+Bool bIsBusy = False
 Float fHealrate = 0.0
 Int iIsBeast = 0
 Bool bSheathed = False
@@ -157,10 +158,11 @@ String strRemovedItem
 
 State Bleedout1
 	Event OnPlayerLoadGame()
-		SetGameVars()
+		ConfigMenu.checkMods()
 		If PermaDeathScript.bCheckPermaDeath()
 			Return
 		EndIf
+		SetGameVars()
 	EndEvent
 	
 	Event OnObjectUnequipped(Form akBaseObject, ObjectReference akReference)
@@ -181,10 +183,11 @@ EndState
 
 State Bleedout2
 	Event OnPlayerLoadGame()
-		SetGameVars()
+		ConfigMenu.checkMods()
 		If PermaDeathScript.bCheckPermaDeath()
 			Return
 		EndIf
+		SetGameVars()
 	EndEvent
 	
 	Event OnObjectUnequipped(Form akBaseObject, ObjectReference akReference)
@@ -204,6 +207,11 @@ State Bleedout2
 EndState
 
 Event OnInit()
+	Utility.Wait(0.1)
+	If bIsBusy
+		Return
+	EndIf
+	bIsBusy = True
 	moaState.SetValue(1)
 	If ConfigMenu.bTriggerOnBleedout
 		PlayerRef.GetActorBase().SetEssential(True)
@@ -219,6 +227,7 @@ Event OnInit()
 	RespawnScript = GetOwningQuest() As zzzmoarespawnscript
 	NPCScript = GetOwningQuest() As zzzmoanpcscript
 	PermaDeathScript = PermaDeathQuest As zzzmoaPermaDeathScript
+	ConfigMenu.checkMods()
 	SetGameVars()
 	SetVars()
 	RegisterForSleep()
@@ -234,9 +243,14 @@ Event OnInit()
 		Runil.AddToFaction(RunilMerchantFaction)
 		Runil.GetActorBase().SetEssential(True)
 	EndIf
+	bIsBusy = False
 EndEvent
 
 Event OnPlayerLoadGame()
+	ConfigMenu.checkMods()
+	If PermaDeathScript.bCheckPermaDeath()
+		Return
+	EndIf
 	ConfigMenu.OnGameReload()
 	If ( ConfigMenu.iSaveOption > 1 )
 		Game.SetInChargen(abDisableSaving = True, abDisableWaiting = False, abShowControlsDisabledMessage = True)
@@ -254,9 +268,6 @@ Event OnPlayerLoadGame()
 		ConfigMenu.bRespawnCounter = False
 		ConfigMenu.bLockPermaDeath = False
 		moaLockReset.SetValue(0)
-	EndIf
-	If PermaDeathScript.bCheckPermaDeath()
-		Return
 	EndIf
 	DiseaseScript.RegisterForModEvent("MOA_RecalcCursedDisCureCost", "RecalcCursedDisCureCost")
 	RegisterForSingleUpdate(3.0)
@@ -1420,6 +1431,9 @@ Function RevivePlayer(Bool bRevive)
 						bRemoveItemTemp = False
 					Else
 						bRemoveItems = False
+						If !ConfigMenu.bOnlyLoseSkillXP && !(ConfigMenu.bLoseSkillForever && !ConfigMenu.bDisableUnsafe && ConfigMenu.bDLIEOK)
+							iReducedSkill = 0
+						EndIf
 					EndIf
 				EndIf
 				If bRemoveItems
@@ -1448,10 +1462,13 @@ Function RevivePlayer(Bool bRevive)
 				If  (moaBossChest01.IsRunning() && moaBossChest01.GetStage() == 0) && !LostItemsChest.GetNumItems()
 					If !bRemoveItemTemp
 						bRemoveItems = False ;No phycical item removed and nothing else can be removed
+						If !ConfigMenu.bOnlyLoseSkillXP && !(ConfigMenu.bLoseSkillForever && !ConfigMenu.bDisableUnsafe && ConfigMenu.bDLIEOK)
+							iReducedSkill = 0
+						EndIf
 					EndIf
 					stopAndConfirm(moaBossChest01,3,25)
 				EndIf
-				If iReducedSkill > 0 && bRemoveItems
+				If iReducedSkill > 0
 					ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Reducing player's Skills/Skill XPs...")
 					String Skill
 					If iReducedSkill < 19
@@ -1817,7 +1834,6 @@ EndFunction
 
 Function SetGameVars()
 	Game.SetGameSettingFloat("fPlayerDeathReloadTime", 5.00000)
-	ConfigMenu.checkMods()
 	If !SkillScript
 		SkillScript = GetOwningQuest() As zzzmoaskillcursescript
 	EndIf
@@ -1842,6 +1858,7 @@ Function SetGameVars()
 	Else
 		ConfigMenu.ToggleFallDamage(False)
 	EndIf
+	RespawnScript.setTavernMarkers(ConfigMenu.moaIsBusy.GetValue() As Bool) ;If initing, reset markers
 EndFunction
 
 Bool Function bIsRevivable() ;if player can be revived by trading

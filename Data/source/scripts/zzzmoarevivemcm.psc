@@ -63,6 +63,8 @@ Int oidRespawnPoint4
 Int oidRespawnPoint5
 Int oidRespawnPoint6
 Int oidRespawnPoint7
+Int oidRespawnPoint8
+Int oidRespawnPoint9
 Int oidExternalTeleportLocation
 Int oidTeleportLocation_M
 Int oidNoTradingAftermath_M
@@ -199,6 +201,7 @@ Int oidLootChanceLock
 Int oidSaveLock
 Int oidRespawnCounter
 Int oidLockPermaDeath
+Int oidTavern_M
 Bool Property bLockPermaDeath = False Auto Hidden
 Bool Property bRespawnCounter = False Auto Hidden
 Float Property fRespawnCounterSlider = 0.0 Auto Hidden
@@ -230,6 +233,7 @@ Float Property fTotalCustomRPSlotSlider = 1.0 Auto Hidden
 Int Property iSelectedCustomRPSlot = 0 Auto Hidden
 zzzmoaReviverScript Property ReviveScript Auto
 String[] Property sRespawnPoints Auto Hidden
+String[] Property sTaverns Auto Hidden
 Int[] Property iSpawnWeights Auto Hidden
 Int Property iHostileOption = 0 Auto Hidden
 Bool[] Property bRespawnPointsFlags Auto Hidden
@@ -312,6 +316,7 @@ Bool Property bPlayerProtectFollower = False Auto Hidden
 Bool Property bSkillReduceRandomVal = False Auto Hidden
 Bool Property bMoralityMatters = True Auto Hidden
 Int Property iTeleportLocation = 0 Auto Hidden
+Int Property iTavernIndex = 0 Auto Hidden
 Int Property iSaveOption = 1 Auto Hidden
 Int Property iLoadPreset = 0 Auto Hidden
 Int Property iSavePreset = 0 Auto Hidden
@@ -726,15 +731,27 @@ Event OnPageReset(String page)
 		EndIf
 		oidTeleportLocation_M = AddMenuOption("$mrt_MarkofArkay_TeleportLocation_M", sRespawnPoints[iTeleportLocation], flags)
 		SetCursorPosition(9)
-		oidSelectedCustomRPSlot_M = AddMenuOption("$mrt_MarkofArkay_SelectedCustomRPSlot_M", sGetCustomRPs()[iSelectedCustomRPSlot], flags)
+		If ( moaState.getValue() == 1 ) && (getTavernRPIndex() == iTeleportLocation)
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidTavern_M = AddMenuOption("$mrt_MarkofArkay_Taverns_M",sTaverns[iTavernIndex],flags)
 		SetCursorPosition(11)
+		If ( moaState.getValue() == 1 )
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidSelectedCustomRPSlot_M = AddMenuOption("$mrt_MarkofArkay_SelectedCustomRPSlot_M", sGetCustomRPs()[iSelectedCustomRPSlot], flags)
+		SetCursorPosition(13)
 		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled)
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidTotalCustomRPSlotSlider = AddSliderOption("$mrt_MarkofArkay_TotalCustomRPSlotSlider_1", fTotalCustomRPSlotSlider, "{0}", flags)
-		SetCursorPosition(13)
+		SetCursorPosition(15)
 		If (( moaState.getValue() == 1 ) && ( iTeleportLocation == getExternalRPIndex()) && ( ExternalMarkerList.GetSize() > 1 ))
 			flags =	OPTION_FLAG_NONE
 		Else
@@ -748,43 +765,47 @@ Event OnPageReset(String page)
 		Else
 			oidExternalTeleportLocation = AddTextOption("$mrt_MarkofArkay_ExternalTeleportLocation", ( (iExternalIndex + 1) As String ), flags)
 		EndIf
-		SetCursorPosition(15)
+		SetCursorPosition(17)
 		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1))
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidRPMinDistanceSlider = AddSliderOption("$mrt_MarkofArkay_RPMinDistanceSlider_1", fRPMinDistanceSlider, "{0}", flags)
-		SetCursorPosition(17)
+		SetCursorPosition(19)
 		If ( moaState.getValue() == 1 ) && !bDisableUnsafe
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidRespawnTimeSlider = AddSliderOption("$mrt_MarkofArkay_RespawnTimeSlider_1", fRespawnTimeSlider, "$mrt_MarkofArkay_RespawnTimeSlider_2", flags)
-		SetCursorPosition(21)
-		AddHeaderOption("$mrt_MarkofArkay_HEAD_City")
 		SetCursorPosition(23)
+		AddHeaderOption("$mrt_MarkofArkay_HEAD_City")
+		SetCursorPosition(25)
 		If ( moaState.getValue() == 1 )
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidRespawnPoint0 = AddToggleOption(sRespawnPoints[0], bRespawnPointsFlags[0], flags )
-		SetCursorPosition(25)
-		oidRespawnPoint1 = AddToggleOption(sRespawnPoints[1], bRespawnPointsFlags[1], flags )
 		SetCursorPosition(27)
-		oidRespawnPoint2 = AddToggleOption(sRespawnPoints[2], bRespawnPointsFlags[2], flags )
+		oidRespawnPoint1 = AddToggleOption(sRespawnPoints[1], bRespawnPointsFlags[1], flags )
 		SetCursorPosition(29)
-		oidRespawnPoint3 = AddToggleOption(sRespawnPoints[3], bRespawnPointsFlags[3], flags )
+		oidRespawnPoint2 = AddToggleOption(sRespawnPoints[2], bRespawnPointsFlags[2], flags )
 		SetCursorPosition(31)
-		oidRespawnPoint4 = AddToggleOption(sRespawnPoints[4], bRespawnPointsFlags[4], flags )
+		oidRespawnPoint3 = AddToggleOption(sRespawnPoints[3], bRespawnPointsFlags[3], flags )
 		SetCursorPosition(33)
-		oidRespawnPoint5 = AddToggleOption(sRespawnPoints[5], bRespawnPointsFlags[5], flags )
+		oidRespawnPoint4 = AddToggleOption(sRespawnPoints[4], bRespawnPointsFlags[4], flags )
 		SetCursorPosition(35)
-		oidRespawnPoint6 = AddToggleOption(sRespawnPoints[6], bRespawnPointsFlags[6], flags )
+		oidRespawnPoint5 = AddToggleOption(sRespawnPoints[5], bRespawnPointsFlags[5], flags )
 		SetCursorPosition(37)
+		oidRespawnPoint6 = AddToggleOption(sRespawnPoints[6], bRespawnPointsFlags[6], flags )
+		SetCursorPosition(39)
 		oidRespawnPoint7 = AddToggleOption(sRespawnPoints[7], bRespawnPointsFlags[7], flags )
+		SetCursorPosition(41)
+		oidRespawnPoint8 = AddToggleOption("$Morthal", bRespawnPointsFlags[8], flags )
+		SetCursorPosition(43)
+		oidRespawnPoint9 = AddToggleOption("$Dawnstar", bRespawnPointsFlags[9], flags )
 	ElseIf (page == "$Curse")
 		SetCursorPosition(0)
 		AddHeaderOption("$Curse")
@@ -1379,9 +1400,24 @@ Event OnPageReset(String page)
 		SetCursorPosition(11)
 		flags = OPTION_FLAG_DISABLED
 		If ( moaState.getValue() == 1 ) && bIsInfoEnabled
-			If iTeleportLocation < getRandCityRPIndex()
+			If iTeleportLocation < getNearbyCityRPIndex()
 				If (MarkerList.GetAt(iTeleportLocation) As Objectreference)
 					Float fDistance = PlayerRef.GetDistance(MarkerList.GetAt(iTeleportLocation) As Objectreference)
+					If fDistance
+						If fDistance <= 999999
+							AddTextOption("$mrt_MarkofArkay_Dis_From_Respawn", fDistance As Int, flags)
+						Else
+							AddTextOption("$mrt_MarkofArkay_Dis_From_Respawn", "+999999", flags)
+						EndIf
+					Else
+						AddTextOption("$mrt_MarkofArkay_Dis_From_Respawn", "$Unknown", flags)
+					EndIf
+				Else
+					AddTextOption("$mrt_MarkofArkay_Dis_From_Respawn", "$Unknown", flags)
+				EndIf
+			ElseIf (iTeleportLocation == getTavernRPIndex())
+				If iTavernIndex < getNearbyInnRPIndex()
+					Float fDistance = PlayerRef.GetDistance(ReviveScript.RespawnScript.TavernMarkers[iTavernIndex] As Objectreference)
 					If fDistance
 						If fDistance <= 999999
 							AddTextOption("$mrt_MarkofArkay_Dis_From_Respawn", fDistance As Int, flags)
@@ -1817,6 +1853,12 @@ Event OnOptionSelect(Int option)
 	ElseIf (option == oidRespawnPoint7)
 		bRespawnPointsFlags[7] = !bRespawnPointsFlags[7]
 		SetToggleOptionValue(oidRespawnPoint7,bRespawnPointsFlags[7])
+	ElseIf (option == oidRespawnPoint8)
+		bRespawnPointsFlags[8] = !bRespawnPointsFlags[8]
+		SetToggleOptionValue(oidRespawnPoint8,bRespawnPointsFlags[8])
+	ElseIf (option == oidRespawnPoint9)
+		bRespawnPointsFlags[9] = !bRespawnPointsFlags[9]
+		SetToggleOptionValue(oidRespawnPoint9,bRespawnPointsFlags[9])
 	ElseIf (option == oidRespawnNaked)
 		bRespawnNaked = !bRespawnNaked
 		SetToggleOptionValue(oidRespawnNaked, bRespawnNaked)
@@ -2711,6 +2753,10 @@ Event OnOptionMenuOpen(Int option)
 		SetMenuDialogoptions(sRespawnPoints)
 		SetMenuDialogStartIndex(iTeleportLocation)
 		SetMenuDialogDefaultIndex(0)
+	ElseIf (option == oidTavern_M)
+		SetMenuDialogoptions(sTaverns)
+		SetMenuDialogStartIndex(iTavernIndex)
+		SetMenuDialogDefaultIndex(0)
 	ElseIf (option == oidNoTradingAftermath_M)
 		SetMenuDialogoptions(sGetAftermathOptions())
 		SetMenuDialogStartIndex(iNotTradingAftermath)
@@ -2766,6 +2812,10 @@ Event OnOptionMenuAccept(Int option, Int index)
 	If (option == oidTeleportLocation_M)
 		iTeleportLocation = index
 		SetMenuOptionValue(oidTeleportLocation_M, sRespawnPoints[iTeleportLocation])
+		ForcePageReset()
+	ElseIf (option == oidTavern_M)
+		iTavernIndex = index
+		SetMenuOptionValue(oidTavern_M, sTaverns[iTavernIndex])
 		ForcePageReset()
 	ElseIf (option == oidNoTradingAftermath_M)
 		iNotTradingAftermath = index
@@ -3082,6 +3132,12 @@ Event OnOptionDefault(Int option)
 	ElseIf (option == oidRespawnPoint7)
 		bRespawnPointsFlags[7] = False
 		SetToggleOptionValue(oidRespawnPoint7,bRespawnPointsFlags[7])
+	ElseIf (option == oidRespawnPoint8)
+		bRespawnPointsFlags[8] = True
+		SetToggleOptionValue(oidRespawnPoint8,bRespawnPointsFlags[8])
+	ElseIf (option == oidRespawnPoint9)
+		bRespawnPointsFlags[9] = True
+		SetToggleOptionValue(oidRespawnPoint9,bRespawnPointsFlags[9])
 	ElseIf (option == oidRevivalRequireBlessing)
 		bIsRevivalRequiresBlessing = False
 		SetToggleOptionValue(oidRevivalRequireBlessing, bIsRevivalRequiresBlessing)	
@@ -3603,6 +3659,8 @@ Event OnOptionHighlight(Int option)
 			SetInfoText("$mrt_MarkofArkay_DESC_NoTradingAftermath_M")
 	ElseIf (option == oidTeleportLocation_M)
 		SetInfoText("$mrt_MarkofArkay_DESC_TeleportLocation_M")
+	ElseIf (option == oidTavern_M)
+		SetInfoText("$mrt_MarkofArkay_DESC_Tavern_M")
 	ElseIf (option == oidRespawnPoint0)
 		SetInfoText("$mrt_MarkofArkay_DESC_RespawnPoint0")
 	ElseIf (option == oidRespawnPoint1)
@@ -3619,6 +3677,10 @@ Event OnOptionHighlight(Int option)
 		SetInfoText("$mrt_MarkofArkay_DESC_RespawnPoint6")
 	ElseIf (option == oidRespawnPoint7)
 		SetInfoText("$mrt_MarkofArkay_DESC_RespawnPoint7")
+	ElseIf (option == oidRespawnPoint8)
+		SetInfoText("$mrt_MarkofArkay_DESC_RespawnPoint8")
+	ElseIf (option == oidRespawnPoint9)
+		SetInfoText("$mrt_MarkofArkay_DESC_RespawnPoint9")
 	ElseIf (option == oidRespawnNaked)
 		SetInfoText("$mrt_MarkofArkay_DESC_RespawnNaked")
 	ElseIf (option == oidCorpseAsSoulMark)
@@ -4053,6 +4115,7 @@ Function SetCustomRPFlags()
 EndFunction
 
 Event OnConfigInit()
+	Utility.Wait(0.1)
 	If moaIsBusy.GetValue()
 		Return
 	EndIf
@@ -4104,6 +4167,7 @@ EndFunction
 Function setArrays()
 	setPages()
 	setRPs()
+	setTaverns()
 	setRPFlags() ;Only if Changing order without changing length need update
 	SetTypes() ;Only if Changing order without changing length need update
 	setSpawnCounts() ;Only if Changing order without changing length need update
@@ -4122,7 +4186,7 @@ Function setPages()
 EndFunction
 
 Function setRPs()
-	sRespawnPoints = New String[17]
+	sRespawnPoints = New String[18]
 	sRespawnPoints[0] = "$Whiterun"
 	sRespawnPoints[1] = "$Falkreath"
 	sRespawnPoints[2] = "$Markarth"
@@ -4133,18 +4197,41 @@ Function setRPs()
 	sRespawnPoints[7] = "$RavenRock"
 	sRespawnPoints[8] = "$NearbyCity"
 	sRespawnPoints[9] = "$RandomCity"
-	sRespawnPoints[10] = "$LastSleepLocation"
-	sRespawnPoints[11] = "$Custom"
-	sRespawnPoints[12] = "$External"
-	sRespawnPoints[13] = "$Checkpoint"
-	sRespawnPoints[14] = "$Nearby"
-	sRespawnPoints[15] = "$Random"
-	sRespawnPoints[16] = "$ThroatOfTheWorld"
+	sRespawnPoints[10] = "$Inn"
+	sRespawnPoints[11] = "$LastSleepLocation"
+	sRespawnPoints[12] = "$Custom"
+	sRespawnPoints[13] = "$External"
+	sRespawnPoints[14] = "$Checkpoint"
+	sRespawnPoints[15] = "$Nearby"
+	sRespawnPoints[16] = "$Random"
+	sRespawnPoints[17] = "$ThroatOfTheWorld"
+EndFunction
+
+Function setTaverns()
+	sTaverns = New String[18]
+	sTaverns[0] = "$SleepingGiantInn"
+	sTaverns[1] = "$TheBanneredMare"
+	sTaverns[2] = "$FrostfruitInn"
+	sTaverns[3] = "$DeadManDrink"
+	sTaverns[4] = "$SilverBloodInn"
+	sTaverns[5] = "$OldHroldanInn"
+	sTaverns[6] = "$TheBeeandBarb"
+	sTaverns[7] = "$TheWinkingSkeever"
+	sTaverns[8] = "$FourShieldsTavern"
+	sTaverns[9] = "$CandlehearthHall"
+	sTaverns[10] = "$BraidwoodInn"
+	sTaverns[11] = "$TheFrozenHearth"
+	sTaverns[12] = "$TheRetchingNetch"
+	sTaverns[13] = "$MoorsideInn"
+	sTaverns[14] = "$WindpeakInn"
+	sTaverns[15] = "$NightgateInn"
+	sTaverns[16] = "$NearbyInn"
+	sTaverns[17] = "$RandomInn"
 EndFunction
 
 Function setRPFlags(Bool bForce = False)
-	if bForce || bIsUpdating || bRespawnPointsFlags.Length != 8
-		bRespawnPointsFlags = New Bool[8]
+	if bForce || bIsUpdating || bRespawnPointsFlags.Length != 10
+		bRespawnPointsFlags = New Bool[10]
 		bRespawnPointsFlags[0] = True
 		bRespawnPointsFlags[1] = True
 		bRespawnPointsFlags[2] = True
@@ -4153,6 +4240,8 @@ Function setRPFlags(Bool bForce = False)
 		bRespawnPointsFlags[5] = True
 		bRespawnPointsFlags[6] = True
 		bRespawnPointsFlags[7] = False
+		bRespawnPointsFlags[8] = True
+		bRespawnPointsFlags[9] = True
 	EndIf
 EndFunction
 
@@ -4505,6 +4594,8 @@ Bool function bLoadUserSettings(String sFileName)
 	bRespawnPointsFlags[5] = fiss.loadBool("bRespawnPointsFlags5")
 	bRespawnPointsFlags[6] = fiss.loadBool("bRespawnPointsFlags6")
 	bRespawnPointsFlags[7] = fiss.loadBool("bRespawnPointsFlags7")
+	bRespawnPointsFlags[8] = fiss.loadBool("bRespawnPointsFlags8")
+	bRespawnPointsFlags[9] = fiss.loadBool("bRespawnPointsFlags9")
 	iSpawnCounts[0] = fiss.loadInt("iSpawnCounts0")
 	iSpawnCounts[1] = fiss.loadInt("iSpawnCounts1")
 	iSpawnCounts[2] = fiss.loadInt("iSpawnCounts2")
@@ -4731,6 +4822,10 @@ Bool Function bCheckFissErrors(String strErrors)
 			fMaxItemsToCheckSlider = 1000.0
 		ElseIf strError == "Element bCanbeKilledbyUnarmed not found"
 			bCanbeKilledbyUnarmed = True
+		ElseIf strError == "Element bRespawnPointsFlags8 not found"
+			bRespawnPointsFlags[8] = True
+		ElseIf strError == "Element bRespawnPointsFlags9 not found"
+			bRespawnPointsFlags[9] = True
 		Else
 			Debug.Trace("Mark of Arkay: Error loading user settings -> " + strError)
 			Result = False
@@ -4839,6 +4934,8 @@ bool function bSaveUserSettings(String sFileName)
 	fiss.saveBool("bRespawnPointsFlags5", bRespawnPointsFlags[5])
 	fiss.saveBool("bRespawnPointsFlags6", bRespawnPointsFlags[6])
 	fiss.saveBool("bRespawnPointsFlags7", bRespawnPointsFlags[7])
+	fiss.saveBool("bRespawnPointsFlags8", bRespawnPointsFlags[8])
+	fiss.saveBool("bRespawnPointsFlags9", bRespawnPointsFlags[9])
 	fiss.SaveInt("iSpawnCounts0",iSpawnCounts[0])
 	fiss.SaveInt("iSpawnCounts1",iSpawnCounts[1])
 	fiss.SaveInt("iSpawnCounts2",iSpawnCounts[2])
@@ -5412,10 +5509,22 @@ Function ShowLostSkills()
 EndFunction
 
 Int Function getNearbyCityRPIndex()
-	Return sRespawnPoints.Length - 9
+	Return sRespawnPoints.Length - 10
 EndFunction
 
 Int Function getRandCityRPIndex()
+	Return sRespawnPoints.Length - 9
+EndFunction
+
+Int Function getNearbyInnRPIndex()
+	Return sTaverns.Length - 2
+EndFunction
+
+Int Function getRandInnRPIndex()
+	Return sTaverns.Length - 1
+EndFunction
+
+Int Function getTavernRPIndex()
 	Return sRespawnPoints.Length - 8
 EndFunction
 

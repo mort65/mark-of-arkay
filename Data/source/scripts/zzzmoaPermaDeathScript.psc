@@ -8,11 +8,16 @@ Message Property DeathMessage Auto
 Message Property NoRespawnMessage Auto
 Message Property PermaDeathMessage Auto
 Message Property LoadLockMessage Auto
+Bool bIsBusy = False
 
 Event OnInit()
 	Utility.Wait(0.1)
+	If bIsBusy
+		Return
+	EndIf
+	bIsBusy = True
 	bCheckNameTag()
-	;Game.RequestAutoSave()
+	bIsBusy = False
 EndEvent
 
 Bool Function bCheckPermaDeath()
@@ -28,7 +33,6 @@ Bool Function bCheckPermaDeath()
 EndFunction
 
 Function lockGameLoad()
-	
 	MiscUtil.WriteToFile(getLockName(),getPlayerDeathInfo(),False,False)
 EndFunction
 

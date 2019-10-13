@@ -286,7 +286,7 @@ Function ReduceSkills(String Skill = "Random",Int Percent = -1, Int  MinAmount =
 					Else
 						If Percent > 0
 							If iCurrent > 0
-								num = (( Percent * (iCurrent- 1 )) / 100 ) As Int
+								num = imax(1,(( Percent * (iCurrent- 1 )) / 100 ) As Int)
 							EndIf
 						Else
 							num = randIntFromlimitedRange(MinAmount,MaxAmount,iCurrent,0,iCurrent - 1)
@@ -384,7 +384,7 @@ Float[] Function ReduceSkill(String Skill ,Int Percent = -1, Int  MinAmount = 1,
 		EndIf
 		If Percent > 0
 			If currentSkillLevel > 0
-				_amount = (( Percent * ( currentSkillLevel - 1 )) / 100 ) As Int
+				_amount = imax(1,(( Percent * ( currentSkillLevel - 1 )) / 100 ) As Int)
 			EndIf
 		Else
 			_amount = randIntFromlimitedRange(MinAmount,MaxAmount,currentSkillLevel,0,currentSkillLevel - 1)
@@ -476,7 +476,7 @@ Float[] Function ReduceSkill(String Skill ,Int Percent = -1, Int  MinAmount = 1,
 							EndIf
 							CurrentXP = CurrentXP - fXPToLose
 						EndIf
-						Debug.Trace(ConfigMenu.bLoseSkillForever +","+ ConfigMenu.bDisableUnsafe +","+ ConfigMenu.bDLIEOK+","+currentLevel+","+iLevelToLose)
+						;Debug.Trace(ConfigMenu.bLoseSkillForever +","+ ConfigMenu.bDisableUnsafe +","+ ConfigMenu.bDLIEOK+","+currentLevel+","+iLevelToLose)
 						If ConfigMenu.bLoseSkillForever && !ConfigMenu.bDisableUnsafe && ConfigMenu.bDLIEOK
 							Bool bLevelReduced = False
 							Game.SetPlayerExperience(CurrentXP)

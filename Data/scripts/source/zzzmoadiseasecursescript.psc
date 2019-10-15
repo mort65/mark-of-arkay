@@ -167,7 +167,7 @@ Event RecalcCursedDisCureCost(Form sender)
 	setCureCost()
 EndEvent
 	
-Function cureAllDiseases()
+Function cureAllDiseases(Bool bCureBaseDiseases = True)
 	Int iIndex = CursedDiseasesI.GetSize()
 	Spell akTempSpell
 	Int jIndex
@@ -182,7 +182,9 @@ Function cureAllDiseases()
 			EndIf
 		EndWhile
 	EndWhile
-	PlayerRef.EquipItem(CureDiseasePotion,False,True)
+	If bCureBaseDiseases
+		PlayerRef.EquipItem(CureDiseasePotion,False,True)
+	EndIf
 	moaCureDiseasesCost.SetValueInt(ConfigMenu.fDisPriceSlider As Int)
 	DiseaseCurseHandler.Stop()
 EndFunction

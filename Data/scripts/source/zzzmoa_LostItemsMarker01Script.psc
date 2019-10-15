@@ -34,7 +34,10 @@ Event OnActivate(ObjectReference akActionRef)
 			GetActorReference().SetCriticalStage(GetActorReference().CritStage_DisintegrateEnd)
 			GetActorReference().SetAlpha(0.0)
 			Utility.Wait(0.5)
-			GetActorReference().MoveTo(ConfigMenu.ReviveScript.LostItemsChest)			
+			GetActorReference().MoveTo(ConfigMenu.ReviveScript.LostItemsChest)		
+			If ConfigMenu.bSoulMarkCureDiseases 
+				ConfigMenu.ReviveScript.DiseaseScript.cureAllDiseases(False)
+			EndIf			
 			ConfigMenu.ReviveScript.ItemScript.RestoreLostItems(PlayerRef)
 			If moaRetrieveLostItems.IsRunning()
 				moaRetrieveLostItems.SetStage(20)

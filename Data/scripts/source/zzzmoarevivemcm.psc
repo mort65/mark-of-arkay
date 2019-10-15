@@ -202,6 +202,8 @@ Int oidSaveLock
 Int oidRespawnCounter
 Int oidLockPermaDeath
 Int oidTavern_M
+Int oidSoulMarkCureDiseases
+Bool Property bSoulMarkCureDiseases = False Auto Hidden
 Bool Property bLockPermaDeath = False Auto Hidden
 Bool Property bRespawnCounter = False Auto Hidden
 Float Property fRespawnCounterSlider = 0.0 Auto Hidden
@@ -855,76 +857,78 @@ Event OnPageReset(String page)
 		oidMultipleDisProg = AddToggleOption("$mrt_MarkofArkay_MultipleDisProg", bMultipleDisProg, flags)
 		SetCursorPosition(28)
 		oidOnlyInfectIfHasBaseDis = AddToggleOption("$mrt_MarkofArkay_OnlyInfectIfHasBaseDis", bOnlyInfectIfHasBaseDis , flags)
-		SetCursorPosition(32)
-		AddHeaderOption("$mrt_MarkofArkay_HEAD_Skill_Reduction")
+		SetCursorPosition(30)
+		oidSoulMarkCureDiseases = AddToggleOption("$mrt_MarkofArkay_SoulMarkCureDiseases", bSoulMarkCureDiseases, flags)
 		SetCursorPosition(34)
+		AddHeaderOption("$mrt_MarkofArkay_HEAD_Skill_Reduction")
+		SetCursorPosition(36)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && !bCurseLock
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidSkillReduce_M = AddMenuOption("$mrt_MarkofArkay_SkillReduce_M", sGetSkills()[iReducedSkill], flags)
-		SetCursorPosition(36)
+		SetCursorPosition(38)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1 ) && (iReducedSkill != 0) && !bCurseLock
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidOnlyLoseSkillXP = AddToggleOption("$mrt_MarkofArkay_OnlyLoseSkillXP", bOnlyLoseSkillXP, flags)
-		SetCursorPosition(38)
+		SetCursorPosition(40)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1 ) && (iReducedSkill != 0) && !bOnlyLoseSkillXP && !bCurseLock
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidLevelReduce = AddToggleOption("$mrt_MarkofArkay_LevelReduce", bLevelReduce, flags)
-		SetCursorPosition(40)
+		SetCursorPosition(42)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1 ) && (iReducedSkill != 0) && !bSkillReduceRandomVal && !bOnlyLoseSkillXP && !bCurseLock
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidSkillReduceValSlider = AddSliderOption("$mrt_MarkofArkay_SkillReduceValSlider_1", fSkillReduceValSlider, "$mrt_MarkofArkay_SkillReduceValSlider_2", flags)
-		SetCursorPosition(42)
+		SetCursorPosition(44)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1 ) && (iReducedSkill != 0) && !bOnlyLoseSkillXP && !bCurseLock
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidSkillReduceRandomVal = AddToggleOption("$mrt_MarkofArkay_SkillReduceRandomVal",bSkillReduceRandomVal, flags)
-		SetCursorPosition(44)
+		SetCursorPosition(46)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1 ) && (iReducedSkill != 0) && bSkillReduceRandomVal && !bOnlyLoseSkillXP && !bCurseLock
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidSkillReduceMinValSlider = AddSliderOption("$mrt_MarkofArkay_killReduceMinValSlider_1", fSkillReduceMinValSlider , "{0}", flags)
-		SetCursorPosition(46)
-		oidSkillReduceMaxValSlider = AddSliderOption("$mrt_MarkofArkay_killReduceMaxValSlider_1", fSkillReduceMaxValSlider , "{0}", flags)
 		SetCursorPosition(48)
+		oidSkillReduceMaxValSlider = AddSliderOption("$mrt_MarkofArkay_killReduceMaxValSlider_1", fSkillReduceMaxValSlider , "{0}", flags)
+		SetCursorPosition(50)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1 ) && !bDisableUnsafe && (iReducedSkill != 0) && bDLIEOK && !bOnlyLoseSkillXP && !bCurseLock
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidLoseSkillForever = AddToggleOption("$mrt_MarkofArkay_LoseSkillForever",bLoseSkillForever, flags)
-		SetCursorPosition(52)
-		AddHeaderOption("$mrt_MarkofArkay_HEAD_Curse_Recovery")
 		SetCursorPosition(54)
+		AddHeaderOption("$mrt_MarkofArkay_HEAD_Curse_Recovery")
+		SetCursorPosition(56)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidLostItemQuest = AddToggleOption("$mrt_MarkofArkay_LostItemQuest",bLostItemQuest,flags)
-		SetCursorPosition(56)
+		SetCursorPosition(58)
 		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1)) && !bCurseLock
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidSoulMarkStay = AddToggleOption("$mrt_MarkofArkay_SoulMarkStay",bSoulMarkStay,flags)
-		SetCursorPosition(58)
+		SetCursorPosition(60)
 		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1)) && !bDisableUnsafe && !bCurseLock
 			flags =	OPTION_FLAG_NONE
 		Else
@@ -1663,7 +1667,7 @@ Event OnOptionSelect(Int option)
 		bIsTradeEnabled = !bIsTradeEnabled
 		SetToggleOptionValue(oidTradeEnabled, bIsTradeEnabled)
 	ElseIf (option == oidTriggerOnBleedout)
-		If !bTriggerOnBleedout && self.ShowMessage("$Are_You_Sure", true, "$Yes", "$No")
+		If !bTriggerOnBleedout && self.ShowMessage("$Are_You_Sure", True, "$Yes", "$No")
 			moaIsBusy.SetValueInt(1)
 			bTriggerOnBleedout = True
 			bTriggerOnHealthPerc = False
@@ -1672,7 +1676,7 @@ Event OnOptionSelect(Int option)
 			moaIsBusy.SetValueInt(0)
 		EndIf
 	ElseIf (option == oidTriggerOnHealthPerc)
-		If !bTriggerOnHealthPerc && self.ShowMessage("$Are_You_Sure", true, "$Yes", "$No")
+		If !bTriggerOnHealthPerc && self.ShowMessage("$Are_You_Sure", True, "$Yes", "$No")
 			moaIsBusy.SetValueInt(1)
 			bTriggerOnBleedout = False
 			bTriggerOnHealthPerc = True
@@ -1681,34 +1685,34 @@ Event OnOptionSelect(Int option)
 			moaIsBusy.SetValueInt(0)
 		EndIf
 	ElseIf (option == oidTradeLock)
-		If !bTradeLock && self.ShowMessage("$Are_You_Sure_Lock_Trade", true, "$Yes", "$No")
+		If !bTradeLock && self.ShowMessage("$Are_You_Sure_Lock_Trade", True, "$Yes", "$No")
 			bTradeLock = True
 			ForcePageReset()
 		EndIf
 	ElseIf (option == oidCurseLock)
-		If !bCurseLock && self.ShowMessage("$Are_You_Sure_Lock_Curse", true, "$Yes", "$No")
+		If !bCurseLock && self.ShowMessage("$Are_You_Sure_Lock_Curse", True, "$Yes", "$No")
 			bCurseLock = True
 			ForcePageReset()
 		EndIf
 	ElseIf (option == oidMarkRecallCostLock)
-		If !bMarkRecallCostLock && self.ShowMessage("$Are_You_Sure_Lock_MarkRecallCost", true, "$Yes", "$No")
+		If !bMarkRecallCostLock && self.ShowMessage("$Are_You_Sure_Lock_MarkRecallCost", True, "$Yes", "$No")
 			bMarkRecallCostLock = True
 			ForcePageReset()
 		EndIf
 	ElseIf (option == oidLootChanceLock)
-		If !bLootChanceLock && self.ShowMessage("$Are_You_Sure_Lock_LootChance", true, "$Yes", "$No")
+		If !bLootChanceLock && self.ShowMessage("$Are_You_Sure_Lock_LootChance", True, "$Yes", "$No")
 			bLootChanceLock = True
 			ForcePageReset()
 		EndIf
 	ElseIf (option == oidLockPermaDeath)
-		If !bLockPermaDeath && self.ShowMessage("$Are_You_Sure_Lock_Death", true, "$Yes", "$No")
+		If !bLockPermaDeath && self.ShowMessage("$Are_You_Sure_Lock_Death", True, "$Yes", "$No")
 			bLockPermaDeath = True
 			bCanbeKilledbyUnarmed = False
 			bKillIfCantRespawn = False
 			ForcePageReset()
 		EndIf
 	ElseIf (option == oidSaveLock)
-		If !bSaveLock && self.ShowMessage("$Are_You_Sure_Lock_SaveLock", true, "$Yes", "$No")
+		If !bSaveLock && self.ShowMessage("$Are_You_Sure_Lock_SaveLock", True, "$Yes", "$No")
 			bSaveLock = True
 			ForcePageReset()
 		EndIf
@@ -1884,6 +1888,9 @@ Event OnOptionSelect(Int option)
 	ElseIf (option == oidOnlyInfectIfHasBaseDis)
 		bOnlyInfectIfHasBaseDis = !bOnlyInfectIfHasBaseDis
 		SetToggleOptionValue(oidOnlyInfectIfHasBaseDis, bOnlyInfectIfHasBaseDis)
+	ElseIf (option == oidSoulMarkCureDiseases)
+		bSoulMarkCureDiseases = !bSoulMarkCureDiseases
+		SetToggleOptionValue(oidSoulMarkCureDiseases, bSoulMarkCureDiseases)
 	ElseIf (option == oidCureDisIfHasBlessing)
 		bCureDisIfHasBlessing = !bCureDisIfHasBlessing
 		moaCureDisIfHasBlessing.SetValue(bCureDisIfHasBlessing As Int)
@@ -2184,7 +2191,7 @@ Event OnOptionSelect(Int option)
 			ForcePageReset()
 		EndIf
 	ElseIf (option == oidRestoreItems)
-		If !self.ShowMessage("$Are_You_Sure", true, "$Yes", "$No")
+		If !self.ShowMessage("$Are_You_Sure", True, "$Yes", "$No")
 			Return
 		EndIf
 		moaIsBusy.SetValueInt(1)
@@ -2199,22 +2206,22 @@ Event OnOptionSelect(Int option)
 		moaIsBusy.SetValueInt(0)
 	ElseIf (option == oidLoadPreset1)
 		If !FISSFactory.getFISS()
-			ShowMessage("$mrt_MarkofArkay_MESG_FISS_Error", False)
+			ShowMessage("$mrt_MarkofArkay_MESG_FISS_Error", False, "$Accept")
 			Return
 		EndIf
 		String fName = "MarkofArkayUserSettings" + (iLoadPreset + 1) + ".xml"
 		If ShowMessage("$mrt_MarkofArkay_MESG_Load_Preset", True, "$Yes", "$No")
 			If bLoadUserSettings(fName)
-				ShowMessage("$mrt_MarkofArkay_MESG_Load_Preset_Success", False)
+				ShowMessage("$mrt_MarkofArkay_MESG_Load_Preset_Success", False, "$Accept")
 			Else
-				ShowMessage("$mrt_MarkofArkay_MESG_Load_Preset_Failure", False)
+				ShowMessage("$mrt_MarkofArkay_MESG_Load_Preset_Failure", False, "$Accept")
 			EndIf
 		EndIf
 		ForcePageReset()
 	ElseIf (option == oidSavePreset1)
 		FISSInterface fiss = FISSFactory.getFISS()
 		If !fiss
-			ShowMessage("$mrt_MarkofArkay_MESG_FISS_Error", False)
+			ShowMessage("$mrt_MarkofArkay_MESG_FISS_Error", False, "$Accept")
 			Return
 		EndIf
 		String fName = "MarkofArkayUserSettings" + (iSavePreset + 1) + ".xml"
@@ -2223,22 +2230,24 @@ Event OnOptionSelect(Int option)
 			If !ShowMessage("$mrt_MarkofArkay_MESG_Already_Preset", True, "$Yes", "$No")
 				Return
 			EndIf
+		Else
+			ShowMessage("$mrt_MarkofArkay_MESG_Save_Preset", False, "$Accept")
 		EndIf
 		If bSaveUserSettings(fName)
-			ShowMessage("$mrt_MarkofArkay_MESG_Save_Preset_Success", False)
+			ShowMessage("$mrt_MarkofArkay_MESG_Save_Preset_Success", False, "$Accept")
 		Else
-			ShowMessage("$mrt_MarkofArkay_MESG_Save_Preset_Failure", False)
+			ShowMessage("$mrt_MarkofArkay_MESG_Save_Preset_Failure", False, "$Accept")
 		EndIf
 		ForcePageReset()
 	ElseIf (option == oidLoadDefaultPreset)
 		If ShowMessage("$mrt_MarkofArkay_MESG_Load_Default_Preset", True, "$Yes", "$No")
 			LoadDefaultSettings()
-			ShowMessage("$mrt_MarkofArkay_MESG_Load_Default_Preset_Finish", False)
+			ShowMessage("$mrt_MarkofArkay_MESG_Load_Default_Preset_Finish", False, "$Accept")
 		EndIf
 		ForcePageReset()
 	ElseIf (option == oidStatus)
 		If moaState.GetValue() == 1
-			If !self.ShowMessage("$Are_You_Sure", true, "$Yes", "$No")
+			If !self.ShowMessage("$Are_You_Sure", True, "$Yes", "$No")
 				Return
 			EndIf
 		EndIf
@@ -2252,7 +2261,7 @@ Event OnOptionSelect(Int option)
 		Utility.Wait(1)
 		moaIsBusy.SetValueInt(0)
 	ElseIf (option == oidReset)
-		If !self.ShowMessage("$Are_You_Sure", true, "$Yes", "$No")
+		If !self.ShowMessage("$Are_You_Sure", True, "$Yes", "$No")
 			Return
 		EndIf
 		moaIsBusy.SetValueInt(1)
@@ -2262,7 +2271,7 @@ Event OnOptionSelect(Int option)
 		moaStart()
 		moaIsBusy.SetValueInt(0)
 	ElseIf (option == oidResetPlayer)
-		If !self.ShowMessage("$Are_You_Sure", true, "$Yes", "$No")
+		If !self.ShowMessage("$Are_You_Sure", True, "$Yes", "$No")
 			Return
 		EndIf
 		moaIsBusy.SetValueInt(1)
@@ -3176,6 +3185,9 @@ Event OnOptionDefault(Int option)
 	ElseIf (option == oidOnlyInfectIfHasBaseDis)
 		bOnlyInfectIfHasBaseDis = True
 		SetToggleOptionValue(oidOnlyInfectIfHasBaseDis,bOnlyInfectIfHasBaseDis)
+	ElseIf (option == oidSoulMarkCureDiseases)
+		bSoulMarkCureDiseases = False
+		SetToggleOptionValue(oidSoulMarkCureDiseases,bSoulMarkCureDiseases)
 	ElseIf (option == oidCureDisIfHasBlessing)
 		bCureDisIfHasBlessing = False
 		moaCureDisIfHasBlessing.SetValueInt(0)
@@ -3909,6 +3921,8 @@ Event OnOptionHighlight(Int option)
 		SetInfoText("$mrt_MarkofArkay_DESC_OnlySpawn")
 	ElseIf (option == oidOnlyInfectIfHasBaseDis)
 		SetInfoText("$mrt_MarkofArkay_DESC_OnlyInfectIfHasBaseDis")
+	ElseIf (option == oidSoulMarkCureDiseases)
+		SetInfoText("$mrt_MarkofArkay_DESC_SoulMarkCureDiseases")
 	ElseIf (option == oidCureDisIfHasBlessing)
 		SetInfoText("$mrt_MarkofArkay_DESC_CureDisIfHasBlessing")
 	ElseIf (option == oidTradeLock)
@@ -3993,7 +4007,7 @@ Function moaStop(Bool bReset = False)
 		PlayerRef.RemoveSpell(ArkayCurseTempAlt)
 		PlayerRef.RemoveSpell(MoveCustomMarker)
 		PlayerRef.RemoveSpell(RecallMarker)
-		ReviveScript.DiseaseScript.cureAllDiseases()
+		ReviveScript.DiseaseScript.cureAllDiseases(False)
 		DetachMarker1.MoveToMyEditorLocation()
 		DetachMarker2.MoveToMyEditorLocation()
 		DetachMarker3.MoveToMyEditorLocation()
@@ -4560,6 +4574,7 @@ Bool function bLoadUserSettings(String sFileName)
 	bDiseaseCurse = fiss.loadBool("bDiseaseCurse")
 	bMultipleDisProg = fiss.loadBool("bMultipleDisProg")
 	bOnlyInfectIfHasBaseDis = fiss.loadBool("bOnlyInfectIfHasBaseDis")
+	bSoulMarkCureDiseases = fiss.loadBool("bSoulMarkCureDiseases")
 	bCureDisIfHasBlessing = fiss.loadBool("bCureDisIfHasBlessing")
 	moaCureDisIfHasBlessing.SetValueInt(bCureDisIfHasBlessing As Int)
 	bRespawnMenu = fiss.loadBool("bRespawnMenu")
@@ -4788,13 +4803,13 @@ Bool Function bCheckFissErrors(String strErrors)
 			recalcCursedDisCureCosts()
 		ElseIf strError == "Element fValueMarkScaleSlider not found"
 			fValueMarkScaleSlider = 0.00
-		ElseIf strError == "Element fValueGSoulGemScaleSlider,  not found"
+		ElseIf strError == "Element fValueGSoulGemScaleSlider not found"
 			fValueGSoulGemScaleSlider  = 0.00
 		ElseIf strError == "Element fValueBSoulGemScaleSlider not found"
 			fValueBSoulGemScaleSlider = 0.00
-		ElseIf strError == "Element fValueSoulScaleSlider,  not found"
+		ElseIf strError == "Element fValueSoulScaleSlider not found"
 			fValueSoulScaleSlider = 0.00
-		ElseIf strError == "Element fValueGoldScaleSlider,  not found"
+		ElseIf strError == "Element fValueGoldScaleSlider not found"
 			fValueGoldScaleSlider = 0.00
 		ElseIf strError == "Element fDisPriceMultSlider not found"
 			fDisPriceMultSlider = 0.5
@@ -4809,6 +4824,8 @@ Bool Function bCheckFissErrors(String strErrors)
 			bMultipleDisProg = True
 		ElseIf strError == "Element bOnlyInfectIfHasBaseDis not found"
 			bOnlyInfectIfHasBaseDis = True
+		ElseIf strError == "Element bSoulMarkCureDiseases not found"
+			bSoulMarkCureDiseases = False
 		ElseIf strError == "Element bCureDisIfHasBlessing not found"
 			bCureDisIfHasBlessing = False
 			moaCureDisIfHasBlessing.SetValueInt(0)
@@ -4897,6 +4914,7 @@ bool function bSaveUserSettings(String sFileName)
 	fiss.saveBool("bDiseaseCurse", bDiseaseCurse)
 	fiss.saveBool("bMultipleDisProg", bMultipleDisProg)
 	fiss.saveBool("bOnlyInfectIfHasBaseDis", bOnlyInfectIfHasBaseDis)
+	fiss.saveBool("bSoulMarkCureDiseases", bSoulMarkCureDiseases)
 	fiss.saveBool("bCureDisIfHasBlessing", bCureDisIfHasBlessing)
 	fiss.saveBool("bRespawnMenu", bRespawnMenu)
 	fiss.saveBool("bFollowerProtectPlayer", bFollowerProtectPlayer)
@@ -5125,6 +5143,7 @@ function LoadDefaultSettings()
 	bDiseaseCurse = False
 	bMultipleDisProg = True
 	bOnlyInfectIfHasBaseDis = True
+	bSoulMarkCureDiseases = False
 	bCureDisIfHasBlessing = False
 	moaCureDisIfHasBlessing.SetValueInt(0)
 	bRespawnMenu = False

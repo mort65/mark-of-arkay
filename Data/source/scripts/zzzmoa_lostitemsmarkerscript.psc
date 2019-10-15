@@ -17,7 +17,10 @@ Event OnActivate(ObjectReference akActionRef)
 		If ReviveScript.ItemScript.bIsItemsRemoved || PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt) || ReviveScript.skillscript.bSkillReduced()
 			Debug.Notification("$mrt_MarkofArkay_Notification_SoulMark_Activated")
 			Self.MoveToMyEditorLocation()
-			ReviveScript.ItemScript.RestoreLostItems(PlayerRef)
+			If ConfigMenu.bSoulMarkCureDiseases 
+				ReviveScript.DiseaseScript.cureAllDiseases(False)
+			EndIf
+			ReviveScript.ItemScript.RestoreLostItems(PlayerRef)			
 			If moaRetrieveLostItems.IsRunning()
 				moaRetrieveLostItems.SetStage(20)
 			EndIf

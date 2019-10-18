@@ -13,17 +13,17 @@ Message Property moaRemoveAllExtraMarksConfirm Auto
 Actor Property PlayerRef Auto
 ObjectReference Marker
 Bool bExtraAdded = False
-Bool bExternallyAdded = False
 Bool bExtraInList = False
 Bool bExtraMarkersChanged = False
 Bool bExtraRemoved = False
+Bool bCanAddPlayerCell = False
 
 Event OnEffectStart(Actor akTarget, Actor akCaster)
 	If akCaster != PlayerRef
 		Return
 	EndIf
 	If PlayerRef.GetParentCell() == ConfigMenu.ReviveScript.DefaultCell
-		Debug.Notification("$mrt_MarkofArkay_Notification_Mark_Marker_Cannot_Mark")
+		Debug.Notification("$mrt_MarkofArkay_Notification_Mark_Marker_Forbidden")
 		Return
 	EndIf
 	If ( PlayerRef.GetItemCount(MarkOfArkay) < ConfigMenu.fMarkCastSlider)
@@ -37,6 +37,7 @@ Event OnEffectStart(Actor akTarget, Actor akCaster)
 	bExtraInList = False
 	bExtraRemoved = False
 	bExtraMarkersChanged = False
+	bCanAddPlayerCell = bCanAddPlayerCell()
 	Int iMessage = 0
 	Int iButton = 0
 	While !bBreak
@@ -68,29 +69,18 @@ Event OnEffectStart(Actor akTarget, Actor akCaster)
 			iButton = moaMarkMenu080.Show()
 			If iButton == -1
 			ElseIf iButton == 0 ;Add
-				If bCanAddPlayerCell()
-					bExtraInList = False
-					Int i = ExtraCustomMarkerList.GetSize()
-					While i > 0 && !bExtraInList
-						i -= 1
-						If ExtraCustomMarkerList.GetAt(i)
-							If (ExtraCustomMarkerList.GetAt(i) As ObjectReference).GetParentCell() == PlayerRef.GetParentCell()
-								bExtraInList = True
-							EndIf
-						EndIf
-					EndWhile
-					If bExtraInList
+				If bCanAddPlayerCell
+					If iIsCurentCellMarked(1)
 						Debug.Notification("$mrt_MarkofArkay_Notification_Mark_Already_Marked")
 					Else
+						bExtraInList = False
 						bExtraAdded = False
-						bExternallyAdded = False
-						If !bExtraAdded && !bExternallyAdded
+						If !bExtraAdded
 							If PlayerRef.GetCurrentLocation()
 								Marker = ConfigMenu.Revivescript.RespawnScript.getCenterMarker(PlayerRef.GetCurrentLocation())
 								If Marker && (Marker.GetParentCell() == PlayerRef.GetParentCell())
-									If ConfigMenu.ReviveScript.RespawnScript.ExternalLocationMarkerList.HasForm(Marker) ||\
-									ConfigMenu.ReviveScript.RespawnScript.ExternalMarkerList.HasForm(Marker)
-										bExternallyAdded = True
+									If bIsMarkerInList(Marker)
+										bExtraInList = True
 									Else
 										ExtraCustomMarkerList.AddForm(Marker)
 										bExtraAdded = True
@@ -99,12 +89,11 @@ Event OnEffectStart(Actor akTarget, Actor akCaster)
 								EndIf
 							EndIf
 						EndIf
-						If !bExtraAdded && !bExternallyAdded
+						If !bExtraAdded
 							Marker = Game.FindClosestReferenceOfTypeFromRef(COCMarkerHeading As Form,PlayerRef,50000.0)
 							If Marker && (Marker.GetParentCell() == PlayerRef.GetParentCell())
-								If ConfigMenu.ReviveScript.RespawnScript.ExternalLocationMarkerList.HasForm(Marker) ||\
-								ConfigMenu.ReviveScript.RespawnScript.ExternalMarkerList.HasForm(Marker)
-									bExternallyAdded = True
+								If bIsMarkerInList(Marker)
+									bExtraInList = True
 								Else
 									ExtraCustomMarkerList.AddForm(Marker)
 									bExtraAdded = True
@@ -114,13 +103,14 @@ Event OnEffectStart(Actor akTarget, Actor akCaster)
 						EndIf
 						If bExtraAdded
 							Debug.Notification("$mrt_MarkofArkay_Notification_Mark_Marker_Added")
-						Else
-							If bExternallyAdded
-								Debug.Notification("$mrt_MarkofArkay_Notification_Mark_Externally_Marked")
-							EndIf
+						ElseIf bExtraInList
+							Debug.Notification("$mrt_MarkofArkay_Notification_Mark_Marker_Already_Added")
+						Else 
 							Debug.Notification("$mrt_MarkofArkay_Notification_Mark_Marker_Cannot_Mark")
 						EndIf
 					EndIf
+				Else
+					Debug.Notification("$mrt_MarkofArkay_Notification_Mark_Marker_Forbidden")
 				EndIf
 			ElseIf iButton == 1 ;Remove
 				Int i = ExtraCustomMarkerList.GetSize()
@@ -139,7 +129,11 @@ Event OnEffectStart(Actor akTarget, Actor akCaster)
 						bExtraMarkersChanged = True
 					EndIf
 					If !bExtraRemoved
-						Debug.Notification("$mrt_MarkofArkay_Notification_Mark_Not_Marked")
+						If iIsCurentCellMarked(2) > 1
+							Debug.Notification("$mrt_MarkofArkay_Notification_Mark_Cannot_Remove_External_Markers")
+						Else
+							Debug.Notification("$mrt_MarkofArkay_Notification_Mark_Not_Marked")
+						EndIf
 					EndIf
 				EndWhile
 			ElseIf iButton == 2 ;Remove all
@@ -149,49 +143,30 @@ Event OnEffectStart(Actor akTarget, Actor akCaster)
 					Debug.Notification("$mrt_MarkofArkay_Notification_Mark_Marker_All_Removed")
 				EndIf
 			ElseIf iButton == 3 ;Check
-				Int i = ExtraCustomMarkerList.GetSize()
-				bool bFound = False
-				While i > 0 && !bFound
-					i -= 1
-					If ExtraCustomMarkerList.GetAt(i) As ObjectReference
-						If (ExtraCustomMarkerList.GetAt(i) As ObjectReference).GetParentCell() == PlayerRef.GetParentCell()
-							Debug.Notification("$mrt_MarkofArkay_Notification_Mark_Marked")
-							bFound = True
-						EndIf
+				If bCanAddPlayerCell
+					bExtraInList = False
+					If iIsCurentCellMarked(1) > 0
+						bExtraInList = True
+						Debug.Notification("$mrt_MarkofArkay_Notification_Mark_Marked")
 					EndIf
-				EndWhile 
-				If !bFound
-					i = ConfigMenu.CustomRespawnPoints.GetSize()
+					If iIsCurentCellMarked(2) > 0
+						bExtraInList = True
+						Debug.Notification("$mrt_MarkofArkay_Notification_Mark_Externally_Marked")
+					EndIf
+					Int i = ConfigMenu.CustomRespawnPoints.GetSize()
+					Bool bFound = False
 					While i > 0 && !bFound
 						i -= 1
 						If (CustomRespawnPoints.GetAt(iIndex) As ObjectReference).GetParentCell() == PlayerRef.GetParentCell()
 							Debug.Notification("$mrt_MarkofArkay_Notification_Mark_Marked_As_Custom")
 							bFound = True
 						EndIf
-					EndWhile
-				EndIf				
-				If !bFound
-					i = ConfigMenu.ReviveScript.RespawnScript.ExternalLocationMarkerList.GetSize()
-					While i > 0 && !bFound
-						i -= 1
-						If (ConfigMenu.ReviveScript.RespawnScript.ExternalLocationMarkerList.GetAt(i) As ObjectReference).GetParentCell() == PlayerRef.GetParentCell()
-							Debug.Notification("$mrt_MarkofArkay_Notification_Mark_Externally_Marked")
-							bFound = True
-						EndIf
-					EndWhile
-				EndIf
-				If !bFound
-					i = ConfigMenu.ReviveScript.RespawnScript.ExternalMarkerList.GetSize()
-					While i > 0 && !bFound
-						i -= 1
-						If (ConfigMenu.ReviveScript.RespawnScript.ExternalMarkerList.GetAt(i) As ObjectReference).GetParentCell() == PlayerRef.GetParentCell()
-							Debug.Notification("$mrt_MarkofArkay_Notification_Mark_Externally_Marked")
-							bFound = True
-						EndIf
-					EndWhile
-				EndIf
-				If !bFound
-					Debug.Notification("$mrt_MarkofArkay_Notification_Mark_Not_Marked")
+					EndWhile				
+					If !bFound && !bExtraInList
+						Debug.Notification("$mrt_MarkofArkay_Notification_Mark_Not_Marked")
+					EndIf
+				Else
+					Debug.Notification("$mrt_MarkofArkay_Notification_Mark_Marker_Forbidden")
 				EndIf
 			ElseIf iButton == 4 ;Back
 				iMessage = 1
@@ -245,5 +220,51 @@ Bool Function bCanAddPlayerCell()
 		Return True
 	EndIf
 	Return False
+EndFunction
+
+
+Int Function iIsCurentCellMarked(Int iList = 0)
+	Int i
+	If !iList || (iList == 1)
+		i = ExtraCustomMarkerList.GetSize()
+		While i > 0
+			i -= 1
+			If ExtraCustomMarkerList.GetAt(i) As ObjectReference
+				If (ExtraCustomMarkerList.GetAt(i) As ObjectReference).GetParentCell() == PlayerRef.GetParentCell()
+					Return 1
+				EndIf
+			EndIf
+		EndWhile
+	EndIf
+	If !iList || (iList == 2)
+		i = ConfigMenu.ReviveScript.RespawnScript.ExternalLocationMarkerList.GetSize()
+		While i > 0
+			i -= 1
+			If (ConfigMenu.ReviveScript.RespawnScript.ExternalLocationMarkerList.GetAt(i) As ObjectReference).GetParentCell() == PlayerRef.GetParentCell()
+				Return 2
+			EndIf
+		EndWhile
+		i = ConfigMenu.ReviveScript.RespawnScript.ExternalMarkerList.GetSize()
+		While i > 0
+			i -= 1
+			If (ConfigMenu.ReviveScript.RespawnScript.ExternalMarkerList.GetAt(i) As ObjectReference).GetParentCell() == PlayerRef.GetParentCell()
+				Return 3
+			EndIf
+		EndWhile
+	EndIf
+	Return 0
+EndFunction
+
+Bool Function bIsMarkerInList(ObjectReference akMarker,Int iList = 0)
+	If iList == 1
+		Return ExtraCustomMarkerList.HasForm(akMarker)
+	ElseIf iList == 2
+		Return ConfigMenu.ReviveScript.RespawnScript.ExternalMarkerList.HasForm(akMarker) ||\
+		ConfigMenu.ReviveScript.RespawnScript.ExternalLocationMarkerList.HasForm(akMarker)
+	Else
+		Return ExtraCustomMarkerList.HasForm(akMarker) ||\
+		ConfigMenu.ReviveScript.RespawnScript.ExternalMarkerList.HasForm(akMarker) ||\
+		ConfigMenu.ReviveScript.RespawnScript.ExternalLocationMarkerList.HasForm(akMarker)
+	EndIf
 EndFunction
 

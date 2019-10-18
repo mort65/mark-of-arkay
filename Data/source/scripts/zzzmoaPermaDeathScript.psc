@@ -1,6 +1,5 @@
 Scriptname zzzmoaPermaDeathScript Extends Quest
 
-Import StringUtil
 zzzmoaReviveMCM Property ConfigMenu Auto
 Actor Property PlayerRef Auto
 String Property LockFileExt Auto
@@ -78,13 +77,14 @@ EndFunction
 
 Bool Function bTagExist(Int iTag,String[] locks) ;Not needed
 	Int i = locks.Length
-	Int iTagLen = GetLength(iTag As String)
+	Int iTagLen = StringUtil.GetLength(iTag As String)
 	While i > 0
 		i -= 1
-		If (Substring(locks[i], 0, GetLength(LockFilePrefix)) == LockFilePrefix) && \
-		(GetLength(locks[i]) > (GetLength(LockFileExt) + iTagLen + 6))
+		If (StringUtil.Substring(locks[i], 0, StringUtil.GetLength(LockFilePrefix)) == LockFilePrefix) && \
+		(StringUtil.GetLength(locks[i]) > (StringUtil.GetLength(LockFileExt) + iTagLen + 6))
 			If ("_" + (iTag As String)) == \
-			Substring(locks[i], GetLength(locks[i]) - (GetLength(LockFileExt) + iTagLen) - 1, iTagLen + 1)
+			StringUtil.Substring(locks[i], StringUtil.GetLength(locks[i]) - \
+			(StringUtil.GetLength(LockFileExt) + iTagLen) - 1, iTagLen + 1)
 				Return True
 			EndIf
 		EndIf

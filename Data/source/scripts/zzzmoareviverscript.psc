@@ -258,7 +258,6 @@ Event OnPlayerLoadGame()
 	If ConfigMenu.bIsEffectEnabled
 		PlayerRef.AddPerk(Invulnerable) ;because when loading a save game usually npcs start moving before player
 	EndIf
-	SetGameVars()
 	If moaLockReset.GetValueInt() == 1
 		ConfigMenu.bMarkRecallCostLock = False
 		ConfigMenu.bTradeLock = False
@@ -269,9 +268,18 @@ Event OnPlayerLoadGame()
 		ConfigMenu.bLockPermaDeath = False
 		moaLockReset.SetValue(0)
 	EndIf
-	DiseaseScript.RegisterForModEvent("MOA_RecalcCursedDisCureCost", "RecalcCursedDisCureCost")
+	SetGameVars()
 	RegisterForSingleUpdate(3.0)
 EndEvent
+
+Function checkMarkers()
+	RespawnScript.RegisterForModEvent("MOA_CheckMarkers","OnCheckingMarkers")
+	Int handle = ModEvent.Create("MOA_CheckMarkers")
+	If (handle)
+		ModEvent.PushForm(handle, GetOwningQuest())
+		ModEvent.Send(Handle)
+	EndIf
+EndFunction
 
 Event OnDying(Actor akKiller)
 	clearAll()
@@ -1858,7 +1866,8 @@ Function SetGameVars()
 	Else
 		ConfigMenu.ToggleFallDamage(False)
 	EndIf
-	RespawnScript.setTavernMarkers(ConfigMenu.moaIsBusy.GetValue() As Bool) ;If initing, reset markers
+	DiseaseScript.RegisterForModEvent("MOA_RecalcCursedDisCureCost", "RecalcCursedDisCureCost")
+	checkMarkers()
 EndFunction
 
 Bool Function bIsRevivable() ;if player can be revived by trading

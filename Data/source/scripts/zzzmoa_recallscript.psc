@@ -5,6 +5,7 @@ zzzmoaReviveMCM Property ConfigMenu Auto
 zzzmoaReviverScript Property ReviveScript Auto
 FormList property MarkerList Auto
 Formlist property ExternalMarkerList Auto
+Formlist property MergedExternalMarkerList Auto
 Formlist Property CityMarkersList Auto
 FormList Property LocationsList Auto
 FormList Property DisabledLocations Auto
@@ -44,14 +45,19 @@ Actor Caster
 Int iMarkerIndex
 
 Event OnEffectStart(Actor akTarget, Actor akCaster)
+	If akCaster == Game.GetPlayer()
+		Caster = Game.GetPlayer()
+	Else
+		Return
+	EndIf
 	If ( !ConfigMenu.bIsRecallRestricted || Game.IsFastTravelEnabled() ) 
-		If ( akCaster.GetItemCount(MarkOfArkay) >= ConfigMenu.fRecallCastSlider )
-			Caster = akCaster
+		If ( Caster.GetItemCount(MarkOfArkay) >= ConfigMenu.fRecallCastSlider )
 			Int iTeleportLocation = ConfigMenu.iTeleportLocation
 			Int iExternalIndex = ConfigMenu.iExternalIndex
 			Int iCustomRPSlot = ConfigMenu.iSelectedCustomRPSlot
+			iTavernIndex = ConfigMenu.iTavernIndex
 			If ( ConfigMenu.bTeleportMenu )
-				ReviveScript.RespawnScript.moaERPCount.SetValue(ExternalMarkerList.GetSize())
+				ReviveScript.RespawnScript.moaERPCount.SetValue(MergedExternalMarkerList.GetSize())
 				Utility.Wait(0.5)
 				iTeleportLocation = TeleportMenu()
 				If (( iTeleportLocation == -1 ) || ( iTeleportLocation > ( ConfigMenu.sRespawnPoints.Length - 1 )))
@@ -284,14 +290,14 @@ Function RandomTeleport()
 		EndIf
 		iIndex += 1
 	EndWhile
-	If ExternalMarkerList.GetSize() > 0
-		iIndex = ExternalMarkerList.GetSize()
+	If MergedExternalMarkerList.GetSize() > 0
+		iIndex = MergedExternalMarkerList.GetSize()
 		While iIndex > 0
 			iIndex -= 1
-			If !(( ExternalMarkerList.GetAt( iIndex ).GetType() != 61 ) || \
-			!ReviveScript.RespawnScript.bCanTeleportToExtMarker( ExternalMarkerList.GetAt( iIndex ) As ObjectReference ) || \
-			( Caster.GetDistance( ExternalMarkerList.GetAt( iIndex ) As ObjectReference ) < ConfigMenu.fRPMinDistanceSlider ))
-				Destinations.AddForm(ExternalMarkerList.GetAt( iIndex ) As ObjectReference)
+			If !(( MergedExternalMarkerList.GetAt( iIndex ).GetType() != 61 ) || \
+			!ReviveScript.RespawnScript.bCanTeleportToExtMarker( MergedExternalMarkerList.GetAt( iIndex ) As ObjectReference ) || \
+			( Caster.GetDistance( MergedExternalMarkerList.GetAt( iIndex ) As ObjectReference ) < ConfigMenu.fRPMinDistanceSlider ))
+				Destinations.AddForm(MergedExternalMarkerList.GetAt( iIndex ) As ObjectReference)
 			EndIf
 		EndWhile
 	EndIf
@@ -372,13 +378,13 @@ Function SendToNearbyCity()
 	If !ReviveScript.RespawnScript.IsInInteriorActual(PlayerMarker)
 		float fDistance
 		Int iIndex
-		If ExternalMarkerList.GetSize() > 0
-			iIndex = iMin(100,ExternalMarkerList.GetSize())
+		If MergedExternalMarkerList.GetSize() > 0
+			iIndex = iMin(100,MergedExternalMarkerList.GetSize())
 			While iIndex > 0
 			iIndex -= 1
-				If ( !fDistance || ( fDistance > PlayerMarker.GetDistance( ExternalMarkerList.GetAt( iIndex ) As ObjectReference ) ) )
-					fDistance = PlayerMarker.GetDistance( ExternalMarkerList.GetAt( iIndex ) As ObjectReference )
-					Marker = ExternalMarkerList.GetAt( iIndex ) As ObjectReference
+				If ( !fDistance || ( fDistance > PlayerMarker.GetDistance( MergedExternalMarkerList.GetAt( iIndex ) As ObjectReference ) ) )
+					fDistance = PlayerMarker.GetDistance( MergedExternalMarkerList.GetAt( iIndex ) As ObjectReference )
+					Marker = MergedExternalMarkerList.GetAt( iIndex ) As ObjectReference
 				EndIf
 			EndWhile
 		EndIf
@@ -478,17 +484,17 @@ Function SendToCheckPoint()
 		Caster.MoveTo( Marker )
 		return
 	EndIf
-	If ExternalMarkerList.GetSize() > 0
-		iIndex = iMin(100,ExternalMarkerList.GetSize())
+	If MergedExternalMarkerList.GetSize() > 0
+		iIndex = iMin(100,MergedExternalMarkerList.GetSize())
 		While iIndex > 0
 			iIndex -= 1
-			If ( ExternalMarkerList.GetAt( iIndex ).GetType() == 61 ) 
-				If ReviveScript.RespawnScript.bCanTeleportToExtMarker( ExternalMarkerList.GetAt( iIndex ) As ObjectReference )
-					If ( Caster.GetParentCell() == ( ExternalMarkerList.GetAt( iIndex ) As ObjectReference ).GetParentCell() )
-						If ( !fDistance || ( fDistance > Caster.GetDistance( ExternalMarkerList.GetAt( iIndex ) As ObjectReference ) ) )
-							If ( Caster.GetDistance(ExternalMarkerList.GetAt( iIndex ) As ObjectReference) >= ConfigMenu.fRPMinDistanceSlider )
-								fDistance = Caster.GetDistance( ExternalMarkerList.GetAt( iIndex ) As ObjectReference )
-								Marker = ExternalMarkerList.GetAt( iIndex ) As ObjectReference
+			If ( MergedExternalMarkerList.GetAt( iIndex ).GetType() == 61 ) 
+				If ReviveScript.RespawnScript.bCanTeleportToExtMarker( MergedExternalMarkerList.GetAt( iIndex ) As ObjectReference )
+					If ( Caster.GetParentCell() == ( MergedExternalMarkerList.GetAt( iIndex ) As ObjectReference ).GetParentCell() )
+						If ( !fDistance || ( fDistance > Caster.GetDistance( MergedExternalMarkerList.GetAt( iIndex ) As ObjectReference ) ) )
+							If ( Caster.GetDistance(MergedExternalMarkerList.GetAt( iIndex ) As ObjectReference) >= ConfigMenu.fRPMinDistanceSlider )
+								fDistance = Caster.GetDistance( MergedExternalMarkerList.GetAt( iIndex ) As ObjectReference )
+								Marker = MergedExternalMarkerList.GetAt( iIndex ) As ObjectReference
 							EndIf
 						EndIf
 					EndIf
@@ -524,15 +530,15 @@ Function SendToCheckPoint()
 			EndIf
 		EndIf
 	EndWhile
-	If ExternalMarkerList.GetSize() > 0
-		iIndex = iMin(100,ExternalMarkerList.GetSize())
+	If MergedExternalMarkerList.GetSize() > 0
+		iIndex = iMin(100,MergedExternalMarkerList.GetSize())
 		While iIndex > 0
 			iIndex -= 1
-			If ( ExternalMarkerList.GetAt( iIndex ).GetType() == 61 ) 
-				If ReviveScript.RespawnScript.bCanTeleportToExtMarker( ExternalMarkerList.GetAt( iIndex ) As ObjectReference )
-					If bInSameLocation( ( ExternalMarkerList.GetAt( iIndex ) As ObjectReference ).GetCurrentLocation() )
-						If ( Caster.GetDistance( ExternalMarkerList.GetAt( iIndex ) As ObjectReference) >= ConfigMenu.fRPMinDistanceSlider )
-							Caster.MoveTo( ExternalMarkerList.GetAt( iIndex ) As ObjectReference )
+			If ( MergedExternalMarkerList.GetAt( iIndex ).GetType() == 61 ) 
+				If ReviveScript.RespawnScript.bCanTeleportToExtMarker( MergedExternalMarkerList.GetAt( iIndex ) As ObjectReference )
+					If bInSameLocation( ( MergedExternalMarkerList.GetAt( iIndex ) As ObjectReference ).GetCurrentLocation() )
+						If ( Caster.GetDistance( MergedExternalMarkerList.GetAt( iIndex ) As ObjectReference) >= ConfigMenu.fRPMinDistanceSlider )
+							Caster.MoveTo( MergedExternalMarkerList.GetAt( iIndex ) As ObjectReference )
 							Return
 						EndIf
 					EndIf
@@ -649,27 +655,42 @@ Int Function TeleportMenu(Int aiMessage = 0, Int aiButton = 0)
 				Return -3 - aiButton ;0-> -3, 1-> -4, 2-> -5
 			EndIf			
 		ElseIf aiMessage == 3
-			If ExternalMarkerList.GetSize() > 8
+			If MergedExternalMarkerList.GetSize() > 7
 				aiButton = ReviveScript.RespawnScript.moaRespawnMenu13_Alt.Show(iIndex)
 				If aiButton == -1
 				ElseIf aiButton == 0 ;Prev
-					iIndex = ichangeVar(iIndex,1,ExternalMarkerList.GetSize(),-1)
+					iIndex = ichangeVar(iIndex,1,MergedExternalMarkerList.GetSize(),-1)
 				ElseIf aiButton == 1 ;Next 
-					iIndex = ichangeVar(iIndex,1,ExternalMarkerList.GetSize(),1)
-				ElseIf aiButton == 2 ;OK
+					iIndex = ichangeVar(iIndex,1,MergedExternalMarkerList.GetSize(),1)
+				ElseIf aiButton == 2 ;Input
+					If ConfigMenu.bUIEOK
+						UITextEntryMenu TextMenu = uiextensions.GetMenu("UITextEntryMenu", True) as UITextEntryMenu
+						TextMenu.SetPropertyString("text", (iIndex) As String)
+						TextMenu.OpenMenu(none, none)
+						String sResult = TextMenu.GetResultString()
+						TextMenu.ResetMenu()
+						If sResult && bIsInteger(sResult) && ((sResult As Int) - 1) > - 1 && ((sResult As Int) - 1) < MergedExternalMarkerList.GetSize()
+							iIndex = (sResult As Int)
+						EndIf
+					EndIf
+				ElseIf aiButton == 3 ;Check
+					ConfigMenu.ShowExtraRPInfo(iIndex - 1,1)
+				ElseIf aiButton == 4 ;OK
 					Return ( iIndex + ( ConfigMenu.sRespawnPoints.Length - 1 ))
-				ElseIf aiButton == 3 ;External(Random)
+				ElseIf aiButton == 5 ;External(Random)
 					Return -1
-				ElseIf aiButton == 4 ;Back
+				ElseIf aiButton == 6 ;Back
 					aiMessage = 1
 				EndIf
 			Else
 				aiButton = moaTeleportMenu13.Show()
 				If aiButton == -1
-				ElseIf aiButton < 8 ;External(1,...,8)
+				ElseIf aiButton < 7 ;External(1,...,7)
 					Return ( aiButton + ( ConfigMenu.sRespawnPoints.Length ))
-				ElseIf aiButton == 8 ;External(Random)
+				ElseIf aiButton == 7 ;External(Random)
 					Return -1
+				ElseIf aiButton == 8 ;Details
+					ConfigMenu.ShowExtraRPInfo(0,7)
 				ElseIf aiButton == 9 ;Back
 					aiMessage = 1
 				EndIf
@@ -857,15 +878,15 @@ Function sendToTOW()
 Endfunction
 
 Bool Function bSendToExternalMarker(Int iExternalIndex)
-	If ExternalMarkerList.GetSize() > 0
-		If ExternalMarkerList.GetSize() > 1  && ( iExternalIndex == -1 || ( iExternalIndex >= ExternalMarkerList.GetSize() ) || ( !ReviveScript.RespawnScript.bCanTeleportToExtMarker( ExternalMarkerList.GetAt( iExternalIndex ) As ObjectReference ) || ( ExternalMarkerList.GetAt( iExternalIndex ).GetType() != 61 ) ) )
-			iMarkerIndex = ReviveScript.RespawnScript.iGetRandomRefFromListWithExclusions(0, ExternalMarkerList.GetSize() - 1, ExternalMarkerList)
+	If MergedExternalMarkerList.GetSize() > 0
+		If MergedExternalMarkerList.GetSize() > 1  && (( iExternalIndex == -1 || ( iExternalIndex >= MergedExternalMarkerList.GetSize() )) || ( !ReviveScript.RespawnScript.bCanTeleportToExtMarker( MergedExternalMarkerList.GetAt( iExternalIndex ) As ObjectReference ) || ( MergedExternalMarkerList.GetAt( iExternalIndex ).GetType() != 61 )))
+			iMarkerIndex = ReviveScript.RespawnScript.iGetRandomRefFromListWithExclusions(0, MergedExternalMarkerList.GetSize() - 1, MergedExternalMarkerList)
 			If iMarkerIndex != -1
-				Caster.MoveTo(  ExternalMarkerList.GetAt(iMarkerIndex) As ObjectReference, abMatchRotation = true )
+				Caster.MoveTo(  MergedExternalMarkerList.GetAt(iMarkerIndex) As ObjectReference, abMatchRotation = true )
 				Return True
 			EndIf
-		ElseIf ( ( ExternalMarkerList.GetAt( iExternalIndex ).GetType() == 61 ) && ( ReviveScript.RespawnScript.bCanTeleportToExtMarker( ExternalMarkerList.GetAt( iExternalIndex ) As ObjectReference ) ) )
-			Caster.MoveTo(  ExternalMarkerList.GetAt( iExternalIndex ) As ObjectReference, abMatchRotation = true )	
+		ElseIf ( ( MergedExternalMarkerList.GetAt( iExternalIndex ).GetType() == 61 ) && ( ReviveScript.RespawnScript.bCanTeleportToExtMarker( MergedExternalMarkerList.GetAt( iExternalIndex ) As ObjectReference ) ) )
+			Caster.MoveTo(  MergedExternalMarkerList.GetAt( iExternalIndex ) As ObjectReference, abMatchRotation = true )	
 			Return True
 		EndIf
 	EndIf

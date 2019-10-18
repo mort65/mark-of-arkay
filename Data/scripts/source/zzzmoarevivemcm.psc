@@ -115,6 +115,7 @@ Int oidLostSkillsInfo
 Int oidRagdollEffect
 Int oidTotalCustomRPSlotSlider
 Int oidSelectedCustomRPSlot_M
+Int oidExtraTeleportLocation_M
 Int oidHostileOptions_M
 Int oidCorpseAsSoulMark
 Int oidSpawnMinLevel_M
@@ -236,6 +237,7 @@ Int Property iSelectedCustomRPSlot = 0 Auto Hidden
 zzzmoaReviverScript Property ReviveScript Auto
 String[] Property sRespawnPoints Auto Hidden
 String[] Property sTaverns Auto Hidden
+String[] Property sExtraRPs Auto Hidden
 Int[] Property iSpawnWeights Auto Hidden
 Int Property iHostileOption = 0 Auto Hidden
 Bool[] Property bRespawnPointsFlags Auto Hidden
@@ -373,6 +375,8 @@ Objectreference Property LocationMarker2 Auto
 ObjectReference Property LostItemsChest Auto
 ObjectReference Property ThiefMarker Auto
 Formlist property ExternalMarkerList Auto
+Formlist property MergedExternalMarkerList Auto
+GlobalVariable Property moaCheckinglMarkers Auto
 Bool Property bDiseaseCurse = False Auto Hidden
 Int Property iTotalBleedOut = 0 Auto Hidden
 Int Property iTotalRespawn = 0 Auto Hidden
@@ -450,6 +454,7 @@ Bool Property bOnlyLoseSkillXP = False Auto Hidden
 Message Property ModVersionError Auto
 GlobalVariable Property moaIsBusy Auto
 GlobalVariable Property moaNoKillMoveOnPlayer Auto
+GlobalVariable Property moaUIExtensionStatus Auto
 Int Property iNameTagBackup Auto Hidden
 
 Event OnPageReset(String page)
@@ -754,18 +759,20 @@ Event OnPageReset(String page)
 		EndIf
 		oidTotalCustomRPSlotSlider = AddSliderOption("$mrt_MarkofArkay_TotalCustomRPSlotSlider_1", fTotalCustomRPSlotSlider, "{0}", flags)
 		SetCursorPosition(15)
-		If (( moaState.getValue() == 1 ) && ( iTeleportLocation == getExternalRPIndex()) && ( ExternalMarkerList.GetSize() > 1 ))
+		If (( moaState.getValue() == 1 ) && (moaCheckinglMarkers.GetValue() == 0.0) && ( iTeleportLocation == getExternalRPIndex()) && ( MergedExternalMarkerList.GetSize() > 1 ))
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
-		If iExternalIndex >= ExternalMarkerList.GetSize()
-			iExternalIndex = -1
+		If (iExternalIndex >= MergedExternalMarkerList.GetSize()) || (iExternalIndex < 0)
+			iExternalIndex = (MergedExternalMarkerList.GetSize())
+		ElseIf MergedExternalMarkerList.GetSize() == 1
+			iExternalIndex = 0
 		EndIf
-		If iExternalIndex == -1
-			oidExternalTeleportLocation = AddTextOption("$mrt_MarkofArkay_ExternalTeleportLocation", "$Random", flags)
+		If (moaCheckinglMarkers.GetValue() == 0.0)
+			oidExtraTeleportLocation_M = AddMenuOption("$mrt_MarkofArkay_ExtraTeleportLocation_M", sExtraRPs[iExternalIndex], flags)
 		Else
-			oidExternalTeleportLocation = AddTextOption("$mrt_MarkofArkay_ExternalTeleportLocation", ( (iExternalIndex + 1) As String ), flags)
+			oidExtraTeleportLocation_M = AddMenuOption("$mrt_MarkofArkay_ExtraTeleportLocation_M", "$Random", OPTION_FLAG_DISABLED)
 		EndIf
 		SetCursorPosition(17)
 		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1))
@@ -1463,8 +1470,8 @@ Event OnPageReset(String page)
 				Else
 					AddTextOption("$mrt_MarkofArkay_Dis_From_Respawn", "$Unknown", flags)
 				EndIf
-			ElseIf (iTeleportLocation == getExternalRPIndex()) && (ExternalMarkerList.GetSize() > 1) && (iExternalIndex != -1)
-				ObjectReference ExtMarker = ExternalMarkerList.GetAt(iExternalIndex) As ObjectReference
+			ElseIf (iTeleportLocation == getExternalRPIndex()) && (MergedExternalMarkerList.GetSize() > 1) && (iExternalIndex != -1)
+				ObjectReference ExtMarker = MergedExternalMarkerList.GetAt(iExternalIndex) As ObjectReference
 				If ( ExtMarker && !ExtMarker.Isdisabled() )
 					Float fDistance = PlayerRef.GetDistance(ExtMarker)
 					If fDistance
@@ -1479,8 +1486,8 @@ Event OnPageReset(String page)
 				Else
 					AddTextOption("$mrt_MarkofArkay_Dis_From_Respawn", "$Unknown", flags)
 				EndIf
-			ElseIf (iTeleportLocation == getExternalRPIndex()) && (ExternalMarkerList.GetSize() == 1)
-				ObjectReference ExtMarker = ExternalMarkerList.GetAt(0) As ObjectReference
+			ElseIf (iTeleportLocation == getExternalRPIndex()) && (MergedExternalMarkerList.GetSize() == 1)
+				ObjectReference ExtMarker = MergedExternalMarkerList.GetAt(0) As ObjectReference
 				If ( ExtMarker && !ExtMarker.Isdisabled() )
 					Float fDistance = PlayerRef.GetDistance(ExtMarker)
 					If fDistance
@@ -1823,16 +1830,6 @@ Event OnOptionSelect(Int option)
 	ElseIf (option == oidShiftBackRespawn )
 		bShiftBackRespawn = !bShiftBackRespawn
 		SetToggleOptionValue(oidShiftBackRespawn,bShiftBackRespawn)
-	ElseIf (option == oidExternalTeleportLocation)
-		iExternalIndex += 1
-		If iExternalIndex >= ExternalMarkerList.GetSize()
-			iExternalIndex = -1
-		EndIf
-		If iExternalIndex == -1
-			SetTextOptionValue(option, "$Random")
-		Else
-			SetTextOptionValue(option, ( (iExternalIndex + 1) As String ))
-		EndIf
 	ElseIf (option == oidRespawnPoint0)
 		bRespawnPointsFlags[0] = !bRespawnPointsFlags[0]
 		SetToggleOptionValue(oidRespawnPoint0,bRespawnPointsFlags[0])
@@ -2798,6 +2795,10 @@ Event OnOptionMenuOpen(Int option)
 		SetMenuDialogoptions(sGetCustomRPs())
 		SetMenuDialogStartIndex(iSelectedCustomRPSlot)
 		SetMenuDialogDefaultIndex(0)
+	ElseIf (option == oidExtraTeleportLocation_M)
+		SetMenuDialogoptions(sExtraRPs)
+		SetMenuDialogStartIndex(iExternalIndex)
+		SetMenuDialogDefaultIndex(MergedExternalMarkerList.GetSize())
 	ElseIf (option == oidHostileOptions_M)
 		SetMenuDialogoptions(sGetHostileOptions())
 		SetMenuDialogStartIndex(iHostileOption)
@@ -2837,6 +2838,9 @@ Event OnOptionMenuAccept(Int option, Int index)
 	    iSelectedCustomRPSlot = index
 		SetCustomRPFlags()
 		SetMenuOptionValue(oidSelectedCustomRPSlot_M, sGetCustomRPs()[iSelectedCustomRPSlot])
+	ElseIf (option == oidExtraTeleportLocation_M)
+	    iExternalIndex = index
+		SetMenuOptionValue(oidExtraTeleportLocation_M, sExtraRPs[iExternalIndex])
 	ElseIf (option == oidEnableSave_M)
 	    iSaveOption = index
 		SetSavingOption(iSaveOption)
@@ -3114,9 +3118,6 @@ Event OnOptionDefault(Int option)
 	ElseIf (option == oidEffect)
 		bIsEffectEnabled = False
 		SetToggleOptionValue(oidEffect, bIsEffectEnabled)
-	ElseIf (option == oidExternalTeleportLocation)
-		iExternalIndex = -1
-		SetTextOptionValue(option,"$Random")
 	ElseIf (option == oidRespawnPoint0)
 		bRespawnPointsFlags[0] = True
 		SetToggleOptionValue(oidRespawnPoint0,bRespawnPointsFlags[0])
@@ -3200,6 +3201,9 @@ Event OnOptionDefault(Int option)
 		iSelectedCustomRPSlot = 0
 		SetCustomRPFlags()
 		SetMenuOptionValue(oidSelectedCustomRPSlot_M, sGetCustomRPs()[iSelectedCustomRPSlot])
+	ElseIf (option == oidExtraTeleportLocation_M)
+		iExternalIndex = ExternalMarkerList.GetSize()
+		SetMenuOptionValue(oidExtraTeleportLocation_M, sExtraRPs[iExternalIndex])
 	ElseIf (option == oidJail)
 		bSendToJail = False
 		SetToggleOptionValue(oidJail,bSendToJail)
@@ -3751,8 +3755,6 @@ Event OnOptionHighlight(Int option)
 		SetInfoText("$mrt_MarkofArkay_DESC_SoulMarkStay")
 	ElseIf (option == oidRecallRestriction)
 		SetInfoText("$mrt_MarkofArkay_DESC_RecallRestriction")
-	ElseIf (option == oidExternalTeleportLocation)
-		SetInfoText("$mrt_MarkofArkay_DESC_ExternalTeleportLocation")
 	ElseIf (option == oidShiftBack)
 		SetInfoText("$mrt_MarkofArkay_DESC_ShiftBack")
 	ElseIf (option == oidShiftBackRespawn)
@@ -3907,6 +3909,8 @@ Event OnOptionHighlight(Int option)
 		SetInfoText("$mrt_MarkofArkay_DESC_TotalCustomRPSlotSlider")
 	ElseIf (option == oidSelectedCustomRPSlot_M)
 		SetInfoText("$mrt_MarkofArkay_DESC_SelectedCustomRPSlot_M")
+	ElseIf (option == oidExtraTeleportLocation_M)
+		SetInfoText("$mrt_MarkofArkay_DESC_ExtraTeleportLocation_M")
 	ElseIf (option == oidSpawnBringAllies)
 		SetInfoText("$mrt_MarkofArkay_DESC_SpawnBringAllies")
 	ElseIf (option == oidSpawnHostile)
@@ -4214,7 +4218,7 @@ Function setRPs()
 	sRespawnPoints[10] = "$Inn"
 	sRespawnPoints[11] = "$LastSleepLocation"
 	sRespawnPoints[12] = "$Custom"
-	sRespawnPoints[13] = "$External"
+	sRespawnPoints[13] = "$Extra"
 	sRespawnPoints[14] = "$Checkpoint"
 	sRespawnPoints[15] = "$Nearby"
 	sRespawnPoints[16] = "$Random"
@@ -4283,6 +4287,23 @@ String[] Function sGetSaveOptions()
 	sSaveOptions[3] = "$mrt_MarkofArkay_SaveOptions_3"
 	sSaveOptions[4] = "$mrt_MarkofArkay_SaveOptions_4"
 	Return sSaveOptions
+EndFunction
+
+Function setExtraRPs()
+	sExtraRPs = Utility.CreateStringArray(MergedExternalMarkerList.GetSize() + 1)
+	Int i = 0
+	While i < MergedExternalMarkerList.GetSize()
+		sExtraRPs[i] = (i + 1) As String
+		If (MergedExternalMarkerList.GetAt(i) As ObjectReference).GetParentCell() &&\
+		(MergedExternalMarkerList.GetAt(i) As ObjectReference).GetParentCell().GetName()
+			sExtraRPs[i] = sExtraRPs[i] + ": " + (MergedExternalMarkerList.GetAt(i) As ObjectReference).GetParentCell().GetName()
+			If StringUtil.GetLength(sExtraRPs[i]) > 19
+				sExtraRPs[i] = StringUtil.Substring(sExtraRPs[i], 0, len = 16) + "..."
+			EndIf
+		EndIf
+		i += 1
+	EndWhile
+	sExtraRPs[i] = "$Random"
 EndFunction
 
 String[] Function sGetHostileOptions()
@@ -5306,6 +5327,41 @@ Function ShowCustomSlotsInfo()
 	EndWhile
 EndFunction
 
+Function ShowExtraRPInfo(Int iFirstIndex = 0,Int iLen = 0)
+	Int i = iFirstIndex
+	Int iLast = MergedExternalMarkerList.GetSize() - 1
+	If iLen > 0
+		iLast = imin(iFirstIndex + (iLen - 1),MergedExternalMarkerList.GetSize() - 1)
+	EndIf
+	String sCellName
+	Cell aCell
+	String sType
+	While i < iLast + 1
+		sCellName = "No Name"
+		aCell = None
+		sType = "Unknown"
+		If MergedExternalMarkerList.GetAt(i) As ObjectReference
+			If (MergedExternalMarkerList.GetAt(i) As ObjectReference).GetParentCell()
+				aCell = (MergedExternalMarkerList.GetAt(i) As ObjectReference).GetParentCell()
+			EndIf
+			If aCell
+				If aCell.GetName()
+					sCellName = aCell.GetName()
+				EndIf
+				If aCell.IsInterior()
+					sType = "Interior"
+				Else
+					sType = "Exterior"
+				EndIf
+			EndIf
+			Debug.Notification("Mark of Arkay - " + (i + 1) + ": " + sCellName + " (" + sType + ")")
+		Else
+			Debug.Notification("Mark of Arkay - " + (i + 1) + ": Empty")
+		EndIf
+		i += 1
+	EndWhile
+EndFunction
+
 Function checkMods()
 	bSKSEOK = bCheckSKSE()
 	bDLIEOK = bCheckDLIE()
@@ -5313,6 +5369,7 @@ Function checkMods()
 	bFISSOK = bCheckFISS()
 	bARCCOK = bCheckARCC()
 	bPUOK = bCheckPUtil()
+	moaUIExtensionStatus.SetValueInt(bUIEOK As Int)
 EndFunction
 
 Bool Function bCheckSKSE()

@@ -377,7 +377,7 @@ ObjectReference Property LostItemsChest Auto
 ObjectReference Property ThiefMarker Auto
 Formlist property ExternalMarkerList Auto
 Formlist property MergedExternalMarkerList Auto
-GlobalVariable Property moaCheckinglMarkers Auto
+GlobalVariable Property moaCheckingMarkers Auto
 Bool Property bDiseaseCurse = False Auto Hidden
 Int Property iTotalBleedOut = 0 Auto Hidden
 Int Property iTotalRespawn = 0 Auto Hidden
@@ -739,7 +739,7 @@ Event OnPageReset(String page)
 		EndIf
 		oidTeleportLocation_M = AddMenuOption("$mrt_MarkofArkay_TeleportLocation_M", sRespawnPoints[iTeleportLocation], flags)
 		SetCursorPosition(9)
-		If ( moaState.getValue() == 1 ) && (getTavernRPIndex() == iTeleportLocation)
+		If ( moaState.getValue() == 1 )
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
@@ -751,13 +751,12 @@ Event OnPageReset(String page)
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
-		If (moaCheckinglMarkers.GetValue() == 0.0)
+		If (moaCheckingMarkers.GetValue() == 0.0)
 			oidSelectedCustomRPSlot_M = AddMenuOption("$mrt_MarkofArkay_SelectedCustomRPSlot_M", shortenString(sCustomRPs[iSelectedCustomRPSlot],19), flags)
 		Else
 			oidSelectedCustomRPSlot_M = AddMenuOption("$mrt_MarkofArkay_SelectedCustomRPSlot_M", "$CustopRP_Slot1", OPTION_FLAG_DISABLED)
 		EndIf
 		SetCursorPosition(13)
-		
 		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled)
 			flags =	OPTION_FLAG_NONE
 		Else
@@ -765,7 +764,7 @@ Event OnPageReset(String page)
 		EndIf
 		oidTotalCustomRPSlotSlider = AddSliderOption("$mrt_MarkofArkay_TotalCustomRPSlotSlider_1", fTotalCustomRPSlotSlider, "{0}", flags)
 		SetCursorPosition(15)
-		If (( moaState.getValue() == 1 ) && (moaCheckinglMarkers.GetValue() == 0.0) && ( iTeleportLocation == getExternalRPIndex()) && ( MergedExternalMarkerList.GetSize() > 0 ))
+		If (( moaState.getValue() == 1 ) && (moaCheckingMarkers.GetValue() == 0.0) && ( MergedExternalMarkerList.GetSize() > 0 ))
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
@@ -775,7 +774,7 @@ Event OnPageReset(String page)
 		ElseIf MergedExternalMarkerList.GetSize() == 1
 			iExternalIndex = 0
 		EndIf
-		If (moaCheckinglMarkers.GetValue() == 0.0)
+		If (moaCheckingMarkers.GetValue() == 0.0)
 			oidExtraTeleportLocation_M = AddMenuOption("$mrt_MarkofArkay_ExtraTeleportLocation_M", shortenString(sExtraRPs[iExternalIndex],19), flags)
 		Else
 			oidExtraTeleportLocation_M = AddMenuOption("$mrt_MarkofArkay_ExtraTeleportLocation_M", "$Random", OPTION_FLAG_DISABLED)

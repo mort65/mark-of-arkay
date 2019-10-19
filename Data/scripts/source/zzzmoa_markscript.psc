@@ -117,29 +117,33 @@ Event OnEffectStart(Actor akTarget, Actor akCaster)
 					Debug.Notification("$mrt_MarkofArkay_Notification_Mark_Marker_Forbidden")
 				EndIf
 			ElseIf iButton == 1 ;Remove this place
-				Int i = ExtraCustomMarkerList.GetSize()
-				bExtraRemoved = False
-				While i > 0
-					i -= 1
-					If ExtraCustomMarkerList.GetAt(i) As ObjectReference
-						If (ExtraCustomMarkerList.GetAt(i) As ObjectReference).GetParentCell() == PlayerRef.GetParentCell()
-							ExtraCustomMarkerList.RemoveAddedForm(ExtraCustomMarkerList.GetAt(i) As ObjectReference)
-							Debug.Notification("$mrt_MarkofArkay_Notification_Mark_Marker_Removed")
-							bExtraMarkersChanged = True
-							bExtraRemoved = True
-						EndIf
-					Else
-						ExtraCustomMarkerList.RemoveAddedForm(ExtraCustomMarkerList.GetAt(i))
-						bExtraMarkersChanged = True
-					EndIf
-					If !bExtraRemoved
-						If iIsCurentCellMarked(2) > 1
-							Debug.Notification("$mrt_MarkofArkay_Notification_Mark_Cannot_Remove_External_Markers")
+				If ExtraCustomMarkerList.GetSize() > 0
+					Int i = ExtraCustomMarkerList.GetSize()
+					bExtraRemoved = False
+					While i > 0
+						i -= 1
+						If ExtraCustomMarkerList.GetAt(i) As ObjectReference
+							If (ExtraCustomMarkerList.GetAt(i) As ObjectReference).GetParentCell() == PlayerRef.GetParentCell()
+								ExtraCustomMarkerList.RemoveAddedForm(ExtraCustomMarkerList.GetAt(i) As ObjectReference)
+								Debug.Notification("$mrt_MarkofArkay_Notification_Mark_Marker_Removed")
+								bExtraMarkersChanged = True
+								bExtraRemoved = True
+							EndIf
 						Else
-							Debug.Notification("$mrt_MarkofArkay_Notification_Mark_Not_Marked")
+							ExtraCustomMarkerList.RemoveAddedForm(ExtraCustomMarkerList.GetAt(i))
+							bExtraMarkersChanged = True
 						EndIf
-					EndIf
-				EndWhile
+						If !bExtraRemoved
+							If iIsCurentCellMarked(2) > 1
+								Debug.Notification("$mrt_MarkofArkay_Notification_Mark_Cannot_Remove_External_Markers")
+							Else
+								Debug.Notification("$mrt_MarkofArkay_Notification_Mark_Not_Marked")
+							EndIf
+						EndIf
+					EndWhile
+				Else
+					Debug.Notification("$mrt_MarkofArkay_Notification_Mark_Marker_Already_Removed")
+				EndIf
 			ElseIf iButton == 2 ;Remove by index
 				If ExtraCustomMarkerList.GetSize() > 0
 					Int i = 1
@@ -179,19 +183,25 @@ Event OnEffectStart(Actor akTarget, Actor akCaster)
 								bExtraMarkersChanged = True
 							EndIf
 						ElseIf aiButton == 5 ;Random
-							i = iGetRandomWithExclusion(1,ExtraCustomMarkerList.GetSize(),i)
+							If ExtraCustomMarkerList.GetSize() > 1
+								i = iGetRandomWithExclusion(1,ExtraCustomMarkerList.GetSize(),i)
+							EndIf
 						ElseIf aiButton == 6 ;Back
 							abBreak = True
 						EndIf
 					EndWhile
 				Else
-					Debug.Notification("$mrt_MarkofArkay_Notification_Mark_Marker_All_Removed")
+					Debug.Notification("$mrt_MarkofArkay_Notification_Mark_Marker_All_Already_Removed")
 				EndIf
 			ElseIf iButton == 3 ;Remove all
-				If moaRemoveAllExtraMarksConfirm.Show()
-					ExtraCustomMarkerList.Revert()
-					bExtraMarkersChanged = True
-					Debug.Notification("$mrt_MarkofArkay_Notification_Mark_Marker_All_Removed")
+				If ExtraCustomMarkerList.GetSize() > 0
+					If moaRemoveAllExtraMarksConfirm.Show()
+						ExtraCustomMarkerList.Revert()
+						bExtraMarkersChanged = True
+						Debug.Notification("$mrt_MarkofArkay_Notification_Mark_Marker_All_Removed")
+					EndIf
+				Else
+					Debug.Notification("$mrt_MarkofArkay_Notification_Mark_Marker_All_Already_Removed")
 				EndIf
 			ElseIf iButton == 4 ;Check
 				If bCanAddPlayerCell

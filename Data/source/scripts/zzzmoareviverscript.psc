@@ -272,11 +272,14 @@ Event OnPlayerLoadGame()
 	RegisterForSingleUpdate(3.0)
 EndEvent
 
-Function checkMarkers()
+Function checkMarkers(Bool bTavern = True, Bool bExtra = True, Bool bCustom = True)
 	RespawnScript.RegisterForModEvent("MOA_CheckMarkers","OnCheckingMarkers")
 	Int handle = ModEvent.Create("MOA_CheckMarkers")
 	If (handle)
 		ModEvent.PushForm(handle, GetOwningQuest())
+		ModEvent.PushBool(handle, bTavern)
+		ModEvent.PushBool(handle, bExtra)
+		ModEvent.PushBool(handle, bCustom)
 		ModEvent.Send(Handle)
 	EndIf
 EndFunction

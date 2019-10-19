@@ -15,6 +15,7 @@ ObjectReference Marker
 Bool bExtraAdded = False
 Bool bExtraInList = False
 Bool bExtraMarkersChanged = False
+Bool bCustomMarkersChanged = False
 Bool bExtraRemoved = False
 Bool bCanAddPlayerCell = False
 
@@ -176,13 +177,12 @@ Event OnEffectStart(Actor akTarget, Actor akCaster)
 		EndIf
 	EndWhile
 	Marker = None
-	If bExtraMarkersChanged
-		ConfigMenu.ReviveScript.checkMarkers()
-	EndIf
 	If iIndex > -1 && iIndex < CustomRespawnPoints.getSize() && \
 	(ConfigMenu.isCustomSlotEmpty(iIndex) || moaMarkOverwriteConfirm.Show())
 		Marker = CustomRespawnPoints.GetAt(iIndex) As ObjectReference
+		bCustomMarkersChanged = True
 	Else
+		ConfigMenu.ReviveScript.checkMarkers(False,bExtraMarkersChanged,False)
 		If bExtraAdded && ConfigMenu.fMarkCastSlider > 0.0	
 			PlayerRef.RemoveItem(MarkOfArkay,ConfigMenu.fMarkCastSlider As Int,False)
 		EndIf
@@ -197,6 +197,7 @@ Event OnEffectStart(Actor akTarget, Actor akCaster)
 		ConfigMenu.iSelectedCustomRPSlot = iIndex
 		ConfigMenu.SetCustomRPFlags()
 	EndIf
+	ConfigMenu.ReviveScript.checkMarkers(False,bExtraMarkersChanged,bCustomMarkersChanged)
 	If ConfigMenu.fMarkCastSlider > 0.0	
 		PlayerRef.RemoveItem(MarkOfArkay,ConfigMenu.fMarkCastSlider As Int,False)
 	EndIf

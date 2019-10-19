@@ -143,11 +143,21 @@ Bool Function bCheckTavernMarkers()
 	Return True
 Endfunction
 
-Event OnCheckingMarkers(Form sender)
+Event OnCheckingMarkers(Form sender,Bool bTavern, Bool bExtra, Bool bCustom)
+	If !bTavern && !bExtra && !bCustom
+		Return
+	EndIf
 	moaCheckinglMarkers.SetValue(1.0)
 	ConfigMenu.bIsNotificationEnabled && Debug.Notification("$mrt_MarkofArkay_Notification_Checking_Markers_Started")
-	setTavernMarkers(ConfigMenu.moaIsBusy.GetValue() As Bool)
-	AddExternalMarkers()
+	If bTavern
+		setTavernMarkers(ConfigMenu.moaIsBusy.GetValue() As Bool)
+	EndIf
+	If bExtra
+		AddExternalMarkers()
+	EndIf
+	If bCustom
+		ConfigMenu.setCustomRPS()
+	EndIf
 	moaCheckinglMarkers.SetValue(0.0)	
 	ConfigMenu.bIsNotificationEnabled && Debug.Notification("$mrt_MarkofArkay_Notification_Checking_Markers_Finished")
 EndEvent
@@ -192,11 +202,11 @@ Function AddExternalMarkers()
 EndFunction
 
 Function setTavernMarkers(Bool bReset = False)
+	Debug.TraceConditional("MarkOfArkay: Adding inn markers ...",ConfigMenu.bIsLoggingEnabled)
 	If !bReset && bCheckTavernMarkers()
 		Debug.TraceConditional("MarkOfArkay: All inn markers are already added.",ConfigMenu.bIsLoggingEnabled)
 		Return
 	EndIf
-	Debug.TraceConditional("MarkOfArkay: Adding inn markers ...",ConfigMenu.bIsLoggingEnabled)
 	TavernMarkers = Utility.CreateFormArray(InnLocations.GetSize())
 	TavernCapitalMarkers = Utility.CreateFormArray(InnLocationsCapital.GetSize())
 	Int i = InnLocations.GetSize()

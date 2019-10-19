@@ -5360,11 +5360,19 @@ Function ShowCustomSlotsInfo()
 	EndWhile
 EndFunction
 
-Function ShowExtraRPInfo(Int iFirstIndex = 0,Int iLen = 0)
+Function ShowExtraRPInfo(Int iFirstIndex = 0,Int iLen = 0,Int iList = 0)
+	FormList kList 
+	If iList == 1
+		kList = ExternalMarkerList
+	ElseIf iList == 2
+		kList = ReviveScript.RespawnScript.ExtraCustomMarkerList
+	Else
+		kList = MergedExternalMarkerList
+	EndIf
 	Int i = iFirstIndex
-	Int iLast = MergedExternalMarkerList.GetSize() - 1
+	Int iLast = kList.GetSize() - 1
 	If iLen > 0
-		iLast = imin(iFirstIndex + (iLen - 1),MergedExternalMarkerList.GetSize() - 1)
+		iLast = imin(iFirstIndex + (iLen - 1),kList.GetSize() - 1)
 	EndIf
 	String sCellName
 	Cell aCell
@@ -5373,9 +5381,9 @@ Function ShowExtraRPInfo(Int iFirstIndex = 0,Int iLen = 0)
 		sCellName = "No Name"
 		aCell = None
 		sType = "Unknown"
-		If MergedExternalMarkerList.GetAt(i) As ObjectReference
-			If (MergedExternalMarkerList.GetAt(i) As ObjectReference).GetParentCell()
-				aCell = (MergedExternalMarkerList.GetAt(i) As ObjectReference).GetParentCell()
+		If kList.GetAt(i) As ObjectReference
+			If (kList.GetAt(i) As ObjectReference).GetParentCell()
+				aCell = (kList.GetAt(i) As ObjectReference).GetParentCell()
 			EndIf
 			If aCell
 				If aCell.GetName()

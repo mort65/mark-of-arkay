@@ -1,5 +1,6 @@
 Scriptname zzzmoa_MarkScript extends activemagiceffect  
 
+Import zzzmoautilscript
 FormList property CustomRespawnPoints Auto
 Formlist property ExtraCustomMarkerList Auto
 zzzmoaReviveMCM Property ConfigMenu Auto
@@ -9,6 +10,7 @@ Message Property moaMarkMenu08 Auto
 Message Property moaMarkMenu080 Auto
 Static Property COCMarkerHeading Auto
 Message Property moaMarkOverwriteConfirm Auto
+Message Property moaRemoveExtraMarkerConfirm Auto
 Message Property moaRemoveAllExtraMarksConfirm Auto
 Actor Property PlayerRef Auto
 ObjectReference Marker
@@ -41,6 +43,7 @@ Event OnEffectStart(Actor akTarget, Actor akCaster)
 	bCanAddPlayerCell = bCanAddPlayerCell()
 	Int iMessage = 0
 	Int iButton = 0
+	Int aiButton = 0
 	While !bBreak
 		If iButton == -1
 		ElseIf iMessage == 0
@@ -113,7 +116,7 @@ Event OnEffectStart(Actor akTarget, Actor akCaster)
 				Else
 					Debug.Notification("$mrt_MarkofArkay_Notification_Mark_Marker_Forbidden")
 				EndIf
-			ElseIf iButton == 1 ;Remove
+			ElseIf iButton == 1 ;Remove this place
 				Int i = ExtraCustomMarkerList.GetSize()
 				bExtraRemoved = False
 				While i > 0
@@ -137,13 +140,60 @@ Event OnEffectStart(Actor akTarget, Actor akCaster)
 						EndIf
 					EndIf
 				EndWhile
-			ElseIf iButton == 2 ;Remove all
+			ElseIf iButton == 2 ;Remove by index
+				If ExtraCustomMarkerList.GetSize() > 0
+					Int i = 1
+					Bool abBreak = False
+					While !abBreak
+						aiButton = ConfigMenu.ReviveScript.RespawnScript.moaRespawnMenu13_Alt.Show(i)
+						If aiButton == -1
+						ElseIf aiButton == 0 ;Prev
+							i = ichangeVar(i,1,ExtraCustomMarkerList.GetSize(),-1)
+						ElseIf aiButton == 1 ;Next
+							i = ichangeVar(i,1,ExtraCustomMarkerList.GetSize(),1)
+						ElseIf aiButton == 2 ;Input
+							If ConfigMenu.bUIEOK
+								UITextEntryMenu TextMenu = uiextensions.GetMenu("UITextEntryMenu", True) as UITextEntryMenu
+								TextMenu.SetPropertyString("text", (i) As String)
+								TextMenu.OpenMenu(none, none)
+								String sResult = TextMenu.GetResultString()
+								TextMenu.ResetMenu()
+								If sResult && bIsInteger(sResult) && ((sResult As Int) - 1) > - 1 && ((sResult As Int) - 1) < ExtraCustomMarkerList.GetSize()
+									i = (sResult As Int)
+								EndIf
+							EndIf
+						ElseIf aiButton == 3 ;Check
+							ConfigMenu.ShowExtraRPInfo(i - 1,1,2)
+						ElseIf aiButton == 4 ;OK
+							If moaRemoveExtraMarkerConfirm.Show()
+								ExtraCustomMarkerList.RemoveAddedForm(ExtraCustomMarkerList.GetAt(i - 1))
+								Debug.Notification("$mrt_MarkofArkay_Notification_Mark_Marker_Removed")
+								If ExtraCustomMarkerList.GetSize() > 0
+									If i > ExtraCustomMarkerList.GetSize()
+										i = ExtraCustomMarkerList.GetSize()
+									EndIf
+								Else
+									Debug.Notification("$mrt_MarkofArkay_Notification_Mark_Marker_All_Removed")
+									abBreak = True
+								EndIf
+								bExtraMarkersChanged = True
+							EndIf
+						ElseIf aiButton == 5 ;Random
+							i = iGetRandomWithExclusion(1,ExtraCustomMarkerList.GetSize(),i)
+						ElseIf aiButton == 6 ;Back
+							abBreak = True
+						EndIf
+					EndWhile
+				Else
+					Debug.Notification("$mrt_MarkofArkay_Notification_Mark_Marker_All_Removed")
+				EndIf
+			ElseIf iButton == 3 ;Remove all
 				If moaRemoveAllExtraMarksConfirm.Show()
 					ExtraCustomMarkerList.Revert()
 					bExtraMarkersChanged = True
 					Debug.Notification("$mrt_MarkofArkay_Notification_Mark_Marker_All_Removed")
 				EndIf
-			ElseIf iButton == 3 ;Check
+			ElseIf iButton == 4 ;Check
 				If bCanAddPlayerCell
 					bExtraInList = False
 					If iIsCurentCellMarked(1) > 0
@@ -169,9 +219,9 @@ Event OnEffectStart(Actor akTarget, Actor akCaster)
 				Else
 					Debug.Notification("$mrt_MarkofArkay_Notification_Mark_Marker_Forbidden")
 				EndIf
-			ElseIf iButton == 4 ;Back
+			ElseIf iButton == 5 ;Back
 				iMessage = 1
-			ElseIf iButton == 5 ;Cancel
+			ElseIf iButton == 6 ;Cancel
 				bBreak = True
 			EndIf
 		EndIf

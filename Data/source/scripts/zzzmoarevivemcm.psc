@@ -4307,7 +4307,7 @@ Function setExtraRPs()
 			sName = kCell.GetName()
 			sFormID = sDecToHex(kCell.getFormID())
 			sExtraRPs[i] = sExtraRPs[i] + ": " + sFormID + " " + sName
-			sExtraRPs[i] = shortenString(sExtraRPs[i],49)
+			sExtraRPs[i] = shortenString(sExtraRPs[i],59)
 		EndIf
 		i += 1
 	EndWhile
@@ -4398,7 +4398,7 @@ String[] Function sGetCustomRPs()
 				kCell = (CustomRespawnPoints.GetAt(i) As ObjectReference).GetParentCell()
 				sName = kCell.GetName()
 				sFormID = sDecToHex(kCell.GetFormID())
-				sGetCustomRPSlot[i] = shortenString(((i+1) As String + ": " + sFormID + " " + sName),50)
+				sGetCustomRPSlot[i] = shortenString(((i+1) As String + ": " + sFormID + " " + sName),59)
 			EndIf
 		EndIf
 		i += 1

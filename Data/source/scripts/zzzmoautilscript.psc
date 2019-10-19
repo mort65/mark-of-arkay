@@ -31,6 +31,9 @@ Int Function iMax(Int a,Int b) Global
 EndFunction
 
 Int Function iGetRandomWithExclusion( Int iFrom, Int iTo, Int iExclude) Global
+	If (iExclude == iFrom) && (iExclude == iTo)
+		Return iExclude
+	EndIf
 	If ( iExclude > iTo ) || ( iExclude < iFrom )
 		Return Utility.RandomInt(iFrom, iTo)
 	EndIf

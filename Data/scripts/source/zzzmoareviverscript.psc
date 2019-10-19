@@ -477,7 +477,7 @@ Event OnLocationChange(Location akOldLoc, Location akNewLoc)
 			If (moaThiefNPC01.GetStage() == 1) && !Thief || Thief.IsDisabled() || Thief.IsDeleted()
 				ConfigMenu.bIsLoggingEnabled && Debug.Trace( "MarkOfArkay: " +\
 				Thief + " who stoled player's items, is disabled, deleted or no longer exist." )
-				If ConfigMenu.bLoseForever && !ConfigMenu.bDisableUnsafe
+				If ConfigMenu.bLoseForever
 					StopAndConfirm(moaThiefNPC01, 3, 15)
 				Else
 					If Utility.RandomInt(0,99) < ConfigMenu.fBossChestChanceSlider
@@ -1269,10 +1269,6 @@ Bool Function bHasArkayCurse()
 	Return PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt)
 EndFunction
 
-Bool Function bLoseForever()
-	Return !ConfigMenu.bDisableUnsafe && ConfigMenu.bLoseForever 
-EndFunction
-
 Function RevivePlayer(Bool bRevive)
 	If bRevive
 		If ConfigMenu.bShiftBack
@@ -1367,7 +1363,7 @@ Function RevivePlayer(Bool bRevive)
 				If ConfigMenu.bShiftBackRespawn
 					ShiftBack()
 				EndIf
-				If bLoseForever()
+				If ConfigMenu.bLoseForever 
 					ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Destroying previously lost items...")
 					If ( ( LostItemsChest.GetNumItems() > 0 ) || ( ItemScript.fLostSouls > 0.0 ) || SkillScript.bSkillReduced())
 						bDidItemsRemoved = True
@@ -1442,7 +1438,7 @@ Function RevivePlayer(Bool bRevive)
 						bRemoveItemTemp = False
 					Else
 						bRemoveItems = False
-						If !ConfigMenu.bOnlyLoseSkillXP && !(ConfigMenu.bLoseSkillForever && !ConfigMenu.bDisableUnsafe && ConfigMenu.bDLIEOK)
+						If !ConfigMenu.bOnlyLoseSkillXP && !(ConfigMenu.bLoseSkillForever && ConfigMenu.bDLIEOK)
 							iReducedSkill = 0
 						EndIf
 					EndIf
@@ -1473,7 +1469,7 @@ Function RevivePlayer(Bool bRevive)
 				If  (moaBossChest01.IsRunning() && moaBossChest01.GetStage() == 0) && !LostItemsChest.GetNumItems()
 					If !bRemoveItemTemp
 						bRemoveItems = False ;No phycical item removed and nothing else can be removed
-						If !ConfigMenu.bOnlyLoseSkillXP && !(ConfigMenu.bLoseSkillForever && !ConfigMenu.bDisableUnsafe && ConfigMenu.bDLIEOK)
+						If !ConfigMenu.bOnlyLoseSkillXP && !(ConfigMenu.bLoseSkillForever && ConfigMenu.bDLIEOK)
 							iReducedSkill = 0
 						EndIf
 					EndIf
@@ -1659,7 +1655,7 @@ Function RevivePlayer(Bool bRevive)
 				EndIf
 				RefreshFace()
 				Utility.Wait(0.5)
-				If bLoseForever() && bDidItemsRemoved
+				If ConfigMenu.bLoseForever && bDidItemsRemoved
 					If  moaRetrieveLostItems.IsRunning()
 						moaRetrieveLostItems.SetStage(10)
 						ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Soul Mark Quest Failed.")

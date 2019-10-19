@@ -123,7 +123,7 @@ Function ReduceSkills(String Skill = "Random",Int Percent = -1, Int  MinAmount =
 	Float[] fSkillUseMult
 	Int i
 	If bSkillReduced()
-		If !bOnlyXP && (ConfigMenu.bLoseSkillForever && !ConfigMenu.bDisableUnsafe && ConfigMenu.bDLIEOK)
+		If !bOnlyXP && (ConfigMenu.bLoseSkillForever && ConfigMenu.bDLIEOK)
 			ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Can't lose skills forever when they are already reduced")
 			Return
 		Else
@@ -158,7 +158,7 @@ Function ReduceSkills(String Skill = "Random",Int Percent = -1, Int  MinAmount =
 	While i > 0
 		i -= 1
 		skillLevel = PlayerRef.GetBaseActorValue(sSkillName[i]) As Int
-		If  (bOnlyXP && skillLevel > 0) || (!bOnlyXP && skillLevel > 1 && ((ConfigMenu.bLoseSkillForever && !ConfigMenu.bDisableUnsafe && ConfigMenu.bDLIEOK) || (iSkillCap[i] <= 0 || skillLevel < iSkillCap[i])))
+		If  (bOnlyXP && skillLevel > 0) || (!bOnlyXP && skillLevel > 1 && ((ConfigMenu.bLoseSkillForever && ConfigMenu.bDLIEOK) || (iSkillCap[i] <= 0 || skillLevel < iSkillCap[i])))
 			SkillsFlags[i] = True
 			If Skill == "Highest"
 				If skillLevel > Max || (skillLevel == Max && Utility.RandomInt(0,1))
@@ -476,8 +476,7 @@ Float[] Function ReduceSkill(String Skill ,Int Percent = -1, Int  MinAmount = 1,
 							EndIf
 							CurrentXP = CurrentXP - fXPToLose
 						EndIf
-						;Debug.Trace(ConfigMenu.bLoseSkillForever +","+ ConfigMenu.bDisableUnsafe +","+ ConfigMenu.bDLIEOK+","+currentLevel+","+iLevelToLose)
-						If ConfigMenu.bLoseSkillForever && !ConfigMenu.bDisableUnsafe && ConfigMenu.bDLIEOK
+						If ConfigMenu.bLoseSkillForever && ConfigMenu.bDLIEOK
 							Bool bLevelReduced = False
 							Game.SetPlayerExperience(CurrentXP)
 							ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Player's XP changed to " + (CurrentXP))

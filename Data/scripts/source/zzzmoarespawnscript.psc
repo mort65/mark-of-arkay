@@ -159,7 +159,7 @@ Function checkMarkers(Bool bCheckInn, Bool bCheckExtra, Bool bCheckCustom)
 	If moaCheckingMarkers.GetValue() != 1.0
 		moaCheckingMarkers.SetValue(1.0)
 	Else
-		RegisterForSingleUpdate(30.0)
+		RegisterForSingleUpdate(15.0)
 		Return
 	EndIf
 	Debug.Notification("$mrt_MarkofArkay_Notification_Checking_Markers_Started")

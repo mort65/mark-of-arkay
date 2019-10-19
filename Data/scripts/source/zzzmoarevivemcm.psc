@@ -918,7 +918,7 @@ Event OnPageReset(String page)
 		SetCursorPosition(48)
 		oidSkillReduceMaxValSlider = AddSliderOption("$mrt_MarkofArkay_killReduceMaxValSlider_1", fSkillReduceMaxValSlider , "{0}", flags)
 		SetCursorPosition(50)
-		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1 ) && !bDisableUnsafe && (iReducedSkill != 0) && bDLIEOK && !bOnlyLoseSkillXP && !bCurseLock
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1 ) && (iReducedSkill != 0) && bDLIEOK && !bOnlyLoseSkillXP && !bCurseLock
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
@@ -941,7 +941,7 @@ Event OnPageReset(String page)
 		EndIf
 		oidSoulMarkStay = AddToggleOption("$mrt_MarkofArkay_SoulMarkStay",bSoulMarkStay,flags)
 		SetCursorPosition(60)
-		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1)) && !bDisableUnsafe && !bCurseLock
+		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1)) && !bCurseLock
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
@@ -1802,8 +1802,6 @@ Event OnOptionSelect(Int option)
 	ElseIf (option == oidDisableUnsafe)
 		bDisableUnsafe = !bDisableUnsafe
 		If bDisableUnsafe
-			bLoseForever = False
-			bLoseSkillForever = False
 			fRespawnTimeSlider = 0.0
 		EndIf
 		SetToggleOptionValue(oidDisableUnsafe,bDisableUnsafe)
@@ -2883,7 +2881,7 @@ Event OnOptionMenuAccept(Int option, Int index)
 			If bOnlyLoseSkillXP
 				SetOptionFlags(oidLevelReduce,flags,True)
 				SetOptionFlags(oidSkillReduceRandomVal,flags,True)
-				If !bDisableUnsafe && bDLIEOK
+				If bDLIEOK
 					flags =	OPTION_FLAG_NONE
 				Else
 					flags =	OPTION_FLAG_DISABLED
@@ -3000,8 +2998,6 @@ Event OnOptionDefault(Int option)
 		SetOptionFlags(oidDeathEffect,flags)
 	ElseIf (option == oidDisableUnsafe)
 		bDisableUnsafe = True
-		bLoseForever = False
-		bLoseSkillForever = False
 		fRespawnTimeSlider = 0.0
 		SetToggleOptionValue(oidDisableUnsafe, bDisableUnsafe)
 		ForcePageReset()
@@ -4817,8 +4813,6 @@ Bool function bLoadUserSettings(String sFileName)
 	SetCustomRPFlags()
 	recalcCursedDisCureCosts()
 	If bDisableUnsafe
-		bLoseForever = False
-		bLoseSkillForever = False
 		fRespawnTimeSlider = 0.0
 	EndIf
 	String Result = fiss.endLoad()

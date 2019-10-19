@@ -669,10 +669,10 @@ Function DetectThiefNPC()
 	ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Finding a Thief (Phase 0)...")
 	If ReviveScript.bCursed() && ReviveScript.moaThiefNPC01.IsRunning()
 		If ReviveScript.Thief && !ReviveScript.Thief.IsDisabled() && !ReviveScript.Thief.GetActorBase().IsInvulnerable() && \
-			(!ReviveScript.bLoseForever() || bIsDying(ReviveScript.Thief)) ;check previous one
+			(!ConfigMenu.bLoseForever || bIsDying(ReviveScript.Thief)) ;check previous one
 			If ( !bIsHostile(ReviveScript.Thief) || PlayerRef.GetDistance(ReviveScript.Thief) > 2000 )
 				ReviveScript.bRemoveItems = False
-				If !ConfigMenu.bOnlyLoseSkillXP && !(ConfigMenu.bLoseSkillForever && !ConfigMenu.bDisableUnsafe && ConfigMenu.bDLIEOK)
+				If !ConfigMenu.bOnlyLoseSkillXP && !(ConfigMenu.bLoseSkillForever && ConfigMenu.bDLIEOK)
 					ReviveScript.iReducedSkill = 0
 				EndIf
 			EndIf
@@ -681,7 +681,7 @@ Function DetectThiefNPC()
 			Return
 		EndIf
 		ReviveScript.bRemoveItems = False ;After location change either a new one will be spawned or quest would stop
-		If !ConfigMenu.bOnlyLoseSkillXP && !(ConfigMenu.bLoseSkillForever && !ConfigMenu.bDisableUnsafe && ConfigMenu.bDLIEOK)
+		If !ConfigMenu.bOnlyLoseSkillXP && !(ConfigMenu.bLoseSkillForever && ConfigMenu.bDLIEOK)
 			ReviveScript.iReducedSkill = 0
 		EndIf
 		ReviveScript.Thief = None

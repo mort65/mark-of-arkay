@@ -238,6 +238,7 @@ zzzmoaReviverScript Property ReviveScript Auto
 String[] Property sRespawnPoints Auto Hidden
 String[] Property sTaverns Auto Hidden
 String[] Property sExtraRPs Auto Hidden
+String[] Property sCustomRPs Auto Hidden
 Int[] Property iSpawnWeights Auto Hidden
 Int Property iHostileOption = 0 Auto Hidden
 Bool[] Property bRespawnPointsFlags Auto Hidden
@@ -750,8 +751,13 @@ Event OnPageReset(String page)
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
-		oidSelectedCustomRPSlot_M = AddMenuOption("$mrt_MarkofArkay_SelectedCustomRPSlot_M", sGetCustomRPs()[iSelectedCustomRPSlot], flags)
+		If (moaCheckinglMarkers.GetValue() == 0.0)
+			oidSelectedCustomRPSlot_M = AddMenuOption("$mrt_MarkofArkay_SelectedCustomRPSlot_M", shortenString(sCustomRPs[iSelectedCustomRPSlot],19), flags)
+		Else
+			oidSelectedCustomRPSlot_M = AddMenuOption("$mrt_MarkofArkay_SelectedCustomRPSlot_M", "$CustopRP_Slot1", OPTION_FLAG_DISABLED)
+		EndIf
 		SetCursorPosition(13)
+		
 		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled)
 			flags =	OPTION_FLAG_NONE
 		Else
@@ -770,7 +776,7 @@ Event OnPageReset(String page)
 			iExternalIndex = 0
 		EndIf
 		If (moaCheckinglMarkers.GetValue() == 0.0)
-			oidExtraTeleportLocation_M = AddMenuOption("$mrt_MarkofArkay_ExtraTeleportLocation_M", sExtraRPs[iExternalIndex], flags)
+			oidExtraTeleportLocation_M = AddMenuOption("$mrt_MarkofArkay_ExtraTeleportLocation_M", shortenString(sExtraRPs[iExternalIndex],19), flags)
 		Else
 			oidExtraTeleportLocation_M = AddMenuOption("$mrt_MarkofArkay_ExtraTeleportLocation_M", "$Random", OPTION_FLAG_DISABLED)
 		EndIf
@@ -2792,7 +2798,7 @@ Event OnOptionMenuOpen(Int option)
 		SetMenuDialogStartIndex(iLoseInclusion)
 		SetMenuDialogDefaultIndex(0)
 	ElseIf (option == oidSelectedCustomRPSlot_M)
-		SetMenuDialogoptions(sGetCustomRPs())
+		SetMenuDialogoptions(sCustomRPs)
 		SetMenuDialogStartIndex(iSelectedCustomRPSlot)
 		SetMenuDialogDefaultIndex(0)
 	ElseIf (option == oidExtraTeleportLocation_M)
@@ -2837,10 +2843,10 @@ Event OnOptionMenuAccept(Int option, Int index)
 	ElseIf (option == oidSelectedCustomRPSlot_M)
 	    iSelectedCustomRPSlot = index
 		SetCustomRPFlags()
-		SetMenuOptionValue(oidSelectedCustomRPSlot_M, sGetCustomRPs()[iSelectedCustomRPSlot])
+		SetMenuOptionValue(oidSelectedCustomRPSlot_M, shortenString(sCustomRPs[iSelectedCustomRPSlot],19))
 	ElseIf (option == oidExtraTeleportLocation_M)
 	    iExternalIndex = index
-		SetMenuOptionValue(oidExtraTeleportLocation_M, sExtraRPs[iExternalIndex])
+		SetMenuOptionValue(oidExtraTeleportLocation_M, shortenString(sExtraRPs[iExternalIndex],19))
 	ElseIf (option == oidEnableSave_M)
 	    iSaveOption = index
 		SetSavingOption(iSaveOption)
@@ -3200,10 +3206,10 @@ Event OnOptionDefault(Int option)
 	ElseIf (option == oidSelectedCustomRPSlot_M)
 		iSelectedCustomRPSlot = 0
 		SetCustomRPFlags()
-		SetMenuOptionValue(oidSelectedCustomRPSlot_M, sGetCustomRPs()[iSelectedCustomRPSlot])
+		SetMenuOptionValue(oidSelectedCustomRPSlot_M, shortenString(sCustomRPs[iSelectedCustomRPSlot],19))
 	ElseIf (option == oidExtraTeleportLocation_M)
-		iExternalIndex = ExternalMarkerList.GetSize()
-		SetMenuOptionValue(oidExtraTeleportLocation_M, sExtraRPs[iExternalIndex])
+		iExternalIndex = MergedExternalMarkerList.GetSize()
+		SetMenuOptionValue(oidExtraTeleportLocation_M, shortenString(sExtraRPs[iExternalIndex],19))
 	ElseIf (option == oidJail)
 		bSendToJail = False
 		SetToggleOptionValue(oidJail,bSendToJail)
@@ -4290,20 +4296,28 @@ String[] Function sGetSaveOptions()
 EndFunction
 
 Function setExtraRPs()
+	Debug.TraceConditional("MarkOfArkay: Setting extra custom markers...",bIsLoggingEnabled)
 	sExtraRPs = Utility.CreateStringArray(MergedExternalMarkerList.GetSize() + 1)
+	String sName
+	String sFormID
+	Cell kCell
 	Int i = 0
 	While i < MergedExternalMarkerList.GetSize()
 		sExtraRPs[i] = (i + 1) As String
-		If (MergedExternalMarkerList.GetAt(i) As ObjectReference).GetParentCell() &&\
-		(MergedExternalMarkerList.GetAt(i) As ObjectReference).GetParentCell().GetName()
-			sExtraRPs[i] = sExtraRPs[i] + ": " + (MergedExternalMarkerList.GetAt(i) As ObjectReference).GetParentCell().GetName()
-			If StringUtil.GetLength(sExtraRPs[i]) > 19
-				sExtraRPs[i] = StringUtil.Substring(sExtraRPs[i], 0, len = 16) + "..."
-			EndIf
+		sName = ""
+		sFormID = ""
+		kCell = None
+		If (MergedExternalMarkerList.GetAt(i) As ObjectReference).GetParentCell()
+			kCell = (MergedExternalMarkerList.GetAt(i) As ObjectReference).GetParentCell()
+			sName = kCell.GetName()
+			sFormID = sDecToHex(kCell.getFormID())
+			sExtraRPs[i] = sExtraRPs[i] + ": " + sFormID + " " + sName
+			sExtraRPs[i] = shortenString(sExtraRPs[i],49)
 		EndIf
 		i += 1
 	EndWhile
 	sExtraRPs[i] = "$Random"
+	Debug.TraceConditional("MarkOfArkay: Setting extra custom markers finished.",bIsLoggingEnabled)
 EndFunction
 
 String[] Function sGetHostileOptions()
@@ -4376,8 +4390,32 @@ String[] Function sGetCustomRPs()
 	sGetCustomRPSlot[1] = "$CustopRP_Slot2"
 	sGetCustomRPSlot[2] = "$CustopRP_Slot3"
 	sGetCustomRPSlot[3] = "$CustopRP_Slot4"
+	Int i = 0
+	Cell kCell
+	String sName
+	String sFormID
+	While i < sGetCustomRPSlot.Length
+		kCell = None
+		sName = ""
+		sFormID = ""
+		If (CustomRespawnPoints.GetAt(i) As ObjectReference).GetParentCell()
+			If ((CustomRespawnPoints.GetAt(i) As ObjectReference).GetParentCell() != ReviveScript.DefaultCell)
+				kCell = (CustomRespawnPoints.GetAt(i) As ObjectReference).GetParentCell()
+				sName = kCell.GetName()
+				sFormID = sDecToHex(kCell.GetFormID())
+				sGetCustomRPSlot[i] = shortenString(((i+1) As String + ": " + sFormID + " " + sName),50)
+			EndIf
+		EndIf
+		i += 1
+	EndWhile
 	Return sGetCustomRPSlot
 Endfunction
+
+Function setCustomRPS()
+	Debug.TraceConditional("MarkOfArkay: Setting custom markers...",bIsLoggingEnabled)
+	sCustomRPs = sGetCustomRPs()
+	Debug.TraceConditional("MarkOfArkay: Setting custom markers finished.",bIsLoggingEnabled)
+EndFunction
 
 Function SetTypes()
 	If bIsUpdating || iValidTypes.Length != 10
@@ -5312,6 +5350,8 @@ Function ShowCustomSlotsInfo()
 			If aCell
 				If aCell.GetName()
 					sCellName = aCell.GetName()
+				Else
+					sCellName = sDecToHex(aCell.GetFormID())
 				EndIf
 				If aCell.IsInterior()
 					sType = "Interior"
@@ -5347,6 +5387,8 @@ Function ShowExtraRPInfo(Int iFirstIndex = 0,Int iLen = 0)
 			If aCell
 				If aCell.GetName()
 					sCellName = aCell.GetName()
+				Else
+					sCellName = sDecToHex(aCell.GetFormID())
 				EndIf
 				If aCell.IsInterior()
 					sType = "Interior"

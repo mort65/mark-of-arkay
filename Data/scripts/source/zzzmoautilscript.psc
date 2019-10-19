@@ -294,4 +294,22 @@ Function killPlayer() Global
 	playerBase.SetEssential(0)
 	player.Kill()
 EndFunction
-	
+
+String Function shortenString(String sString, Int iLimit) Global
+	Int iLen = GetLength(sString)
+	If iLimit < 4
+		If iLimit < 1
+			Return sString
+		EndIf
+		If iLen > iLimit
+			Return Substring(sString,0,iLimit)
+		EndIf
+		Return sString
+	ElseIf iLen < 4
+		Return sString
+	EndIf
+	If iLen > iLimit
+		Return Substring(sString, 0, len = iLimit - 3) + "..."
+	EndIf
+	Return sString
+EndFunction

@@ -144,31 +144,37 @@ Bool Function bCheckTavernMarkers()
 Endfunction
 
 Event OnCheckingMarkers(Form sender,Bool bTavern, Bool bExtra, Bool bCustom)
-	If !bTavern && !bExtra && !bCustom
+	checkMarkers(bTavern, bExtra, bCustom)
+EndEvent
+
+Event OnUpdate()
+	moaCheckingMarkers.SetValue(0.0)
+	checkMarkers(True,True,True)
+EndEvent
+
+Function checkMarkers(Bool bCheckInn, Bool bCheckExtra, Bool bCheckCustom)
+	If !bCheckInn && !bCheckExtra && !bCheckCustom
 		Return
 	EndIf
 	If moaCheckingMarkers.GetValue() != 1.0
 		moaCheckingMarkers.SetValue(1.0)
 	Else
-		Float i = 15.0
-		While (moaCheckingMarkers.GetValue() == 1.0) && (i > 0.0)
-			Utility.Wait(0.2)
-			i -= 0.2
-		EndWhile
+		RegisterForSingleUpdate(30.0)
+		Return
 	EndIf
 	Debug.Notification("$mrt_MarkofArkay_Notification_Checking_Markers_Started")
-	If bTavern
+	If bCheckInn
 		setTavernMarkers(ConfigMenu.moaIsBusy.GetValue() As Bool)
 	EndIf
-	If bExtra
+	If bCheckExtra
 		AddExternalMarkers()
 	EndIf
-	If bCustom
+	If bCheckCustom
 		ConfigMenu.setCustomRPS()
 	EndIf
 	moaCheckingMarkers.SetValue(0.0)	
 	Debug.Notification("$mrt_MarkofArkay_Notification_Checking_Markers_Finished")
-EndEvent
+EndFunction
 
 Function AddExternalMarkers()
 	Debug.TraceConditional("MarkOfArkay: Adding extra markers...",ConfigMenu.bIsLoggingEnabled)

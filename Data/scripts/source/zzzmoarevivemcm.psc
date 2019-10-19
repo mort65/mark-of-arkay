@@ -765,7 +765,7 @@ Event OnPageReset(String page)
 		EndIf
 		oidTotalCustomRPSlotSlider = AddSliderOption("$mrt_MarkofArkay_TotalCustomRPSlotSlider_1", fTotalCustomRPSlotSlider, "{0}", flags)
 		SetCursorPosition(15)
-		If (( moaState.getValue() == 1 ) && (moaCheckinglMarkers.GetValue() == 0.0) && ( iTeleportLocation == getExternalRPIndex()) && ( MergedExternalMarkerList.GetSize() > 1 ))
+		If (( moaState.getValue() == 1 ) && (moaCheckinglMarkers.GetValue() == 0.0) && ( iTeleportLocation == getExternalRPIndex()) && ( MergedExternalMarkerList.GetSize() > 0 ))
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED

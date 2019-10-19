@@ -108,7 +108,7 @@ Form[] Property TavernMarkers Auto Hidden
 Form[] Property TavernCapitalMarkers Auto Hidden
 Bool bFirstTry = False
 Bool bFirstTryFailed = False
-GlobalVariable Property moaCheckinglMarkers Auto 
+GlobalVariable Property moaCheckingMarkers Auto 
 
 
 Function SetVars()
@@ -147,8 +147,16 @@ Event OnCheckingMarkers(Form sender,Bool bTavern, Bool bExtra, Bool bCustom)
 	If !bTavern && !bExtra && !bCustom
 		Return
 	EndIf
-	moaCheckinglMarkers.SetValue(1.0)
-	ConfigMenu.bIsNotificationEnabled && Debug.Notification("$mrt_MarkofArkay_Notification_Checking_Markers_Started")
+	If moaCheckingMarkers.GetValue() != 1.0
+		moaCheckingMarkers.SetValue(1.0)
+	Else
+		Float i = 15.0
+		While (moaCheckingMarkers.GetValue() == 1.0) && (i > 0.0)
+			Utility.Wait(0.2)
+			i -= 0.2
+		EndWhile
+	EndIf
+	Debug.Notification("$mrt_MarkofArkay_Notification_Checking_Markers_Started")
 	If bTavern
 		setTavernMarkers(ConfigMenu.moaIsBusy.GetValue() As Bool)
 	EndIf
@@ -158,13 +166,12 @@ Event OnCheckingMarkers(Form sender,Bool bTavern, Bool bExtra, Bool bCustom)
 	If bCustom
 		ConfigMenu.setCustomRPS()
 	EndIf
-	moaCheckinglMarkers.SetValue(0.0)	
-	ConfigMenu.bIsNotificationEnabled && Debug.Notification("$mrt_MarkofArkay_Notification_Checking_Markers_Finished")
+	moaCheckingMarkers.SetValue(0.0)	
+	Debug.Notification("$mrt_MarkofArkay_Notification_Checking_Markers_Finished")
 EndEvent
 
 Function AddExternalMarkers()
 	Debug.TraceConditional("MarkOfArkay: Adding extra markers...",ConfigMenu.bIsLoggingEnabled)
-	moaCheckinglMarkers.SetValue(1.0)
 	MergedExternalMarkerList.Revert()
 	Int i = 0 
 	While i < ExternalMarkerList.GetSize()

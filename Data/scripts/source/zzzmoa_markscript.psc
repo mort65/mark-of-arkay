@@ -158,7 +158,7 @@ Event OnEffectStart(Actor akTarget, Actor akCaster)
 					Bool bFound = False
 					While i > 0 && !bFound
 						i -= 1
-						If (CustomRespawnPoints.GetAt(iIndex) As ObjectReference).GetParentCell() == PlayerRef.GetParentCell()
+						If (CustomRespawnPoints.GetAt(i) As ObjectReference).GetParentCell() == PlayerRef.GetParentCell()
 							Debug.Notification("$mrt_MarkofArkay_Notification_Mark_Marked_As_Custom")
 							bFound = True
 						EndIf

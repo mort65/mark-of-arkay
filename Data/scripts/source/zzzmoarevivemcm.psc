@@ -1174,18 +1174,18 @@ Event OnPageReset(String page)
 		EndIf
 		oidSpawnHostile = AddToggleOption("$mrt_MarkofArkay_SpawnHostile",bSpawnHostile, flags)
 		SetCursorPosition(20)
-		oidOnlySpawn = AddToggleOption("$mrt_MarkofArkay_OnlySpawn",bOnlySpawn, flags)
-		SetCursorPosition(22)
-		oidAlwaysSpawn = AddToggleOption("$mrt_MarkofArkay_AlwaysSpawn",bAlwaysSpawn, flags)
-		SetCursorPosition(24)
-		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && iHostileOption == 2 &&  bSpawnHostile
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && iHostileOption == 2 && bSpawnHostile
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
+		oidOnlySpawn = AddToggleOption("$mrt_MarkofArkay_OnlySpawn",bOnlySpawn, flags)
+		SetCursorPosition(22)
+		oidAlwaysSpawn = AddToggleOption("$mrt_MarkofArkay_AlwaysSpawn",bAlwaysSpawn, flags)
+		SetCursorPosition(24)
 		oidSpawnByLocation = AddToggleOption("$mrt_MarkofArkay_SpawnByLocation", bSpawnByLocation, flags)
 		SetCursorPosition(26)
-		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && iHostileOption == 2 &&  bSpawnHostile && bSpawnByLocation
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && iHostileOption == 2 && bSpawnHostile && bSpawnByLocation
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED

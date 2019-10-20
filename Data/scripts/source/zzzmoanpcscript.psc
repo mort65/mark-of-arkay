@@ -249,7 +249,7 @@ FormList Function SelectSpawnList(ObjectReference akMarker,  Int aiIndex = -2, B
 		If ActorRef.IsInFaction(DarkBrotherHoodFaction)
 			addToSpawnPool(1)
 		EndIf
-
+		
 		If ActorRef.IsInFaction(BanditFaction)
 			addToSpawnPool(3)
 		EndIf
@@ -490,7 +490,7 @@ FormList Function SelectSpawnList(ObjectReference akMarker,  Int aiIndex = -2, B
 		;Debug.Trace("iSpawnArr :"+iSpawnArr)
 		If iSpawnPool > 0
 			If iTotalSpawns == 1 && akLocation &&\
-			!akLocation.HasKeyword(LocTypeHabitation) && !akLocation.HasKeyword(LocTypeDwelling);Bandits can be anywhere
+				!akLocation.HasKeyword(LocTypeHabitation) && !akLocation.HasKeyword(LocTypeDwelling);Bandits can be anywhere
 				addToSpawnPool(3)
 			EndIf
 		ElseIf !ReviveScript.RespawnScript.IsInInteriorActual(akMarker)
@@ -540,7 +540,7 @@ FormList Function SelectSpawnList(ObjectReference akMarker,  Int aiIndex = -2, B
 	bIsSpawnEnabled(SpawnFlags,12) && addToSpawnPool(12)
 	If bIsSpawnEnabled(SpawnFlags,20)
 		If !ConfigMenu.bSpawnCheckRelation || \
-		(!PlayerRef.GetRace() || ((PlayerRef.GetRace() != HighElf) && (PlayerRef.GetRace() != HighElfVampire)))
+			(!PlayerRef.GetRace() || ((PlayerRef.GetRace() != HighElf) && (PlayerRef.GetRace() != HighElfVampire)))
 			addToSpawnPool(20)
 		EndIf
 	EndIf
@@ -592,15 +592,19 @@ Bool Function bIsHostileNPCNearby()
 			", " + akHostile.GetRace() + ", )" )
 		Return True
 	Else
-		stopAndConfirm(moaHostileNPCDetector01,3)
-		moaHostileNPCDetector01.Start()
-		If HostileActor01.GetReference() As Actor
-			akHostile = HostileActor01.GetReference() As Actor
-			ConfigMenu.bIsLoggingEnabled && Debug.Trace( "MarkOfArkay: Detected hostile NPC in phase 1: ( '" +\
-				akHostile.GetActorBase().GetName() + "', " + akHostile +\
-				", " + akHostile.GetRace() + ", )" )
-			Return True
-		EndIf
+		i = 3
+		While i > 0
+			i -= 1
+			stopAndConfirm(moaHostileNPCDetector01,3)
+			moaHostileNPCDetector01.Start()
+			If HostileActor01.GetReference() As Actor
+				akHostile = HostileActor01.GetReference() As Actor
+				ConfigMenu.bIsLoggingEnabled && Debug.Trace( "MarkOfArkay: Detected hostile NPC in phase 1: ( '" +\
+					akHostile.GetActorBase().GetName() + "', " + akHostile +\
+					", " + akHostile.GetRace() + ", )" )
+				Return True
+			EndIf
+		EndWhile
 	EndIf
 	ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Finding a hostile NPC (Phase 2)...")
 	Actor RandActor = Game.FindClosestActorFromRef(PlayerRef,2000)
@@ -658,7 +662,8 @@ Bool Function bCanSteal(Actor ActorRef)
 				( ActorRef.GetFactionReaction(PlayerRef) == 1 ) || \
 				ActorRef.IsHostileToActor(PlayerRef) || ( ActorRef.GetRelationshipRank(PlayerRef) < 0 )) &&\
 			( ActorRef.HasLOS(PlayerRef) || ( ReviveScript.Attacker && \
-					( ReviveScript.Attacker == ActorRef )) || ( ActorRef.GetDistance(PlayerRef) <= 100.0 )))
+					( ReviveScript.Attacker == ActorRef )) || ( ActorRef.GetDistance(PlayerRef) <= 100.0 )) &&\
+			(!ConfigMenu.moaNPCHasLevelRange || ((ActorRef.GetLevel() >= ConfigMenu.moaLowerNPCMaxLvlDiff.GetValue()) && (ActorRef.GetLevel() <= ConfigMenu.moaHigherNPCMaxLvlDiff.GetValue()))))
 	EndIf
 	Return False
 EndFunction
@@ -704,19 +709,23 @@ Function DetectThiefNPC()
 			EndIf
 		EndIf
 		If !bFound
-			stopAndConfirm(moaHostileNPCDetector,3)
-			moaHostileNPCDetector.Start()
-			akHostile = HostileActor.GetReference() As Actor
-			If akHostile &&\
-				!bIsDying(akHostile) && !akHostile.GetActorBase().IsInvulnerable()
-				ReviveScript.Thief = akHostile
-				ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Detected Thief in phase 1: ( '" +\
-					ReviveScript.Thief.GetActorBase().GetName() + "', "  + ReviveScript.Thief + ", " + ReviveScript.Thief.GetRace() + ", )" )
-				If !ConfigMenu.bAlwaysSpawn || !ConfigMenu.bSpawnHostile
-					Return
+			i = 3
+			While i > 0 && !bFound
+				i -= 1
+				stopAndConfirm(moaHostileNPCDetector,3)
+				moaHostileNPCDetector.Start()
+				akHostile = HostileActor.GetReference() As Actor
+				If akHostile &&\
+					!bIsDying(akHostile) && !akHostile.GetActorBase().IsInvulnerable()
+					ReviveScript.Thief = akHostile
+					ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Detected Thief in phase 1: ( '" +\
+						ReviveScript.Thief.GetActorBase().GetName() + "', "  + ReviveScript.Thief + ", " + ReviveScript.Thief.GetRace() + ", )" )
+					If !ConfigMenu.bAlwaysSpawn || !ConfigMenu.bSpawnHostile
+						Return
+					EndIf
+					bFound = True
 				EndIf
-				bFound = True
-			EndIf
+			EndWhile
 		EndIf
 		If !bFound
 			ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Finding a Thief (Phase 2)...")
@@ -749,7 +758,7 @@ Function DetectThiefNPC()
 					EndIf
 				EndWhile
 				If !bFound && ConfigMenu.bIsLoggingEnabled
-					 Debug.Trace("MarkOfArkay: No hostile NPC who can steal detected.")
+					Debug.Trace("MarkOfArkay: No hostile NPC who can steal detected.")
 				EndIf
 			EndIf
 		EndIf

@@ -204,6 +204,10 @@ Int oidRespawnCounter
 Int oidLockPermaDeath
 Int oidTavern_M
 Int oidSoulMarkCureDiseases
+Int oidNPCHasLevelRange
+Int oidHigherNPCMaxLvlDiff
+Int oidLowerNPCMaxLvlDiff
+
 Bool Property bSoulMarkCureDiseases = False Auto Hidden
 Bool Property bLockPermaDeath = False Auto Hidden
 Bool Property bRespawnCounter = False Auto Hidden
@@ -456,6 +460,12 @@ Message Property ModVersionError Auto
 GlobalVariable Property moaIsBusy Auto
 GlobalVariable Property moaNoKillMoveOnPlayer Auto
 GlobalVariable Property moaUIExtensionStatus Auto
+Bool Property bNPCHasLevelRange = False Auto Hidden
+Float Property fHigherNPCMaxLvlDiff = 10.0 Auto Hidden
+Float Property fLowerNPCMaxLvlDiff = 10.0 Auto Hidden
+GlobalVariable Property moaHigherNPCMaxLvlDiff Auto
+GlobalVariable Property moaLowerNPCMaxLvlDiff Auto
+GlobalVariable Property moaNPCHasLevelRange Auto
 Int Property iNameTagBackup Auto Hidden
 
 Event OnPageReset(String page)
@@ -739,14 +749,14 @@ Event OnPageReset(String page)
 		EndIf
 		oidTeleportLocation_M = AddMenuOption("$mrt_MarkofArkay_TeleportLocation_M", sRespawnPoints[iTeleportLocation], flags)
 		SetCursorPosition(9)
-		If ( moaState.getValue() == 1 )
+		If ( moaState.getValue() == 1 ) && (iTeleportLocation == getTavernRPIndex())
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidTavern_M = AddMenuOption("$mrt_MarkofArkay_Taverns_M",sTaverns[iTavernIndex],flags)
 		SetCursorPosition(11)
-		If ( moaState.getValue() == 1 )
+		If ( moaState.getValue() == 1 ) && (iTeleportLocation == getCustomRPIndex())
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
@@ -757,14 +767,14 @@ Event OnPageReset(String page)
 			oidSelectedCustomRPSlot_M = AddMenuOption("$mrt_MarkofArkay_SelectedCustomRPSlot_M", "$CustopRP_Slot1", OPTION_FLAG_DISABLED)
 		EndIf
 		SetCursorPosition(13)
-		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled)
+		If ( moaState.getValue() == 1 )
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidTotalCustomRPSlotSlider = AddSliderOption("$mrt_MarkofArkay_TotalCustomRPSlotSlider_1", fTotalCustomRPSlotSlider, "{0}", flags)
 		SetCursorPosition(15)
-		If (( moaState.getValue() == 1 ) && (moaCheckingMarkers.GetValue() == 0.0) && ( MergedExternalMarkerList.GetSize() > 0 ))
+		If (( moaState.getValue() == 1 ) && (iTeleportLocation == getExternalRPIndex()) && (moaCheckingMarkers.GetValue() == 0.0) && ( MergedExternalMarkerList.GetSize() > 0 ))
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
@@ -1137,53 +1147,70 @@ Event OnPageReset(String page)
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidCreaturesCanSteal  = AddToggleOption("$mrt_MarkofArkay_CreaturesCanSteal",bCreaturesCanSteal,flags)
+		SetCursorPosition(8)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && ( iHostileOption == 2 )
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf		
+		oidNPCHasLevelRange = AddToggleOption("$mrt_MarkofArkay_NPCHasLevelRange",bNPCHasLevelRange ,Flags)
 		SetCursorPosition(10)
-		AddHeaderOption("$mrt_MarkofArkay_HEAD_Spawn")
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && ( iHostileOption == 2 ) && bNPCHasLevelRange
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf		
+		oidLowerNPCMaxLvlDiff = AddSliderOption("$mrt_MarkofArkay_LowerNPCMaxLvlDiff", fLowerNPCMaxLvlDiff, "{0}", flags)
 		SetCursorPosition(12)
+		oidHigherNPCMaxLvlDiff = AddSliderOption("$mrt_MarkofArkay_HigherNPCMaxLvlDiff", fHigherNPCMaxLvlDiff, "{0}", flags)
+		
+		SetCursorPosition(16)
+		AddHeaderOption("$mrt_MarkofArkay_HEAD_Spawn")
+		SetCursorPosition(18)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && iHostileOption == 2
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidSpawnHostile = AddToggleOption("$mrt_MarkofArkay_SpawnHostile",bSpawnHostile, flags)
-		SetCursorPosition(14)
+		SetCursorPosition(20)
 		oidOnlySpawn = AddToggleOption("$mrt_MarkofArkay_OnlySpawn",bOnlySpawn, flags)
-		SetCursorPosition(16)
+		SetCursorPosition(22)
 		oidAlwaysSpawn = AddToggleOption("$mrt_MarkofArkay_AlwaysSpawn",bAlwaysSpawn, flags)
-		SetCursorPosition(18)
+		SetCursorPosition(24)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && iHostileOption == 2 &&  bSpawnHostile
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidSpawnByLocation = AddToggleOption("$mrt_MarkofArkay_SpawnByLocation", bSpawnByLocation, flags)
-		SetCursorPosition(20)
+		SetCursorPosition(26)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && iHostileOption == 2 &&  bSpawnHostile && bSpawnByLocation
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidRetrySpawnWithoutLocation = AddToggleOption("$mrt_MarkofArkay_RetrySpawnWithoutLocation", bRetrySpawnWithoutLocation, flags)
-		SetCursorPosition(22)
+		SetCursorPosition(28)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && iHostileOption == 2 && bSpawnHostile
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidSpawnCheckRelation = AddToggleOption("$mrt_MarkofArkay_SpawnCheckRelation", bSpawnCheckRelation, flags)
-		SetCursorPosition(24)
-		oidSpawnBringAllies = AddToggleOption("$mrt_MarkofArkay_SpawnBringAllies", bSpawnBringAllies, flags)
-		SetCursorPosition(26)
-		oidSpawnMinLevel_M = AddMenuOption("$mrt_MarkofArkay_SpawnMinLevel_M", sGetSpawnLevels()[iSpawnMinLevel], flags)
-		SetCursorPosition(28)
-		oidSpawnMaxLevel_M = AddMenuOption("$mrt_MarkofArkay_SpawnMaxLevel_M", sGetSpawnLevels()[iSpawnMaxLevel], flags)
 		SetCursorPosition(30)
-		AddHeaderOption("")
+		oidSpawnBringAllies = AddToggleOption("$mrt_MarkofArkay_SpawnBringAllies", bSpawnBringAllies, flags)
 		SetCursorPosition(32)
-		oidSpawns_M = AddMenuOption("$mrt_MarkofArkay_Spawns_M", sGetSpawns()[iSpawn], flags)
+		oidSpawnMinLevel_M = AddMenuOption("$mrt_MarkofArkay_SpawnMinLevel_M", sGetSpawnLevels()[iSpawnMinLevel], flags)
 		SetCursorPosition(34)
-		oidSpawnWeightSlider = AddSliderOption("$mrt_MarkofArkay_SpawnWeightSlider_1", iSpawnWeights[iSpawn], "$mrt_MarkofArkay_SpawnWeightSlider_2", flags)
+		oidSpawnMaxLevel_M = AddMenuOption("$mrt_MarkofArkay_SpawnMaxLevel_M", sGetSpawnLevels()[iSpawnMaxLevel], flags)
 		SetCursorPosition(36)
+		AddHeaderOption("")
+		SetCursorPosition(38)
+		oidSpawns_M = AddMenuOption("$mrt_MarkofArkay_Spawns_M", sGetSpawns()[iSpawn], flags)
+		SetCursorPosition(40)
+		oidSpawnWeightSlider = AddSliderOption("$mrt_MarkofArkay_SpawnWeightSlider_1", iSpawnWeights[iSpawn], "$mrt_MarkofArkay_SpawnWeightSlider_2", flags)
+		SetCursorPosition(42)
 		oidSpawnCountSlider = AddSliderOption("$mrt_MarkofArkay_SpawnCountSlider_1", iSpawnCounts[iSpawn], "$mrt_MarkofArkay_SpawnCountSlider_2", flags)		
 		SetCursorPosition(1)
 		AddHeaderOption("$Follower")
@@ -1369,12 +1396,16 @@ Event OnPageReset(String page)
 		If  ( iNotTradingAftermath == 1 && !ReviveScript.RespawnScript.bCanTeleport() )
 			AddHeaderOption("$mrt_MarkofArkay_HEAD_CanNotRespawn")
 		Else
-			AddHeaderOption("")
+			AddHeaderOption("$mrt_MarkofArkay_HEAD_Curses")
 		EndIf
 		SetCursorPosition(3)
 		flags = OPTION_FLAG_DISABLED
 		String sText
 		Int iCount
+		String sRPDistance = "$Disabled"
+		String sRPCellName = "$Disabled"
+		String sRPCellFormID = "$Disabled"
+		Float fDistance = -1.0
 		If bIsInfoEnabled
 			iCount = LostItemsChest.GetNumItems()
 			If iCount <= 999999
@@ -1412,108 +1443,90 @@ Event OnPageReset(String page)
 		EndIf
 		AddTextOption("$mrt_MarkofArkay_Lost_Dragon_Souls", sText, flags)		
 		SetCursorPosition(9)
-		AddHeaderOption("")
+		AddHeaderOption("$mrt_MarkofArkay_HEAD_RespawnPoint")
 		SetCursorPosition(11)
 		flags = OPTION_FLAG_DISABLED
 		If ( moaState.getValue() == 1 ) && bIsInfoEnabled
+			sRPCellName = "$Unknown"
+			sRPCellFormID = "$Unknown"
+			sRPDistance = "$Unknown"
 			If iTeleportLocation < getNearbyCityRPIndex()
 				If (MarkerList.GetAt(iTeleportLocation) As Objectreference)
-					Float fDistance = PlayerRef.GetDistance(MarkerList.GetAt(iTeleportLocation) As Objectreference)
-					If fDistance
-						If fDistance <= 999999
-							AddTextOption("$mrt_MarkofArkay_Dis_From_Respawn", fDistance As Int, flags)
-						Else
-							AddTextOption("$mrt_MarkofArkay_Dis_From_Respawn", "+999999", flags)
-						EndIf
-					Else
-						AddTextOption("$mrt_MarkofArkay_Dis_From_Respawn", "$Unknown", flags)
+					fDistance = PlayerRef.GetDistance(MarkerList.GetAt(iTeleportLocation) As Objectreference)
+					If (MarkerList.GetAt(iTeleportLocation) As Objectreference).GetParentCell()
+						sRPCellName = (MarkerList.GetAt(iTeleportLocation) As Objectreference).GetParentCell().GetName()
+						sRPCellFormID = sDecToHex((MarkerList.GetAt(iTeleportLocation) As Objectreference).GetParentCell().GetFormID())
 					EndIf
-				Else
-					AddTextOption("$mrt_MarkofArkay_Dis_From_Respawn", "$Unknown", flags)
 				EndIf
 			ElseIf (iTeleportLocation == getTavernRPIndex())
 				If iTavernIndex < getNearbyInnRPIndex()
-					Float fDistance = PlayerRef.GetDistance(ReviveScript.RespawnScript.TavernMarkers[iTavernIndex] As Objectreference)
-					If fDistance
-						If fDistance <= 999999
-							AddTextOption("$mrt_MarkofArkay_Dis_From_Respawn", fDistance As Int, flags)
-						Else
-							AddTextOption("$mrt_MarkofArkay_Dis_From_Respawn", "+999999", flags)
-						EndIf
-					Else
-						AddTextOption("$mrt_MarkofArkay_Dis_From_Respawn", "$Unknown", flags)
+					fDistance = PlayerRef.GetDistance(ReviveScript.RespawnScript.TavernMarkers[iTavernIndex] As Objectreference)
+					If (ReviveScript.RespawnScript.TavernMarkers[iTavernIndex] As Objectreference).GetParentCell()
+						sRPCellName = (ReviveScript.RespawnScript.TavernMarkers[iTavernIndex] As Objectreference).GetParentCell().GetName()
+						sRPCellFormID = sDecToHex((ReviveScript.RespawnScript.TavernMarkers[iTavernIndex] As Objectreference).GetParentCell().GetFormID())
 					EndIf
-				Else
-					AddTextOption("$mrt_MarkofArkay_Dis_From_Respawn", "$Unknown", flags)
 				EndIf
 			ElseIf (iTeleportLocation == getSleepRPIndex())
-				If ( SleepMarker && !SleepMarker.Isdisabled() )
-					Float fDistance = PlayerRef.GetDistance(SleepMarker)
-					If fDistance
-						If fDistance <= 999999
-							AddTextOption("$mrt_MarkofArkay_Dis_From_Respawn", fDistance As Int, flags)
-						Else
-							AddTextOption("$mrt_MarkofArkay_Dis_From_Respawn", "+999999", flags)
-						EndIf
-					Else
-						AddTextOption("$mrt_MarkofArkay_Dis_From_Respawn", "$Unknown", flags)
+				If SleepMarker && !SleepMarker.Isdisabled() && (SleepMarker.GetParentCell() != ReviveScript.DefaultCell)
+					fDistance = PlayerRef.GetDistance(SleepMarker)
+					If SleepMarker.GetParentCell()
+						sRPCellName = SleepMarker.GetParentCell().GetName()
+						sRPCellFormID = sDecToHex(SleepMarker.GetParentCell().GetFormID())
 					EndIf
-				Else
-					AddTextOption("$mrt_MarkofArkay_Dis_From_Respawn", "$Unknown", flags)
 				EndIf
 			ElseIf (iTeleportLocation == getCustomRPIndex())
-				Float fDistance
-				If (CustomRespawnPoints.GetAt(iSelectedCustomRPSlot) As ObjectReference).IsEnabled()
+				If (CustomRespawnPoints.GetAt(iSelectedCustomRPSlot) As ObjectReference).IsEnabled() &&\
+				(CustomRespawnPoints.GetAt(iSelectedCustomRPSlot) As ObjectReference).GetParentCell() != ReviveScript.DefaultCell
 					fDistance = PlayerRef.GetDistance((CustomRespawnPoints.GetAt(iSelectedCustomRPSlot) As ObjectReference))
-				EndIf
-				If fDistance
-					If fDistance <= 999999
-						AddTextOption("$mrt_MarkofArkay_Dis_From_Respawn", fDistance As Int, flags)
-					Else
-						AddTextOption("$mrt_MarkofArkay_Dis_From_Respawn", "+999999", flags)
+					If (CustomRespawnPoints.GetAt(iSelectedCustomRPSlot) As ObjectReference).GetParentCell()
+						sRPCellName = (CustomRespawnPoints.GetAt(iSelectedCustomRPSlot) As ObjectReference).GetParentCell().GetName()
+						sRPCellFormID = sDecToHex((CustomRespawnPoints.GetAt(iSelectedCustomRPSlot) As ObjectReference).GetParentCell().GetFormID())
 					EndIf
-				Else
-					AddTextOption("$mrt_MarkofArkay_Dis_From_Respawn", "$Unknown", flags)
 				EndIf
 			ElseIf (iTeleportLocation == getExternalRPIndex()) && (MergedExternalMarkerList.GetSize() > 1) && (iExternalIndex != -1)
 				ObjectReference ExtMarker = MergedExternalMarkerList.GetAt(iExternalIndex) As ObjectReference
-				If ( ExtMarker && !ExtMarker.Isdisabled() )
-					Float fDistance = PlayerRef.GetDistance(ExtMarker)
-					If fDistance
-						If fDistance <= 999999
-							AddTextOption("$mrt_MarkofArkay_Dis_From_Respawn", fDistance As Int, flags)
-						Else
-							AddTextOption("$mrt_MarkofArkay_Dis_From_Respawn", "+999999", flags)
-						EndIf
-					Else
-						AddTextOption("$mrt_MarkofArkay_Dis_From_Respawn", "$Unknown", flags)
+				If ExtMarker
+					fDistance = PlayerRef.GetDistance(ExtMarker)
+					If ExtMarker.GetParentCell()
+						sRPCellName = ExtMarker.GetParentCell().GetName()
+						sRPCellFormID = sDecToHex(ExtMarker.GetParentCell().GetFormID())
 					EndIf
-				Else
-					AddTextOption("$mrt_MarkofArkay_Dis_From_Respawn", "$Unknown", flags)
 				EndIf
 			ElseIf (iTeleportLocation == getExternalRPIndex()) && (MergedExternalMarkerList.GetSize() == 1)
 				ObjectReference ExtMarker = MergedExternalMarkerList.GetAt(0) As ObjectReference
-				If ( ExtMarker && !ExtMarker.Isdisabled() )
-					Float fDistance = PlayerRef.GetDistance(ExtMarker)
-					If fDistance
-						If fDistance <= 999999
-							AddTextOption("$mrt_MarkofArkay_Dis_From_Respawn", fDistance As Int, flags)
-						Else
-							AddTextOption("$mrt_MarkofArkay_Dis_From_Respawn", "+999999", flags)
-						EndIf
-					Else
-						AddTextOption("$mrt_MarkofArkay_Dis_From_Respawn", "$Unknown", flags)
+				If ExtMarker
+					fDistance = PlayerRef.GetDistance(ExtMarker)				
+					If ExtMarker.GetParentCell()
+						sRPCellName = ExtMarker.GetParentCell().GetName()
+						sRPCellFormID = sDecToHex(ExtMarker.GetParentCell().GetFormID())
 					EndIf
-				Else
-					AddTextOption("$mrt_MarkofArkay_Dis_From_Respawn", "$Unknown", flags)
 				EndIf
-			Else
-				AddTextOption("$mrt_MarkofArkay_Dis_From_Respawn", "$Unknown", flags)
+			ElseIf (iTeleportLocation == getThroatRPIndex())
+				If ReviveScript.RespawnScript.TOWMarker As ObjectReference
+					fDistance = PlayerRef.GetDistance(ReviveScript.RespawnScript.TOWMarker)				
+					If ReviveScript.RespawnScript.TOWMarker.GetParentCell()
+						sRPCellName = ReviveScript.RespawnScript.TOWMarker.GetParentCell().GetName()
+						sRPCellFormID = sDecToHex(ReviveScript.RespawnScript.TOWMarker.GetParentCell().GetFormID())
+					EndIf
+				EndIf
 			EndIf
-		Else
-			AddTextOption("$mrt_MarkofArkay_Dis_From_Respawn", "$Disabled", flags)
 		EndIf
+		AddTextOption("$mrt_MarkofArkay_Respawn_Cell_Name", sRPCellName, flags)
 		SetCursorPosition(13)
+		AddTextOption("$mrt_MarkofArkay_Respawn_Cell_FormID", sRPCellFormID, flags)
+		SetCursorPosition(15)
+		If fDistance < 0.0
+			AddTextOption("$mrt_MarkofArkay_Dis_From_Respawn", sRPDistance, flags)
+		Else
+			If fDistance <= 999999
+				AddTextOption("$mrt_MarkofArkay_Dis_From_Respawn", fDistance As Int, flags)
+			Else
+				AddTextOption("$mrt_MarkofArkay_Dis_From_Respawn", "+999999", flags)
+			EndIf
+		EndIf		
+		SetCursorPosition(17)
+		AddHeaderOption("$mrt_MarkofArkay_HEAD_History")
+		SetCursorPosition(19)
 		If bIsInfoEnabled && ( moaState.getValue() == 1 )
 			If iTotalBleedOut > 99999999
 				AddTextOption("$Bleedouts", "+99999999", flags)
@@ -1523,7 +1536,7 @@ Event OnPageReset(String page)
 		Else
 			AddTextOption("$Bleedouts", "$Disabled", flags)
 		EndIf
-		SetCursorPosition(15)
+		SetCursorPosition(21)
 		If bIsInfoEnabled && ( moaState.getValue() == 1 )
 			If iTotalRevives > 99999999
 				AddTextOption("$Revivals", "+99999999", flags)
@@ -1533,7 +1546,7 @@ Event OnPageReset(String page)
 		Else
 			AddTextOption("$Revivals", "$Disabled", flags)
 		EndIf
-		SetCursorPosition(17)
+		SetCursorPosition(23)
 		If bIsInfoEnabled && ( moaState.getValue() == 1 )
 			If iRevivesByFollower > 99999999
 				AddTextOption("$mrt_MarkofArkay_Revive_By_Follower", "+99999999", flags)
@@ -1543,7 +1556,7 @@ Event OnPageReset(String page)
 		Else
 			AddTextOption("$mrt_MarkofArkay_Revive_By_Follower", "$Disabled", flags)
 		EndIf
-		SetCursorPosition(19)
+		SetCursorPosition(25)
 		If bIsInfoEnabled && ( moaState.getValue() == 1 )
 			If iRevivesByPotion > 99999999
 				AddTextOption("$mrt_MarkofArkay_Revive_With_Potion", "+99999999", flags)
@@ -1553,7 +1566,7 @@ Event OnPageReset(String page)
 		Else
 			AddTextOption("$mrt_MarkofArkay_Revive_With_Potion", "$Disabled", flags)
 		EndIf
-		SetCursorPosition(21)
+		SetCursorPosition(27)
 		If bIsInfoEnabled && ( moaState.getValue() == 1 )
 			If iRevivesByRevivalSpell > 99999999
 				AddTextOption("$mrt_MarkofArkay_Revive_With_Revival_Spell", "+99999999", flags)
@@ -1563,7 +1576,7 @@ Event OnPageReset(String page)
 		Else
 			AddTextOption("$mrt_MarkofArkay_Revive_With_Revival_Spell", "$Disabled", flags)
 		EndIf
-		SetCursorPosition(23)
+		SetCursorPosition(29)
 		If bIsInfoEnabled && ( moaState.getValue() == 1 )
 			If iRevivesBySacrificeSpell > 99999999
 				AddTextOption("$mrt_MarkofArkay_Revive_With_Sacrifice_Spell", "+99999999", flags)
@@ -1573,7 +1586,7 @@ Event OnPageReset(String page)
 		Else
 			AddTextOption("$mrt_MarkofArkay_Revive_With_Sacrifice_Spell", "$Disabled", flags)
 		EndIf
-		SetCursorPosition(25)
+		SetCursorPosition(31)
 		If bIsInfoEnabled && ( moaState.getValue() == 1 )
 			If iRevivesByTrade > 99999999
 				AddTextOption("$mrt_MarkofArkay_Revive_By_Trading", "+99999999", flags)
@@ -1583,7 +1596,7 @@ Event OnPageReset(String page)
 		Else
 			AddTextOption("$mrt_MarkofArkay_Revive_By_Trading", "$Disabled", flags)
 		EndIf
-		SetCursorPosition(27)
+		SetCursorPosition(33)
 		If bIsInfoEnabled && ( moaState.getValue() == 1 )
 			If iTotalRespawn > 99999999
 				AddTextOption("$Respawns", "+99999999", flags)
@@ -1593,7 +1606,7 @@ Event OnPageReset(String page)
 		Else
 			AddTextOption("$Respawns", "$Disabled", flags)
 		EndIf
-		SetCursorPosition(29)
+		SetCursorPosition(35)
 		If bIsInfoEnabled && ( moaState.getValue() == 1 )
 			If iDestroyedItems > 99999999
 				AddTextOption("$mrt_MarkofArkay_Destroyed_Items", "+99999999", flags)
@@ -2009,6 +2022,11 @@ Event OnOptionSelect(Int option)
 		bCreaturesCanSteal = !bCreaturesCanSteal
 		moaCreaturesCanSteal.SetValue(bCreaturesCanSteal As Int)
 		SetToggleOptionValue(oidCreaturesCanSteal,bCreaturesCanSteal)
+	ElseIf (option == oidNPCHasLevelRange)
+		bNPCHasLevelRange = !bNPCHasLevelRange
+		moaNPCHasLevelRange.SetValue(bNPCHasLevelRange As Int)
+		SetToggleOptionValue(oidNPCHasLevelRange,bNPCHasLevelRange)
+		ForcePageReset()
 	ElseIf (option == oidSpawnHostile)
 		bSpawnHostile = !bSpawnHostile
 		SetToggleOptionValue(oidSpawnHostile,bSpawnHostile)
@@ -2511,6 +2529,16 @@ Event OnOptionSliderOpen(Int option)
 		SetSliderDialogDefaultValue(1000.0)
 		SetSliderDialogRange(0.0, 1000000.0)
 		SetSliderDialogInterval(10.0)
+	ElseIf (option == oidLowerNPCMaxLvlDiff)
+		SetSliderDialogStartValue(fLowerNPCMaxLvlDiff)
+		SetSliderDialogDefaultValue(10.0)
+		SetSliderDialogRange(0.0, 200.0)
+		SetSliderDialogInterval(1.0)
+	ElseIf (option == oidHigherNPCMaxLvlDiff)
+		SetSliderDialogStartValue(fHigherNPCMaxLvlDiff)
+		SetSliderDialogDefaultValue(10.0)
+		SetSliderDialogRange(0.0, 200.0)
+		SetSliderDialogInterval(1.0)
 	ElseIf (option == oidRespawnCounter)
 		SetSliderDialogStartValue(100)
 		SetSliderDialogDefaultValue(100.0)
@@ -2733,6 +2761,12 @@ Event OnOptionSliderAccept(int option, Float value)
 	ElseIf (option == oidMaxItemsToCheckSlider)
 		fMaxItemsToCheckSlider = value
 		SetSliderOptionValue(oidMaxItemsToCheckSlider, fMaxItemsToCheckSlider, "{0}")
+	ElseIf (option == oidLowerNPCMaxLvlDiff)
+		fLowerNPCMaxLvlDiff = value
+		SetSliderOptionValue(oidLowerNPCMaxLvlDiff, fLowerNPCMaxLvlDiff, "{0}")
+	ElseIf (option == oidHigherNPCMaxLvlDiff)
+		fHigherNPCMaxLvlDiff = value
+		SetSliderOptionValue(oidHigherNPCMaxLvlDiff, fHigherNPCMaxLvlDiff, "{0}")
 	ElseIf (option == oidRespawnCounter)
 		If !Self.ShowMessage("$mrt_MarkofArkay_MESG_RespawnCounterConfirm", True, "$Yes", "$No")
 			Return
@@ -3278,6 +3312,11 @@ Event OnOptionDefault(Int option)
 		bCreaturesCanSteal = False
 		moaCreaturesCanSteal.SetValue(bCreaturesCanSteal As Int)
 		SetToggleOptionValue(oidCreaturesCanSteal ,bCreaturesCanSteal)
+	ElseIf (option == oidNPCHasLevelRange)
+		bNPCHasLevelRange = False
+		moaNPCHasLevelRange.SetValue(bNPCHasLevelRange As Int)
+		SetToggleOptionValue(oidNPCHasLevelRange ,bNPCHasLevelRange)
+		ForcePageReset()
 	ElseIf (option == oidSpawnHostile )
 		bSpawnHostile = False
 		SetToggleOptionValue(oidSpawnHostile ,bSpawnHostile)
@@ -3371,6 +3410,12 @@ Event OnOptionDefault(Int option)
 	ElseIf (option == oidMaxItemsToCheckSlider)
 		fMaxItemsToCheckSlider = 1000.0
 		SetSliderOptionValue(oidMaxItemsToCheckSlider, fMaxItemsToCheckSlider, "{0}")
+	ElseIf (option == oidLowerNPCMaxLvlDiff)
+		fLowerNPCMaxLvlDiff = 10.0
+		SetSliderOptionValue(oidLowerNPCMaxLvlDiff, fLowerNPCMaxLvlDiff, "{0}")
+	ElseIf (option == oidHigherNPCMaxLvlDiff)
+		fHigherNPCMaxLvlDiff = 10.0
+		SetSliderOptionValue(oidHigherNPCMaxLvlDiff, fHigherNPCMaxLvlDiff, "{0}")
 	ElseIf (option == oidBossChestChanceSlider)
 		fBossChestChanceSlider = 0.0
 		SetSliderOptionValue(oidBossChestChanceSlider, fBossChestChanceSlider, "$mrt_MarkofArkay_BossChestChanceSlider_2")
@@ -3744,8 +3789,10 @@ Event OnOptionHighlight(Int option)
 		SetInfoText("$mrt_MarkofArkay_DESC_SkillReduceMinValSlider")
 	ElseIf (option == oidSkillReduceMaxValSlider)
 		SetInfoText("$mrt_MarkofArkay_DESC_SkillReduceMaxValSlider")
-	ElseIf (option == oidCreaturesCanSteal )
+	ElseIf (option == oidCreaturesCanSteal)
 		SetInfoText("$mrt_MarkofArkay_DESC_CreaturesCanSteal")
+	ElseIf (option == oidNPCHasLevelRange)
+		SetInfoText("$mrt_MarkofArkay_DESC_NPCHasLevelRange")
 	ElseIf (option == oidMoralityMatters )
 		SetInfoText("$mrt_MarkofArkay_DESC_MoralityMatters")
 	ElseIf (option == oidLoseforever)
@@ -3854,6 +3901,10 @@ Event OnOptionHighlight(Int option)
 		SetInfoText("$mrt_MarkofArkay_DESC_LoseOtherTotalValueSlider")
 	ElseIf (option == oidMaxItemsToCheckSlider)
 		SetInfoText("$mrt_MarkofArkay_DESC_MaxItemsToCheckSlider")	
+	ElseIf (option == oidHigherNPCMaxLvlDiff)
+		SetInfoText("$mrt_MarkofArkay_DESC_HigherNPCMaxLvlDiff")	
+	ElseIf (option == oidLowerNPCMaxLvlDiff)
+		SetInfoText("$mrt_MarkofArkay_DESC_LowerNPCMaxLvlDiff")	
 	ElseIf (option == oidBossChestChanceSlider)
 		SetInfoText("$mrt_MarkofArkay_DESC_BossChestChanceSlider")	
 	ElseIf (option == oidHealthTriggerSlider)
@@ -4642,6 +4693,8 @@ Bool function bLoadUserSettings(String sFileName)
 	;bLostItemQuest = fiss.loadBool("bLostItemQuest")
 	bCreaturesCanSteal = fiss.loadBool("bCreaturesCanSteal")
 	moaCreaturesCanSteal.SetValue(bCreaturesCanSteal As Int)
+	bNPCHasLevelRange = fiss.loadBool("bNPCHasLevelRange")
+	moaNPCHasLevelRange.SetValue(bNPCHasLevelRange As Int)
 	iTeleportLocation = fiss.loadInt("iTeleportLocation")
 	iExternalIndex = fiss.loadInt("iExternalIndex")
 	fRPMinDistanceSlider = fiss.loadFloat("fRPMinDistanceSlider")
@@ -4771,6 +4824,8 @@ Bool function bLoadUserSettings(String sFileName)
 	fLoseOtherMinValueSlider = fiss.loadFloat("fLoseOtherMinValueSlider")
 	fLoseOtherTotalValueSlider = fiss.loadFloat("fLoseOtherTotalValueSlider")
 	fMaxItemsToCheckSlider = fiss.loadFloat("fMaxItemsToCheckSlider")
+	fHigherNPCMaxLvlDiff = fiss.loadFloat("fHigherNPCMaxLvlDiff")
+	fLowerNPCMaxLvlDiff = fiss.loadFloat("fLowerNPCMaxLvlDiff")
 	fHealthPercTrigger = fiss.loadFloat("fHealthPercTrigger")
 	fBossChestChanceSlider = fiss.loadFloat("fBossChestChanceSlider")
 	bLoseItem = fiss.loadBool("bLoseItem")
@@ -4887,6 +4942,13 @@ Bool Function bCheckFissErrors(String strErrors)
 		ElseIf strError == "Element bBossChestNotInClearedLoc not found"
 			bBossChestNotInClearedLoc = True
 			moaBossChestNotInclearedLoc.SetValueInt(0)
+		ElseIf strError == "Element bNPCHasLevelRange not found"
+			bNPCHasLevelRange = True
+			moaNPCHasLevelRange.SetValueInt(0)
+		ElseIf strError == "Element fHigherNPCMaxLvlDiff not found"
+			fHigherNPCMaxLvlDiff = 10.0
+		ElseIf strError == "Element fLowerNPCMaxLvlDiff not found"
+			fLowerNPCMaxLvlDiff = 10.0
 		ElseIf strError == "Element fMaxItemsToCheckSlider not found"
 			fMaxItemsToCheckSlider = 1000.0
 		ElseIf strError == "Element bCanbeKilledbyUnarmed not found"
@@ -4983,6 +5045,7 @@ bool function bSaveUserSettings(String sFileName)
 	fiss.saveBool("bSoulMarkStay", bSoulMarkStay)
 	;fiss.saveBool("bLostItemQuest", bLostItemQuest)
 	fiss.saveBool("bCreaturesCanSteal", bCreaturesCanSteal)
+	fiss.saveBool("bNPCHasLevelRange", bNPCHasLevelRange)
 	fiss.saveBool("bMoralityMatters", bMoralityMatters)
 	fiss.saveInt("iTeleportLocation", iTeleportLocation)
 	fiss.saveInt("iExternalIndex", iExternalIndex)
@@ -5129,6 +5192,8 @@ bool function bSaveUserSettings(String sFileName)
 	fiss.saveBool("bOnlyLoseSkillXP",bOnlyLoseSkillXP)
 	fiss.saveInt("iSelectedCustomRPSlot",iSelectedCustomRPSlot)
 	fiss.SaveFloat("fTotalCustomRPSlotSlider",fTotalCustomRPSlotSlider)
+	fiss.SaveFloat("fHigherNPCMaxLvlDiff",fHigherNPCMaxLvlDiff)
+	fiss.SaveFloat("fLowerNPCMaxLvlDiff",fLowerNPCMaxLvlDiff)
 	fiss.SaveBool("bSpawnHostile", bSpawnHostile)
 	fiss.SaveBool("bBossChestOnlyCurLoc", bBossChestOnlyCurLoc)
 	fiss.SaveBool("bBossChestNotInClearedLoc", bBossChestNotInClearedLoc)
@@ -5214,6 +5279,8 @@ function LoadDefaultSettings()
 	bLostItemQuest = True
 	bCreaturesCanSteal = False
 	moaCreaturesCanSteal.SetValue(bCreaturesCanSteal As Int)
+	bNPCHasLevelRange = False
+	moaNPCHasLevelRange.SetValue(bNPCHasLevelRange As Int)
 	bMoralityMatters = True
 	moaMoralityMatters.SetValue(bMoralityMatters As Int)
 	iTeleportLocation = 0
@@ -5229,6 +5296,8 @@ function LoadDefaultSettings()
 	fValueBSoulGemScaleSlider = 0.0
 	fValueSoulScaleSlider = 0.0
 	fValueGoldScaleSlider = 0.0
+	fLowerNPCMaxLvlDiff = 10.0
+	fHigherNPCMaxLvlDiff = 10.0
 	setRPFlags(True)
 	setSpawnCounts(True)
 	setSpawnWeights(True)
@@ -5501,7 +5570,7 @@ Function ShowLostItems()
 				moaLostItemMenu.Show(iType,kItem.GetGoldValue(),LostItemsChest.GetItemCount(kItem),kItem.GetWeight(),iFormID)
 				Debug.Notification("Mark of Arkay - Name: " + kItem.GetName())
 				Debug.Notification("Mark of Arkay - Type: " + sType)
-				Debug.Notification("Mark of Arkay - FormID: " + sDecToHex(iFormID))
+				Debug.Notification("Mark of Arkay - Form ID: " + sDecToHex(iFormID))
 				listMenu.OpenMenu(none, none)
 				iResult = listMenu.GetResultInt()
 		EndWhile
@@ -5600,7 +5669,7 @@ Function ShowLostItems()
 					Int iFormID = kItem.GetFormID()
 					Debug.Notification("Mark of Arkay - Name: " + kItem.GetName())
 					Debug.Notification("Mark of Arkay - Type: " + sType)
-					Debug.Notification("Mark of Arkay - FormID: " + sDecToHex(iFormID))
+					Debug.Notification("Mark of Arkay - Form ID: " + sDecToHex(iFormID))
 					moaLostItemMenu.Show(iType,kItem.GetGoldValue(),LostItemsChest.GetItemCount(kItem),kItem.GetWeight(),iFormID)
 				EndIf
 			EndIf

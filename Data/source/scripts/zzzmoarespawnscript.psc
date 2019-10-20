@@ -109,9 +109,6 @@ Form[] Property TavernCapitalMarkers Auto Hidden
 Bool bFirstTry = False
 Bool bFirstTryFailed = False
 GlobalVariable Property moaCheckingMarkers Auto
-Bool bcheckMarkerStalled = False
-Bool bcheckMarkerWaiting = False
-
 
 Function SetVars()
 	fRPMinDistance = ConfigMenu.fRPMinDistanceSlider
@@ -149,16 +146,6 @@ Event OnCheckingMarkers(Form sender,Bool bTavern, Bool bExtra, Bool bCustom)
 	checkMarkers(bTavern, bExtra, bCustom)
 EndEvent
 
-Event OnUpdate()
-	If bcheckMarkerStalled
-		Debug.Trace("MarkOfArkay: CheckMarkers still stalled.")
-		moaCheckingMarkers.SetValue(0.0)
-		checkMarkers(True,True,True)
-	ElseIf moaCheckingMarkers.GetValue() != 1.0
-		checkMarkers(True,True,True)
-	EndIf
-EndEvent
-
 Function checkMarkers(Bool bCheckInn, Bool bCheckExtra, Bool bCheckCustom)
 	If !bCheckInn && !bCheckExtra && !bCheckCustom
 		Return
@@ -166,23 +153,7 @@ Function checkMarkers(Bool bCheckInn, Bool bCheckExtra, Bool bCheckCustom)
 	If moaCheckingMarkers.GetValue() != 1.0
 		moaCheckingMarkers.SetValue(1.0)
 	Else
-		If bcheckMarkerWaiting || bcheckMarkerStalled
-			Return
-		EndIf
-		bcheckMarkerWaiting = True
-		Float f = 5.0
-		While f > 0.0 && moaCheckingMarkers.GetValue() == 1.0
-			Utility.Wait(0.2)
-			f -= 0.2
-		EndWhile
-		If moaCheckingMarkers.GetValue() == 1.0
-			bcheckMarkerStalled = True
-			Debug.Trace("MarkOfArkay: CheckMarkers stalled.")
-			RegisterForSingleUpdate(10.0)
-			bcheckMarkerWaiting = False
-			Return
-		EndIf
-		bcheckMarkerWaiting = False
+		Return
 	EndIf
 	Debug.Notification("$mrt_MarkofArkay_Notification_Checking_Markers_Started")
 	If bCheckInn
@@ -194,7 +165,6 @@ Function checkMarkers(Bool bCheckInn, Bool bCheckExtra, Bool bCheckCustom)
 	If bCheckCustom
 		ConfigMenu.setCustomRPS()
 	EndIf
-	bcheckMarkerStalled = False
 	moaCheckingMarkers.SetValue(0.0)
 	Debug.Notification("$mrt_MarkofArkay_Notification_Checking_Markers_Finished")
 EndFunction

@@ -691,8 +691,8 @@ Function BleedoutHandler(String CurrentState)
 	If Thief
 		PreviousThief = Thief
 	EndIf
-	moaHostileNPCDetector.Stop()
-	moaHostileNPCDetector01.Stop()
+	stopAndConfirm(moaHostileNPCDetector)
+	stopAndConfirm(moaHostileNPCDetector01)
 	If Attacker && Attacker != PlayerRef
 		AttackerActor.ForceRefTo(Attacker)
 		AttackerActor01.ForceRefTo(Attacker)
@@ -706,6 +706,15 @@ Function BleedoutHandler(String CurrentState)
 		AttackerActor01.Clear()
 	EndIf
 	If ConfigMenu.iHostileOption == 2
+		If ConfigMenu.bNPCHasLevelRange
+			Int iMinNPCLevel = PlayerRef.GetLevel() - (ConfigMenu.fLowerNPCMaxLvlDiff As Int)
+			Int iMaxNPCLevel = PlayerRef.GetLevel() + (ConfigMenu.fHigherNPCMaxLvlDiff As Int)
+			If iMinNPCLevel < 0
+				iMinNPCLevel = 1
+			EndIf
+			ConfigMenu.moaLowerNPCMaxLvlDiff.SetValueInt(iMinNPCLevel)
+			ConfigMenu.moaHigherNPCMaxLvlDiff.SetValueInt(iMaxNPCLevel)
+		EndIf
 		moaHostileNPCDetector.Start()
 	ElseIf ConfigMenu.iHostileOption == 1
 		moaHostileNPCDetector01.Start()

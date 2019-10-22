@@ -7,6 +7,7 @@ FormList property WorldspacesInterior auto
 Formlist property ExternalMarkerList Auto
 Formlist property ExternalLocationList Auto
 Formlist property ExternalLocationMarkerList Auto
+Formlist property MergedExternalMarkerSubList Auto
 Formlist property ExtraCustomMarkerList Auto
 Formlist property MergedExternalMarkerList Auto
 Formlist Property Destinations Auto
@@ -127,10 +128,12 @@ Bool Function bCheckTavernMarkers()
 	EndIf
 	Int i = TavernMarkers.Length
 	Int j = TavernCapitalMarkers.Length
-	While i > 0
-		i -= 1
-		If !TavernMarkers[i] As ObjectReference
-			Return False
+	While (i > 0) || (j > 0)
+		If i > 0
+			i -= 1
+			If !TavernMarkers[i] As ObjectReference
+				Return False
+			EndIf
 		EndIf
 		If j > 0
 			j -= 1
@@ -171,40 +174,27 @@ EndFunction
 
 Function AddExternalMarkers()
 	Debug.TraceConditional("MarkOfArkay: Adding extra markers...",ConfigMenu.bIsLoggingEnabled)
-	MergedExternalMarkerList.Revert()
-	Int i = 0 
-	While i < ExternalMarkerList.GetSize()
-		If ExternalMarkerList.GetAt(i) As ObjectReference
-			MergedExternalMarkerList.AddForm(ExternalMarkerList.GetAt(i) As ObjectReference)
-		EndIf
-		i += 1
-	Endwhile
+	Int i = 0
 	ObjectReference LocMarker
 	ExternalLocationMarkerList.Revert()
-	i = 0
 	While i < ExternalLocationList.GetSize()
 		If ExternalLocationList.GetAt(i) As Location
 			LocMarker = getLocationMarker(ExternalLocationList.GetAt(i) As Location)
-			If LocMarker
+			If LocMarker As ObjectReference
 				ExternalLocationMarkerList.AddForm(LocMarker)
-				MergedExternalMarkerList.AddForm(LocMarker)
 			EndIf
 		EndIf
 		i += 1
 	Endwhile
-	i = 0
-	While i < ExtraCustomMarkerList.GetSize()
-		If ExtraCustomMarkerList.GetAt(i) As ObjectReference
-			MergedExternalMarkerList.AddForm(ExtraCustomMarkerList.GetAt(i) As ObjectReference)
-		Else
-			ExtraCustomMarkerList.RemoveAddedForm(ExtraCustomMarkerList.GetAt(i) As ObjectReference)
-			i -= 1
-		EndIf
-		i += 1
-	Endwhile
-	ConfigMenu.setExtraRPs()
-	moaERPCount.SetValue(MergedExternalMarkerList.GetSize())
-	Debug.TraceConditional("MarkOfArkay: Adding extra markers finished.",ConfigMenu.bIsLoggingEnabled)	
+	MergedExternalMarkerList.Revert()
+	MergedExternalMarkerSubList.Revert()
+	MergedExternalMarkerList.AddForm(checkAndFixFormList(ExternalMarkerList,True,True,True,akOtherList = MergedExternalMarkerSubList))
+	MergedExternalMarkerList.AddForm(checkAndFixFormList(ExternalLocationMarkerList,True,True,True))
+	MergedExternalMarkerList.AddForm(checkAndFixFormList(ExtraCustomMarkerList,True,True,True,34))
+	i = MergedExternalMarkerSubList.GetSize() + ExternalLocationMarkerList.GetSize() + ExtraCustomMarkerList.GetSize()
+	moaERPCount.SetValue(i)	
+	ConfigMenu.setExtraRPs(i)
+	Debug.TraceConditional("MarkOfArkay: Adding extra markers finished.",ConfigMenu.bIsLoggingEnabled)
 EndFunction
 
 Function setTavernMarkers(Bool bReset = False)
@@ -277,15 +267,18 @@ Function RandomTeleport()
 		EndIf
 		iIndex += 1
 	Endwhile
-	If MergedExternalMarkerList.GetSize() > 0
-		iIndex = MergedExternalMarkerList.GetSize()
-		While iIndex > 0
-			iIndex -= 1
-			If !(( MergedExternalMarkerList.GetAt( iIndex ).GetType() != 61 ) || \
-			!bCanTeleportToExtMarker( MergedExternalMarkerList.GetAt( iIndex ) As ObjectReference ) || \
-			( PlayerMarker.GetDistance( MergedExternalMarkerList.GetAt( iIndex ) As ObjectReference ) < fRPMinDistance ))
-				Destinations.AddForm(MergedExternalMarkerList.GetAt( iIndex ) As ObjectReference)
+	If moaERPCount.GetValueInt() > 0
+		Int iLast = iMin(128,moaERPCount.GetValueInt())
+		iIndex = 0
+		ObjectReference Marker
+		While iIndex < iLast
+			Marker = getFromMergedFormList(MergedExternalMarkerList,iIndex) As ObjectReference
+			If !(( Marker.GetType() != 61 ) || \
+			!bCanTeleportToExtMarker(Marker) || \
+			( PlayerMarker.GetDistance(Marker) < fRPMinDistance ))
+				Destinations.AddForm(Marker)
 			EndIf
+			iIndex += 1
 		EndWhile
 	EndIf
 	If bCanTeleportToDynMarker(CellLoadMarker2) && PlayerMarker.GetDistance(CellLoadMarker2) >= fRPMinDistance
@@ -409,6 +402,7 @@ Bool Function bIsArrived(ObjectReference akMarker)
 	Utility.Wait(0.5)
 	Float fFrom = PlayerRef.GetDistance(PlayerMarker)
 	Float fTo = PlayerRef.GetDistance(akMarker)
+	
 	ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Distance between two Points: "+ fTravel)
 	ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Distance Traveled: "+ fFrom)
 	ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Distance from Destination: "+ fTo)
@@ -485,34 +479,46 @@ Bool Function bSendToTOW()
 Endfunction
 
 Bool Function bSendToExternalMarker(Int iExternalIndex)
-	If MergedExternalMarkerList.GetSize() > 0
-		If ( MergedExternalMarkerList.GetSize() > 1 ) && ( iExternalIndex == -1 || ( iExternalIndex >= MergedExternalMarkerList.GetSize() ) ||\
-		( !bCanTeleportToExtMarker( MergedExternalMarkerList.GetAt( iExternalIndex ) As ObjectReference ) ||\
-		(PlayerRef.GetDistance(MergedExternalMarkerList.GetAt( iExternalIndex ) As ObjectReference) < fRPMinDistance) ||\
-		( MergedExternalMarkerList.GetAt( iExternalIndex ).GetType() != 61 ) ) )
-			Int iMarkerIndex = iGetRandomRefFromListWithExclusions( 0, MergedExternalMarkerList.GetSize() - 1, MergedExternalMarkerList )
-			If iMarkerIndex != -1
-				If bIsArrived(MergedExternalMarkerList.GetAt( iMarkerIndex ) As ObjectReference)
+	ObjectReference akMarker
+	Int iIndex = -1
+	If moaERPCount.GetValueInt() > 0
+		If iExternalIndex > -1 && iExternalIndex < moaERPCount.GetValueInt()
+			akMarker = getFromMergedFormList(MergedExternalMarkerList,iExternalIndex) As ObjectReference
+			If akMarker && (akMarker.GetParentCell() != PlayerRef.GetParentCell()) && \
+			bCanTeleportToExtMarker(akMarker) && (PlayerRef.GetDistance(akMarker) >= fRPMinDistance)
+				If bIsArrived(akMarker)
 					Return True
 				EndIf
 			EndIf
-		ElseIf ( bCanTeleportToExtMarker( MergedExternalMarkerList.GetAt( iExternalIndex ) As ObjectReference ) &&\
-		(PlayerRef.GetDistance(MergedExternalMarkerList.GetAt( iExternalIndex ) As ObjectReference) >= fRPMinDistance) &&\
-		( MergedExternalMarkerList.GetAt( iExternalIndex ).GetType() == 61 ) )
-			If bIsArrived(MergedExternalMarkerList.GetAt( iExternalIndex ) As ObjectReference)
-				Return True
-			EndIf
+			iIndex = iExternalIndex
 		EndIf
+		Int i = iMin(3,moaERPCount.GetValueInt() - 1)
+		Bool[] bExcludes = Utility.CreateBoolArray(moaERPCount.GetValueInt(),True)
+		If iIndex > -1 && iIndex < moaERPCount.GetValueInt()
+			bExcludes[iIndex] = False
+		EndIf
+		While i > 0
+			i -= 1
+			iIndex = RandomIntWithExclusionArray(0,moaERPCount.GetValueInt() - 1,bExcludes)
+			akMarker = getFromMergedFormList(MergedExternalMarkerList,iIndex) As ObjectReference
+			If akMarker && (akMarker.GetParentCell() != PlayerRef.GetParentCell()) && \
+			bCanTeleportToExtMarker(akMarker) && (PlayerRef.GetDistance(akMarker) >= fRPMinDistance)
+				If bIsArrived(akMarker)
+					Return True
+				EndIf
+			EndIf
+			bExcludes[iIndex] = False
+		EndWhile
 	EndIf
 	Return False
 EndFunction
-
 
 Function Teleport()
 	PlayerMarker.Enable()
 	PlayerMarker.MoveTo(playerRef)
 	PlayerMarker.SetPosition(PlayerRef.GetPositionx(), PlayerRef.GetPositiony(), PlayerRef.GetPositionz())
 	PlayerMarker.SetAngle(0.0, 0.0, PlayerRef.GetAnglez())
+	moaERPCount.SetValue(MergedExternalMarkerSubList.GetSize() + ExternalLocationMarkerList.GetSize() + ExtraCustomMarkerList.GetSize())
 	If iTeleportLocation < (ConfigMenu.getNearbyCityRPIndex())
 		If ConfigMenu.bMoreRandomRespawn
 			moaRandomDestination.SetValueInt(0)
@@ -644,7 +650,6 @@ Bool Function bCanTeleportToExtMarker( Objectreference ExternalMarker )
 	Return False
 EndFunction
 
-
 Bool Function bIsLocForbidden(Location akLoc)
 	Int iIndex = LocationBlackList.GetSize()
 	While iIndex > 0
@@ -684,7 +689,7 @@ Int Function iGetRandomRefFromListWithExclusions( Int iFrom, Int iTo, Formlist R
 			ExcludeCount += 1
 		Else
 			MarkerRef = ( RefList.GetAt(iIndex) As ObjectReference )
-			If ( !bCanTeleportToExtMarker( MarkerRef ) || BIsRefInCurrentCell( MarkerRef ) )
+			If ( !bCanTeleportToExtMarker( MarkerRef ) || bIsRefInCurrentCell( MarkerRef ) )
 				ExcludeCount += 1
 			EndIf
 		EndIf
@@ -998,16 +1003,20 @@ ObjectReference Function FindCityMarkerByDistance(float fMaxDistance = 100000.0)
 	float fDistance
 	ObjectReference Marker
 	Int iIndex
-	If MergedExternalMarkerList.GetSize() > 0
-		iIndex = iMin(100,MergedExternalMarkerList.GetSize())
-		While iIndex > 0
-			iIndex -= 1
-			If( ExcludedMarkerList.find( MergedExternalMarkerList.GetAt( iIndex ) As ObjectReference ) < 0 )
-				If ( !fDistance || ( fDistance > PlayerMarker.GetDistance( MergedExternalMarkerList.GetAt( iIndex ) As ObjectReference ) ) ) && (PlayerMarker.GetDistance( MergedExternalMarkerList.GetAt( iIndex ) As ObjectReference ) >= fRPMinDistance)
-					fDistance = PlayerMarker.GetDistance( MergedExternalMarkerList.GetAt( iIndex ) As ObjectReference )
-					Marker = MergedExternalMarkerList.GetAt( iIndex ) As ObjectReference
+	Int iLast
+	If moaERPCount.GetValueInt() > 0
+		iLast = iMin(128,moaERPCount.GetValueInt())
+		iIndex = 0
+		ObjectReference tempMarker
+		While iIndex < iLast
+			tempMarker = getFromMergedFormList(MergedExternalMarkerList,iIndex) As ObjectReference
+			If( ExcludedMarkerList.find(tempMarker) < 0 )
+				If ( !fDistance || ( fDistance > PlayerMarker.GetDistance(tempMarker) ) ) && (PlayerMarker.GetDistance(tempMarker) >= fRPMinDistance)
+					fDistance = PlayerMarker.GetDistance(tempMarker)
+					Marker = tempMarker
 				EndIf
 			EndIf
+			iIndex += 1
 		EndWhile
 	EndIf
 	If PlayerMarker.IsInInterior()
@@ -1089,15 +1098,18 @@ ObjectReference Function FindMarkerByLocation()
 			EndIf
 		EndIf
 	EndWhile
-	If MergedExternalMarkerList.GetSize() > 0
-		Int jIndex = iMin(100, MergedExternalMarkerList.GetSize())
-		While jIndex > 0
-			jIndex -= 1
-			If ( ExcludedMarkerList.find(MergedExternalMarkerList.GetAt( jIndex ) As ObjectReference) < 0 )
-				If bInSameLocation( ( MergedExternalMarkerList.GetAt( jIndex ) As ObjectReference ).GetCurrentLocation() )
-					Return ( MergedExternalMarkerList.GetAt( jIndex ) As ObjectReference )
+	If moaERPCount.GetValueInt() > 0
+		Int iLast = iMin(128, moaERPCount.GetValueInt())
+		Int jIndex = 0
+		ObjectReference Marker
+		While jIndex < iLast
+			Marker = getFromMergedFormList(MergedExternalMarkerList,jIndex) As ObjectReference
+			If ( ExcludedMarkerList.find(Marker) < 0 )
+				If bInSameLocation((Marker).GetCurrentLocation())
+					Return Marker
 				EndIf
 			EndIf
+			jIndex += 1
 		EndWhile	
 	EndIf
 EndFunction
@@ -1130,17 +1142,20 @@ EndFunction
 Bool Function TryToMoveByDistanceFar()
 	float fDistance
 	ObjectReference Marker
+	ObjectReference tempMarker
 	Int iIndex
-	If MergedExternalMarkerList.GetSize() > 0
-		iIndex = iMin(100, MergedExternalMarkerList.GetSize())
-		While iIndex > 0
-			iIndex -= 1
-			If( ExcludedMarkerList.find( MergedExternalMarkerList.GetAt( iIndex ) As ObjectReference ) < 0 )
-				If ( !fDistance || ( fDistance > PlayerMarker.GetDistance( MergedExternalMarkerList.GetAt( iIndex ) As ObjectReference ) ) )
-					fDistance = PlayerMarker.GetDistance( MergedExternalMarkerList.GetAt( iIndex ) As ObjectReference )
-					Marker = MergedExternalMarkerList.GetAt( iIndex ) As ObjectReference
+	If moaERPCount.GetValueInt() > 0
+		Int iLast = iMin(128, moaERPCount.GetValueInt())
+		iIndex = 0
+		While iIndex < iLast
+			tempMarker = getFromMergedFormList(MergedExternalMarkerList,iIndex) As ObjectReference
+			If( ExcludedMarkerList.find(tempMarker) < 0 )
+				If ( !fDistance || ( fDistance > PlayerMarker.GetDistance( tempMarker ) ) )
+					fDistance = PlayerMarker.GetDistance( tempMarker )
+					Marker = tempMarker
 				EndIf
 			EndIf
+			iIndex += 1
 		EndWhile
 	EndIf
 	If PlayerMarker.IsInInterior()
@@ -1309,18 +1324,21 @@ Function InitializeExcludedMarkers()
 			EndIf
 		EndIf
 	Endwhile
-	If MergedExternalMarkerList.GetSize() > 0
-		j = iMin(100,MergedExternalMarkerList.GetSize())
-		While j > 0
-			j -= 1
-			If ( ( MergedExternalMarkerList.GetAt( j ).GetType() != 61 ) ||\
-			!bCanTeleportToExtMarker( MergedExternalMarkerList.GetAt( j ) As ObjectReference ) ||\
-			( PlayerMarker.GetDistance( MergedExternalMarkerList.GetAt( j ) As ObjectReference ) < fRPMinDistance ))
+	If moaERPCount.GetValueInt() > 0
+		Int iLast = iMin(90, moaERPCount.GetValueInt())
+		ObjectReference marker
+		j = 0
+		While j < iLast
+			marker = getFromMergedFormList(MergedExternalMarkerList,j) As ObjectReference
+			If ( ( marker.GetType() != 61 ) ||\
+			!bCanTeleportToExtMarker( marker ) ||\
+			( PlayerMarker.GetDistance( marker ) < fRPMinDistance ))
 				i = ExcludedMarkerList.Find(None)
 				If i > -1
-					ExcludedMarkerList[i] = MergedExternalMarkerList.GetAt( j ) As ObjectReference 
+					ExcludedMarkerList[i] = marker
 				EndIf
 			EndIf
+			j += 1
 		EndWhile
 	EndIf		
 Endfunction
@@ -1466,13 +1484,13 @@ Int Function RespawnMenu(Int aiMessage = 0, Int aiButton = 0)
 				Return -3 - aiButton ;0-> -3, 1-> -4, 2-> -5
 			EndIf
 		ElseIf aiMessage == 3
-			If MergedExternalMarkerList.GetSize() > 7
+			If moaERPCount.GetValueInt() > 7
 				aiButton = moaRespawnMenu13_Alt.Show(iIndex)
 				If aiButton == -1
 				ElseIf aiButton == 0 ;Prev
-					iIndex = ichangeVar(iIndex,1,MergedExternalMarkerList.GetSize(),-1)
+					iIndex = ichangeVar(iIndex,1,moaERPCount.GetValueInt(),-1)
 				ElseIf aiButton == 1 ;Next
-					iIndex = ichangeVar(iIndex,1,MergedExternalMarkerList.GetSize(),1)
+					iIndex = ichangeVar(iIndex,1,moaERPCount.GetValueInt(),1)
 				ElseIf aiButton == 2 ;Input
 					If ConfigMenu.bUIEOK
 						UITextEntryMenu TextMenu = uiextensions.GetMenu("UITextEntryMenu", True) as UITextEntryMenu
@@ -1480,7 +1498,7 @@ Int Function RespawnMenu(Int aiMessage = 0, Int aiButton = 0)
 						TextMenu.OpenMenu(none, none)
 						String sResult = TextMenu.GetResultString()
 						TextMenu.ResetMenu()
-						If sResult && bIsInteger(sResult) && ((sResult As Int) - 1) > - 1 && ((sResult As Int) - 1) < MergedExternalMarkerList.GetSize()
+						If sResult && bIsInteger(sResult) && ((sResult As Int) - 1) > - 1 && ((sResult As Int) - 1) < moaERPCount.GetValueInt()
 							iIndex = (sResult As Int)
 						EndIf
 					EndIf
@@ -1688,7 +1706,7 @@ Int Function iGetRandomWithExclusionArray( Int iFrom, Int iTo, Bool[] iFlagArray
 EndFunction
 
 Function SelectRespawnPointbyMenu()
-	moaERPCount.SetValue(MergedExternalMarkerList.GetSize())
+	moaERPCount.SetValue(MergedExternalMarkerSubList.GetSize() + ExternalLocationMarkerList.GetSize() + ExtraCustomMarkerList.GetSize())
 	iTeleportLocation = RespawnMenu()
 	If (( iTeleportLocation == -1 ) || ( iTeleportLocation > ( ConfigMenu.sRespawnPoints.Length - 1 )))
 		If ( iTeleportLocation == -1 )

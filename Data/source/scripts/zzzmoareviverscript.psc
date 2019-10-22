@@ -412,7 +412,7 @@ EndEvent
 Event OnObjectEquipped(Form akBaseObject, ObjectReference akReference) ; using equipped spells As workaround a bug which happens when player goes to bleedout while fighting with spell
 	If ( !PlayerRef.IsBleedingOut() && GetState() == "")
 		Utility.Wait(0.5)
-		If akBaseObject As Ammo 
+		If akBaseObject As Ammo
 			If PlayerRef.WornHasKeyword(VendorItemArrow)
 				If PlayerRef.IsEquipped(akBaseObject) 
 					EquippedAmmo = akBaseObject
@@ -1778,11 +1778,11 @@ Function RevivePlayer(Bool bRevive)
 EndFunction
 
 Function RequipSpells()
-	If ( LeftHandEquippedItem As Spell )
+	If LeftHandEquippedItem.GetType() == 22 ;Spell
 		PlayerRef.UnequipSpell((LeftHandEquippedItem As Spell), 0)
 		PlayerRef.EquipSpell((LeftHandEquippedItem As Spell), 0)
 	EndIf
-	If ( RightHandEquipedItem As Spell )
+	If RightHandEquipedItem.GetType() == 22 ;Spell
 		PlayerRef.UnequipSpell((RightHandEquipedItem As Spell), 1)
 		PlayerRef.EquipSpell((RightHandEquipedItem As Spell), 1)
 	EndIf

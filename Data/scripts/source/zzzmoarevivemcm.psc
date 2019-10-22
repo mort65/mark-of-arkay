@@ -1451,71 +1451,71 @@ Event OnPageReset(String page)
 			sRPCellName = "$Unknown"
 			sRPCellFormID = "$Unknown"
 			sRPDistance = "$Unknown"
-			Form kPlace
+			String[] sPlaceInfos
 			If iTeleportLocation < getNearbyCityRPIndex()
 				If (MarkerList.GetAt(iTeleportLocation) As Objectreference)
 					fDistance = PlayerRef.GetDistance(MarkerList.GetAt(iTeleportLocation) As Objectreference)
-					kPlace = GetRefPlace(MarkerList.GetAt(iTeleportLocation) As Objectreference)
-					If kPlace
-						sRPCellName = kPlace.GetName()
-						sRPCellFormID = sDecToHex(kPlace.GetFormID())
+					sPlaceInfos = getRefPlaceInfo(MarkerList.GetAt(iTeleportLocation) As Objectreference)
+					If sPlaceInfos[0] || sPlaceInfos[1]
+						sRPCellName = sPlaceInfos[0]
+						sRPCellFormID = sDecToHex(sPlaceInfos[1] As Int)
 					EndIf
 				EndIf
 			ElseIf (iTeleportLocation == getTavernRPIndex())
 				If iTavernIndex < getNearbyInnRPIndex()
 					fDistance = PlayerRef.GetDistance(ReviveScript.RespawnScript.TavernMarkers[iTavernIndex] As Objectreference)
-					kPlace = GetRefPlace(ReviveScript.RespawnScript.TavernMarkers[iTavernIndex] As Objectreference)
-					If kPlace
-						sRPCellName = kPlace.GetName()
-						sRPCellFormID = sDecToHex(kPlace.GetFormID())
+					sPlaceInfos = getRefPlaceInfo(ReviveScript.RespawnScript.TavernMarkers[iTavernIndex] As Objectreference)
+					If sPlaceInfos[0] || sPlaceInfos[1]
+						sRPCellName = sPlaceInfos[0] 
+						sRPCellFormID = sDecToHex(sPlaceInfos[1] As Int)
 					EndIf
 				EndIf
 			ElseIf (iTeleportLocation == getSleepRPIndex())
 				If SleepMarker && !SleepMarker.Isdisabled() && (SleepMarker.GetParentCell() != ReviveScript.DefaultCell)
 					fDistance = PlayerRef.GetDistance(SleepMarker)
-					kPlace = GetRefPlace(SleepMarker)
-					If kPlace
-						sRPCellName = kPlace.GetName()
-						sRPCellFormID = sDecToHex(kPlace.GetFormID())
+					sPlaceInfos = getRefPlaceInfo(SleepMarker)
+					If sPlaceInfos[0] || sPlaceInfos[1]
+						sRPCellName = sPlaceInfos[0]
+						sRPCellFormID = sDecToHex(sPlaceInfos[1] As Int)
 					EndIf
 				EndIf
 			ElseIf (iTeleportLocation == getCustomRPIndex())
 				If (CustomRespawnPoints.GetAt(iSelectedCustomRPSlot) As ObjectReference).IsEnabled() &&\
 				(CustomRespawnPoints.GetAt(iSelectedCustomRPSlot) As ObjectReference).GetParentCell() != ReviveScript.DefaultCell
 					fDistance = PlayerRef.GetDistance((CustomRespawnPoints.GetAt(iSelectedCustomRPSlot) As ObjectReference))
-					kPlace = GetRefPlace(CustomRespawnPoints.GetAt(iSelectedCustomRPSlot) As ObjectReference)
-					If kPlace
-						sRPCellName = kPlace.GetName()
-						sRPCellFormID = sDecToHex(kPlace.GetFormID())
+					sPlaceInfos = getRefPlaceInfo(CustomRespawnPoints.GetAt(iSelectedCustomRPSlot) As ObjectReference)
+					If sPlaceInfos[0] || sPlaceInfos[1]
+						sRPCellName = sPlaceInfos[0]
+						sRPCellFormID = sDecToHex(sPlaceInfos[1] As Int)
 					EndIf					
 				EndIf
 			ElseIf (iTeleportLocation == getExternalRPIndex()) && (moaERPCount.GetValueInt() > 1) && (iExternalIndex != -1)
 				ObjectReference ExtMarker = getFromMergedFormList(MergedExternalMarkerList,iExternalIndex) As ObjectReference
 				If ExtMarker
 					fDistance = PlayerRef.GetDistance(ExtMarker)
-					kPlace = GetRefPlace(ExtMarker)
-					If kPlace
-						sRPCellName = kPlace.GetName()
-						sRPCellFormID = sDecToHex(kPlace.GetFormID())
+					sPlaceInfos = getRefPlaceInfo(ExtMarker)
+					If sPlaceInfos[0] || sPlaceInfos[1]
+						sRPCellName = sPlaceInfos[0]
+						sRPCellFormID = sDecToHex(sPlaceInfos[1] As Int)
 					EndIf					
 				EndIf
 			ElseIf (iTeleportLocation == getExternalRPIndex()) && (moaERPCount.GetValueInt() == 1)
 				ObjectReference ExtMarker = getFromMergedFormList(MergedExternalMarkerList,0) As ObjectReference
 				If ExtMarker
 					fDistance = PlayerRef.GetDistance(ExtMarker)				
-					kPlace = GetRefPlace(ExtMarker)
-					If kPlace
-						sRPCellName = kPlace.GetName()
-						sRPCellFormID = sDecToHex(kPlace.GetFormID())
+					sPlaceInfos = getRefPlaceInfo(ExtMarker)
+					If sPlaceInfos[0] || sPlaceInfos[1]
+						sRPCellName = sPlaceInfos[0]
+						sRPCellFormID = sDecToHex(sPlaceInfos[1] As Int)
 					EndIf	
 				EndIf
 			ElseIf (iTeleportLocation == getThroatRPIndex())
 				If ReviveScript.RespawnScript.TOWMarker As ObjectReference
 					fDistance = PlayerRef.GetDistance(ReviveScript.RespawnScript.TOWMarker)
-					kPlace = GetRefPlace(ReviveScript.RespawnScript.TOWMarker)
-					If kPlace
-						sRPCellName = kPlace.GetName()
-						sRPCellFormID = sDecToHex(kPlace.GetFormID())
+					sPlaceInfos = getRefPlaceInfo(ReviveScript.RespawnScript.TOWMarker)
+					If sPlaceInfos[0] || sPlaceInfos[1]
+						sRPCellName = sPlaceInfos[0]
+						sRPCellFormID = sDecToHex(sPlaceInfos[1] As Int)
 					EndIf						
 				EndIf
 			EndIf
@@ -4352,28 +4352,13 @@ EndFunction
 
 Function setExtraRPs(Int aiSize)
 	Debug.TraceConditional("MarkOfArkay: Setting extra custom markers...",bIsLoggingEnabled)
-	Debug.Trace("aiSize:"+aiSize)
-	Debug.Trace("MergedExternalMarkerList Size:"+MergedExternalMarkerList.GetSize())
-	Debug.Trace("MergedExternalMarkerList:"+MergedExternalMarkerList)
-	Debug.Trace("MergedExternalMarkerList[0]:"+MergedExternalMarkerList.GetAt(0))
-	Debug.Trace("MergedExternalMarkerList[1]:"+MergedExternalMarkerList.GetAt(1))
-	Debug.Trace("MergedExternalMarkerList[2]:"+MergedExternalMarkerList.GetAt(2))
-	Debug.Trace("0:"+getFromMergedFormList(MergedExternalMarkerList,0))
 	sExtraRPs = Utility.CreateStringArray(aiSize + 1)
-	String sName
-	String sFormID
-	Form kPlace
 	Int i = 0
 	While i < aiSize
 		sExtraRPs[i] = (i + 1) As String
-		sName = ""
-		sFormID = ""
-		kPlace = getRefPlace(getFromMergedFormList(MergedExternalMarkerList,i) As ObjectReference)
-		If kPlace
-			sName = kPlace.GetName()
-			sFormID = sDecToHex(kPlace.getFormID())
-			sExtraRPs[i] = sExtraRPs[i] + ": " + sFormID + " " + sName
-			sExtraRPs[i] = shortenString(sExtraRPs[i],59)
+		String[] sPlaceInfos = getRefPlaceInfo(getFromMergedFormList(MergedExternalMarkerList,i) As ObjectReference)
+		If sPlaceInfos[0] || sPlaceInfos[1]
+			sExtraRPs[i] = shortenString(sExtraRPs[i] + ": " + sDecToHex(sPlaceInfos[1] As Int) + " " + sPlaceInfos[0],59)
 		EndIf
 		i += 1
 	EndWhile
@@ -4452,20 +4437,12 @@ String[] Function sGetCustomRPs()
 	sGetCustomRPSlot[2] = "$CustopRP_Slot3"
 	sGetCustomRPSlot[3] = "$CustopRP_Slot4"
 	Int i = 0
-	Cell kCell
-	String sName
-	String sFormID
 	While i < sGetCustomRPSlot.Length
-		Form kPlace = None
-		sName = ""
-		sFormID = ""
 		If ((CustomRespawnPoints.GetAt(i) As ObjectReference).GetParentCell() != ReviveScript.DefaultCell)
-			kPlace = getRefPlace(CustomRespawnPoints.GetAt(i) As ObjectReference)
-			If kPlace
-				sName = kPlace.GetName()
-				sFormID = sDecToHex(kPlace.GetFormID())
+			String[] sPlaceInfos = getRefPlaceInfo(CustomRespawnPoints.GetAt(i) As ObjectReference)
+			If sPlaceInfos[0] || sPlaceInfos[1]
+				sGetCustomRPSlot[i] = shortenString(((i+1) As String + ": " + sDecToHex(sPlaceInfos[1] As Int) + " " + sPlaceInfos[0]),59)
 			EndIf
-			sGetCustomRPSlot[i] = shortenString(((i+1) As String + ": " + sFormID + " " + sName),59)
 		EndIf
 		i += 1
 	EndWhile
@@ -5437,7 +5414,7 @@ EndFunction
 Function ShowExtraRPInfo(Int iFirstIndex = 0,Int iLen = 0,Int iList = 0)
 	FormList kList 
 	If iList == 1
-		kList = ExternalMarkerList
+		kList = ReviveScript.RespawnScript.MergedExternalMarkerSubList
 	ElseIf iList == 2
 		kList = ReviveScript.RespawnScript.ExtraCustomMarkerList
 	EndIf
@@ -5789,23 +5766,29 @@ String Function getRefPlaceName(ObjectReference akRef)
 		Return akRef.GetParentCell().GetName()
 	ElseIf akRef.GetCurrentLocation() && akRef.GetCurrentLocation().GetName()
 		Return akRef.GetCurrentLocation().GetName()
-	ElseIf akRef.GetWorldSpace() && akRef.GetCurrentLocation().GetName()
-		Return akRef.GetCurrentLocation().GetName()
-	ElseIf akRef.GetParentCell() && akRef.GetParentCell().GetFormID()
-		Return sDecToHex(akRef.GetParentCell().GetFormID())
-	ElseIf akRef.GetWorldSpace() && akRef.GetWorldSpace().GetFormID()
-		Return sDecToHex(akRef.GetWorldSpace().GetFormID())
+	ElseIf akRef.GetWorldSpace() && akRef.GetWorldSpace().GetName()
+		Return akRef.GetWorldSpace().GetName()
 	EndIf
 	Return ""
 EndFunction
 
-Form Function getRefPlace(ObjectReference akRef)
-	If akRef.GetParentCell()
-		Return akRef.GetParentCell()
-	ElseIf akRef.GetCurrentLocation()
-		Return akRef.GetCurrentLocation()
-	ElseIf akRef.GetWorldSpace()
-		Return akRef.GetWorldSpace()
+String[] Function getRefPlaceInfo(ObjectReference akRef)
+	String[] sInfos = New String[2]
+	If akRef.GetParentCell() && akRef.GetParentCell().GetName()
+		sInfos[0] = akRef.GetParentCell().GetName()
+		sInfos[1] = akRef.GetParentCell().GetFormID()
+	ElseIf akRef.GetCurrentLocation() && akRef.GetCurrentLocation().GetName()
+		sInfos[0] = akRef.GetCurrentLocation().GetName()
+		If akRef.GetParentCell()
+			sInfos[1] = akRef.GetParentCell().GetFormID()
+		ElseIf akRef.GetWorldSpace()
+			sInfos[1] = akRef.GetWorldSpace().GetFormID()
+		Else
+			sInfos[1] = akRef.GetCurrentLocation().GetFormID()
+		EndIf
+	ElseIf akRef.GetWorldSpace() && akRef.GetWorldSpace().GetName()
+		sInfos[0] = akRef.GetWorldSpace().GetName()
+		sInfos[1] = akRef.GetWorldSpace().GetFormID()
 	EndIf
-	Return None
+	Return sInfos	
 EndFunction

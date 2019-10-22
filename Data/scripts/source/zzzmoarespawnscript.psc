@@ -7,6 +7,7 @@ FormList property WorldspacesInterior auto
 Formlist property ExternalMarkerList Auto
 Formlist property ExternalLocationList Auto
 Formlist property ExternalLocationMarkerList Auto
+Formlist property MergedExternalMarkerSubList Auto
 Formlist property ExtraCustomMarkerList Auto
 Formlist property MergedExternalMarkerList Auto
 Formlist Property Destinations Auto
@@ -173,12 +174,9 @@ EndFunction
 
 Function AddExternalMarkers()
 	Debug.TraceConditional("MarkOfArkay: Adding extra markers...",ConfigMenu.bIsLoggingEnabled)
-	MergedExternalMarkerList.Revert()
-	Int i = 0 
-	MergedExternalMarkerList.AddForm(checkAndFixFormList(ExternalMarkerList,True,True,True))
+	Int i = 0
 	ObjectReference LocMarker
 	ExternalLocationMarkerList.Revert()
-	i = 0
 	While i < ExternalLocationList.GetSize()
 		If ExternalLocationList.GetAt(i) As Location
 			LocMarker = getLocationMarker(ExternalLocationList.GetAt(i) As Location)
@@ -188,11 +186,15 @@ Function AddExternalMarkers()
 		EndIf
 		i += 1
 	Endwhile
+	MergedExternalMarkerList.Revert()
+	MergedExternalMarkerSubList.Revert()
+	MergedExternalMarkerList.AddForm(checkAndFixFormList(ExternalMarkerList,True,True,True,akOtherList = MergedExternalMarkerSubList))
 	MergedExternalMarkerList.AddForm(checkAndFixFormList(ExternalLocationMarkerList,True,True,True))
-	MergedExternalMarkerList.AddForm(checkAndFixFormList(ExtraCustomMarkerList,True,True,True))
-	i = ExternalMarkerList.GetSize() + ExternalLocationMarkerList.GetSize() + ExtraCustomMarkerList.GetSize()
+	MergedExternalMarkerList.AddForm(checkAndFixFormList(ExtraCustomMarkerList,True,True,True,34))
+	i = MergedExternalMarkerSubList.GetSize() + ExternalLocationMarkerList.GetSize() + ExtraCustomMarkerList.GetSize()
 	moaERPCount.SetValue(i)	
 	ConfigMenu.setExtraRPs(i)
+	Debug.TraceConditional("MarkOfArkay: Adding extra markers finished.",ConfigMenu.bIsLoggingEnabled)
 EndFunction
 
 Function setTavernMarkers(Bool bReset = False)
@@ -478,8 +480,9 @@ Endfunction
 
 Bool Function bSendToExternalMarker(Int iExternalIndex)
 	ObjectReference akMarker
+	Int iIndex = -1
 	If moaERPCount.GetValueInt() > 0
-		If iExternalIndex > 0 && iExternalIndex < moaERPCount.GetValueInt()
+		If iExternalIndex > -1 && iExternalIndex < moaERPCount.GetValueInt()
 			akMarker = getFromMergedFormList(MergedExternalMarkerList,iExternalIndex) As ObjectReference
 			If akMarker && (akMarker.GetParentCell() != PlayerRef.GetParentCell()) && \
 			bCanTeleportToExtMarker(akMarker) && (PlayerRef.GetDistance(akMarker) >= fRPMinDistance)
@@ -487,13 +490,16 @@ Bool Function bSendToExternalMarker(Int iExternalIndex)
 					Return True
 				EndIf
 			EndIf
+			iIndex = iExternalIndex
 		EndIf
 		Int i = iMin(3,moaERPCount.GetValueInt() - 1)
-		Int[] iExcludes = Utility.CreateIntArray(i,-1)
-		Int iIndex
+		Bool[] bExcludes = Utility.CreateBoolArray(moaERPCount.GetValueInt(),True)
+		If iIndex > -1 && iIndex < moaERPCount.GetValueInt()
+			bExcludes[iIndex] = False
+		EndIf
 		While i > 0
 			i -= 1
-			iIndex = iGetRandomWithExclusionIntArray(0,moaERPCount.GetValueInt() - 1,iExcludes)
+			iIndex = RandomIntWithExclusionArray(0,moaERPCount.GetValueInt() - 1,bExcludes)
 			akMarker = getFromMergedFormList(MergedExternalMarkerList,iIndex) As ObjectReference
 			If akMarker && (akMarker.GetParentCell() != PlayerRef.GetParentCell()) && \
 			bCanTeleportToExtMarker(akMarker) && (PlayerRef.GetDistance(akMarker) >= fRPMinDistance)
@@ -501,7 +507,7 @@ Bool Function bSendToExternalMarker(Int iExternalIndex)
 					Return True
 				EndIf
 			EndIf
-			iExcludes[i] = iIndex
+			bExcludes[iIndex] = False
 		EndWhile
 	EndIf
 	Return False
@@ -512,7 +518,7 @@ Function Teleport()
 	PlayerMarker.MoveTo(playerRef)
 	PlayerMarker.SetPosition(PlayerRef.GetPositionx(), PlayerRef.GetPositiony(), PlayerRef.GetPositionz())
 	PlayerMarker.SetAngle(0.0, 0.0, PlayerRef.GetAnglez())
-	moaERPCount.SetValue(ExternalMarkerList.GetSize() + ExternalLocationMarkerList.GetSize() + ExtraCustomMarkerList.GetSize())
+	moaERPCount.SetValue(MergedExternalMarkerSubList.GetSize() + ExternalLocationMarkerList.GetSize() + ExtraCustomMarkerList.GetSize())
 	If iTeleportLocation < (ConfigMenu.getNearbyCityRPIndex())
 		If ConfigMenu.bMoreRandomRespawn
 			moaRandomDestination.SetValueInt(0)
@@ -1319,7 +1325,7 @@ Function InitializeExcludedMarkers()
 		EndIf
 	Endwhile
 	If moaERPCount.GetValueInt() > 0
-		Int iLast = iMin(128, moaERPCount.GetValueInt())
+		Int iLast = iMin(90, moaERPCount.GetValueInt())
 		ObjectReference marker
 		j = 0
 		While j < iLast
@@ -1700,7 +1706,7 @@ Int Function iGetRandomWithExclusionArray( Int iFrom, Int iTo, Bool[] iFlagArray
 EndFunction
 
 Function SelectRespawnPointbyMenu()
-	moaERPCount.SetValue(ExternalMarkerList.GetSize() + ExternalLocationMarkerList.GetSize() + ExtraCustomMarkerList.GetSize())
+	moaERPCount.SetValue(MergedExternalMarkerSubList.GetSize() + ExternalLocationMarkerList.GetSize() + ExtraCustomMarkerList.GetSize())
 	iTeleportLocation = RespawnMenu()
 	If (( iTeleportLocation == -1 ) || ( iTeleportLocation > ( ConfigMenu.sRespawnPoints.Length - 1 )))
 		If ( iTeleportLocation == -1 )

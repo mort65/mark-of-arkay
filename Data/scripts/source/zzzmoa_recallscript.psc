@@ -58,7 +58,7 @@ Event OnEffectStart(Actor akTarget, Actor akCaster)
 			Int iCustomRPSlot = ConfigMenu.iSelectedCustomRPSlot
 			iTavernIndex = ConfigMenu.iTavernIndex
 			If ( ConfigMenu.bTeleportMenu )
-				moaERPCount.SetValue(ExternalMarkerList.GetSize() + ReviveScript.RespawnScript.ExternalLocationMarkerList.GetSize() + ReviveScript.RespawnScript.ExtraCustomMarkerList.GetSize())
+				moaERPCount.SetValue(ReviveScript.RespawnScript.MergedExternalMarkerSubList.GetSize() + ReviveScript.RespawnScript.ExternalLocationMarkerList.GetSize() + ReviveScript.RespawnScript.ExtraCustomMarkerList.GetSize())
 				Utility.Wait(0.5)
 				iTeleportLocation = TeleportMenu()
 				If (( iTeleportLocation == -1 ) || ( iTeleportLocation > ( ConfigMenu.sRespawnPoints.Length - 1 )))
@@ -889,26 +889,30 @@ Endfunction
 
 Bool Function bSendToExternalMarker(Int iExternalIndex)
 	ObjectReference akMarker
+	Int iIndex = -1
 	If moaERPCount.GetValueInt() > 0
-		If iExternalIndex > 0 && iExternalIndex < moaERPCount.GetValueInt()
+		If iExternalIndex > -1 && iExternalIndex < moaERPCount.GetValueInt()
 			akMarker = getFromMergedFormList(MergedExternalMarkerList,iExternalIndex) As ObjectReference
 			If akMarker && (akMarker.GetParentCell() != Caster.GetParentCell()) && ReviveScript.RespawnScript.bCanTeleportToExtMarker(akMarker)
 				Caster.MoveTo(akMarker, abMatchRotation = true)
 				Return True
 			EndIf
+			iIndex = iExternalIndex
 		EndIf
 		Int i = iMin(3,moaERPCount.GetValueInt() - 1)
-		Int[] iExcludes = Utility.CreateIntArray(i,-1)
-		Int iIndex
+		Bool[] bExcludes = Utility.CreateBoolArray(moaERPCount.GetValueInt(),True)
+		If iIndex > -1 && iIndex < moaERPCount.GetValueInt()
+			bExcludes[iIndex] = False
+		EndIf
 		While i > 0
 			i -= 1
-			iIndex = iGetRandomWithExclusionIntArray(0,moaERPCount.GetValueInt() - 1,iExcludes)
+			iIndex = RandomIntWithExclusionArray(0,moaERPCount.GetValueInt() - 1,bExcludes)
 			akMarker = getFromMergedFormList(MergedExternalMarkerList,iIndex) As ObjectReference
 			If akMarker && (akMarker.GetParentCell() != Caster.GetParentCell()) && ReviveScript.RespawnScript.bCanTeleportToExtMarker(akMarker)
 				Caster.MoveTo(akMarker, abMatchRotation = true)
 				Return True
 			EndIf
-			iExcludes[i] = iIndex
+			bExcludes[iIndex] = False
 		EndWhile
 	EndIf
 	Return False

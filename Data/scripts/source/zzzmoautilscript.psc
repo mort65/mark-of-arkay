@@ -90,7 +90,7 @@ Int Function iGetRandomWithExclusionIntArray( Int iFrom, Int iTo, Int[] iExclude
 EndFunction
 
 Int Function ichangeVar(Int iVar,Int iMin,Int iMax, Int iAmount ) Global
-{increase or decrease a global variable by an amount between In a circle between iMin and iMax.}
+{increase or decrease a global variable by an amount in a circle between iMin and iMax.}
 	iVar = ( iVar + iAmount )
 	If ( iVar > iMax )
 		iVar = iMin
@@ -137,7 +137,7 @@ Int Function RandomIntWithExclusionArray( Int iFrom, Int iTo, Bool[] iFlagArray)
 EndFunction
 
 Int Function RandomIntWithShuffledExclusionArray( Int iFrom, Int iTo, Bool[] iFlagArray, Int[] iIndexArray) Global
-{Generates a random integer between iFrom and iTo (inclusive), excluding false values in a bool array with the same index using a Int array for indexes.}
+{Generates a random integer between iFrom and iTo (inclusive), excluding false values in a bool array with the same index using a Int array for mapping indexes.}
 	If iFrom == iTo
 		If iFlagArray[iIndexArray[iFrom]]
 			Return iFrom
@@ -257,7 +257,7 @@ String Function sDecToHex(Int iDec) Global
 EndFunction
 
 Bool Function bIsInteger(String s) Global
-{Checking if string is an integer.}
+{Checking if a string is an integer or not.}
 	Int i = GetLength(s)
 	If i == 0
 		Return False
@@ -377,17 +377,17 @@ String Function shortenString(String sString, Int iLimit) Global
 	Return sString
 EndFunction
 
-FormList Function checkAndFixFormList(FormList akList, Bool abCheckSize = False, Bool abOnlyRef = False, Bool abDeleteBrokenRefs = False) Global
-{fix a Form list by removing nones,invalid refs and reducing its size to 128.}	
+FormList Function checkAndFixFormList(FormList akList, Bool abCheckSize = False, Bool abOnlyRef = False, Bool abCheckRefPlace = False, Int aiBaseType = -1,FormList akOtherList = None) Global
+{check a Form list for nones, invalid refs, reducing number of forms to 128 and removing invalids in place or adding valid forms to another form list.}
 	Bool bHasNone = False
 	Int i = 0
 	While i < akList.GetSize() && !bHasNone
 		bHasNone = !akList.GetAt(i)
 		i += 1
 	EndWhile
-	If bHasNone || abOnlyRef || (abCheckSize && akList.GetSize() > 128)
+	If bHasNone || abOnlyRef || (abCheckSize && akList.GetSize() > 128) || akOtherList
 		Form[] kArr 
-		If akList.GetSize() > 128
+		If abCheckSize && akList.GetSize() > 128
 			kArr = New Form[128]
 			i = 0
 			While i < 128
@@ -397,27 +397,38 @@ FormList Function checkAndFixFormList(FormList akList, Bool abCheckSize = False,
 		Else
 			kArr = akList.ToArray()
 		EndIf
-		akList.Revert()
+		If !akOtherList
+			akList.Revert()
+		EndIf
 		ObjectReference kRef
 		i = 0
 		While i < kArr.Length
 			If kArr[i]
 				If abOnlyRef
-					If kArr[i] As ObjectReference
+					If kArr[i].GetType() == 61
 						kRef = kArr[i] As ObjectReference
-						If kRef.GetParentCell() || kRef.GetWorldSpace()
-							akList.AddForm(kArr[i])
-						ElseIf abDeleteBrokenRefs
-							kRef.DisableNoWait()
-							kRef.Delete()
+						If (!abCheckRefPlace || (kRef.GetParentCell() || kRef.GetWorldSpace())) && \
+						((aiBaseType < 1) || (kRef.GetBaseObject().GetType() == aiBaseType))
+							If akOtherList
+								akOtherList.AddForm(kArr[i])
+							Else
+								akList.AddForm(kArr[i])
+							EndIf
 						EndIf
 					EndIf
 				Else
-					akList.AddForm(kArr[i])
+					If akOtherList
+						akOtherList.AddForm(kArr[i])
+					Else
+						akList.AddForm(kArr[i])
+					EndIf
 				EndIf	
 			EndIf
 			i += 1
 		EndWhile
+	EndIf
+	If akOtherList
+		Return akOtherList
 	EndIf
 	Return akList
 EndFunction

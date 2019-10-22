@@ -74,56 +74,23 @@ Event OnEffectStart(Actor akTarget, Actor akCaster)
 			iButton = moaMarkMenu080.Show()
 			If iButton == -1
 			ElseIf iButton == 0 ;Add
-				If bCanAddPlayerCell ;todo add a sizelimit
+				If bCanAddPlayerCell
 					If iIsCurentCellMarked(1)
 						Debug.Notification("$mrt_MarkofArkay_Notification_Mark_Already_Marked")
 					ElseIf ExtraCustomMarkerList.GetSize() > iExtraNumLimit - 1
 						Debug.Notification("$mrt_MarkofArkay_Notification_Mark_Num_Limit")
 					Else
-						bCellIsMarked = False
-						bExtraAdded = False
-						If !bExtraAdded
-							Marker = PlayerRef.PlaceAtMe(XMarkerHeading,abForcePersist = True)
-							Marker.SetPosition(PlayerRef.GetPositionx(), PlayerRef.GetPositiony(), PlayerRef.GetPositionz())
-							Marker.SetAngle(0.0, 0.0, PlayerRef.GetAnglez())
-							ExtraCustomMarkerList.AddForm(Marker)
-							bExtraAdded = True
-							bExtraMarkersChanged = True						
-						EndIf
-						
-						;/
-							If PlayerRef.GetCurrentLocation()
-								Marker = ConfigMenu.Revivescript.RespawnScript.getCenterMarker(PlayerRef.GetCurrentLocation())
-								If Marker && (Marker.GetParentCell() == PlayerRef.GetParentCell())
-									If bIsMarkerInList(Marker)
-										bCellIsMarked = True
-									Else
-										ExtraCustomMarkerList.AddForm(Marker)
-										bExtraAdded = True
-										bExtraMarkersChanged = True
-									EndIf
-								EndIf
-							EndIf
-						EndIf
-						If !bExtraAdded
-							Marker = Game.FindClosestReferenceOfTypeFromRef(COCMarkerHeading As Form,PlayerRef,50000.0)
-							If Marker && (Marker.GetParentCell() == PlayerRef.GetParentCell())
-								If bIsMarkerInList(Marker)
-									bCellIsMarked = True
-								Else
-									ExtraCustomMarkerList.AddForm(Marker)
-									bExtraAdded = True
-									bExtraMarkersChanged = True
-								EndIf
-							EndIf
-						EndIf /;
-						If bExtraAdded
-							Debug.Notification("$mrt_MarkofArkay_Notification_Mark_Marker_Added")
-						ElseIf bCellIsMarked
-							Debug.Notification("$mrt_MarkofArkay_Notification_Mark_Marker_Already_Added")
-						Else 
-							Debug.Notification("$mrt_MarkofArkay_Notification_Mark_Marker_Cannot_Mark")
-						EndIf
+						Marker = PlayerRef.PlaceAtMe(XMarkerHeading,abForcePersist = False) ;Persist or not?
+						Marker.SetPosition(PlayerRef.GetPositionx(), PlayerRef.GetPositiony(), PlayerRef.GetPositionz())
+						Marker.SetAngle(0.0, 0.0, PlayerRef.GetAnglez())
+						ExtraCustomMarkerList.AddForm(Marker)
+						bExtraAdded = True
+						bExtraMarkersChanged = True						
+					EndIf
+					If bExtraAdded
+						Debug.Notification("$mrt_MarkofArkay_Notification_Mark_Marker_Added")
+					Else 
+						Debug.Notification("$mrt_MarkofArkay_Notification_Mark_Marker_Cannot_Mark")
 					EndIf
 				Else
 					Debug.Notification("$mrt_MarkofArkay_Notification_Mark_Marker_Forbidden")
@@ -136,10 +103,15 @@ Event OnEffectStart(Actor akTarget, Actor akCaster)
 						i -= 1
 						If ExtraCustomMarkerList.GetAt(i) As ObjectReference
 							If (ExtraCustomMarkerList.GetAt(i) As ObjectReference).GetParentCell() == PlayerRef.GetParentCell()
-								Marker = ExtraCustomMarkerList.GetAt(i) As ObjectReference
-								ExtraCustomMarkerList.RemoveAddedForm(Marker)
-								Marker.DisableNoWait()
-								Marker.Delete()
+								If ExtraCustomMarkerList.GetAt(i).GetType() == 61 &&\
+								(ExtraCustomMarkerList.GetAt(i) As ObjectReference).GetBaseObject().GetType() == 34
+									Marker = ExtraCustomMarkerList.GetAt(i) As ObjectReference
+									ExtraCustomMarkerList.RemoveAddedForm(ExtraCustomMarkerList.GetAt(i))
+									Marker.DisableNoWait()
+									Marker.Delete()
+								Else
+									ExtraCustomMarkerList.RemoveAddedForm(ExtraCustomMarkerList.GetAt(i))
+								EndIf
 								Debug.Notification("$mrt_MarkofArkay_Notification_Mark_Marker_Removed")
 								bExtraMarkersChanged = True
 								bExtraRemoved = True
@@ -148,14 +120,14 @@ Event OnEffectStart(Actor akTarget, Actor akCaster)
 							ExtraCustomMarkerList.RemoveAddedForm(ExtraCustomMarkerList.GetAt(i))
 							bExtraMarkersChanged = True
 						EndIf
-						If !bExtraRemoved
-							If iIsCurentCellMarked(2) > 1
-								Debug.Notification("$mrt_MarkofArkay_Notification_Mark_Cannot_Remove_External_Markers")
-							Else
-								Debug.Notification("$mrt_MarkofArkay_Notification_Mark_Not_Marked")
-							EndIf
-						EndIf
 					EndWhile
+					If !bExtraRemoved
+						If iIsCurentCellMarked(2) > 1
+							Debug.Notification("$mrt_MarkofArkay_Notification_Mark_Cannot_Remove_External_Markers")
+						Else
+							Debug.Notification("$mrt_MarkofArkay_Notification_Mark_Not_Marked")
+						EndIf
+					EndIf
 				Else
 					Debug.Notification("$mrt_MarkofArkay_Notification_Mark_Marker_Already_Removed")
 				EndIf
@@ -185,10 +157,15 @@ Event OnEffectStart(Actor akTarget, Actor akCaster)
 							ConfigMenu.ShowExtraRPInfo(i - 1,1,2)
 						ElseIf aiButton == 4 ;OK
 							If moaRemoveExtraMarkerConfirm.Show()
-								Marker = ExtraCustomMarkerList.GetAt(i - 1) As ObjectReference
-								ExtraCustomMarkerList.RemoveAddedForm(Marker)
-								Marker.DisableNoWait()
-								Marker.Delete()
+								If ExtraCustomMarkerList.GetAt(i - 1).GetType() == 61 &&\
+								(ExtraCustomMarkerList.GetAt(i - 1) As ObjectReference).GetBaseObject().GetType() == 34
+									Marker = ExtraCustomMarkerList.GetAt(i - 1) As ObjectReference
+									ExtraCustomMarkerList.RemoveAddedForm(Marker)
+									Marker.DisableNoWait()
+									Marker.Delete()
+								Else
+									ExtraCustomMarkerList.RemoveAddedForm(ExtraCustomMarkerList.GetAt(i - 1))
+								EndIf
 								Debug.Notification("$mrt_MarkofArkay_Notification_Mark_Marker_Removed")
 								If ExtraCustomMarkerList.GetSize() > 0
 									If i > ExtraCustomMarkerList.GetSize()
@@ -217,10 +194,15 @@ Event OnEffectStart(Actor akTarget, Actor akCaster)
 						Int i = ExtraCustomMarkerList.GetSize()
 						While i > 0
 							i -= 1
-							Marker = ExtraCustomMarkerList.GetAt(i) As ObjectReference
-							ExtraCustomMarkerList.RemoveAddedForm(Marker)
-							Marker.DisableNoWait()
-							Marker.Delete()
+							If ExtraCustomMarkerList.GetAt(i).GetType() == 61 &&\
+							(ExtraCustomMarkerList.GetAt(i) As ObjectReference).GetBaseObject().GetType() == 34
+								Marker = ExtraCustomMarkerList.GetAt(i) As ObjectReference
+								ExtraCustomMarkerList.RemoveAddedForm(Marker)
+								Marker.DisableNoWait()
+								Marker.Delete()
+							Else
+								ExtraCustomMarkerList.RemoveAddedForm(ExtraCustomMarkerList.GetAt(i))
+							EndIf
 						EndWhile
 						ExtraCustomMarkerList.Revert()
 						bExtraMarkersChanged = True
@@ -328,10 +310,10 @@ Int Function iIsCurentCellMarked(Int iList = 0)
 				Return 2
 			EndIf
 		EndWhile
-		i = ConfigMenu.ReviveScript.RespawnScript.ExternalMarkerList.GetSize()
+		i = ConfigMenu.ReviveScript.RespawnScript.MergedExternalMarkerSubList.GetSize()
 		While i > 0
 			i -= 1
-			If (ConfigMenu.ReviveScript.RespawnScript.ExternalMarkerList.GetAt(i) As ObjectReference).GetParentCell() == PlayerRef.GetParentCell()
+			If (ConfigMenu.ReviveScript.RespawnScript.MergedExternalMarkerSubList.GetAt(i) As ObjectReference).GetParentCell() == PlayerRef.GetParentCell()
 				Return 3
 			EndIf
 		EndWhile
@@ -343,11 +325,11 @@ Bool Function bIsMarkerInList(ObjectReference akMarker,Int iList = 0)
 	If iList == 1
 		Return ExtraCustomMarkerList.HasForm(akMarker)
 	ElseIf iList == 2
-		Return ConfigMenu.ReviveScript.RespawnScript.ExternalMarkerList.HasForm(akMarker) ||\
+		Return ConfigMenu.ReviveScript.RespawnScript.MergedExternalMarkerSubList.HasForm(akMarker) ||\
 		ConfigMenu.ReviveScript.RespawnScript.ExternalLocationMarkerList.HasForm(akMarker)
 	Else
 		Return ExtraCustomMarkerList.HasForm(akMarker) ||\
-		ConfigMenu.ReviveScript.RespawnScript.ExternalMarkerList.HasForm(akMarker) ||\
+		ConfigMenu.ReviveScript.RespawnScript.MergedExternalMarkerSubList.HasForm(akMarker) ||\
 		ConfigMenu.ReviveScript.RespawnScript.ExternalLocationMarkerList.HasForm(akMarker)
 	EndIf
 EndFunction

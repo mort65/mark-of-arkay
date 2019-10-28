@@ -427,7 +427,6 @@ Function LoseOtherItems()
 					EndIf
 					ModEvent.PushForm(handle, containerArr[iIndex])
 					ModEvent.PushBool(handle, bRemoveAll)
-					Debug.Trace("Container"+(iIndex+1)+" items:"+(containerArr[iIndex] As ObjectReference).GetNumItems())
 					If (containerArr[iIndex] As ObjectReference).GetNumItems() > 0
 						ModEvent.Send(Handle)
 					EndIf

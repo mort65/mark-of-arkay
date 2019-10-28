@@ -1791,11 +1791,11 @@ Function RevivePlayer(Bool bRevive)
 EndFunction
 
 Function RequipSpells()
-	If LeftHandEquippedItem.GetType() == 22 ;Spell
+	If LeftHandEquippedItem && LeftHandEquippedItem.GetType() == 22 ;Spell
 		PlayerRef.UnequipSpell((LeftHandEquippedItem As Spell), 0)
 		PlayerRef.EquipSpell((LeftHandEquippedItem As Spell), 0)
 	EndIf
-	If RightHandEquipedItem.GetType() == 22 ;Spell
+	If RightHandEquipedItem && RightHandEquipedItem.GetType() == 22 ;Spell
 		PlayerRef.UnequipSpell((RightHandEquipedItem As Spell), 1)
 		PlayerRef.EquipSpell((RightHandEquipedItem As Spell), 1)
 	EndIf

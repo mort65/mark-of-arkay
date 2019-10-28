@@ -146,7 +146,16 @@ Bool Function bCheckTavernMarkers()
 Endfunction
 
 Event OnCheckingMarkers(Form sender,Bool bTavern, Bool bExtra, Bool bCustom)
-	checkMarkers(bTavern, bExtra, bCustom)
+	If sender == (self As Quest) As Form
+		checkMarkers(bTavern, bExtra, bCustom)
+	EndIf
+EndEvent
+
+Event OnRespawn(Form akSender)
+	If akSender == (self As Quest) As Form
+		Respawn()
+		ReviveScript.bReadyForRespawn = False
+	EndIf
 EndEvent
 
 Function checkMarkers(Bool bCheckInn, Bool bCheckExtra, Bool bCheckCustom)
@@ -370,6 +379,9 @@ Bool Function bIsTeleportSafe(ObjectReference akMarker)
 EndFunction
 
 Bool Function bIsArrived(ObjectReference akMarker)
+	While !ReviveScript.bReadyForRespawn
+		Utility.Wait(0.1)
+	EndWhile
 	Float fMinDistance = 1000.0
 	If ConfigMenu.bIsRagdollEnabled
 		fMinDistance = 4000.0
@@ -458,6 +470,9 @@ Bool Function bSendToCustomMarker(Int iSlot)
 EndFunction
 
 Function SendToDefaultMarker()
+	While !ReviveScript.bReadyForRespawn
+		Utility.Wait(0.1)
+	EndWhile
 	If ConfigMenu.bKillIfCantRespawn
 		ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Player is dying because respawn is not possible.")
 		PlayerRef.EndDeferredKill()
@@ -1716,7 +1731,7 @@ Function SelectRespawnPointbyMenu()
 		EndIf
 		iTeleportLocation = ConfigMenu.getExternalRPIndex()
 	ElseIf iTeleportLocation < -2
-		iCustomRPSlot = (iTeleportLocation * -1) - 3   ; -3-> 0, -4-> 1, -5-> 2
+		iCustomRPSlot = (iTeleportLocation * -1) - 3   ; -3-> 0, -4-> 1, -5-> 2, -6->3
 		iTeleportLocation = ConfigMenu.getCustomRPIndex() ;Custom
 	EndIf
 Endfunction
@@ -1770,12 +1785,12 @@ Endfunction
 
 Function PassTime(Float fGameHours,Float fRealSecs)
       If !ConfigMenu.bDisableUnsafe && fGameHours > 0.0 && fRealSecs > 0.0
-              DefaultTimeScale = TimeScale.GetValue()
-              TimeScale.SetValue( (3600.0 / fRealSecs) * fGameHours )
-              Utility.Wait(fRealSecs)
-              TimeScale.SetValue(DefaultTimeScale)
-              PlayerRef.StopCombatalarm()
+            DefaultTimeScale = TimeScale.GetValue()
+            TimeScale.SetValue( (3600.0 / fRealSecs) * fGameHours )
+            Utility.Wait(fRealSecs)
+            TimeScale.SetValue(DefaultTimeScale)
+            PlayerRef.StopCombatalarm()
       Else
-              Utility.Wait(fRealSecs)
+            Utility.Wait(fRealSecs)
       EndIf
 EndFunction

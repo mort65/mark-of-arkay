@@ -134,6 +134,8 @@ Spell Property Bleed Auto
 Bool Property bFinished = False Auto Hidden
 GlobalVariable Property moaLockReset Auto
 Message Property DeathMessage Auto
+Bool Property bReadyForRespawn = False Auto Hidden
+Bool Property bInfectingPlayer = False Auto Hidden
 Bool bIsBusy = False
 Float fHealrate = 0.0
 Int iIsBeast = 0
@@ -1330,10 +1332,17 @@ Function RevivePlayer(Bool bRevive)
 				GoToState("")
 			ElseIf ConfigMenu.bCanContinue() && ( ConfigMenu.iNotTradingAftermath == 1)
 				ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Respawning the player...")
+				Float fRespawnStartTime = Utility.GetCurrentRealTime()
+				bReadyForRespawn = False
+				bInfectingPlayer = False
+				Game.DisablePlayerControls(abMovement = True, abFighting = True, abCamSwitch = False, abLooking = False, abSneaking = True, abMenu = True, abActivate = True, abJournalTabs = False, aiDisablePOVType = 0)
+				If ConfigMenu.bDiseaseCurse
+					startInfectingPlayer()
+				EndIf				
 				If ( ConfigMenu.bRespawnMenu )
 					RespawnScript.SelectRespawnPointbyMenu()
 				EndIf
-				Game.DisablePlayerControls(abMovement = True, abFighting = True, abCamSwitch = False, abLooking = False, abSneaking = True, abMenu = True, abActivate = True, abJournalTabs = False, aiDisablePOVType = 0)
+				startRespawning()
 				If ( !bWasSwimming && bIsConditionSafe )
 					If ( ConfigMenu.bInvisibility || ConfigMenu.bFadeToBlack )
 						If ConfigMenu.bDeathEffect
@@ -1453,10 +1462,11 @@ Function RevivePlayer(Bool bRevive)
 					EndIf
 				EndIf
 				If bRemoveItems
-					ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Removing items from the player...")
+					Debug.TraceConditional("MarkOfArkay: Removing items from the player...", ConfigMenu.bIsLoggingEnabled )
+					Float fStart = Utility.GetCurrentRealTime()
 					ItemScript.loseItems()
+					Debug.TraceConditional("MarkOfArkay: Removing items from the player finished in " + (Utility.GetCurrentRealTime() - fStart) + " seconds.", ConfigMenu.bIsLoggingEnabled )
 					If ConfigMenu.bIsLoggingEnabled 
-						Debug.Trace("MarkOfArkay: Removing items from the player finished.")
 						Int c = LostItemsChest.GetNumItems()
 						String str = "MarkOfArkay: Currently removed items -> "
 						If ItemScript.fLostSouls > 0.0
@@ -1485,7 +1495,8 @@ Function RevivePlayer(Bool bRevive)
 					stopAndConfirm(moaBossChest01,3,25)
 				EndIf
 				If iReducedSkill > 0
-					ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Reducing player's Skills/Skill XPs...")
+					Debug.TraceConditional("MarkOfArkay: Reducing player's Skills/Skill XPs...", ConfigMenu.bIsLoggingEnabled )
+					Float fStart = Utility.GetCurrentRealTime()
 					String Skill
 					If iReducedSkill < 19
 						Skill = SkillScript.sSkillName[iReducedSkill - 1]
@@ -1513,6 +1524,7 @@ Function RevivePlayer(Bool bRevive)
 					Else
 						SkillScript.ReduceSkills(Skill, ConfigMenu.fSkillReduceValSlider As Int, ConfigMenu.fSkillReduceMinValSlider As Int, ConfigMenu.fSkillReduceMaxValSlider As Int, bOnlyXP = ConfigMenu.bOnlyLoseSkillXP)
 					EndIf
+					Debug.TraceConditional("MarkOfArkay: Reducing skills completed in " + (Utility.GetCurrentRealTime() - fStart) + " seconds.",ConfigMenu.bIsLoggingEnabled )
 				EndIf
 				If ( PlayerRef.GetParentCell() != DefaultCell )
 					If bCursed() || (ConfigMenu.bArkayCurse && !ConfigMenu.bIsArkayCurseTemporary );Something is removed or stats of player are reduced or going to be reduced
@@ -1606,13 +1618,13 @@ Function RevivePlayer(Bool bRevive)
 					MassHealing.Cast(PlayerRef)
 					ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Last attacker and other actors are healed.")
 				EndIf
-				If ConfigMenu.bDiseaseCurse
-					ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Infecting player with a cursed disease...")
-					DiseaseScript.infectPlayer()
-					ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Infection completed.")
-				EndIf
-				Utility.Wait(1.0)
-				RespawnScript.Respawn()
+				While bInfectingPlayer
+					Utility.Wait(0.1)
+				EndWhile
+				bReadyForRespawn = True
+				While bReadyForRespawn
+					Utility.Wait(0.1)
+				EndWhile
 				Utility.Wait(0.5)
 				If PlayerRef.IsDead()
 					PlayerRef.SetAlpha(1.0)
@@ -1749,6 +1761,7 @@ Function RevivePlayer(Bool bRevive)
 					ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: You have "+ConfigMenu.fRespawnCounterSlider As Int +" more respawns.")
 				EndIf
 				ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Respawn finished.")
+				Debug.TraceConditional("MarkOfArkay: Respawn finished in "+ (Utility.GetCurrentRealTime() - fRespawnStartTime) + " seconds.",ConfigMenu.bIsLoggingEnabled)
 				If ConfigMenu.bShowRaceMenu
 					Utility.Wait(2.0)
 					Game.ShowRaceMenu()
@@ -2019,5 +2032,24 @@ EndFunction
 
 Int Function iCalcReviveCost(Float fValue,Float fScale)
 	Return imax(0,(fValue + ((fScale * (PlayerRef.GetLevel() - 1)) * fValue)) As Int)
+EndFunction
+
+Function startRespawning()
+	RespawnScript.RegisterForModEvent("MOA_Respawn","OnRespawn")
+	Int handle = ModEvent.Create("MOA_Respawn")
+	If (handle)
+		ModEvent.PushForm(handle, GetOwningQuest())
+		ModEvent.Send(Handle)
+	EndIf
+EndFunction
+
+Function startInfectingPlayer()
+	bInfectingPlayer = True
+	DiseaseScript.RegisterForModEvent("MOA_InfectPlayer","OnInfectPlayer")
+	Int handle = ModEvent.Create("MOA_InfectPlayer")
+	If (handle)
+		ModEvent.PushForm(handle, GetOwningQuest())
+		ModEvent.Send(Handle)
+	EndIf
 EndFunction
 

@@ -22,6 +22,16 @@ Event OnInit()
 	EndIf
 EndEvent
 
+Event OnInfectPlayer(Form akSender)
+	If akSender == ConfigMenu.ReviveScript.GetOwningQuest() As Form
+		Debug.TraceConditional("MarkOfArkay: Infecting player with a cursed disease...", ConfigMenu.bIsLoggingEnabled)
+		Float fStart = Utility.GetCurrentRealTime()
+		infectPlayer()
+		ConfigMenu.ReviveScript.bInfectingPlayer = False
+		Debug.TraceConditional("MarkOfArkay: Infection completed in " + (Utility.GetCurrentRealTime() - fStart) + " seconds.", ConfigMenu.bIsLoggingEnabled)
+	EndIf
+EndEvent
+
 Function infectPlayer()
 	If CursedDiseasesI.GetSize() == 0
 		Return

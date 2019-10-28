@@ -1,6 +1,6 @@
 Scriptname zzzmoautilscript
 
-import StringUtil
+Import StringUtil
 
 Int Function iMin(Int a,Int b) Global
 {find minimum of two ints.}
@@ -124,15 +124,17 @@ Int Function RandomIntWithExclusionArray( Int iFrom, Int iTo, Bool[] iFlagArray)
 		Return -1
 	EndIf
 	Int iRandom = Utility.RandomInt(iFrom, iTo - ExcludeCount)
-	 iIndex = iFrom 
-	 While (iIndex <= iTo)
-		If ( iRandom < iIndex )
-			Return iRandom
-		ElseIf (( iRandom >= iIndex ) && !iFlagArray[iIndex])
-			iRandom += 1
-		EndIf
-		iIndex += 1
-	EndWhile
+	 If ExcludeCount > 0
+		 iIndex = iFrom 
+		 While (iIndex <= iTo)
+			If ( iRandom < iIndex )
+				Return iRandom
+			ElseIf (( iRandom >= iIndex ) && !iFlagArray[iIndex])
+				iRandom += 1
+			EndIf
+			iIndex += 1
+		EndWhile
+	EndIf
 	Return iRandom
 EndFunction
 
@@ -160,15 +162,17 @@ Int Function RandomIntWithShuffledExclusionArray( Int iFrom, Int iTo, Bool[] iFl
 		Return -1
 	EndIf
 	Int iRandom = Utility.RandomInt(iFrom, iTo - ExcludeCount)
-	 iIndex = iFrom 
-	 While (iIndex <= iTo)
-		If ( iRandom < iIndex )
-			Return iRandom
-		ElseIf (( iRandom >= iIndex ) && !iFlagArray[iIndexArray[iIndex]])
-			iRandom += 1
-		EndIf
-		iIndex += 1
-	EndWhile
+	If ExcludeCount > 0
+		iIndex = iFrom 
+		 While (iIndex <= iTo)
+			If ( iRandom < iIndex )
+				Return iRandom
+			ElseIf (( iRandom >= iIndex ) && !iFlagArray[iIndexArray[iIndex]])
+				iRandom += 1
+			EndIf
+			iIndex += 1
+		EndWhile
+	EndIf
 	Return iRandom
 EndFunction
 
@@ -270,7 +274,7 @@ Bool Function bIsInteger(String s) Global
 			If !StringUtil.IsDigit(c)
 				Return False
 			EndIf
-		ElseIf GetLength(s) > 1 ;s should not be '-' or '+'
+		ElseIf GetLength(s) > 1
 			If !StringUtil.IsDigit(c) && c != "-" && c != "+"
 				Return False
 			EndIf
@@ -444,4 +448,21 @@ Form Function getFromMergedFormList(FormList akMergedlist,Int aiIndex = 0) Globa
 		i += 1
 	EndWhile
 	Return None
+EndFunction
+
+
+Function transferItems(ObjectReference akInContainer, ObjectReference akOutContainer, Int aiIndex, Int aiCount) Global
+{transfer items from an object reference to another.}
+	If aiIndex > akInContainer.GetNumItems() - 1
+		Return
+	EndIf
+	Int aiLast = iMin(akInContainer.GetNumItems() - 1,(aiIndex + aiCount) - 1)
+	Form kItem
+	While aiIndex < aiLast + 1
+		kItem = akInContainer.GetNthForm(aiIndex)
+		If kItem
+			akInContainer.RemoveItem(kItem, akInContainer.GetItemCount(kItem), True, akOutContainer)
+		EndIf
+		aiIndex += 1
+	EndWhile
 EndFunction

@@ -217,7 +217,7 @@ Bool Property bLootChanceLock = False Auto Hidden
 Bool Property bTradeLock = False Auto Hidden
 Bool Property bCurseLock = False Auto Hidden
 Bool Property bMarkRecallCostLock = False Auto Hidden
-Float Property fMaxItemsToCheckSlider = 1000.0 Auto Hidden
+Float Property fMaxItemsToCheckSlider = 500.0 Auto Hidden
 Float Property fValueMarkScaleSlider = 0.0 Auto Hidden
 Float Property fValueGSoulGemScaleSlider = 0.0 Auto Hidden
 Float Property fValueBSoulGemScaleSlider = 0.0 Auto Hidden
@@ -762,11 +762,7 @@ Event OnPageReset(String page)
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
-		If (moaCheckingMarkers.GetValue() == 0.0)
-			oidSelectedCustomRPSlot_M = AddMenuOption("$mrt_MarkofArkay_SelectedCustomRPSlot_M", shortenString(sCustomRPs[iSelectedCustomRPSlot],19), flags)
-		Else
-			oidSelectedCustomRPSlot_M = AddMenuOption("$mrt_MarkofArkay_SelectedCustomRPSlot_M", "$CustopRP_Slot1", OPTION_FLAG_DISABLED)
-		EndIf
+		oidSelectedCustomRPSlot_M = AddMenuOption("$mrt_MarkofArkay_SelectedCustomRPSlot_M", shortenString(sCustomRPs[iSelectedCustomRPSlot],19), flags)
 		SetCursorPosition(13)
 		If ( moaState.getValue() == 1 )
 			flags =	OPTION_FLAG_NONE
@@ -775,7 +771,7 @@ Event OnPageReset(String page)
 		EndIf
 		oidTotalCustomRPSlotSlider = AddSliderOption("$mrt_MarkofArkay_TotalCustomRPSlotSlider_1", fTotalCustomRPSlotSlider, "{0}", flags)
 		SetCursorPosition(15)
-		If (( moaState.getValue() == 1 ) && (iTeleportLocation == getExternalRPIndex()) && (moaCheckingMarkers.GetValue() == 0.0) && ( moaERPCount.GetValueInt() > 0 ))
+		If (( moaState.getValue() == 1 ) && (iTeleportLocation == getExternalRPIndex()) && ( moaERPCount.GetValueInt() > 0 ))
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
@@ -785,11 +781,7 @@ Event OnPageReset(String page)
 		ElseIf moaERPCount.GetValueInt() == 1
 			iExternalIndex = 0
 		EndIf
-		If (moaCheckingMarkers.GetValue() == 0.0)
-			oidExtraTeleportLocation_M = AddMenuOption("$mrt_MarkofArkay_ExtraTeleportLocation_M", shortenString(sExtraRPs[iExternalIndex],19), flags)
-		Else
-			oidExtraTeleportLocation_M = AddMenuOption("$mrt_MarkofArkay_ExtraTeleportLocation_M", "$Random", OPTION_FLAG_DISABLED)
-		EndIf
+		oidExtraTeleportLocation_M = AddMenuOption("$mrt_MarkofArkay_ExtraTeleportLocation_M", shortenString(sExtraRPs[iExternalIndex],19), flags)
 		SetCursorPosition(17)
 		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1))
 			flags =	OPTION_FLAG_NONE
@@ -2535,9 +2527,9 @@ Event OnOptionSliderOpen(Int option)
 		SetSliderDialogInterval(25.0)
 	ElseIf (option == oidMaxItemsToCheckSlider)
 		SetSliderDialogStartValue(fMaxItemsToCheckSlider)
-		SetSliderDialogDefaultValue(1000.0)
-		SetSliderDialogRange(0.0, 1000000.0)
-		SetSliderDialogInterval(10.0)
+		SetSliderDialogDefaultValue(500.0)
+		SetSliderDialogRange(0.0, 10000.0)
+		SetSliderDialogInterval(1.0)
 	ElseIf (option == oidLowerNPCMaxLvlDiff)
 		SetSliderDialogStartValue(fLowerNPCMaxLvlDiff)
 		SetSliderDialogDefaultValue(10.0)
@@ -3417,7 +3409,7 @@ Event OnOptionDefault(Int option)
 		fLoseOtherTotalValueSlider = 0.0
 		SetSliderOptionValue(oidLoseOtherTotalValueSlider, fLoseOtherTotalValueSlider, "{0}")
 	ElseIf (option == oidMaxItemsToCheckSlider)
-		fMaxItemsToCheckSlider = 1000.0
+		fMaxItemsToCheckSlider = 500.0
 		SetSliderOptionValue(oidMaxItemsToCheckSlider, fMaxItemsToCheckSlider, "{0}")
 	ElseIf (option == oidLowerNPCMaxLvlDiff)
 		fLowerNPCMaxLvlDiff = 10.0
@@ -4101,7 +4093,7 @@ Function moaStop(Bool bReset = False)
 EndFunction
 
 Int Function iGetModStatus()
-	If moaIsBusy.GetValue() || (moaState.GetValue() == 1 && (PlayerRef.IsBleedingOut() || moaBleedoutHandlerState.GetValue() != 0 || ReviveScript.GetState() != ""))
+	If moaIsBusy.GetValue() || (moaState.GetValue() == 1 && (PlayerRef.IsBleedingOut() || moaBleedoutHandlerState.GetValue() != 0 || ReviveScript.GetState() != "" || (moaCheckingMarkers.GetValue() != 0.0)))
 		Return 2
 	EndIf
 	PlayerRef.GetCombatState()
@@ -4942,7 +4934,7 @@ Bool Function bCheckFissErrors(String strErrors)
 		ElseIf strError == "Element fLowerNPCMaxLvlDiff not found"
 			fLowerNPCMaxLvlDiff = 10.0
 		ElseIf strError == "Element fMaxItemsToCheckSlider not found"
-			fMaxItemsToCheckSlider = 1000.0
+			fMaxItemsToCheckSlider = 500.0
 		ElseIf strError == "Element bCanbeKilledbyUnarmed not found"
 			bCanbeKilledbyUnarmed = True
 		ElseIf strError == "Element bRespawnPointsFlags8 not found"
@@ -5333,7 +5325,7 @@ function LoadDefaultSettings()
 	fMinLoseGrandSoulGemSlider = 0.0
 	fLoseOtherMinValueSlider = 0.0
 	fLoseOtherTotalValueSlider = 0.0
-	fMaxItemsToCheckSlider = 1000.0
+	fMaxItemsToCheckSlider = 500.0
 	fBossChestChanceSlider = 0.0
 	fHealthPercTrigger = 0.00
 	bExcludeQuestItems = True

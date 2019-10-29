@@ -33,11 +33,13 @@ Int Property iCheckLimit = 0 Auto Hidden;
 Int Property iTotalValues = 0 Auto Hidden;
 Int Property iItemCheckers = 0 Auto Hidden
 Container Property ItemChest Auto
+Bool Property bEquipmentRegistered = False Auto Hidden
 
 Function SetVars()
 	If Equipment.Length != 35
 		Equipment = New Form[35]
 	EndIf
+	bEquipmentRegistered = False
 Endfunction
 
 Function RestoreLostItems(Actor ActorRef)
@@ -152,6 +154,7 @@ Form[] Function RegisterEquipments(Actor refActor, Bool bRightArm, Bool bLeftArm
 			EquipmentArray[iEmpty] = ReviveScript.EquippedAmmo
 		EndIf
 	EndIf
+	bEquipmentRegistered = True
 	Return EquipmentArray
 EndFunction
 

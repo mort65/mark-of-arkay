@@ -207,7 +207,20 @@ Function kArrayClear(Form[] Arr) Global
 			Arr[i] = None
 		EndWhile
 	EndIf
-EndFunction 
+EndFunction
+
+Bool Function bIsFormArrEmpty(Form[] Arr) Global
+	If Arr
+		Int i = Arr.Length
+		While i > 0 
+			i -= 1
+			If Arr[i]
+				Return False
+			EndIf
+		EndWhile
+	EndIf
+	Return True
+EndFunction
 
 String Function sDecToHex(Int iDec) Global
 {Convert a decimal integer to hexadecimal}

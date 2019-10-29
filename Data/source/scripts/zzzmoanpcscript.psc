@@ -1227,7 +1227,12 @@ Form[] Function bCloneActor(Actor akActor, ObjectReference akMarker, Int aiCount
 EndFunction
 
 Function bringDeadClone()
-	Form[] MyEquipment = ReviveScript.ItemScript.Equipment
+	Form[] MyEquipment
+	If ReviveScript.ItemScript.bEquipmentRegistered
+		MyEquipment = ReviveScript.ItemScript.Equipment
+	Else
+		MyEquipment = ReviveScript.ItemScript.RegisterEquipments(PlayerRef,False,False)
+	EndIf
 	Form[] Clones = bCloneActor(PlayerRef, ReviveScript.LostItemsChest, abDead = False)
 	Actor Clone = Clones[0] As Actor
 	DeadClone = Clone

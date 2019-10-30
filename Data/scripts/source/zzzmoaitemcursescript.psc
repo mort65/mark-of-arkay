@@ -154,7 +154,6 @@ Form[] Function RegisterEquipments(Actor refActor, Bool bRightArm, Bool bLeftArm
 			EquipmentArray[iEmpty] = ReviveScript.EquippedAmmo
 		EndIf
 	EndIf
-	bEquipmentRegistered = True
 	Return EquipmentArray
 EndFunction
 
@@ -234,6 +233,7 @@ Function LoseItems()
 	Bool RightHand = ( ReviveScript.RightHandEquipedItem && !( ReviveScript.RightHandEquipedItem As Spell ) )
 	Bool LeftHand =  ( ReviveScript.LeftHandEquippedItem && !( ReviveScript.LeftHandEquippedItem As Spell ) && !( ReviveScript.LeftHandEquippedItem == ReviveScript.RightHandEquipedItem ) )
 	Equipment = RegisterEquipments(PlayerRef,True,True)
+	bEquipmentRegistered = True
 	ValuableItemsChest.RemoveAllItems()
 	If ConfigMenu.bLoseItem
 		If ConfigMenu.bLoseGold

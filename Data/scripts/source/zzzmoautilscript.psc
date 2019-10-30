@@ -11,7 +11,7 @@ Int Function iMin(Int a,Int b) Global
 EndFunction
 
 Float Function fMin(Float a,Float b) Global
-{find minimum of two floats.}
+{finds minimum of two floats.}
 	If a <= b
 		Return a
 	EndIf
@@ -19,7 +19,7 @@ Float Function fMin(Float a,Float b) Global
 EndFunction
 
 Float Function fMax(Float a,Float b) Global
-{find maximum of two floats.}
+{finds maximum of two floats.}
 	If a >= b
 		Return a
 	EndIf
@@ -27,7 +27,7 @@ Float Function fMax(Float a,Float b) Global
 EndFunction
 
 Int Function iMax(Int a,Int b) Global
-{find maximum of two ints.}
+{finds maximum of two ints.}
 	If a >= b
 		Return a
 	EndIf
@@ -177,7 +177,7 @@ Int Function RandomIntWithShuffledExclusionArray( Int iFrom, Int iTo, Bool[] iFl
 EndFunction
 
 Function iArrayClear(Int[] Arr) Global
-{clear an int array.}
+{clears an int array.}
 	If Arr
 		int i = Arr.Length
 		While i > 0 
@@ -188,7 +188,7 @@ Function iArrayClear(Int[] Arr) Global
 EndFunction
 
 Function fArrayClear(Float[] Arr) Global
-{clear a float array.}
+{clears a float array.}
 	If Arr
 		Int i = Arr.Length
 		While i > 0 
@@ -199,7 +199,7 @@ Function fArrayClear(Float[] Arr) Global
 EndFunction 
 
 Function kArrayClear(Form[] Arr) Global
-{clear a form array.}
+{clears a form array.}
 	If Arr
 		Int i = Arr.Length
 		While i > 0 
@@ -210,6 +210,7 @@ Function kArrayClear(Form[] Arr) Global
 EndFunction
 
 Bool Function bIsFormArrEmpty(Form[] Arr) Global
+{checking if a form array is empty.}
 	If Arr
 		Int i = Arr.Length
 		While i > 0 
@@ -223,7 +224,7 @@ Bool Function bIsFormArrEmpty(Form[] Arr) Global
 EndFunction
 
 String Function sDecToHex(Int iDec) Global
-{Convert a decimal integer to hexadecimal}
+{Converts a decimal integer to hexadecimal}
 	Bool bNegetive = False
 	If iDec <= 0
 		If iDec == 0
@@ -297,7 +298,7 @@ Bool Function bIsInteger(String s) Global
 EndFunction
 
 Bool Function stopAndConfirm(Quest akQuest, Float afSecs = 3.0, Int aiStage = -1) Global
-{stop a quest and wait for it to stop, optionaly set stage of the quest to a stage that would stop it.}
+{stops a quest and wait for it to stop, optionaly set stage of the quest to a stage that would stop it.}
 	If !akQuest.IsRunning()
 		Return True
 	EndIf
@@ -315,7 +316,7 @@ Bool Function stopAndConfirm(Quest akQuest, Float afSecs = 3.0, Int aiStage = -1
 EndFunction
 
 Function disintegrateWhenAble(Actor akActor) Global
-{remove a leveled actor from the game when player is not around.}
+{removes a leveled actor from the game when player is not around.}
 	While akActor && akActor.GetParentCell() && akActor.GetParentCell().IsAttached()
 		Utility.Wait(5)
 	EndWhile
@@ -325,14 +326,14 @@ Function disintegrateWhenAble(Actor akActor) Global
 EndFunction
 
 Function disintegrateNow(Actor akActor) Global
-{remove a leveled actor from the game instantly.}
+{removes a leveled actor from the game instantly.}
 	akActor && akActor.RemoveAllItems()
 	akActor && akActor.SetCriticalStage(akActor.CritStage_DisintegrateEnd)
 	akActor && akActor.DisableNoWait()
 EndFunction
 
 Function stopBrawlQuest(Quest akBrawlQuest, Int akEndStage) Global
-{Stop a brawling quest by setting the stage to the stop stage and revive the player character from bleedout.}
+{Stops a brawling quest by setting the stage to the stop stage and revive the player character from bleedout.}
 	akBrawlQuest.SetStage(akEndStage)
 	Utility.Wait(1.0)
 	Game.GetPlayer().ResetHealthAndLimbs()
@@ -365,7 +366,7 @@ Int Function randIntFromlimitedRange(Int iMin, Int iMax, Int iLimit, Int iMinVal
 EndFunction
 
 Function killPlayer() Global
-{kill the player even if the player is essential or Invulnerable or god mod is active.}
+{kills the player even if the player is essential or Invulnerable or god mod is active.}
 	Actor player = Game.GetPlayer()
 	ActorBase playerBase = player.GetBaseObject() As ActorBase
 	Debug.SetGodMode(False)
@@ -375,7 +376,7 @@ Function killPlayer() Global
 EndFunction
 
 String Function shortenString(String sString, Int iLimit) Global
-{shorten the input string and put ... at the end of it.}
+{shortens the input string and put ... at the end of it.}
 	Int iLen = GetLength(sString)
 	If iLimit < 4
 		If iLimit < 1
@@ -395,7 +396,7 @@ String Function shortenString(String sString, Int iLimit) Global
 EndFunction
 
 FormList Function checkAndFixFormList(FormList akList, Bool abCheckSize = False, Bool abOnlyRef = False, Bool abCheckRefPlace = False, Int aiBaseType = -1,FormList akOtherList = None) Global
-{check a Form list for nones, invalid refs, reducing number of forms to 128 and removing invalids in place or adding valid forms to another form list.}
+{checking a Form list for nones, invalid refs, reducing number of forms to 128 and removing invalids in place or adding valid forms to another form list.}
 	Bool bHasNone = False
 	Int i = 0
 	While i < akList.GetSize() && !bHasNone
@@ -451,7 +452,7 @@ FormList Function checkAndFixFormList(FormList akList, Bool abCheckSize = False,
 EndFunction
 
 Form Function getFromMergedFormList(FormList akMergedlist,Int aiIndex = 0) Global
-{get a value by index from a formlist of formlists by using an index that is betwwen 0 and sum of the size of all formlists in the formlist minus 1.}
+{gets a value by index from a formlist of formlists by using an index that is betwwen 0 and sum of the size of all formlists in the formlist minus 1.}
 	Int i = 0
 	While i < akMergedlist.GetSize() && aiIndex > -1
 		If aiIndex < (akMergedlist.GetAt(i) As FormList).GetSize()
@@ -465,7 +466,7 @@ EndFunction
 
 
 Function transferItems(ObjectReference akInContainer, ObjectReference akOutContainer, Int aiIndex, Int aiCount) Global
-{transfer items from an object reference to another.}
+{transfers items from an object reference to another.}
 	If aiIndex > akInContainer.GetNumItems() - 1
 		Return
 	EndIf

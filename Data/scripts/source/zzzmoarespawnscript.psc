@@ -145,9 +145,9 @@ Bool Function bCheckTavernMarkers()
 	Return True
 Endfunction
 
-Event OnCheckingMarkers(Form sender,Bool bTavern, Bool bExtra, Bool bCustom)
+Event OnCheckingMarkers(Form sender,Bool bTavern, Bool bExtra, Bool bCustom, Bool bFast)
 	If sender == (self As Quest) As Form
-		checkMarkers(bTavern, bExtra, bCustom)
+		checkMarkers(bTavern, bExtra, bCustom, bFast)
 	EndIf
 EndEvent
 
@@ -158,7 +158,7 @@ Event OnRespawn(Form akSender)
 	EndIf
 EndEvent
 
-Function checkMarkers(Bool bCheckInn, Bool bCheckExtra, Bool bCheckCustom)
+Function checkMarkers(Bool bCheckInn, Bool bCheckExtra, Bool bCheckCustom, Bool bFast = False)
 	If !bCheckInn && !bCheckExtra && !bCheckCustom
 		Return
 	EndIf
@@ -172,37 +172,39 @@ Function checkMarkers(Bool bCheckInn, Bool bCheckExtra, Bool bCheckCustom)
 		setTavernMarkers(ConfigMenu.moaIsBusy.GetValue() As Bool)
 	EndIf
 	If bCheckExtra
-		AddExternalMarkers()
+		AddExternalMarkers(bFast)
 	EndIf
 	If bCheckCustom
-		ConfigMenu.setCustomRPS()
+		ConfigMenu.setCustomRPS(bFast)
 	EndIf
 	moaCheckingMarkers.SetValue(0.0)
 	Debug.Notification("$mrt_MarkofArkay_Notification_Checking_Markers_Finished")
 EndFunction
 
-Function AddExternalMarkers()
+Function AddExternalMarkers(Bool bFast = False)
 	Debug.TraceConditional("MarkOfArkay: Adding extra markers...",ConfigMenu.bIsLoggingEnabled)
 	Int i = 0
-	ObjectReference LocMarker
-	ExternalLocationMarkerList.Revert()
-	While i < ExternalLocationList.GetSize()
-		If ExternalLocationList.GetAt(i) As Location
-			LocMarker = getLocationMarker(ExternalLocationList.GetAt(i) As Location)
-			If LocMarker As ObjectReference
-				ExternalLocationMarkerList.AddForm(LocMarker)
+	If !bFast
+		ObjectReference LocMarker
+		ExternalLocationMarkerList.Revert()
+		While i < ExternalLocationList.GetSize()
+			If ExternalLocationList.GetAt(i) As Location
+				LocMarker = getLocationMarker(ExternalLocationList.GetAt(i) As Location)
+				If LocMarker As ObjectReference
+					ExternalLocationMarkerList.AddForm(LocMarker)
+				EndIf
 			EndIf
-		EndIf
-		i += 1
-	Endwhile
-	MergedExternalMarkerList.Revert()
-	MergedExternalMarkerSubList.Revert()
-	MergedExternalMarkerList.AddForm(checkAndFixFormList(ExternalMarkerList,True,True,True,akOtherList = MergedExternalMarkerSubList))
-	MergedExternalMarkerList.AddForm(checkAndFixFormList(ExternalLocationMarkerList,True,True,True))
-	MergedExternalMarkerList.AddForm(checkAndFixFormList(ExtraCustomMarkerList,True,True,True,34))
-	i = MergedExternalMarkerSubList.GetSize() + ExternalLocationMarkerList.GetSize() + ExtraCustomMarkerList.GetSize()
+			i += 1
+		Endwhile
+		MergedExternalMarkerList.Revert()
+		MergedExternalMarkerSubList.Revert()
+		MergedExternalMarkerList.AddForm(checkAndFixFormList(ExternalMarkerList,True,True,True,akOtherList = MergedExternalMarkerSubList))
+		MergedExternalMarkerList.AddForm(checkAndFixFormList(ExternalLocationMarkerList,True,True,True))
+		MergedExternalMarkerList.AddForm(checkAndFixFormList(ExtraCustomMarkerList,True,True,True,34))
+		i = MergedExternalMarkerSubList.GetSize() + ExternalLocationMarkerList.GetSize() + ExtraCustomMarkerList.GetSize()
+	EndIf
 	moaERPCount.SetValue(i)	
-	ConfigMenu.setExtraRPs(i)
+	ConfigMenu.setExtraRPs(i,bFast)
 	Debug.TraceConditional("MarkOfArkay: Adding extra markers finished.",ConfigMenu.bIsLoggingEnabled)
 EndFunction
 

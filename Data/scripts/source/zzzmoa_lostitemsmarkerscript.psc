@@ -14,7 +14,8 @@ Event OnActivate(ObjectReference akActionRef)
 		PlayerRef.SetGhost(True)
 	EndIf
 	If (akActionRef As Actor) == PlayerRef
-		If ReviveScript.ItemScript.bIsItemsRemoved || PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt) || ReviveScript.skillscript.bSkillReduced()
+		If ReviveScript.ItemScript.bIsItemsRemoved || PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt) || \
+		ReviveScript.skillscript.bSkillReduced() || ReviveScript.moaPlayerVoicelessQuest.IsRunning() || ReviveScript.moaPlayerGhostQuest.IsRunning()
 			Debug.Notification("$mrt_MarkofArkay_Notification_SoulMark_Activated")
 			Self.MoveToMyEditorLocation()
 			If ConfigMenu.bSoulMarkCureDiseases 

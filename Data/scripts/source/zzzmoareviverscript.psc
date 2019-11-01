@@ -16,6 +16,8 @@ Quest Property moaThiefNPC01 Auto
 Quest Property moaSoulMark01 Auto
 Quest Property PermaDeathQuest Auto
 Message Property moaReviveMenu1 Auto
+Quest Property moaPlayerGhostQuest Auto
+Quest Property moaPlayerVoicelessQuest Auto
 GlobalVariable Property moaState Auto
 GlobalVariable Property moaArkayMarkRevive  Auto
 GlobalVariable Property moaDragonSoulRevive  Auto
@@ -230,7 +232,7 @@ Event OnInit()
 	NPCScript = GetOwningQuest() As zzzmoanpcscript
 	PermaDeathScript = PermaDeathQuest As zzzmoaPermaDeathScript
 	ConfigMenu.checkMods()
-	SetGameVars()
+	SetGameVars(True)
 	SetVars()
 	RegisterForSleep()
 	If ConfigMenu.bLevelReduce
@@ -629,7 +631,7 @@ Function restore(Int iRevivePlayer = 1, Bool bReviveFollower = True, Bool bEffec
 			NPCScript.ResurrectFollowers()
 		EndIf
 		If !ConfigMenu.bDoNotStopCombatAfterRevival
-			PlayerRef.StopCombatAlarm()
+			!moaPlayerGhostQuest.IsRunning() && PlayerRef.StopCombatAlarm()
 		EndIf
 	EndIf
 	Attacker = None
@@ -667,7 +669,7 @@ Function BleedoutHandler(String CurrentState)
 		Return
 	ElseIf !ConfigMenu.bCanbeKilledbyUnarmed && UnarmedAttacker && Attacker && Attacker.HasKeyWordString("ActorTypeNPC")
 		PlayerRef.ResetHealthAndLimbs()
-		PlayerRef.StopCombatAlarm()
+		!moaPlayerGhostQuest.IsRunning() && PlayerRef.StopCombatAlarm()
 		ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Player revived after being defeated by an unarmed NPC: "+Attacker)
 		GoToState("")
 		Return
@@ -1269,7 +1271,7 @@ Function ShowNotification()
 EndFunction
 
 Bool Function bCursed()
-	Return ItemScript.bInventoryReduced() || ItemScript.bSoulReduced() || bHasArkayCurse() || SkillScript.bSkillReduced()
+	Return ItemScript.bInventoryReduced() || ItemScript.bSoulReduced() || bHasArkayCurse() || SkillScript.bSkillReduced() || moaPlayerGhostQuest.IsRunning() || moaPlayerVoicelessQuest.IsRunning()
 EndFunction
 
 Bool Function bItemRemoved()
@@ -1345,7 +1347,7 @@ Function RevivePlayer(Bool bRevive)
 				startRespawning()
 				If ( !bWasSwimming && bIsConditionSafe )
 					If ( ConfigMenu.bInvisibility || ConfigMenu.bFadeToBlack )
-						If ConfigMenu.bDeathEffect
+						If ConfigMenu.bDeathEffect && !moaPlayerGhostQuest.IsRunning() && !moaPlayerVoicelessQuest.IsRunning()
 							PlayerRef.DispelSpell(Bleed)
 							PlayerRef.ResetHealthAndLimbs()
 							PlayerRef.RestoreActorValue("health",10000)
@@ -1363,7 +1365,7 @@ Function RevivePlayer(Bool bRevive)
 						Else
 							Utility.Wait(1.0)
 						EndIf
-						If ConfigMenu.bInvisibility
+						If ConfigMenu.bInvisibility && !moaPlayerGhostQuest.IsRunning()
 							PlayerRef.SetAlpha(0.0)
 						EndIf
 					EndIf
@@ -1374,7 +1376,7 @@ Function RevivePlayer(Bool bRevive)
 						Utility.Wait(1.0)
 						FastFadeOut.PopTo(BlackScreen)
 					EndIf
-					If ConfigMenu.bInvisibility
+					If ConfigMenu.bInvisibility && !moaPlayerGhostQuest.IsRunning()
 						PlayerRef.SetAlpha(0.0)
 					EndIf
 				EndIf
@@ -1527,9 +1529,11 @@ Function RevivePlayer(Bool bRevive)
 					Debug.TraceConditional("MarkOfArkay: Reducing skills completed in " + (Utility.GetCurrentRealTime() - fStart) + " seconds.",ConfigMenu.bIsLoggingEnabled )
 				EndIf
 				If ( PlayerRef.GetParentCell() != DefaultCell )
-					If bCursed() || (ConfigMenu.bArkayCurse && !ConfigMenu.bIsArkayCurseTemporary );Something is removed or stats of player are reduced or going to be reduced
+					If bCursed() || (ConfigMenu.bArkayCurse && !ConfigMenu.bIsArkayCurseTemporary ) || ConfigMenu.bVoicelessCurse || ConfigMenu.bGhostCurse ;Something is removed or stats of player are reduced or going to be reduced
 						If ( bSoulMark || \
-								((( ConfigMenu.bArkayCurse && !ConfigMenu.bIsArkayCurseTemporary ) || bHasArkayCurse() ) && !moaThiefNPC01.IsRunning() && (!moaBossChest01.IsRunning() || LostItemsChest.GetNumItems() == 0))) ;Soul mark can be used
+								((( ConfigMenu.bArkayCurse && !ConfigMenu.bIsArkayCurseTemporary ) || \
+								bHasArkayCurse() || ConfigMenu.bVoicelessCurse || ConfigMenu.bGhostCurse || moaPlayerGhostQuest.IsRunning() || moaPlayerVoicelessQuest.IsRunning()) \
+								&& !moaThiefNPC01.IsRunning() && (!moaBossChest01.IsRunning() || LostItemsChest.GetNumItems() == 0))) ;Soul mark can be used
 							If moaBossChest01.GetStage() == 0
 								stopAndConfirm(moaBossChest01,3,25)
 							Else
@@ -1633,7 +1637,9 @@ Function RevivePlayer(Bool bRevive)
 				EndIf
 				Attacker = None
 				ResetPlayer()
-				PlayerRef.SetAlpha(1.0,True)
+				If !ConfigMenu.bGhostCurse && !moaPlayerGhostQuest.IsRunning()
+					PlayerRef.SetAlpha(1.0,True)
+				EndIf
 				Utility.Wait(1.0)
 				NPCScript.ToggleFollower(True)
 				If ( ConfigMenu.bRespawnNaked && !NPCScript.bInBeastForm() )
@@ -1659,6 +1665,19 @@ Function RevivePlayer(Bool bRevive)
 					Else
 						ArkayCurseTemp.Cast(PlayerRef)
 						ArkayCurseTempAlt.Cast(PlayerRef)
+					EndIf
+				EndIf
+				If ConfigMenu.bGhostCurse
+					If moaPlayerVoicelessQuest.IsRunning()
+						moaPlayerVoicelessQuest.Stop()
+					EndIf
+					If !moaPlayerGhostQuest.IsRunning()
+						moaPlayerGhostQuest.Start()
+					EndIf
+				EndIf
+				If ConfigMenu.bVoicelessCurse
+					If !moaPlayerGhostQuest.IsRunning() && !moaPlayerVoicelessQuest.IsRunning()
+						moaPlayerVoicelessQuest.Start()
 					EndIf
 				EndIf
 				If PlayerRef.GetActorValue("paralysis")
@@ -1738,7 +1757,7 @@ Function RevivePlayer(Bool bRevive)
 					EndIf
 				EndIf
 				If !ConfigMenu.bDoNotStopCombat
-					PlayerRef.StopCombatAlarm()
+					!moaPlayerGhostQuest.IsRunning() && PlayerRef.StopCombatAlarm()
 				EndIf
 				LowHealthImod.Remove()
 				If bCidhnaJail 
@@ -1861,7 +1880,7 @@ Function SetVars()
 	EndIf
 EndFunction
 
-Function SetGameVars()
+Function SetGameVars(Bool abFast = False)
 	Game.SetGameSettingFloat("fPlayerDeathReloadTime", 5.00000)
 	If !SkillScript
 		SkillScript = GetOwningQuest() As zzzmoaskillcursescript
@@ -1888,7 +1907,7 @@ Function SetGameVars()
 		ConfigMenu.ToggleFallDamage(False)
 	EndIf
 	DiseaseScript.RegisterForModEvent("MOA_RecalcCursedDisCureCost", "RecalcCursedDisCureCost")
-	checkMarkers()
+	checkMarkers(True,!abFast,!abFast)
 EndFunction
 
 Bool Function bIsRevivable() ;if player can be revived by trading

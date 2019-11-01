@@ -207,6 +207,8 @@ Int oidSoulMarkCureDiseases
 Int oidNPCHasLevelRange
 Int oidHigherNPCMaxLvlDiff
 Int oidLowerNPCMaxLvlDiff
+Int oidVoicelessCurse
+Int oidGhostCurse
 
 Bool Property bSoulMarkCureDiseases = False Auto Hidden
 Bool Property bLockPermaDeath = False Auto Hidden
@@ -467,10 +469,12 @@ Float Property fLowerNPCMaxLvlDiff = 10.0 Auto Hidden
 GlobalVariable Property moaHigherNPCMaxLvlDiff Auto
 GlobalVariable Property moaLowerNPCMaxLvlDiff Auto
 GlobalVariable Property moaNPCHasLevelRange Auto
+Bool Property bVoicelessCurse = False Auto Hidden
+Bool Property bGhostCurse = False Auto Hidden
 Int Property iNameTagBackup Auto Hidden
+Spell Property GhostVisual Auto
 
 Event OnPageReset(String page)
-	setArrays()
 	SetCursorFillMode(LEFT_TO_RIGHT)
 	Int iCurStatus = iGetModStatus()
 	If iCurStatus == 1
@@ -480,6 +484,7 @@ Event OnPageReset(String page)
 		AddHeaderOption("$mrt_MarkofArkay_HEAD_Mod_Status_2")
 		Return
 	EndIf
+	setArrays()
 	If (page == "$General")
 		SetCursorPosition(0)
 		AddHeaderOption("$General")
@@ -928,22 +933,33 @@ Event OnPageReset(String page)
 		EndIf
 		oidLoseSkillForever = AddToggleOption("$mrt_MarkofArkay_LoseSkillForever",bLoseSkillForever, flags)
 		SetCursorPosition(54)
-		AddHeaderOption("$mrt_MarkofArkay_HEAD_Curse_Recovery")
+		AddHeaderOption("$mrt_MarkofArkay_HEAD_Other_Curses")
 		SetCursorPosition(56)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && !bCurseLock
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidVoicelessCurse = AddToggleOption("$mrt_MarkofArkay_VoicelessCurse",bVoicelessCurse, flags)
+		SetCursorPosition(58)
+		oidGhostCurse = AddToggleOption("$mrt_MarkofArkay_GhostCurse",bGhostCurse, flags)
+		SetCursorPosition(62)
+		AddHeaderOption("$mrt_MarkofArkay_HEAD_Curse_Recovery")
+		SetCursorPosition(64)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidLostItemQuest = AddToggleOption("$mrt_MarkofArkay_LostItemQuest",bLostItemQuest,flags)
-		SetCursorPosition(58)
+		SetCursorPosition(66)
 		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1)) && !bCurseLock
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidSoulMarkStay = AddToggleOption("$mrt_MarkofArkay_SoulMarkStay",bSoulMarkStay,flags)
-		SetCursorPosition(60)
+		SetCursorPosition(68)
 		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1)) && !bCurseLock
 			flags =	OPTION_FLAG_NONE
 		Else
@@ -1791,7 +1807,7 @@ Event OnOptionSelect(Int option)
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		SetOptionFlags(oidDeathEffect,flags)
-		If !bInvisibility
+		If !bInvisibility && !ReviveScript.moaPlayerGhostQuest.IsRunning()
 			PlayerRef.SetAlpha(1.0)
 		EndIf
 	ElseIf (option == oidDeathEffect)
@@ -1978,6 +1994,12 @@ Event OnOptionSelect(Int option)
 	ElseIf (option == oidLoseforever)
 		bLoseForever = !bLoseForever
 		SetToggleOptionValue(oidLoseforever, bLoseForever)
+	ElseIf (option == oidVoicelessCurse)
+		bVoicelessCurse = !bVoicelessCurse
+		SetToggleOptionValue(oidVoicelessCurse, bVoicelessCurse)
+	ElseIf (option == oidGhostCurse)
+		bGhostCurse = !bGhostCurse
+		SetToggleOptionValue(oidGhostCurse, bGhostCurse)
 	ElseIf (option == oidLostItemQuest)
 		bLostItemQuest = !bLostItemQuest
 		SetToggleOptionValue(oidLostItemQuest, bLostItemQuest)
@@ -2308,7 +2330,9 @@ Event OnOptionSelect(Int option)
 		Else
 			setTriggerMethod(0)
 		EndIf
-		PlayerRef.SetAlpha(1.0)
+		If !ReviveScript.moaPlayerGhostQuest.IsRunning()
+			PlayerRef.SetAlpha(1.0)
+		EndIf
 		PlayerRef.DispelSpell(ReviveScript.Bleed)
 		PlayerRef.RemoveSpell(ReviveScript.Bleed)
 		PlayerRef.ResetHealthAndLimbs()
@@ -3045,7 +3069,9 @@ Event OnOptionDefault(Int option)
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		SetOptionFlags(oidDeathEffect,flags)
-		PlayerRef.SetAlpha(1.0)
+		If !ReviveScript.moaPlayerGhostQuest.IsRunning()
+			PlayerRef.SetAlpha(1.0)
+		EndIf
 	ElseIf (option == oidDeathEffect)
 		bDeathEffect = True
 		SetToggleOptionValue(oidDeathEffect, bDeathEffect)
@@ -3494,6 +3520,12 @@ Event OnOptionDefault(Int option)
 		bOnlyLoseSkillXP = False
 		SetToggleOptionValue(oidOnlyLoseSkillXP,bOnlyLoseSkillXP)
 		ForcePageReset()
+	ElseIf (option == oidVoicelessCurse)
+		bVoicelessCurse = False
+		SetToggleOptionValue(oidVoicelessCurse, bVoicelessCurse)
+	ElseIf (option == oidGhostCurse)
+		bGhostCurse = False
+		SetToggleOptionValue(oidGhostCurse, bGhostCurse)
 	ElseIf (option == oidLostItemQuest)
 		bLostItemQuest = True
 		SetToggleOptionValue(oidLostItemQuest,bLostItemQuest)
@@ -3800,6 +3832,10 @@ Event OnOptionHighlight(Int option)
 		SetInfoText("$mrt_MarkofArkay_DESC_Loseforever")
 	ElseIf (option == oidLostItemQuest)
 		SetInfoText("$mrt_MarkofArkay_DESC_LostItemQuest")
+	ElseIf (option == oidVoicelessCurse)
+		SetInfoText("$mrt_MarkofArkay_DESC_VoicelessCurse")
+	ElseIf (option == oidGhostCurse)
+		SetInfoText("$mrt_MarkofArkay_DESC_GhostCurse")		
 	ElseIf (option == oidSoulMarkStay)
 		SetInfoText("$mrt_MarkofArkay_DESC_SoulMarkStay")
 	ElseIf (option == oidRecallRestriction)
@@ -4038,7 +4074,6 @@ Function moaStop(Bool bReset = False)
 		ReviveScript.FastFadeOut.Remove()
 		ReviveScript.BlackScreen.Remove()
 		ReviveScript.FadeIn.Remove()
-		PlayerRef.SetAlpha(1.0)
 		moaFollowerDetector.Stop()
 		moaHostileNPCDetector.Stop()
 		moaHostileNPCDetector01.Stop()
@@ -4047,8 +4082,15 @@ Function moaStop(Bool bReset = False)
 			setTriggerMethod(0)
 		Else
 			StopAndConfirm(moaHealthMonitor,3)
+			StopAndConfirm(ReviveScript.moaPlayerVoicelessQuest)
+			StopAndConfirm(ReviveScript.moaPlayerGhostQuest,3,10)
+			PlayerRef.DispelSpell(GhostVisual)
+			PlayerRef.RemoveSpell(GhostVisual)
 		EndIf
 		StopAndConfirm(moaReviverQuest,3)
+		If !ReviveScript.moaPlayerGhostQuest.IsRunning()
+			PlayerRef.SetAlpha(1.0)
+		EndIf
 		PlayerRef.GetActorBase().SetEssential(False)
 		PlayerRef.SetNoBleedoutRecovery(False)
 		PlayerRef.RemovePerk(ReviveScript.Invulnerable)
@@ -4675,6 +4717,8 @@ Bool function bLoadUserSettings(String sFileName)
 	bLoseForever = fiss.loadBool("bLoseForever")
 	bSoulMarkStay = fiss.loadBool("bSoulMarkStay")
 	;bLostItemQuest = fiss.loadBool("bLostItemQuest")
+	bVoicelessCurse = fiss.loadBool("bVoicelessCurse")
+	bGhostCurse = fiss.loadBool("bGhostCurse")
 	bCreaturesCanSteal = fiss.loadBool("bCreaturesCanSteal")
 	moaCreaturesCanSteal.SetValue(bCreaturesCanSteal As Int)
 	bNPCHasLevelRange = fiss.loadBool("bNPCHasLevelRange")
@@ -4917,6 +4961,10 @@ Bool Function bCheckFissErrors(String strErrors)
 			bOnlyInfectIfHasBaseDis = True
 		ElseIf strError == "Element bSoulMarkCureDiseases not found"
 			bSoulMarkCureDiseases = False
+		ElseIf strError == "Element bGhostCurse not found"
+			bGhostCurse = False
+		ElseIf strError == "Element bVoicelessCurse not found"
+			bVoicelessCurse = False
 		ElseIf strError == "Element bCureDisIfHasBlessing not found"
 			bCureDisIfHasBlessing = False
 			moaCureDisIfHasBlessing.SetValueInt(0)
@@ -5028,6 +5076,8 @@ bool function bSaveUserSettings(String sFileName)
 	fiss.saveBool("bLoseForever", bLoseForever)
 	fiss.saveBool("bSoulMarkStay", bSoulMarkStay)
 	;fiss.saveBool("bLostItemQuest", bLostItemQuest)
+	fiss.saveBool("bVoicelessCurse", bVoicelessCurse)
+	fiss.saveBool("bGhostCurse", bGhostCurse)
 	fiss.saveBool("bCreaturesCanSteal", bCreaturesCanSteal)
 	fiss.saveBool("bNPCHasLevelRange", bNPCHasLevelRange)
 	fiss.saveBool("bMoralityMatters", bMoralityMatters)
@@ -5261,6 +5311,8 @@ function LoadDefaultSettings()
 	bLoseForever = False
 	bSoulMarkStay = False
 	bLostItemQuest = True
+	bVoicelessCurse = False
+	bGhostCurse = False
 	bCreaturesCanSteal = False
 	moaCreaturesCanSteal.SetValue(bCreaturesCanSteal As Int)
 	bNPCHasLevelRange = False

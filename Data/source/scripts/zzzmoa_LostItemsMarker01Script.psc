@@ -25,7 +25,8 @@ Event OnActivate(ObjectReference akActionRef)
 		PlayerRef.SetGhost(True)
 	EndIf
 	If (akActionRef As Actor) == PlayerRef
-		If ConfigMenu.ReviveScript.ItemScript.bIsItemsRemoved || PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt) || ConfigMenu.ReviveScript.skillscript.bSkillReduced()
+		If ConfigMenu.ReviveScript.ItemScript.bIsItemsRemoved || PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt) || \
+		ConfigMenu.ReviveScript.skillscript.bSkillReduced() || ConfigMenu.ReviveScript.moaPlayerVoicelessQuest.IsRunning() || ConfigMenu.ReviveScript.moaPlayerGhostQuest.IsRunning()
 			Debug.Notification("$mrt_MarkofArkay_Notification_SoulMark_Activated")
 			GetActorReference().SetCriticalStage(GetActorReference().CritStage_DisintegrateStart)
 			TurnUnDisintegrate01FXS.Play(GetActorReference(),2.0)

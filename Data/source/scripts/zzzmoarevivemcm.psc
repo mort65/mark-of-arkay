@@ -4384,15 +4384,17 @@ String[] Function sGetSaveOptions()
 	Return sSaveOptions
 EndFunction
 
-Function setExtraRPs(Int aiSize)
+Function setExtraRPs(Int aiSize, Bool bFast = False)
 	Debug.TraceConditional("MarkOfArkay: Setting extra custom markers...",bIsLoggingEnabled)
 	sExtraRPs = Utility.CreateStringArray(aiSize + 1)
 	Int i = 0
 	While i < aiSize
 		sExtraRPs[i] = (i + 1) As String
-		String[] sPlaceInfos = getRefPlaceInfo(getFromMergedFormList(MergedExternalMarkerList,i) As ObjectReference)
-		If sPlaceInfos[0] || sPlaceInfos[1]
-			sExtraRPs[i] = shortenString(sExtraRPs[i] + ": " + sDecToHex(sPlaceInfos[1] As Int) + " " + sPlaceInfos[0],59)
+		If !bFast
+			String[] sPlaceInfos = getRefPlaceInfo(getFromMergedFormList(MergedExternalMarkerList,i) As ObjectReference)
+			If sPlaceInfos[0] || sPlaceInfos[1]
+				sExtraRPs[i] = shortenString(sExtraRPs[i] + ": " + sDecToHex(sPlaceInfos[1] As Int) + " " + sPlaceInfos[0],59)
+			EndIf
 		EndIf
 		i += 1
 	EndWhile
@@ -4464,28 +4466,30 @@ String[] Function sGetSkills()
 	Return sSkills
 EndFunction
 
-String[] Function sGetCustomRPs()
+String[] Function sGetCustomRPs(Bool bFast = False)
 	String[] sGetCustomRPSlot = New String[4]
 	sGetCustomRPSlot[0] = "$CustopRP_Slot1"
 	sGetCustomRPSlot[1] = "$CustopRP_Slot2"
 	sGetCustomRPSlot[2] = "$CustopRP_Slot3"
 	sGetCustomRPSlot[3] = "$CustopRP_Slot4"
-	Int i = 0
-	While i < sGetCustomRPSlot.Length
-		If ((CustomRespawnPoints.GetAt(i) As ObjectReference).GetParentCell() != ReviveScript.DefaultCell)
-			String[] sPlaceInfos = getRefPlaceInfo(CustomRespawnPoints.GetAt(i) As ObjectReference)
-			If sPlaceInfos[0] || sPlaceInfos[1]
-				sGetCustomRPSlot[i] = shortenString(((i+1) As String + ": " + sDecToHex(sPlaceInfos[1] As Int) + " " + sPlaceInfos[0]),59)
+	If !bFast
+		Int i = 0
+		While i < sGetCustomRPSlot.Length
+			If ((CustomRespawnPoints.GetAt(i) As ObjectReference).GetParentCell() != ReviveScript.DefaultCell)
+				String[] sPlaceInfos = getRefPlaceInfo(CustomRespawnPoints.GetAt(i) As ObjectReference)
+				If sPlaceInfos[0] || sPlaceInfos[1]
+					sGetCustomRPSlot[i] = shortenString(((i+1) As String + ": " + sDecToHex(sPlaceInfos[1] As Int) + " " + sPlaceInfos[0]),59)
+				EndIf
 			EndIf
-		EndIf
-		i += 1
-	EndWhile
+			i += 1
+		EndWhile
+	EndIf
 	Return sGetCustomRPSlot
 Endfunction
 
-Function setCustomRPS()
+Function setCustomRPS(Bool bFast = False)
 	Debug.TraceConditional("MarkOfArkay: Setting custom markers...",bIsLoggingEnabled)
-	sCustomRPs = sGetCustomRPs()
+	sCustomRPs = sGetCustomRPs(bFast)
 	Debug.TraceConditional("MarkOfArkay: Setting custom markers finished.",bIsLoggingEnabled)
 EndFunction
 

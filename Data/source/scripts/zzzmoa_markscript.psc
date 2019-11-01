@@ -250,7 +250,7 @@ Event OnEffectStart(Actor akTarget, Actor akCaster)
 		Marker = CustomRespawnPoints.GetAt(iIndex) As ObjectReference
 		bCustomMarkersChanged = True
 	Else
-		ConfigMenu.ReviveScript.checkMarkers(False,bExtraMarkersChanged,False)
+		ConfigMenu.ReviveScript.checkMarkers(False,bExtraMarkersChanged,False,False)
 		If bExtraAdded && ConfigMenu.fMarkCastSlider > 0.0	
 			PlayerRef.RemoveItem(MarkOfArkay,ConfigMenu.fMarkCastSlider As Int,False)
 		EndIf
@@ -265,7 +265,7 @@ Event OnEffectStart(Actor akTarget, Actor akCaster)
 		ConfigMenu.iSelectedCustomRPSlot = iIndex
 		ConfigMenu.SetCustomRPFlags()
 	EndIf
-	ConfigMenu.ReviveScript.checkMarkers(False,bExtraMarkersChanged,bCustomMarkersChanged)
+	ConfigMenu.ReviveScript.checkMarkers(False,bExtraMarkersChanged,bCustomMarkersChanged,False)
 	If ConfigMenu.fMarkCastSlider > 0.0	
 		PlayerRef.RemoveItem(MarkOfArkay,ConfigMenu.fMarkCastSlider As Int,False)
 	EndIf

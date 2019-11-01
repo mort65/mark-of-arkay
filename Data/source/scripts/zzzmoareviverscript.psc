@@ -276,7 +276,7 @@ Event OnPlayerLoadGame()
 	RegisterForSingleUpdate(3.0)
 EndEvent
 
-Function checkMarkers(Bool bTavern = True, Bool bExtra = True, Bool bCustom = True)
+Function checkMarkers(Bool bTavern = True, Bool bExtra = True, Bool bCustom = True, Bool bFast = False)
 	RespawnScript.RegisterForModEvent("MOA_CheckMarkers","OnCheckingMarkers")
 	Int handle = ModEvent.Create("MOA_CheckMarkers")
 	If (handle)
@@ -284,6 +284,7 @@ Function checkMarkers(Bool bTavern = True, Bool bExtra = True, Bool bCustom = Tr
 		ModEvent.PushBool(handle, bTavern)
 		ModEvent.PushBool(handle, bExtra)
 		ModEvent.PushBool(handle, bCustom)
+		ModEvent.PushBool(handle, bFast)
 		ModEvent.Send(Handle)
 	EndIf
 EndFunction
@@ -1907,7 +1908,7 @@ Function SetGameVars(Bool abFast = False)
 		ConfigMenu.ToggleFallDamage(False)
 	EndIf
 	DiseaseScript.RegisterForModEvent("MOA_RecalcCursedDisCureCost", "RecalcCursedDisCureCost")
-	checkMarkers(True,!abFast,!abFast)
+	checkMarkers(bFast = abFast)
 EndFunction
 
 Bool Function bIsRevivable() ;if player can be revived by trading

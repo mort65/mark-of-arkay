@@ -1680,6 +1680,7 @@ Function RevivePlayer(Bool bRevive)
 					If !moaPlayerGhostQuest.IsRunning() && !moaPlayerVoicelessQuest.IsRunning()
 						moaPlayerVoicelessQuest.Start()
 					EndIf
+					PlayerRef.SetVoiceRecoveryTime(9999999.0)
 				EndIf
 				If PlayerRef.GetActorValue("paralysis")
 					PlayerRef.SetActorValue("paralysis",0)

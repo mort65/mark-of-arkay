@@ -209,7 +209,10 @@ Int oidHigherNPCMaxLvlDiff
 Int oidLowerNPCMaxLvlDiff
 Int oidVoicelessCurse
 Int oidGhostCurse
+Int oidGhostShader
 
+GlobalVariable Property moaGhostShader Auto
+Int Property iGhostShader = 0 Auto Hidden
 Bool Property bSoulMarkCureDiseases = False Auto Hidden
 Bool Property bLockPermaDeath = False Auto Hidden
 Bool Property bRespawnCounter = False Auto Hidden
@@ -943,23 +946,30 @@ Event OnPageReset(String page)
 		oidVoicelessCurse = AddToggleOption("$mrt_MarkofArkay_VoicelessCurse",bVoicelessCurse, flags)
 		SetCursorPosition(58)
 		oidGhostCurse = AddToggleOption("$mrt_MarkofArkay_GhostCurse",bGhostCurse, flags)
-		SetCursorPosition(62)
-		AddHeaderOption("$mrt_MarkofArkay_HEAD_Curse_Recovery")
+		SetCursorPosition(60)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bGhostCurse && !bCurseLock
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf		
+		oidGhostShader = AddMenuOption("$mrt_MarkofArkay_GhostShader_M", sGetGhostShader()[iGhostShader], flags)
 		SetCursorPosition(64)
+		AddHeaderOption("$mrt_MarkofArkay_HEAD_Curse_Recovery")
+		SetCursorPosition(66)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidLostItemQuest = AddToggleOption("$mrt_MarkofArkay_LostItemQuest",bLostItemQuest,flags)
-		SetCursorPosition(66)
+		SetCursorPosition(68)
 		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1)) && !bCurseLock
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidSoulMarkStay = AddToggleOption("$mrt_MarkofArkay_SoulMarkStay",bSoulMarkStay,flags)
-		SetCursorPosition(68)
+		SetCursorPosition(70)
 		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1)) && !bCurseLock
 			flags =	OPTION_FLAG_NONE
 		Else
@@ -2000,6 +2010,7 @@ Event OnOptionSelect(Int option)
 	ElseIf (option == oidGhostCurse)
 		bGhostCurse = !bGhostCurse
 		SetToggleOptionValue(oidGhostCurse, bGhostCurse)
+		ForcePageReset()
 	ElseIf (option == oidLostItemQuest)
 		bLostItemQuest = !bLostItemQuest
 		SetToggleOptionValue(oidLostItemQuest, bLostItemQuest)
@@ -2845,6 +2856,10 @@ Event OnOptionMenuOpen(Int option)
 		SetMenuDialogoptions(sGetPresets())
 		SetMenuDialogStartIndex(iSavePreset)
 		SetMenuDialogDefaultIndex(0)
+	ElseIf (option == oidGhostShader)
+		SetMenuDialogoptions(sGetGhostShader())
+		SetMenuDialogStartIndex(iGhostShader)
+		SetMenuDialogDefaultIndex(0)
 	ElseIf (option == oidSkillReduce_M)
 		SetMenuDialogoptions(sGetSkills())
 		SetMenuDialogStartIndex(iReducedSkill)
@@ -2913,6 +2928,10 @@ Event OnOptionMenuAccept(Int option, Int index)
 	ElseIf (option == oidSavePreset_M)
 		iSavePreset = index
 		SetMenuOptionValue(oidSavePreset_M, sGetPresets()[iSavePreset])
+	ElseIf (option == oidGhostShader)
+		iGhostShader = index
+		moaGhostShader.SetValueInt(iGhostShader)
+		SetMenuOptionValue(oidGhostShader, sGetGhostShader()[iGhostShader])
 	ElseIf (option == oidEquipInclude_M)
 		iLoseInclusion = index
 		SetMenuOptionValue(oidEquipInclude_M, sGetLoseInclusions()[iLoseInclusion])
@@ -3526,6 +3545,7 @@ Event OnOptionDefault(Int option)
 	ElseIf (option == oidGhostCurse)
 		bGhostCurse = False
 		SetToggleOptionValue(oidGhostCurse, bGhostCurse)
+		ForcePageReset()
 	ElseIf (option == oidLostItemQuest)
 		bLostItemQuest = True
 		SetToggleOptionValue(oidLostItemQuest,bLostItemQuest)
@@ -3882,6 +3902,8 @@ Event OnOptionHighlight(Int option)
 		SetInfoText("$mrt_MarkofArkay_DESC_Load_Default_Preset")
 	ElseIf (option == oidLoadPreset_M)
 		SetInfoText("$mrt_MarkofArkay_DESC_Load_Preset_M")
+	ElseIf (option == oidGhostShader)
+		SetInfoText("$mrt_MarkofArkay_DESC_GhostShader_M")
 	ElseIf (option == oidSavePreset_M)
 		SetInfoText("$mrt_MarkofArkay_DESC_Save_Preset_M")
 	ElseIf (option == oidRagdollEffect)
@@ -4082,11 +4104,9 @@ Function moaStop(Bool bReset = False)
 			setTriggerMethod(0)
 		Else
 			StopAndConfirm(moaHealthMonitor,3)
-			StopAndConfirm(ReviveScript.moaPlayerVoicelessQuest)
-			StopAndConfirm(ReviveScript.moaPlayerGhostQuest,3,10)
-			PlayerRef.DispelSpell(GhostVisual)
-			PlayerRef.RemoveSpell(GhostVisual)
 		EndIf
+		PlayerRef.DispelSpell(GhostVisual)
+		PlayerRef.RemoveSpell(GhostVisual)
 		StopAndConfirm(moaReviverQuest,3)
 		If !ReviveScript.moaPlayerGhostQuest.IsRunning()
 			PlayerRef.SetAlpha(1.0)
@@ -4424,6 +4444,20 @@ String[] Function sGetPresets()
 	sPresets[9] = "$Preset10"
 	Return sPresets
 EndFunction
+
+String[] Function sGetGhostShader()
+	String[] sGhostShader = New String[9]
+	sGhostShader[0] = "$mrt_MarkofArkay_GhostShader_0"
+	sGhostShader[1] = "$mrt_MarkofArkay_GhostShader_1"
+	sGhostShader[2] = "$mrt_MarkofArkay_GhostShader_2"
+	sGhostShader[3] = "$mrt_MarkofArkay_GhostShader_3"
+	sGhostShader[4] = "$mrt_MarkofArkay_GhostShader_4"
+	sGhostShader[5] = "$mrt_MarkofArkay_GhostShader_5"
+	sGhostShader[6] = "$mrt_MarkofArkay_GhostShader_6"
+	sGhostShader[7] = "$mrt_MarkofArkay_GhostShader_7"
+	sGhostShader[8] = "$mrt_MarkofArkay_GhostShader_8"
+	Return sGhostShader
+EndFunction 
 
 String[] Function sGetLoseInclusions()
 	String[] sLoseInclusions = New String[3]

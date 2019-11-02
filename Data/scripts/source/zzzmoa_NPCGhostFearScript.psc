@@ -9,11 +9,10 @@ Event OnEffectStart(Actor akTarget, Actor akCaster)
 		If !akTarget.IsInCombat()
 			If akTarget.HasLos(PlayerRef)
 				If !PlayerRef.IsDead() && !PlayerRef.IsBleedingOut()
-					akTarget && akTarget.StartCombat(PlayerRef)
+					akTarget && !akTarget.IsDead() && akTarget.StartCombat(PlayerRef)
 				EndIf
 			EndIf
 		EndIf
-		PlayerRef.SetAttackActorOnSight(True)
 		Utility.Wait(5)
 	EndWhile
 	akTarget && akTarget.DispelSpell(NPCGhostFear)

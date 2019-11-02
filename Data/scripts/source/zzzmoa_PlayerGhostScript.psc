@@ -11,8 +11,9 @@ Event OnUpdate()
 	If IsRunning() && GetStage() < 10
 		PlayerRef.SetAlpha(0.25)
 		PlayerRef.AddSpell(NPCGhostFearCloak,False)
-		Utility.Wait(0.1)
+		Utility.Wait(1.0)
 		PlayerRef.RemoveSpell(NPCGhostFearCloak)
+		PlayerRef.SetAttackActorOnSight(True)
 		RegisterForSingleUpdate(4.0)
 	EndIf
 EndEvent

@@ -947,7 +947,7 @@ Event OnPageReset(String page)
 		SetCursorPosition(58)
 		oidGhostCurse = AddToggleOption("$mrt_MarkofArkay_GhostCurse",bGhostCurse, flags)
 		SetCursorPosition(60)
-		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bGhostCurse && !bCurseLock
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bGhostCurse
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED

@@ -210,6 +210,7 @@ Int oidLowerNPCMaxLvlDiff
 Int oidVoicelessCurse
 Int oidGhostCurse
 Int oidGhostShader
+Int oidLiteGhostCurse
 
 GlobalVariable Property moaGhostShader Auto
 Int Property iGhostShader = 0 Auto Hidden
@@ -476,6 +477,7 @@ Bool Property bVoicelessCurse = False Auto Hidden
 Bool Property bGhostCurse = False Auto Hidden
 Int Property iNameTagBackup Auto Hidden
 Spell Property GhostVisual Auto
+Bool Property bLiteGhostCurse Auto
 
 Event OnPageReset(String page)
 	SetCursorFillMode(LEFT_TO_RIGHT)
@@ -951,25 +953,27 @@ Event OnPageReset(String page)
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
-		EndIf		
+		EndIf	
+		oidLiteGhostCurse = AddToggleOption("$mrt_MarkofArkay_LiteGhostCurse", bLiteGhostCurse, flags)
+		SetCursorPosition(62)	
 		oidGhostShader = AddMenuOption("$mrt_MarkofArkay_GhostShader_M", sGetGhostShader()[iGhostShader], flags)
-		SetCursorPosition(64)
-		AddHeaderOption("$mrt_MarkofArkay_HEAD_Curse_Recovery")
 		SetCursorPosition(66)
+		AddHeaderOption("$mrt_MarkofArkay_HEAD_Curse_Recovery")
+		SetCursorPosition(68)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidLostItemQuest = AddToggleOption("$mrt_MarkofArkay_LostItemQuest",bLostItemQuest,flags)
-		SetCursorPosition(68)
+		SetCursorPosition(70)
 		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1)) && !bCurseLock
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidSoulMarkStay = AddToggleOption("$mrt_MarkofArkay_SoulMarkStay",bSoulMarkStay,flags)
-		SetCursorPosition(70)
+		SetCursorPosition(72)
 		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1)) && !bCurseLock
 			flags =	OPTION_FLAG_NONE
 		Else
@@ -2011,6 +2015,9 @@ Event OnOptionSelect(Int option)
 		bGhostCurse = !bGhostCurse
 		SetToggleOptionValue(oidGhostCurse, bGhostCurse)
 		ForcePageReset()
+	ElseIf (option == oidLiteGhostCurse)
+		bLiteGhostCurse = !bLiteGhostCurse
+		SetToggleOptionValue(oidLiteGhostCurse, bLiteGhostCurse)
 	ElseIf (option == oidLostItemQuest)
 		bLostItemQuest = !bLostItemQuest
 		SetToggleOptionValue(oidLostItemQuest, bLostItemQuest)
@@ -3546,6 +3553,9 @@ Event OnOptionDefault(Int option)
 		bGhostCurse = False
 		SetToggleOptionValue(oidGhostCurse, bGhostCurse)
 		ForcePageReset()
+	ElseIf (option == oidLiteGhostCurse)
+		bLiteGhostCurse = False
+		SetToggleOptionValue(oidLiteGhostCurse, bLiteGhostCurse)
 	ElseIf (option == oidLostItemQuest)
 		bLostItemQuest = True
 		SetToggleOptionValue(oidLostItemQuest,bLostItemQuest)
@@ -3855,7 +3865,9 @@ Event OnOptionHighlight(Int option)
 	ElseIf (option == oidVoicelessCurse)
 		SetInfoText("$mrt_MarkofArkay_DESC_VoicelessCurse")
 	ElseIf (option == oidGhostCurse)
-		SetInfoText("$mrt_MarkofArkay_DESC_GhostCurse")		
+		SetInfoText("$mrt_MarkofArkay_DESC_GhostCurse")
+	ElseIf (option == oidLiteGhostCurse)
+		SetInfoText("$mrt_MarkofArkay_DESC_LiteGhostCurse")		
 	ElseIf (option == oidSoulMarkStay)
 		SetInfoText("$mrt_MarkofArkay_DESC_SoulMarkStay")
 	ElseIf (option == oidRecallRestriction)
@@ -4446,7 +4458,7 @@ String[] Function sGetPresets()
 EndFunction
 
 String[] Function sGetGhostShader()
-	String[] sGhostShader = New String[9]
+	String[] sGhostShader = New String[13]
 	sGhostShader[0] = "$mrt_MarkofArkay_GhostShader_0"
 	sGhostShader[1] = "$mrt_MarkofArkay_GhostShader_1"
 	sGhostShader[2] = "$mrt_MarkofArkay_GhostShader_2"
@@ -4456,6 +4468,10 @@ String[] Function sGetGhostShader()
 	sGhostShader[6] = "$mrt_MarkofArkay_GhostShader_6"
 	sGhostShader[7] = "$mrt_MarkofArkay_GhostShader_7"
 	sGhostShader[8] = "$mrt_MarkofArkay_GhostShader_8"
+	sGhostShader[9] = "$mrt_MarkofArkay_GhostShader_9"
+	sGhostShader[10] = "$mrt_MarkofArkay_GhostShader_10"
+	sGhostShader[11] = "$mrt_MarkofArkay_GhostShader_11"
+	sGhostShader[12] = "$mrt_MarkofArkay_GhostShader_12"
 	Return sGhostShader
 EndFunction 
 
@@ -4757,6 +4773,7 @@ Bool function bLoadUserSettings(String sFileName)
 	;bLostItemQuest = fiss.loadBool("bLostItemQuest")
 	bVoicelessCurse = fiss.loadBool("bVoicelessCurse")
 	bGhostCurse = fiss.loadBool("bGhostCurse")
+	bLiteGhostCurse = fiss.LoadBool("bLiteGhostCurse")
 	bCreaturesCanSteal = fiss.loadBool("bCreaturesCanSteal")
 	moaCreaturesCanSteal.SetValue(bCreaturesCanSteal As Int)
 	bNPCHasLevelRange = fiss.loadBool("bNPCHasLevelRange")
@@ -5001,6 +5018,8 @@ Bool Function bCheckFissErrors(String strErrors)
 			bSoulMarkCureDiseases = False
 		ElseIf strError == "Element bGhostCurse not found"
 			bGhostCurse = False
+		ElseIf strError == "Element bLiteGhostCurse not found"
+			bLiteGhostCurse = False
 		ElseIf strError == "Element bVoicelessCurse not found"
 			bVoicelessCurse = False
 		ElseIf strError == "Element bCureDisIfHasBlessing not found"
@@ -5116,6 +5135,7 @@ bool function bSaveUserSettings(String sFileName)
 	;fiss.saveBool("bLostItemQuest", bLostItemQuest)
 	fiss.saveBool("bVoicelessCurse", bVoicelessCurse)
 	fiss.saveBool("bGhostCurse", bGhostCurse)
+	fiss.saveBool("bLiteGhostCurse", bLiteGhostCurse)
 	fiss.saveBool("bCreaturesCanSteal", bCreaturesCanSteal)
 	fiss.saveBool("bNPCHasLevelRange", bNPCHasLevelRange)
 	fiss.saveBool("bMoralityMatters", bMoralityMatters)
@@ -5351,6 +5371,7 @@ function LoadDefaultSettings()
 	bLostItemQuest = True
 	bVoicelessCurse = False
 	bGhostCurse = False
+	bLiteGhostCurse = False
 	bCreaturesCanSteal = False
 	moaCreaturesCanSteal.SetValue(bCreaturesCanSteal As Int)
 	bNPCHasLevelRange = False

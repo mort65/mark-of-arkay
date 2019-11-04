@@ -6,7 +6,11 @@ Scriptname zzzmoa_PlayerGhostQst_GhostDialouge01 Extends TopicInfo Hidden
 Function Fragment_0(ObjectReference akSpeakerRef)
 Actor akSpeaker = akSpeakerRef as Actor
 ;BEGIN CODE
-akSpeaker.AddSpell(Phasmophobia,False)
+If ConfigMenu.bLiteGhostCurse
+    akSpeaker.StartCombat(PlayerRef)
+Else
+    akSpeaker.AddSpell(Phasmophobia,False)
+EndIf
 ;END CODE
 EndFunction
 ;END FRAGMENT
@@ -14,3 +18,5 @@ EndFunction
 ;END FRAGMENT CODE - Do not edit anything between this and the begin comment
 
 Spell Property Phasmophobia Auto
+zzzmoaReviveMCM Property ConfigMenu Auto
+Actor Property PlayerRef Auto

@@ -276,6 +276,12 @@ Event OnPlayerLoadGame()
 	RegisterForSingleUpdate(3.0)
 EndEvent
 
+Event OnRaceSwitchComplete()
+	If moaPlayerGhostQuest.IsRunning()
+		Game.SetPlayerReportCrime(False)
+	EndIf
+EndEvent
+
 Function checkMarkers(Bool bTavern = True, Bool bExtra = True, Bool bCustom = True, Bool bFast = False)
 	RespawnScript.RegisterForModEvent("MOA_CheckMarkers","OnCheckingMarkers")
 	Int handle = ModEvent.Create("MOA_CheckMarkers")

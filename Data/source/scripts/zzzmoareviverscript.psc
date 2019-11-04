@@ -167,6 +167,9 @@ State Bleedout1
 			Return
 		EndIf
 		SetGameVars()
+		If moaPlayerVoicelessQuest.IsRunning()
+			PlayerRef.SetVoiceRecoveryTime(9999999.0)
+		EndIf
 	EndEvent
 	
 	Event OnObjectUnequipped(Form akBaseObject, ObjectReference akReference)
@@ -192,6 +195,9 @@ State Bleedout2
 			Return
 		EndIf
 		SetGameVars()
+		If moaPlayerVoicelessQuest.IsRunning()
+			PlayerRef.SetVoiceRecoveryTime(9999999.0)
+		EndIf
 	EndEvent
 	
 	Event OnObjectUnequipped(Form akBaseObject, ObjectReference akReference)
@@ -273,6 +279,9 @@ Event OnPlayerLoadGame()
 		moaLockReset.SetValue(0)
 	EndIf
 	SetGameVars()
+	If moaPlayerVoicelessQuest.IsRunning()
+		PlayerRef.SetVoiceRecoveryTime(9999999.0)
+	EndIf
 	RegisterForSingleUpdate(3.0)
 EndEvent
 

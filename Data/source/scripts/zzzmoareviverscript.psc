@@ -138,6 +138,7 @@ GlobalVariable Property moaLockReset Auto
 Message Property DeathMessage Auto
 Bool Property bReadyForRespawn = False Auto Hidden
 Bool Property bInfectingPlayer = False Auto Hidden
+Bool Property bPlayerIsVoiceless = False Auto Hidden
 Bool bIsBusy = False
 Float fHealrate = 0.0
 Int iIsBeast = 0
@@ -167,7 +168,7 @@ State Bleedout1
 			Return
 		EndIf
 		SetGameVars()
-		If moaPlayerVoicelessQuest.IsRunning()
+		If bPlayerIsVoiceless
 			PlayerRef.SetVoiceRecoveryTime(9999999.0)
 		EndIf
 	EndEvent
@@ -195,7 +196,7 @@ State Bleedout2
 			Return
 		EndIf
 		SetGameVars()
-		If moaPlayerVoicelessQuest.IsRunning()
+		If bPlayerIsVoiceless
 			PlayerRef.SetVoiceRecoveryTime(9999999.0)
 		EndIf
 	EndEvent
@@ -279,7 +280,7 @@ Event OnPlayerLoadGame()
 		moaLockReset.SetValue(0)
 	EndIf
 	SetGameVars()
-	If moaPlayerVoicelessQuest.IsRunning()
+	If bPlayerIsVoiceless
 		PlayerRef.SetVoiceRecoveryTime(9999999.0)
 	EndIf
 	RegisterForSingleUpdate(3.0)
@@ -1696,6 +1697,7 @@ Function RevivePlayer(Bool bRevive)
 						moaPlayerVoicelessQuest.Start()
 					EndIf
 					PlayerRef.SetVoiceRecoveryTime(9999999.0)
+					bPlayerIsVoiceless = True
 				EndIf
 				If PlayerRef.GetActorValue("paralysis")
 					PlayerRef.SetActorValue("paralysis",0)

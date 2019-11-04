@@ -1,11 +1,15 @@
 Scriptname zzzmoa_NPCGhostFearScript extends activemagiceffect  
 
+zzzmoaReviveMCM Property ConfigMenu Auto
 Spell Property NPCGhostFear Auto
 Actor Property PlayerRef Auto
+MagicEffect Property ThisMagicEffect Auto
 Quest Property PlayerGhostQuest Auto
 
 Event OnEffectStart(Actor akTarget, Actor akCaster)
-	While PlayerGhostQuest.IsRunning() && akTarget && !akTarget.IsDead() && akTarget.GetParentCell() && akTarget.GetParentCell().IsAttached()
+	While PlayerGhostQuest.IsRunning() && !ConfigMenu.bLiteGhostCurse \
+	&& akTarget && !akTarget.IsDead() && akTarget.HasMagicEffect(ThisMagicEffect) && \
+	akTarget.GetParentCell() && akTarget.GetParentCell().IsAttached()
 		If !akTarget.IsInCombat()
 			If akTarget.HasLos(PlayerRef)
 				If !PlayerRef.IsDead() && !PlayerRef.IsBleedingOut()
@@ -13,7 +17,7 @@ Event OnEffectStart(Actor akTarget, Actor akCaster)
 				EndIf
 			EndIf
 		EndIf
-		Utility.Wait(5)
+		Utility.Wait(6.0)
 	EndWhile
 	akTarget && akTarget.DispelSpell(NPCGhostFear)
 EndEvent

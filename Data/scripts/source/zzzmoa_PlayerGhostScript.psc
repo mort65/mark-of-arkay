@@ -1,5 +1,6 @@
-Scriptname zzzmoa_PlayerGhostScript extends Quest  
+Scriptname zzzmoa_PlayerGhostScript Extends Quest  
 
+zzzmoaReviveMCM Property ConfigMenu Auto
 Actor Property PlayeRref Auto
 Spell Property GhostVisual Auto
 Faction Property PlayerGhostFaction Auto
@@ -10,9 +11,11 @@ Spell Property NPCGhostFearCloak Auto
 Event OnUpdate()
 	If IsRunning() && GetStage() < 10
 		PlayerRef.SetAlpha(0.25)
-		PlayerRef.AddSpell(NPCGhostFearCloak,False)
-		Utility.Wait(1.0)
-		PlayerRef.RemoveSpell(NPCGhostFearCloak)
+		If !ConfigMenu.bLiteGhostCurse
+			PlayerRef.AddSpell(NPCGhostFearCloak,False)
+			Utility.Wait(1.0)
+			PlayerRef.RemoveSpell(NPCGhostFearCloak)
+		EndIf
 		PlayerRef.SetAttackActorOnSight(True)
 		RegisterForSingleUpdate(4.0)
 	EndIf
@@ -23,7 +26,6 @@ Function setPlayerGhost(Bool bToggle = True)
 		PlayerRef.AddSpell(GhostVisual,False)
 		PlayerRef.SetAlpha (0.25, True)
 		PlayerRef.AddToFaction(PlayerGhostFaction)
-		PlayerRef.SetAttackActorOnSight(True)
 		RegisterForSingleUpdate(3.0)
 	Else
 		PlayerRef.RemoveSpell(GhostVisual)
@@ -36,5 +38,6 @@ Function setPlayerGhost(Bool bToggle = True)
 		cfIndex += 1
 	endwhile
 	HunterFaction.SetPlayerEnemy(bToggle)
+	PlayerRef.SetAttackActorOnSight(bToggle)
 	Game.SetPlayerReportCrime(!bToggle)
 EndFunction

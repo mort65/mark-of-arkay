@@ -1,5 +1,8 @@
 # mark-of-arkay
 
+Download link:
+https://www.dropbox.com/sh/ypmlserbfz0560q/AAD6D-UoF1OUYT9aiSJaySGDa?dl=0
+
 When you lose all of your health, a Menu will appear and asks you which one of these items you want to trade to restore your health. When you don't have enough items or when you choose nothing from the menu, depending on the settings either you die, respawn at one of the cities or a location which you can select with a spell, or the game will exit to the main menu. 
 
     Arkay mark  a dark stone which can be found in the loot.

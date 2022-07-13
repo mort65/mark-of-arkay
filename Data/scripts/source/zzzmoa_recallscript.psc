@@ -73,9 +73,11 @@ Event OnEffectStart(Actor akTarget, Actor akCaster)
 					iTeleportLocation = ConfigMenu.getCustomRPIndex() ;Custom
 				EndIf
 			EndIf
+			
 			If iTeleportLocation > -1
 				PlayerMarker.Enable()
 				PlayerMarker.MoveTo(Caster)
+				ReviveScript.bReadyForRespawn = True
 				If iTeleportLocation < ConfigMenu.getNearbyCityRPIndex()
 					If ConfigMenu.bMoreRandomRespawn
 						moaRandomDestination.SetValueInt(0)

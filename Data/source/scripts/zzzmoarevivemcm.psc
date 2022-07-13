@@ -4273,7 +4273,7 @@ Event OnConfigRegister()
 EndEvent
 
 Int Function GetVersion()
-	Return 300
+	Return 301
 EndFunction
 
 Event OnVersionUpdate(int a_version)
@@ -4284,8 +4284,9 @@ Event OnVersionUpdate(int a_version)
 		Return
 	EndIf
 	; a_version is the new version, CurrentVersion is the old version
-	If (a_version >= 300 && CurrentVersion < 300)
-		Debug.Trace(self + ": Updating script to version " + 300)
+	If (a_version >= 301 && CurrentVersion < 301)
+		Debug.Trace(self + ": Updating script to version " + 301)
+		setTaverns()
 		;init()
 	EndIf
 	bIsUpdating = False
@@ -4353,7 +4354,7 @@ Function setRPs()
 EndFunction
 
 Function setTaverns()
-	sTaverns = New String[18]
+	sTaverns = New String[19]
 	sTaverns[0] = "$SleepingGiantInn"
 	sTaverns[1] = "$TheBanneredMare"
 	sTaverns[2] = "$FrostfruitInn"
@@ -4370,8 +4371,9 @@ Function setTaverns()
 	sTaverns[13] = "$MoorsideInn"
 	sTaverns[14] = "$WindpeakInn"
 	sTaverns[15] = "$NightgateInn"
-	sTaverns[16] = "$NearbyInn"
-	sTaverns[17] = "$RandomInn"
+	sTaverns[16] = "$VilemyrInn"
+	sTaverns[17] = "$NearbyInn"
+	sTaverns[18] = "$RandomInn"
 EndFunction
 
 Function setRPFlags(Bool bForce = False)

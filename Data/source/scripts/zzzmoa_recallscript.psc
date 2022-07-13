@@ -771,10 +771,13 @@ Int Function TeleportMenu(Int aiMessage = 0, Int aiButton = 0)
 		ElseIf aiMessage == 9 ;Riften Inn (1)
 			aiButton = ReviveScript.RespawnScript.moaRespawnMenu113.Show()
 			If aiButton == -1
-			ElseIf aiButton < 1
-				iTavernIndex = aiButton + 6
+			ElseIf aiButton == 0 ;The Bee and Barb
+				iTavernIndex = 6 
 				Return ConfigMenu.getTavernRPIndex()
-			ElseIf aiButton == 1
+			ElseIf aiButton == 1 ;Vilemyr Inn
+				iTavernIndex = 16
+				Return ConfigMenu.getTavernRPIndex()
+			ElseIf aiButton == 2
 				aiMessage = 5
 			EndIf	
 		ElseIf aiMessage == 10 ;Solitude Inn (2)

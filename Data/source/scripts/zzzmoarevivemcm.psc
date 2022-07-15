@@ -211,6 +211,7 @@ Int oidVoicelessCurse
 Int oidGhostCurse
 Int oidGhostShader
 Int oidLiteGhostCurse
+Int oidSimpleSlaveryChanceSlider
 
 GlobalVariable Property moaGhostShader Auto
 Int Property iGhostShader = 0 Auto Hidden
@@ -232,6 +233,7 @@ Float Property fValueGoldScaleSlider = 0.0 Auto Hidden
 Bool Property bBossChestNotInClearedLoc = True Auto Hidden
 Bool Property bBossChestOnlyCurLoc = False Auto Hidden
 Float Property fBossChestChanceSlider = 0.0 Auto Hidden
+Float Property fSimpleSlaveryChanceSlider = 0.0 Auto Hidden
 Float Property fDisChanceSlider = 25.0 Auto Hidden
 Float Property fDisProgChanceSlider = 50.0 Auto Hidden
 Bool Property bCureDisIfHasBlessing = False Auto Hidden
@@ -1247,22 +1249,31 @@ Event OnPageReset(String page)
 		SetCursorPosition(5)
 		oidFollowerProtectPlayer = AddToggleOption("$mrt_MarkofArkay_FollowerProtectPlayer", bFollowerProtectPlayer, flags)
 		SetCursorPosition(9)
-		AddHeaderOption("$mrt_MarkofArkay_Boss_Chest")
+		AddHeaderOption("$mrt_MarkofArkay_Simple_Slavery")
 		SetCursorPosition(11)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1)
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
+		oidSimpleSlaveryChanceSlider = AddSliderOption("$mrt_MarkofArkay_SimpleSlaveryChanceSlider_1", fSimpleSlaveryChanceSlider, "$mrt_MarkofArkay_SimpleSlaveryChanceSlider_2", flags)
+		SetCursorPosition(17)
+		AddHeaderOption("$mrt_MarkofArkay_Boss_Chest")
+		SetCursorPosition(19)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1)
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
 		oidBossChestChanceSlider = AddSliderOption("$mrt_MarkofArkay_BossChestChanceSlider_1", fBossChestChanceSlider, "$mrt_MarkofArkay_BossChestChanceSlider_2", flags)
-		SetCursorPosition(13)
+		SetCursorPosition(21)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && fBossChestChanceSlider > 0.0
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf		
 		oidBossChestNotClearedLoc = AddToggleOption("$mrt_MarkofArkay_BossChestNotClearedLoc", bBossChestNotInClearedLoc, flags)
-		SetCursorPosition(15)
+		SetCursorPosition(23)
 		oidBossChestOnlyCurLoc = AddToggleOption("$mrt_MarkofArkay_BossChestOnlyCurLoc",bBossChestOnlyCurLoc,flags)
 	ElseIf (page == "$Debug")
 		SetCursorPosition(0)
@@ -2591,7 +2602,12 @@ Event OnOptionSliderOpen(Int option)
 		SetSliderDialogStartValue(fBossChestChanceSlider)
 		SetSliderDialogDefaultValue(0.0)
 		SetSliderDialogRange(0.0, 100.0)
-		SetSliderDialogInterval(1.0)	
+		SetSliderDialogInterval(1.0)
+	ElseIf (option == oidSimpleSlaveryChanceSlider)
+		SetSliderDialogStartValue(fSimpleSlaveryChanceSlider)
+		SetSliderDialogDefaultValue(0.0)
+		SetSliderDialogRange(0.0, 100.0)
+		SetSliderDialogInterval(1.0)
 	ElseIf (option == oidRespawnTimeSlider)
 		SetSliderDialogStartValue(fRespawnTimeSlider)
 		SetSliderDialogDefaultValue(0.0)
@@ -2824,6 +2840,9 @@ Event OnOptionSliderAccept(int option, Float value)
 		fBossChestChanceSlider = value
 		SetSliderOptionValue(oidBossChestChanceSlider, fBossChestChanceSlider, "$mrt_MarkofArkay_BossChestChanceSlider_2")
 		ForcePageReset()
+	ElseIf (option == oidSimpleSlaveryChanceSlider)
+		fSimpleSlaveryChanceSlider = value
+		SetSliderOptionValue(oidSimpleSlaveryChanceSlider, fSimpleSlaveryChanceSlider, "$mrt_MarkofArkay_SimpleSlaveryChanceSlider_2")
 	ElseIf (option == oidTotalCustomRPSlotSlider)
 		fTotalCustomRPSlotSlider = value
 		SetCustomRPFlags()
@@ -3473,6 +3492,9 @@ Event OnOptionDefault(Int option)
 		fBossChestChanceSlider = 0.0
 		SetSliderOptionValue(oidBossChestChanceSlider, fBossChestChanceSlider, "$mrt_MarkofArkay_BossChestChanceSlider_2")
 		ForcePageReset()
+	ElseIf (option == oidSimpleSlaveryChanceSlider)
+		fSimpleSlaveryChanceSlider = 0.0
+		SetSliderOptionValue(oidSimpleSlaveryChanceSlider, fSimpleSlaveryChanceSlider, "$mrt_MarkofArkay_SimpleSlaveryChanceSlider_2")	
 	ElseIf (option == oidHealthTriggerSlider)
 		fHealthPercTrigger = 0.00
 		SetSliderOptionValue(oidHealthTriggerSlider, fHealthPercTrigger * 100, "mrt_MarkofArkay_HealthPercSlider_2")
@@ -3977,7 +3999,9 @@ Event OnOptionHighlight(Int option)
 	ElseIf (option == oidLowerNPCMaxLvlDiff)
 		SetInfoText("$mrt_MarkofArkay_DESC_LowerNPCMaxLvlDiff")	
 	ElseIf (option == oidBossChestChanceSlider)
-		SetInfoText("$mrt_MarkofArkay_DESC_BossChestChanceSlider")	
+		SetInfoText("$mrt_MarkofArkay_DESC_BossChestChanceSlider")
+	ElseIf (option == oidSimpleSlaveryChanceSlider)
+		SetInfoText("$mrt_MarkofArkay_DESC_SimpleSlaveryChanceSlider")
 	ElseIf (option == oidHealthTriggerSlider)
 		SetInfoText("$mrt_MarkofArkay_DESC_HealthPercSlider")	
 	ElseIf (option == oidExcludeQuestItems)		
@@ -5440,6 +5464,7 @@ function LoadDefaultSettings()
 	fLoseOtherTotalValueSlider = 0.0
 	fMaxItemsToCheckSlider = 500.0
 	fBossChestChanceSlider = 0.0
+	fSimpleSlaveryChanceSlider = 0.0
 	fHealthPercTrigger = 0.00
 	bExcludeQuestItems = True
 	bLoseItem = False

@@ -1300,8 +1300,9 @@ Bool Function bHasArkayCurse()
 EndFunction
 
 Function RevivePlayer(Bool bRevive)
-	If bRevive
-		If ConfigMenu.bShiftBack
+	Bool bSendToSlavery = ((Attacker != None) && (Utility.RandomInt(0,99) < ConfigMenu.fSimpleSlaveryChanceSlider) && ((Attacker.GetParentCell() == PlayerRef.GetParentCell()) || PlayerRef.GetDistance(Attacker) < 10000.0 ))
+	If bRevive || bSendToSlavery
+		If ConfigMenu.bShiftBack || bSendToSlavery
 			ShiftBack()
 		EndIf
 		If !bHasAutoReviveEffect || bSacrifice
@@ -1322,7 +1323,12 @@ Function RevivePlayer(Bool bRevive)
 			EndIf
 			bSacrifice = False
 		EndIf
-		Restore(iRevivePlayer = 1, bReviveFollower = ConfigMenu.bPlayerProtectFollower, bEffect = ConfigMenu.bIsEffectEnabled, bWait = PlayerRef.GetActorValue("Paralysis") As Bool, sTrace = "MarkOfArkay: Player is revived.")	
+		If bSendToSlavery
+			Restore(iRevivePlayer = 1, bReviveFollower = 1, bEffect = False, bWait = PlayerRef.GetActorValue("Paralysis") As Bool, sTrace = ("MarkOfArkay: Player is enslaved by " + Attacker))
+			sendModEvent("SSLV Entry")
+		Else
+			Restore(iRevivePlayer = 1, bReviveFollower = ConfigMenu.bPlayerProtectFollower, bEffect = ConfigMenu.bIsEffectEnabled, bWait = PlayerRef.GetActorValue("Paralysis") As Bool, sTrace = "MarkOfArkay: Player is revived.")	
+		EndIf
 		Return
 	Else
 		If ( !ConfigMenu.bKillIfCantRespawn && ConfigMenu.iNotTradingAftermath == 1 && !RespawnScript.bCanTeleport() && ConfigMenu.bCanContinue())

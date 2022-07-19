@@ -1299,8 +1299,22 @@ Bool Function bHasArkayCurse()
 	Return PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt)
 EndFunction
 
+Bool Function bSendToSlavery()
+	If Attacker != None
+		If Utility.RandomInt(0,99) < ConfigMenu.fSimpleSlaveryChanceSlider
+			If (PlayerRef.GetDistance(Attacker) < 10000.0) || (Attacker.GetParentCell() == PlayerRef.GetParentCell())
+				If !ConfigMenu.bOnlyEnslavedByEnemyFaction || (PlayerRef.GetFactionReaction(Attacker) == 1)
+					Return True
+				EndIf
+			EndIf
+		EndIf
+	EndIf
+	Return False
+	((Attacker != None) && (Utility.RandomInt(0,99) < ConfigMenu.fSimpleSlaveryChanceSlider) && ((Attacker.GetParentCell() == PlayerRef.GetParentCell()) || PlayerRef.GetDistance(Attacker) < 10000.0 ))
+EndFunction
+
 Function RevivePlayer(Bool bRevive)
-	Bool bSendToSlavery = ((Attacker != None) && (Utility.RandomInt(0,99) < ConfigMenu.fSimpleSlaveryChanceSlider) && ((Attacker.GetParentCell() == PlayerRef.GetParentCell()) || PlayerRef.GetDistance(Attacker) < 10000.0 ))
+	Bool bSendToSlavery = bSendToSlavery()
 	If bRevive || bSendToSlavery
 		If ConfigMenu.bShiftBack || bSendToSlavery
 			ShiftBack()

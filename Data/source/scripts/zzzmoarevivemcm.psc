@@ -212,9 +212,11 @@ Int oidGhostCurse
 Int oidGhostShader
 Int oidLiteGhostCurse
 Int oidSimpleSlaveryChanceSlider
+Int oidOnlyEnslavedByEnemyFaction
 
 GlobalVariable Property moaGhostShader Auto
 Int Property iGhostShader = 0 Auto Hidden
+Bool Property bOnlyEnslavedByEnemyFaction= False Auto Hidden
 Bool Property bSoulMarkCureDiseases = False Auto Hidden
 Bool Property bLockPermaDeath = False Auto Hidden
 Bool Property bRespawnCounter = False Auto Hidden
@@ -1257,6 +1259,13 @@ Event OnPageReset(String page)
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidSimpleSlaveryChanceSlider = AddSliderOption("$mrt_MarkofArkay_SimpleSlaveryChanceSlider_1", fSimpleSlaveryChanceSlider, "$mrt_MarkofArkay_SimpleSlaveryChanceSlider_2", flags)
+		SetCursorPosition(13)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && fSimpleSlaveryChanceSlider > 0.0
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidOnlyEnslavedByEnemyFaction = AddToggleOption("$mrt_MarkofArkay_OnlyEnslavedByEnemyFaction", bOnlyEnslavedByEnemyFaction, flags)
 		SetCursorPosition(17)
 		AddHeaderOption("$mrt_MarkofArkay_Boss_Chest")
 		SetCursorPosition(19)
@@ -2091,6 +2100,9 @@ Event OnOptionSelect(Int option)
 		bBossChestNotInClearedLoc = !bBossChestNotInClearedLoc
 		moaBossChestNotInclearedLoc.SetValueInt(bBossChestNotInClearedLoc As Int)
 		SetToggleOptionValue(oidBossChestNotClearedLoc,bBossChestNotInClearedLoc)
+	ElseIf (option == oidOnlyEnslavedByEnemyFaction)
+		bOnlyEnslavedByEnemyFaction = !bOnlyEnslavedByEnemyFaction
+		SetToggleOptionValue(oidOnlyEnslavedByEnemyFaction,bOnlyEnslavedByEnemyFaction)
 	ElseIf (option == oidAlwaysSpawn)
 		bAlwaysSpawn = !bAlwaysSpawn
 		SetToggleOptionValue(oidAlwaysSpawn,bAlwaysSpawn)
@@ -2843,6 +2855,7 @@ Event OnOptionSliderAccept(int option, Float value)
 	ElseIf (option == oidSimpleSlaveryChanceSlider)
 		fSimpleSlaveryChanceSlider = value
 		SetSliderOptionValue(oidSimpleSlaveryChanceSlider, fSimpleSlaveryChanceSlider, "$mrt_MarkofArkay_SimpleSlaveryChanceSlider_2")
+		ForcePageReset()
 	ElseIf (option == oidTotalCustomRPSlotSlider)
 		fTotalCustomRPSlotSlider = value
 		SetCustomRPFlags()
@@ -3401,6 +3414,9 @@ Event OnOptionDefault(Int option)
 		bBossChestNotInClearedLoc = True
 		moaBossChestNotInclearedLoc.SetValueInt(0)
 		SetToggleOptionValue(oidBossChestNotClearedLoc ,bBossChestNotInClearedLoc)
+	ElseIf (option == oidOnlyEnslavedByEnemyFaction )
+		bOnlyEnslavedByEnemyFaction = False
+		SetToggleOptionValue(oidOnlyEnslavedByEnemyFaction ,bOnlyEnslavedByEnemyFaction)
 	ElseIf (option == oidAlwaysSpawn )
 		bAlwaysSpawn = False
 		SetToggleOptionValue(oidAlwaysSpawn ,bAlwaysSpawn)
@@ -3494,7 +3510,8 @@ Event OnOptionDefault(Int option)
 		ForcePageReset()
 	ElseIf (option == oidSimpleSlaveryChanceSlider)
 		fSimpleSlaveryChanceSlider = 0.0
-		SetSliderOptionValue(oidSimpleSlaveryChanceSlider, fSimpleSlaveryChanceSlider, "$mrt_MarkofArkay_SimpleSlaveryChanceSlider_2")	
+		SetSliderOptionValue(oidSimpleSlaveryChanceSlider, fSimpleSlaveryChanceSlider, "$mrt_MarkofArkay_SimpleSlaveryChanceSlider_2")
+		ForcePageReset()
 	ElseIf (option == oidHealthTriggerSlider)
 		fHealthPercTrigger = 0.00
 		SetSliderOptionValue(oidHealthTriggerSlider, fHealthPercTrigger * 100, "mrt_MarkofArkay_HealthPercSlider_2")
@@ -4066,6 +4083,8 @@ Event OnOptionHighlight(Int option)
 		SetInfoText("$mrt_MarkofArkay_DESC_BossChestOnlyCurLoc")
 	ElseIf (option == oidBossChestNotClearedLoc)
 		SetInfoText("$mrt_MarkofArkay_DESC_BossChestNotClearedLoc")
+	ElseIf (option == oidOnlyEnslavedByEnemyFaction)
+		SetInfoText("$mrt_MarkofArkay_DESC_OnlyEnslavedByEnemyFaction")
 	ElseIf (option == oidAlwaysSpawn)
 		SetInfoText("$mrt_MarkofArkay_DESC_AlwaysSpawn")
 	ElseIf (option == oidOnlySpawn)
@@ -4936,6 +4955,7 @@ Bool function bLoadUserSettings(String sFileName)
 	fHigherNPCMaxLvlDiff = fiss.loadFloat("fHigherNPCMaxLvlDiff")
 	fLowerNPCMaxLvlDiff = fiss.loadFloat("fLowerNPCMaxLvlDiff")
 	fHealthPercTrigger = fiss.loadFloat("fHealthPercTrigger")
+	fSimpleSlaveryChanceSlider = fiss.loadFloat("fSimpleSlaveryChanceSlider")
 	fBossChestChanceSlider = fiss.loadFloat("fBossChestChanceSlider")
 	bLoseItem = fiss.loadBool("bLoseItem")
 	bExcludeQuestItems = fiss.loadBool("bExcludeQuestItems")
@@ -4967,6 +4987,7 @@ Bool function bLoadUserSettings(String sFileName)
 	moaOnlyInCurLocChest.SetValueInt(bBossChestOnlyCurLoc As Int)
 	bBossChestNotInClearedLoc = fiss.loadBool("bBossChestNotInClearedLoc")
 	moaBossChestNotInclearedLoc.SetValue(bBossChestNotInClearedLoc As Int)
+	bOnlyEnslavedByEnemyFaction = fiss.loadBool("bOnlyEnslavedByEnemyFaction")
 	bAlwaysSpawn = fiss.loadBool("bAlwaysSpawn")
 	bOnlySpawn = fiss.loadBool("bOnlySpawn")
 	bDisableUnsafe = fiss.loadBool("bDisableUnsafe")
@@ -5010,6 +5031,8 @@ Bool Function bCheckFissErrors(String strErrors)
 			bOnlyLoseSkillXP = False
 		ElseIf strError == "Element fHealthPercTrigger not found"
 			fHealthPercTrigger = 0.00
+		ElseIf strError == "Element fSimpleSlaveryChanceSlider not found"
+			fSimpleSlaveryChanceSlider = 0.00
 		ElseIf strError == "Element fDisChanceSlider not found"
 			fDisChanceSlider = 25.00
 		ElseIf strError == "Element fDisProgChanceSlider not found"
@@ -5057,6 +5080,8 @@ Bool Function bCheckFissErrors(String strErrors)
 		ElseIf strError == "Element bBossChestNotInClearedLoc not found"
 			bBossChestNotInClearedLoc = True
 			moaBossChestNotInclearedLoc.SetValueInt(0)
+		ElseIf strError == "Element bOnlyEnslavedByEnemyFaction not found"
+			bOnlyEnslavedByEnemyFaction = False
 		ElseIf strError == "Element bNPCHasLevelRange not found"
 			bNPCHasLevelRange = True
 			moaNPCHasLevelRange.SetValueInt(0)
@@ -5286,6 +5311,7 @@ bool function bSaveUserSettings(String sFileName)
 	fiss.saveFloat("fMaxItemsToCheckSlider",fMaxItemsToCheckSlider)
 	fiss.saveFloat("fBossChestChanceSlider",fBossChestChanceSlider)
 	fiss.saveFloat("fHealthPercTrigger",fHealthPercTrigger)
+	fiss.saveFloat("fSimpleSlaveryChanceSlider",fSimpleSlaveryChanceSlider)
 	fiss.saveBool("bExcludeQuestItems",bExcludeQuestItems)
 	fiss.saveBool("bLoseItem",bLoseItem)
 	fiss.saveBool("bLoseGold",bLoseGold)
@@ -5315,6 +5341,7 @@ bool function bSaveUserSettings(String sFileName)
 	fiss.SaveBool("bSpawnHostile", bSpawnHostile)
 	fiss.SaveBool("bBossChestOnlyCurLoc", bBossChestOnlyCurLoc)
 	fiss.SaveBool("bBossChestNotInClearedLoc", bBossChestNotInClearedLoc)
+	fiss.SaveBool("bOnlyEnslavedByEnemyFaction", bOnlyEnslavedByEnemyFaction)
 	fiss.SaveBool("bAlwaysSpawn", bAlwaysSpawn)
 	fiss.SaveBool("bOnlySpawn", bOnlySpawn)
 	fiss.saveBool("bDoNotStopCombat", bDoNotStopCombat)
@@ -5465,6 +5492,7 @@ function LoadDefaultSettings()
 	fMaxItemsToCheckSlider = 500.0
 	fBossChestChanceSlider = 0.0
 	fSimpleSlaveryChanceSlider = 0.0
+	bOnlyEnslavedByEnemyFaction = False
 	fHealthPercTrigger = 0.00
 	bExcludeQuestItems = True
 	bLoseItem = False

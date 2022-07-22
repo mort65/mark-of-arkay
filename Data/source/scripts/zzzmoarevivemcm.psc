@@ -325,7 +325,7 @@ Int Property iReducedSkill = 0 Auto Hidden
 Bool Property bLoseForever = False Auto Hidden
 Bool Property bDeathEffect = True Auto Hidden
 Bool Property bSoulMarkStay = False Auto Hidden
-Bool Property bIsInfoEnabled = False Auto Hidden
+Bool Property bIsInfoEnabled = True Auto Hidden
 Bool Property bIsHistoryEnabled = False Auto Hidden
 Bool property bHealActors = False Auto Hidden
 Bool property bResurrectActors = False Auto Hidden
@@ -3634,7 +3634,7 @@ Event OnOptionDefault(Int option)
 		SetMenuOptionValue(oidNoTradingAftermath_M, sGetAftermathOptions()[iNotTradingAftermath])
 		ForcePageReset()
 	ElseIf (option == oidInformation)
-		bIsInfoEnabled = False
+		bIsInfoEnabled = True
 		SetToggleOptionValue(oidInformation,bIsInfoEnabled)
 		ForcePageReset()
 	ElseIf (option == oidAutoSwitchRP)
@@ -5452,7 +5452,7 @@ function LoadDefaultSettings()
 	iSpawnMinLevel = 4
 	iSpawnMaxLevel = 4
 	bIsLoggingEnabled = False
-	bIsInfoEnabled = False
+	bIsInfoEnabled = True
 	bIsNotificationEnabled = False
 	bFadeToBlack = True
 	bInvisibility = False

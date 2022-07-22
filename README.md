@@ -26,21 +26,24 @@ You can also toggle losing your items permanently whenever you respawn before fi
  
  Other than losing items these curses can infect you:
  
- Disease: you'll be infected by a random vanilla disease that gets worse with each respawn.
- Skill: you lose some of your skills or experience.
- Silence: you can't talk to NPCs or shout.
- Ghost: You'll become a ghost and NPCs will attack you on sight.
- Arkay's curse: Prices are 50% worse, persuasion and intimidation are 50% harder and Health, Stamina, and Magicka are 25 points lower.
- Slavery: You'll be sold into slavery (Requires the Simple slavery mod).
+    Disease: you'll be infected by a random vanilla disease that gets worse with each respawn.
+    Skill: you lose some of your skills or experience.
+    Silence: you can't talk to NPCs or shout.
+    Ghost: You'll become a ghost and NPCs will attack you on sight.
+    Arkay's curse: Prices are 50% worse, persuasion and intimidation are 50% harder and Health, Stamina, and Magicka are 25 points lower.
+    Slavery: You'll be sold into slavery (Requires the Simple slavery mod).
  
- Respawn points can be one of these locations
- Hall of the dead
- Inn
- Last place player slept
- A custom place chosen by mark spell. (Mark and recall spells could also be used for travel either free or in exchange for arkay mark).
- Checkpoint: which is a close location that you visited.
-Nearby: Similar to checkpoints but it will send you to a map marker in the current hold.
-The throat of the World
+ Respawn points can be one of these locations:
+ 
+    Hall of the dead
+    Inn
+    Last place player slept
+    A custom place chosen by mark spell.
+    Checkpoint: which is a close location that you visited.
+    Nearby: Similar to checkpoints but it will send you to a map marker in the current hold.
+    The throat of the World
+
+Mark and recall spells could also be used for travel, either free or in exchange for arkay marks.
 
 Compatibility
 

@@ -935,12 +935,12 @@ Event OnPageReset(String page)
 		SetCursorPosition(48)
 		oidSkillReduceMaxValSlider = AddSliderOption("$mrt_MarkofArkay_killReduceMaxValSlider_1", fSkillReduceMaxValSlider , "{0}", flags)
 		SetCursorPosition(50)
-		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1 ) && (iReducedSkill != 0) && bDLIEOK && !bOnlyLoseSkillXP && !bCurseLock
-			flags =	OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		oidLoseSkillForever = AddToggleOption("$mrt_MarkofArkay_LoseSkillForever",bLoseSkillForever, flags)
+		;If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1 ) && (iReducedSkill != 0) && bDLIEOK && !bOnlyLoseSkillXP && !bCurseLock
+		;	flags =	OPTION_FLAG_NONE
+		;Else
+		;	flags = OPTION_FLAG_DISABLED
+		;EndIf
+		;oidLoseSkillForever = AddToggleOption("$mrt_MarkofArkay_LoseSkillForever",bLoseSkillForever, flags)
 		SetCursorPosition(54)
 		AddHeaderOption("$mrt_MarkofArkay_HEAD_Other_Curses")
 		SetCursorPosition(56)
@@ -1974,9 +1974,9 @@ Event OnOptionSelect(Int option)
 	ElseIf (option == oidCanbeKilledbyUnarmed)
 		bCanbeKilledbyUnarmed = !bCanbeKilledbyUnarmed
 		SetToggleOptionValue(oidCanbeKilledbyUnarmed, bCanbeKilledbyUnarmed)
-	ElseIf (option == oidLoseSkillForever)
-		bLoseSkillForever = !bLoseSkillForever
-		SetToggleOptionValue(oidLoseSkillForever, bLoseSkillForever)
+	;ElseIf (option == oidLoseSkillForever)
+	;	bLoseSkillForever = !bLoseSkillForever
+	;	SetToggleOptionValue(oidLoseSkillForever, bLoseSkillForever)
 	ElseIf (option == oidHealActors)
 		bHealActors = !bHealActors
 		SetToggleOptionValue(oidHealActors, bHealActors)
@@ -2998,12 +2998,12 @@ Event OnOptionMenuAccept(Int option, Int index)
 			If bOnlyLoseSkillXP
 				SetOptionFlags(oidLevelReduce,flags,True)
 				SetOptionFlags(oidSkillReduceRandomVal,flags,True)
-				If bDLIEOK
-					flags =	OPTION_FLAG_NONE
-				Else
-					flags =	OPTION_FLAG_DISABLED
-				EndIf
-				SetOptionFlags(oidLoseSkillForever,flags,True)
+				;If bDLIEOK
+				;	flags =	OPTION_FLAG_NONE
+				;Else
+				;	flags =	OPTION_FLAG_DISABLED
+				;EndIf
+				;SetOptionFlags(oidLoseSkillForever,flags,True)
 				If !bSkillReduceRandomVal
 					flags =	OPTION_FLAG_NONE
 				Else
@@ -3022,7 +3022,7 @@ Event OnOptionMenuAccept(Int option, Int index)
 			flags = OPTION_FLAG_DISABLED
 			SetOptionFlags(oidLevelReduce,flags,True)
 			SetOptionFlags(oidOnlyLoseSkillXP,flags,True)
-			SetOptionFlags(oidLoseSkillForever,flags,True)
+			;SetOptionFlags(oidLoseSkillForever,flags,True)
 			SetOptionFlags(oidSkillReduceRandomVal,flags,True)
 			SetOptionFlags(oidSkillReduceValSlider,flags,True)
 			SetOptionFlags(oidSkillReduceMinValSlider,flags,True)
@@ -3339,9 +3339,9 @@ Event OnOptionDefault(Int option)
 	ElseIf (option == oidCanbeKilledbyUnarmed)
 		bCanbeKilledbyUnarmed = True
 		SetToggleOptionValue(oidCanbeKilledbyUnarmed,bCanbeKilledbyUnarmed)
-	ElseIf (option == oidLoseSkillForever)
-		bLoseSkillForever = False
-		SetToggleOptionValue(oidLoseSkillForever,bLoseSkillForever)
+	;ElseIf (option == oidLoseSkillForever)
+	;	bLoseSkillForever = False
+	;	SetToggleOptionValue(oidLoseSkillForever,bLoseSkillForever)
 	ElseIf (option == oidHealActors)
 		bHealActors = False
 		SetToggleOptionValue(oidHealActors,bHealActors)
@@ -3372,7 +3372,7 @@ Event OnOptionDefault(Int option)
 		flags = OPTION_FLAG_DISABLED
 		SetOptionFlags(oidLevelReduce,flags,True)
 		SetOptionFlags(oidOnlyLoseSkillXP,flags,True)
-		SetOptionFlags(oidLoseSkillForever,flags,True)
+		;SetOptionFlags(oidLoseSkillForever,flags,True)
 		SetOptionFlags(oidSkillReduceRandomVal,flags,True)
 		SetOptionFlags(oidSkillReduceValSlider,flags,True)
 		SetOptionFlags(oidSkillReduceMinValSlider,flags,True)
@@ -3869,8 +3869,8 @@ Event OnOptionHighlight(Int option)
 		SetInfoText("$mrt_MarkofArkay_DESC_KillIfCantRespawn")
 	ElseIf (option == oidCanbeKilledbyUnarmed)
 		SetInfoText("$mrt_MarkofArkay_DESC_CanbeKilledbyUnarmed")
-	ElseIf (option == oidLoseSkillForever)
-		SetInfoText("$mrt_MarkofArkay_DESC_LoseSkillForever")
+	;ElseIf (option == oidLoseSkillForever)
+	;	SetInfoText("$mrt_MarkofArkay_DESC_LoseSkillForever")
 	ElseIf (option == oidHealActors)
 		SetInfoText("$mrt_MarkofArkay_DESC_HealActors")
 	ElseIf (option == oidResurrectActors)
@@ -5615,7 +5615,7 @@ EndFunction
 
 Function checkMods()
 	bSKSEOK = bCheckSKSE()
-	bDLIEOK = bCheckDLIE()
+	;bDLIEOK = bCheckDLIE()
 	bUIEOK = bCheckUIE()
 	bFISSOK = bCheckFISS()
 	bARCCOK = bCheckARCC()

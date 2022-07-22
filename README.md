@@ -1,12 +1,14 @@
 # mark-of-arkay
 
-When you lose all of your health, a Menu will appear and asks you which one of these items you want to trade to restore your health. When you don't have enough items or choose nothing from the menu, depending on the settings, you either die, respawn at one of the cities or a location you can select with a spell, or the game will exit to the main menu.
+When you lose all or a chosen percent of your health, a Menu will appear and asks you which one of these items you want to trade to restore your health. When you don't have enough items or choose nothing from the menu, depending on the settings, you either die, respawn at one of the cities or a location you can select with a spell, or the game will exit to the main menu.
 
     Arkay mark: a dark stone which can be found in the loot.
     Filled grand soul gem
     Filled black soul gem
     Dragon soul
     Gold
+
+
 
 You can disable or change the required amount for each item in the mcm menu or set it to zero for cheating. If you don't want to see the menu, you can disable it and trade items automatically, based on their priority. When the menu is disabled, items with higher priority will be removed first. If two or more items have the same priority, one of them will be chosen randomly. You can change their priority and other settings from the MCM menu.
 

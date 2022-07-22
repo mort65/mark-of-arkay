@@ -13,9 +13,9 @@ You can disable or change the required amount for each item in the mcm menu or s
 You can revive yourself without trading by using one of these Items:
 
 
-    Scroll of revival:  If you cast it, you will be revived automatically for one minute.
-    Scroll of sacrifice:  If you cast it on an NPC that satisfies its conditions, that NPC will die instead of you for 30 secs.
-    Healing Potion:  When your health drops to zero, You have 6 seconds to open your inventory and revive yourself with healing potions.
+    Scroll of revival: If you cast it, you will be revived automatically for one minute.
+    Scroll of sacrifice: If you cast it on an NPC that satisfies its conditions, that NPC will die instead of you for 30 secs.
+    Healing Potion: When your health drops to zero, You have 6 seconds to open your inventory and revive yourself with healing potions.
 
 
 Spell versions of the scroll of revival and sacrifice are in a chest at Falkreath's hall of the dead. They can be used by the player once per day.

@@ -30,7 +30,7 @@ You can also toggle losing your items permanently whenever you respawn before fi
     Skill: you lose some of your skills or experience.
     Silence: you can't talk to NPCs or shout.
     Ghost: You'll become a ghost and NPCs will attack you on sight.
-    Arkay's curse: Prices are 50% worse, persuasion and intimidation are 50% harder and Health, Stamina, and Magicka are 25 points lower.
+    Arkay's curse:  50% worse prices, 50% harder persuasion and intimidation and 25 points lower Health, Stamina and Magicka.
     Slavery: You'll be sold into slavery (Requires the Simple slavery mod).
  
  Respawn points can be one of these locations:
@@ -45,7 +45,7 @@ You can also toggle losing your items permanently whenever you respawn before fi
 
 Mark and recall spells could also be used for travel, either free or in exchange for arkay marks.
 
-Compatibility
+*Compatibility*
 
 This mod should be compatible with almost anything except mods that do the same thing or remove the essential flag from the player.
 
@@ -58,14 +58,14 @@ Dragons Souls - Death is Highly Overrated
 Death Alternative - Your Money or Your Life
 SkyTweak (if Bleedout is enabled on the Scripts page)
 
-Installation
+*Installation*
 Copy files to Skyrim data directory. start the game and change the setting from the mcm menu. If you have other mods that change the level list, create a Bashed Patch with Wrye Bash.
 
-Uninstallation
+*Uninstallation*
 
 make sure you are not in Falkreath's hall of the dead. Stop the mod, remove its files (if you don't stop it, your character remains essential), rebuild your Bashed Patch, and then use a Save cleaner like this to remove its scripts from your save file.
 
-Credits
+*Credits*
 
 SKSE Team
 Creators of SkyUI

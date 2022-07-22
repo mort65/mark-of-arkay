@@ -29,7 +29,7 @@ You can also toggle losing your items permanently whenever you respawn before fi
  Other than losing items these curses can infect you:
  
     Disease: you'll be infected by a random vanilla disease that gets worse with each respawn.
-    Skill: you lose some of your skills or experience.
+    Skill: you lose some of your skills or experience (Probably not compatible with mods like "Skyrim Skill Uncapper").
     Silence: you can't talk to NPCs or shout.
     Ghost: You'll become a ghost and NPCs will attack you on sight.
     Arkay's curse:  50% worse prices, 50% harder persuasion and intimidation and 25 points lower Health, Stamina and Magicka.

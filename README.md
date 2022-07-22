@@ -46,7 +46,7 @@ You can also toggle losing your items permanently whenever you respawn before fi
     The throat of the World
 
 Mark and recall spells could also be used for travel, either free or in exchange for arkay marks.
-Lost items can be viewed on the debug page by clicking on their numbers (Requires UIExtensions).
+On the debug page if Information is enabled, currently lost items can be viewed by clicking on their numbers on the right side (Requires UIExtensions).
 
 **Compatibility**
 

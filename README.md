@@ -59,6 +59,7 @@ Death Alternative - Your Money or Your Life
 SkyTweak (if Bleedout is enabled on the Scripts page)
 
 **Installation**
+
 Copy files to Skyrim data directory. start the game and change the setting from the mcm menu. If you have other mods that change the level list, create a Bashed Patch with Wrye Bash.
 
 **Uninstallation**

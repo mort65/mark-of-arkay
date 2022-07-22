@@ -1,6 +1,6 @@
 # mark-of-arkay
 
-When you lose all of your health, a Menu will appear and asks you which one of these items you want to trade to restore your health. When you don't have enough items or when you choose nothing from the menu, depending on the settings either you die, respawn at one of the cities or a location which you can select with a spell, or the game will exit to the main menu. 
+When you lose all of your health, a Menu will appear and asks you which one of these items you want to trade to restore your health. When you don't have enough items or choose nothing from the menu, depending on the settings, you either die, respawn at one of the cities or a location you can select with a spell, or the game will exit to the main menu.
 
     Arkay mark  a dark stone which can be found in the loot.
     Filled grand soul gem
@@ -8,9 +8,7 @@ When you lose all of your health, a Menu will appear and asks you which one of t
     Dragon soul
     Gold
 
-
-You can disable or change required amount for each item in mcm menu or set it to zero for cheating.
-If you don't want to see the menu, you can disable it and trade item automatically, based on their priority. When the menu is disabled, items with higher priority will be removed first. If two or more items have the same priority, one of them will be chosen randomly. You can change their priority and other settings from the MCM menu.
+You can disable or change the required amount for each item in the mcm menu or set it to zero for cheating. If you don't want to see the menu, you can disable it and trade items automatically, based on their priority. When the menu is disabled, items with higher priority will be removed first. If two or more items have the same priority, one of them will be chosen randomly. You can change their priority and other settings from the MCM menu.
 
 You can revive yourself without trading by using one of these Items:
 
@@ -22,8 +20,27 @@ You can revive yourself without trading by using one of these Items:
 
 Spell versions of the scroll of revival and sacrifice are in a chest at Falkreath's hall of the dead. They can be used by the player once per day.
 
-You can choose to lose some or all of your items before respawning. If you enable this option you can take back your items by activating a grand soul gem which is placed where you died or reviving yourself with sacrificing someone.
+You can choose to lose some or all of your items before respawning. If you enable this option you can take back your items by activating your soul mark which is either a grand soul gem or your dead body and is placed where you died or you can revive yourself by sacrificing someone with the sacrifice spell. instead of activating the soul mark, there is an option to send your items to a boss chest or retrieve your items by killing a nearby enemy or a spawned one.
+
 You can also toggle losing your items permanently whenever you respawn before finding them.
+ 
+ Other than losing items these curses can infect you:
+ 
+ Disease: you'll be infected by a random vanilla disease that gets worse with each respawn.
+ Skill: you lose some of your skills or experience.
+ Silence: you can't talk to NPCs or shout.
+ Ghost: You'll become a ghost and NPCs will attack you on sight.
+ Arkay's curse: Prices are 50% worse, persuasion and intimidation are 50% harder and Health, Stamina, and Magicka are 25 points lower.
+ Slavery: You'll be sold into slavery (Requires the Simple slavery mod).
+ 
+ Respawn points can be one of these locations
+ Hall of the dead
+ Inn
+ Last place player slept
+ A custom place chosen by mark spell. (Mark and recall spells could also be used for travel either free or in exchange for arkay mark).
+ Checkpoint: which is a close location that you visited.
+Nearby: Similar to checkpoints but it will send you to a map marker in the current hold.
+The throat of the World
 
 Compatibility
 
@@ -36,15 +53,14 @@ SM Essential Player
 SexLab Defeat (if Bleedout is enabled)
 Dragons Souls - Death is Highly Overrated
 Death Alternative - Your Money or Your Life
-SkyTweak (if Bleedout is enabled in the Scripts page)
+SkyTweak (if Bleedout is enabled on the Scripts page)
 
 Installation
-
-Copy files to Skyrim data directory. start the game and change setting from mcm menu. If you have other mods that change the level list, create a Bashed Patch with Wrye Bash.
+Copy files to Skyrim data directory. start the game and change the setting from the mcm menu. If you have other mods that change the level list, create a Bashed Patch with Wrye Bash.
 
 Uninstallation
 
-make sure you are not in Falkreath's hall of the dead. Stop the mod then remove its files (if you don't stop it your character remain essential), rebuild your Bashed Patch then use a Save cleaner like this to remove its scripts from your save file.
+make sure you are not in Falkreath's hall of the dead. Stop the mod, remove its files (if you don't stop it, your character remains essential), rebuild your Bashed Patch, and then use a Save cleaner like this to remove its scripts from your save file.
 
 Credits
 

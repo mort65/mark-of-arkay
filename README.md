@@ -2,7 +2,7 @@
 
 When you lose all of your health, a Menu will appear and asks you which one of these items you want to trade to restore your health. When you don't have enough items or choose nothing from the menu, depending on the settings, you either die, respawn at one of the cities or a location you can select with a spell, or the game will exit to the main menu.
 
-    Arkay mark:  a dark stone which can be found in the loot.
+    Arkay mark: a dark stone which can be found in the loot.
     Filled grand soul gem
     Filled black soul gem
     Dragon soul

@@ -5650,12 +5650,12 @@ Bool Function bCheckARCC()
 	Return (iARCCIndex > 0 && iARCCIndex < 255)
 EndFunction
 
-Bool Function bCheckDLIE()
-	Return bSKSELoaded && SKSE.GetPluginVersion("DSL Level Up Event Plugin") != -1 && DSL_LevelIncreaseEvent.bIsDLIELoaded()
-EndFunction
+;Bool Function bCheckDLIE()
+;	Return bSKSELoaded && SKSE.GetPluginVersion("DSL Level Up Event Plugin") != -1 && DSL_LevelIncreaseEvent.bIsDLIELoaded()
+;EndFunction
 
 Bool Function bCheckPUtil()
-	Return bSKSELoaded && SKSE.GetPluginVersion("papyrusutil plugin") != -1
+	Return bSKSELoaded && ((SKSE.GetPluginVersion("papyrusutil plugin") != -1) || (SKSE.GetPluginVersion("papyrusutil") != -1))
 EndFunction
 
 Function ShowLostItems()

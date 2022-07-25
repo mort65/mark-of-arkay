@@ -36,9 +36,9 @@ You can also toggle losing your items permanently whenever you respawn before fi
     Slavery: You'll be sold into slavery (Requires the Simple slavery mod).
  
  Respawn points can be set to one of these locations:
- 
-    Hall of the dead
+
     Inn
+    Hall of the dead
     Last place player slept
     A custom place chosen by mark spell.
     Checkpoint: which is a close location that you visited.

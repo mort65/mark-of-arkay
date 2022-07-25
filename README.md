@@ -48,6 +48,8 @@ You can also toggle losing your items permanently whenever you respawn before fi
 Mark and recall spells could also be used for travel, either free or in exchange for arkay marks.
 On the debug page if Information is enabled, currently lost items can be viewed by clicking on their numbers on the right side (Requires UIExtensions).
 
+Some of the MCM settings can be locked from the debug page. You can set a maximum number of respawns. After reaching that number of respawns if you don't have any items for revival you'll die. also, you can make it a permanent death (Requires PapyrusUtil) and prevent yourself from loading saves from that character after using all allowed respawns. 
+
 **Compatibility**
 
 This mod should be compatible with almost anything except mods that do the same thing or remove the essential flag from the player.

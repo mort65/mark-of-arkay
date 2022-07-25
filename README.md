@@ -56,12 +56,17 @@ This mod should be compatible with almost anything except mods that do the same 
 
 List of known incompatible mods:
 
-Death Souls
-SM Essential Player
-SexLab Defeat (if Bleedout is enabled)
-Dragons Souls - Death is Highly Overrated
-Death Alternative - Your Money or Your Life
-SkyTweak (if Bleedout is enabled on the Scripts page)
+*Death Souls*
+
+*SM Essential Player*
+
+*SexLab Defeat (if Bleedout is enabled)*
+
+*Dragons Souls - Death is Highly Overrated*
+
+*Death Alternative - Your Money or Your Life*
+
+*SkyTweak (if Bleedout is enabled on the Scripts page)*
 
 **Installation**
 

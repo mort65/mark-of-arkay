@@ -42,7 +42,7 @@ You can also toggle losing your items permanently whenever you respawn before fi
     Last place player slept
     A custom place chosen by mark spell.
     Checkpoint: which is a close location that you visited.
-    Nearby: Similar to checkpoints but it will send you to a map marker in the current hold.
+    Nearby: Similar to checkpoints but it could send you to a map marker in the current hold.
     The throat of the World
 
 Mark and recall spells could also be used for travel, either free or in exchange for arkay marks.

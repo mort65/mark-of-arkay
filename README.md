@@ -70,7 +70,7 @@ List of known incompatible mods:
 
 **Installation**
 
-Copy files to Skyrim data directory. start the game and change the setting from the mcm menu. If you have other mods that change the level list, create a Bashed Patch with Wrye Bash.
+Copy files to Skyrim data directory. start the game and change the setting from the mcm menu. If you have other mods that change the level list, create a Bashed Patch with Wrye Bash or a Smashed Patch with Mator Smash.
 
 **Uninstallation**
 

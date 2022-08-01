@@ -1384,7 +1384,7 @@ Function RevivePlayer(Bool bRevive)
 				EndIf
 				startRespawning()
 				If ( !bWasSwimming && bIsConditionSafe )
-					If ( ConfigMenu.bInvisibility || ConfigMenu.bFadeToBlack )					
+					If ( ConfigMenu.bInvisibility || ConfigMenu.bFadeToBlack )
 						If ConfigMenu.bDeathEffect && !moaPlayerGhostQuest.IsRunning() && !moaPlayerVoicelessQuest.IsRunning()
 							RespawnScript.PlayerMarker.Enable()
 							RespawnScript.PlayerMarker.MoveTo(playerRef)

@@ -5627,10 +5627,10 @@ EndFunction
 
 Bool Function bCheckPO3()
 	Int[] PO3Ver = PO3_SKSEFunctions.GetPapyrusExtenderVersion()
-	if PO3Ver.Length > 2
-		Debug.trace("powerofthree's Papyrus Extender version: "+PO3Ver[0]+"."+PO3Ver[1]+"."+PO3Ver[2])
-	EndIf
-	Return (PO3Ver[0] && PO3Ver[0] > 4)
+	;if PO3Ver.Length > 2
+	;	Debug.trace("powerofthree's Papyrus Extender version: "+PO3Ver[0]+"."+PO3Ver[1]+"."+PO3Ver[2])
+	;EndIf
+	Return (PO3Ver.Length > 2 && PO3Ver[0] > 4)
 EndFunction
 
 Bool Function bCheckSKSE()

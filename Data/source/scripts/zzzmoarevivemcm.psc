@@ -226,7 +226,7 @@ Bool Property bLootChanceLock = False Auto Hidden
 Bool Property bTradeLock = False Auto Hidden
 Bool Property bCurseLock = False Auto Hidden
 Bool Property bMarkRecallCostLock = False Auto Hidden
-Float Property fMaxItemsToCheckSlider = 500.0 Auto Hidden
+Float Property fMaxItemsToCheckSlider = 100.0 Auto Hidden
 Float Property fValueMarkScaleSlider = 0.0 Auto Hidden
 Float Property fValueGSoulGemScaleSlider = 0.0 Auto Hidden
 Float Property fValueBSoulGemScaleSlider = 0.0 Auto Hidden
@@ -371,7 +371,7 @@ Spell Property ArkayCurseTemp Auto
 Spell Property ArkayCurseTempAlt Auto
 Spell Property ArkayBlessing Auto
 Bool Property bShiftBack = False Auto Hidden
-Bool Property bShiftBackRespawn = True Auto Hidden
+Bool Property bShiftBackRespawn = False Auto Hidden
 Bool Property bInvisibility = False Auto Hidden
 Bool Property bCreaturesCanSteal = False Auto Hidden
 Bool Property bLoseSkillForever = False Auto Hidden
@@ -447,6 +447,7 @@ Bool Property bFISSOK Auto Hidden ;FISS
 Bool Property bDLIEOK Auto Hidden ;Level Up Event Plugin
 Bool Property bUIEOK Auto Hidden ;uiextensions
 Bool Property bPUOK Auto Hidden ;papyrusutil
+Bool Property bPO3OK Auto Hidden ;PO3 Extender
 Bool Property bClone = True Auto Hidden
 Bool Property bCorpseAsSoulMark = False Auto Hidden
 Float Property fMaxLoseGoldSlider = 250.0 Auto Hidden
@@ -2592,7 +2593,7 @@ Event OnOptionSliderOpen(Int option)
 		SetSliderDialogInterval(25.0)
 	ElseIf (option == oidMaxItemsToCheckSlider)
 		SetSliderDialogStartValue(fMaxItemsToCheckSlider)
-		SetSliderDialogDefaultValue(500.0)
+		SetSliderDialogDefaultValue(100.0)
 		SetSliderDialogRange(0.0, 10000.0)
 		SetSliderDialogInterval(1.0)
 	ElseIf (option == oidLowerNPCMaxLvlDiff)
@@ -3278,7 +3279,7 @@ Event OnOptionDefault(Int option)
 		bShiftBack = False
 		SetToggleOptionValue(oidShiftBack,bShiftBack)
 	ElseIf (option == oidShiftBackRespawn)
-		bShiftBackRespawn = True
+		bShiftBackRespawn = False
 		SetToggleOptionValue(oidShiftBackRespawn,bShiftBackRespawn)
 	ElseIf (option == oidRespawnNaked)
 		bRespawnNaked = False
@@ -3496,7 +3497,7 @@ Event OnOptionDefault(Int option)
 		fLoseOtherTotalValueSlider = 0.0
 		SetSliderOptionValue(oidLoseOtherTotalValueSlider, fLoseOtherTotalValueSlider, "{0}")
 	ElseIf (option == oidMaxItemsToCheckSlider)
-		fMaxItemsToCheckSlider = 500.0
+		fMaxItemsToCheckSlider = 100.0
 		SetSliderOptionValue(oidMaxItemsToCheckSlider, fMaxItemsToCheckSlider, "{0}")
 	ElseIf (option == oidLowerNPCMaxLvlDiff)
 		fLowerNPCMaxLvlDiff = 10.0
@@ -5090,7 +5091,7 @@ Bool Function bCheckFissErrors(String strErrors)
 		ElseIf strError == "Element fLowerNPCMaxLvlDiff not found"
 			fLowerNPCMaxLvlDiff = 10.0
 		ElseIf strError == "Element fMaxItemsToCheckSlider not found"
-			fMaxItemsToCheckSlider = 500.0
+			fMaxItemsToCheckSlider = 100.0
 		ElseIf strError == "Element bCanbeKilledbyUnarmed not found"
 			bCanbeKilledbyUnarmed = True
 		ElseIf strError == "Element bRespawnPointsFlags8 not found"
@@ -5375,7 +5376,7 @@ function LoadDefaultSettings()
 	bIsEffectEnabled = False
 	bIsPotionEnabled = False
 	bAutoDrinkPotion = False
-	bShiftBackRespawn = True
+	bShiftBackRespawn = False
 	bIsRecallRestricted = True
 	bAutoSwitchRP = False
 	fMarkCastSlider = 0.0
@@ -5489,7 +5490,7 @@ function LoadDefaultSettings()
 	fMinLoseGrandSoulGemSlider = 0.0
 	fLoseOtherMinValueSlider = 0.0
 	fLoseOtherTotalValueSlider = 0.0
-	fMaxItemsToCheckSlider = 500.0
+	fMaxItemsToCheckSlider = 100.0
 	fBossChestChanceSlider = 0.0
 	fSimpleSlaveryChanceSlider = 0.0
 	bOnlyEnslavedByEnemyFaction = False
@@ -5621,6 +5622,15 @@ Function checkMods()
 	bARCCOK = bCheckARCC()
 	bPUOK = bCheckPUtil()
 	moaUIExtensionStatus.SetValueInt(bUIEOK As Int)
+	bPO3Ok = bCheckPO3()
+EndFunction
+
+Bool Function bCheckPO3()
+	Int[] PO3Ver = PO3_SKSEFunctions.GetPapyrusExtenderVersion()
+	if PO3Ver.Length > 2
+		Debug.trace("powerofthree's Papyrus Extender version: "+PO3Ver[0]+"."+PO3Ver[1]+"."+PO3Ver[2])
+	EndIf
+	Return (PO3Ver[0] && PO3Ver[0] > 4)
 EndFunction
 
 Bool Function bCheckSKSE()

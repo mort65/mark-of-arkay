@@ -8,7 +8,8 @@ zzzmoaitemcursescript Property ItemScript Auto Hidden
 zzzmoarespawnscript Property RespawnScript Auto Hidden
 zzzmoanpcscript Property NPCScript Auto Hidden
 zzzmoa_HealthMonitor Property HealthMonitorScript Auto
-zzzmoadiseasecursescript	Property DiseaseScript Auto
+zzzmoadiseasecursescript Property DiseaseScript Auto
+zzzmoasexlabinterface Property SexLabInterface Auto
 Quest Property moaReviveMCMscript Auto
 Quest Property moaHostileNPCDetector Auto
 Quest Property moaHostileNPCDetector01 Auto
@@ -1383,14 +1384,16 @@ Function RevivePlayer(Bool bRevive)
 				EndIf
 				startRespawning()
 				If ( !bWasSwimming && bIsConditionSafe )
-					If ( ConfigMenu.bInvisibility || ConfigMenu.bFadeToBlack )
+					If ( ConfigMenu.bInvisibility || ConfigMenu.bFadeToBlack )					
 						If ConfigMenu.bDeathEffect && !moaPlayerGhostQuest.IsRunning() && !moaPlayerVoicelessQuest.IsRunning()
-							PlayerRef.DispelSpell(Bleed)
-							PlayerRef.ResetHealthAndLimbs()
-							PlayerRef.RestoreActorValue("health",10000)
+							RespawnScript.PlayerMarker.Enable()
+							RespawnScript.PlayerMarker.MoveTo(playerRef)
+							RespawnScript.PlayerMarker.SetPosition(PlayerRef.GetPositionx(), PlayerRef.GetPositiony(), PlayerRef.GetPositionz())
+							RespawnScript.PlayerMarker.SetAngle(0.0, 0.0, PlayerRef.GetAnglez())
+							Utility.Wait(0.5)
 							PlayerRef.PushActorAway(PlayerRef,0)
 							Utility.Wait(0.1)
-							PlayerRef.Say(DeathTopic)
+							RespawnScript.PlayerMarker.Say(DeathTopic, PlayerRef, True)
 						EndIf
 						If !bIsCameraStateSafe()
 							Game.ForceThirdPerson()
@@ -1945,6 +1948,7 @@ Function SetGameVars(Bool abFast = False)
 	Else
 		ConfigMenu.ToggleFallDamage(False)
 	EndIf
+	sendModEvent("MOA_Int_PlayerLoadsGame")
 	DiseaseScript.RegisterForModEvent("MOA_RecalcCursedDisCureCost", "RecalcCursedDisCureCost")
 	checkMarkers(bFast = abFast)
 EndFunction

@@ -258,7 +258,11 @@ Function LoseItems()
 		EndIf
 	EndIf
 	If ConfigMenu.bLoseItem && ConfigMenu.bLoseOthers
-		LoseOtherItems()
+		;If ConfigMenu.bPUOK && ConfigMenu.bPO3OK
+		;	PO3LoseOtherItems()
+		;Else
+			LoseOtherItems()
+		;EndIf
 	EndIf
 	ValuableItemsChest.RemoveAllItems(PlayerRef, True, True)
 	If ConfigMenu.bRespawnNaked
@@ -487,3 +491,185 @@ Endfunction
 Bool Function bSoulReduced()
 	Return fLostSouls > 0
 Endfunction
+
+
+Function PO3LoseOtherItems() ;Very Slow
+	If !PlayerRef.GetNumItems() || ((ConfigMenu.iLoseInclusion == 1) && !(ConfigMenu.bLoseArmor || ConfigMenu.bLoseWeapon || ConfigMenu.bLoseAmmo))
+		ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay:  Nothing else can be removed.")
+		Return
+	EndIf
+	Int iIndex	
+	Form[] RemovableItemsArr
+	If ConfigMenu.iLoseInclusion == 1
+		RemovableItemsArr = Equipment
+	Else
+		RemovableItemsArr = PO3_SKSEFunctions.AddAllItemsToArray(akRef = PlayerRef, abNoEquipped = (ConfigMenu.iLoseInclusion == 2), abNoFavorited = false, abNoQuestItem = ConfigMenu.bExcludeQuestItems)
+	EndIf
+	Bool bRemove = False
+	Bool bRemoveAll = True
+	iIndex = ConfigMenu.iValidTypes.Length
+	While iIndex > 0
+		iIndex -= 1
+		If ConfigMenu.iValidTypes[iIndex] > 0
+			bRemove = True
+		Else
+			bRemoveAll = False
+			RemovableItemsArr = PapyrusUtil.GetDiffForm(RemovableItemsArr, PO3_SKSEFunctions.AddItemsOfTypeToArray(PlayerRef, ConfigMenu.iValidTypes[iIndex], abNoEquipped = (ConfigMenu.iLoseInclusion == 2), abNoFavorited = false, abNoQuestItem = ConfigMenu.bExcludeQuestItems))
+		EndIf
+	Endwhile		
+	If !(bRemove)
+		Return
+	EndIf	
+	iIndex = 0
+	Bool bContinue = False
+	Bool bBreak = False
+	Form kItem = None
+	Int iValue = 0
+	Int iAmount = 0
+	Int iToRemove = 0
+	Int iChecked = 0
+	Bool bIsLoggingEnabled = ConfigMenu.bIsLoggingEnabled
+	Int ExcludedIndexArrLen
+	Int iTotal = RemovableItemsArr.Length
+	If Tradables.length != 4
+		Tradables = New Form[4]
+		Tradables[0] = Gold001 As Form
+		Tradables[1] = MarkOfArkay As Form
+		Tradables[2] = BlackFilledGem As Form
+		Tradables[3] = GrandFilledGem As Form 
+	EndIf
+	If (ConfigMenu.fMaxItemsToCheckSlider <= 0.0) || (ConfigMenu.fMaxItemsToCheckSlider As Int > iTotal)
+		ExcludedIndexArrLen = iTotal
+	Else
+		ExcludedIndexArrLen = ConfigMenu.fMaxItemsToCheckSlider As Int
+	EndIf
+	
+	Int[] ExcludedIndexArr = Utility.CreateIntArray(size = ExcludedIndexArrLen, fill = -1)
+	While (!bBreak)
+		If bContinue
+			bContinue = False
+		EndIf
+		If iChecked == 0
+			iIndex = Utility.RandomInt(0, iTotal - 1)
+		Else
+			iIndex = iGetRandomWithExclusionIntArray(0, iTotal - 1,  papyrusUtil.SliceIntArray(ExcludedIndexArr, 0, iChecked))
+		EndIf
+		ExcludedIndexArr[iChecked] = iIndex
+		
+		kItem = RemovableItemsArr[iIndex]
+		
+		If (!kItem)
+			Debug.TraceConditional("MarkOfArkay: Unknown item at index(" + iIndex + ")",bIsLoggingEnabled)	
+			bContinue = True
+		EndIf
+		
+		If !bContinue
+			If Tradables.Find(kItem) > -1
+				Debug.TraceConditional("MarkOfArkay: (" + kItem + "," + kItem.GetName()+ ") Skipped -> IsTradable()",bIsLoggingEnabled)
+				bContinue = True
+			EndIf
+		EndIf
+		
+		If !bContinue
+			iAmount = PlayerRef.GetItemCount(kItem)
+			If ConfigMenu.iLoseInclusion == 1
+				If Equipment.Find(kItem) > -1
+					If ConfigMenu.bRandomItemCurse
+						iToRemove = Utility.RandomInt(0,1)
+					Else
+						iToRemove = 1
+					EndIf
+				Else
+					iToRemove = 0
+				EndIf
+			ElseIf ConfigMenu.bRandomItemCurse
+				iToRemove = Utility.RandomInt(0,iAmount)
+			Else
+				iToRemove = iAmount
+			EndIf
+			If (!iToRemove)
+				Debug.TraceConditional("MarkOfArkay: (" + kItem + "," + kItem.GetName()+ ") Skipped -> Amount is 0",bIsLoggingEnabled)
+				bContinue = True
+			EndIf
+		EndIf
+
+		If !bContinue
+			If ConfigMenu.bCheckKeyword
+				If (kItem.HasKeywordString("zzzmoa_ignoreitem") || kItem.HasKeywordString("vendornosale") || kItem.HasKeywordString("magicdisallowenchanting") || kItem.HasKeywordString("sos_underwear") || kItem.HasKeywordString("sos_genitals"))
+					Debug.TraceConditional("MarkOfArkay: (" + kItem + "," + kItem.GetName() + ") skipped -> InvalidKeyword()",bIsLoggingEnabled)	
+					bContinue = True
+				EndIf
+			EndIf
+		EndIf
+		
+		If !bContinue
+			If ConfigMenu.bCheckWeight
+				If !kItem.GetWeight()
+					Debug.TraceConditional("MarkOfArkay: (" + kItem + "," + kItem.GetName() + ") skipped -> NoWeight()",bIsLoggingEnabled)	
+					bContinue = True
+				EndIf
+			EndIf
+		EndIf
+		
+		If !bContinue
+			If (ConfigMenu.fLoseOtherMinValueSlider > 0) || (ConfigMenu.fLoseOtherTotalValueSlider > 0)
+				iValue = kItem.GetGoldValue()
+				If ConfigMenu.fLoseOtherMinValueSlider > 0
+					If iValue < (ConfigMenu.fLoseOtherMinValueSlider As Int)
+						Debug.TraceConditional("MarkOfArkay: (" + kItem + "," + kItem.GetName() + ") skipped -> IsCheap(" + iValue +")",bIsLoggingEnabled)	
+						bContinue = True
+					EndIf
+				EndIf
+				If !bContinue
+					If ConfigMenu.fLoseOtherTotalValueSlider > 0
+						If (iTotalValues + (iValue * iToRemove)) > (ConfigMenu.fLoseOtherTotalValueSlider As Int)
+							Int iCount = iToRemove
+							While iCount > 0 && ((iTotalValues + (iValue * iCount)) > (ConfigMenu.fLoseOtherTotalValueSlider As Int))
+								iCount -= 1
+							Endwhile
+							If iCount
+								iToRemove = iCount									
+							Else
+								Debug.TraceConditional("MarkOfArkay: (" + kItem + "," + kItem.GetName() + ") skipped -> IsExpensive(" + iValue +"," + iTotalValues + ")",bIsLoggingEnabled)	
+								bContinue = True
+							EndIf
+						EndIf
+					EndIf
+				EndIf
+			EndIf
+		EndIf
+		
+		If !bContinue
+			playerRef.RemoveItem(kItem, iToRemove, True, LostItemsChest )
+			Debug.TraceConditional("MarkOfArkay: " + iToRemove + " (" + kItem + "," + kItem.GetName() + ") removed. Values = (" + iTotalValues + "+" + iValue + ")",bIsLoggingEnabled )	
+			If ConfigMenu.fLoseOtherTotalValueSlider > 0  
+				If iTotalValues < ConfigMenu.fLoseOtherTotalValueSlider As Int
+					iTotalValues = iTotalValues + (iValue * iToRemove)
+					If iTotalValues >= ConfigMenu.fLoseOtherTotalValueSlider As Int
+						Debug.TraceConditional("MarkOfArkay: " + "Values(" + iTotalValues + ")" + " >= " + ConfigMenu.fLoseOtherTotalValueSlider As Int,bIsLoggingEnabled)	
+						bBreak = True
+					EndIf
+				Else
+					Debug.TraceConditional("MarkOfArkay: " + "Values(" + iTotalValues + ")" + " >= " + ConfigMenu.fLoseOtherTotalValueSlider As Int,bIsLoggingEnabled)	
+					bBreak = True
+				EndIf
+				If !bBreak && ConfigMenu.fLoseOtherMinValueSlider > 0
+					If (iTotalValues + ConfigMenu.fLoseOtherMinValueSlider) > ConfigMenu.fLoseOtherTotalValueSlider
+						Debug.TraceConditional("MarkOfArkay: " + "Values(" + iTotalValues + ")" + " + MinValue(" + ConfigMenu.fLoseOtherMinValueSlider As Int + ") >= TotalValue(" + ConfigMenu.fLoseOtherTotalValueSlider As Int + ")",bIsLoggingEnabled)	
+						bBreak = True
+					EndIf
+				EndIf
+			EndIf						
+		EndIf
+		iChecked += 1
+		
+		If (iTotal <= iChecked)
+			bBreak = True
+		EndIf
+		
+		If bBreak
+			Debug.TraceConditional("MarkOfArkay: "+ iChecked +" items checked",bIsLoggingEnabled)
+		EndIf
+	
+	Endwhile
+EndFunction

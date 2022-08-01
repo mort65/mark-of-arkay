@@ -377,7 +377,7 @@ Bool Function bIsTeleportSafe(ObjectReference akMarker)
 		bFirstTryFailed = False
 		Return False
 	EndIf
-	Return !(PlayerRef.GetAnimationVariableBool("bIsSynced") || PlayerRef.GetActorValue("paralysis"))
+	Return !(PlayerRef.GetAnimationVariableBool("bIsSynced") || PlayerRef.GetActorValue("paralysis") || ReviveScript.SexLabInterface.IsActorActive(PlayerRef))
 EndFunction
 
 Bool Function bIsArrived(ObjectReference akMarker)
@@ -405,11 +405,15 @@ Bool Function bIsArrived(ObjectReference akMarker)
 			EndIf
 			Utility.Wait(6.5)
 		EndIf
-		Float i = 5.0
+		Float i = 10.0
 		While ( !bIsTeleportSafe(akMarker) && ( i > 0.0 ))
 			Utility.Wait(0.2)
 			i -= 0.2
 		Endwhile
+		If ReviveScript.SexLabInterface.IsActorActive(PlayerRef)
+			Debug.Trace("MarkOfArkay: The player is in a Sexlab animation and cannot teleport.")
+			Return True
+		EndIf
 	EndIf
 	Float fTravel = PlayerMarker.GetDistance(akMarker)
 	PlayerRef.MoveTo(akMarker,afZOffset = 15.0)

@@ -63,23 +63,23 @@ State Installed
 	; SexLab IS installed. Now call the global script and get functions. Pass in SexLabFramework just to save some time
     
 	Bool Function IsActorActive(Actor ActorRef)
-		Return zzzmoaIntPsc.IsActorActiveSL(SexLabQuestFramework, ActorRef)
+		Return zzzmoa_int_sexlab.IsActorActiveSL(SexLabQuestFramework, ActorRef)
 	EndFunction
 	
 	Bool Function rape(Actor[] rapists, Actor victim)
-		Return zzzmoaIntPsc.quickRapeSL(SexLabQuestFramework, rapists, victim)
+		Return zzzmoa_int_sexlab.quickRapeSL(SexLabQuestFramework, rapists, victim)
 	EndFunction
 	
 	Actor Function FindRapist(ObjectReference CenterRef, float Radius = 5000.0, int FindGender = -1, Actor IgnoreRef1 = none, Actor IgnoreRef2 = none, Actor IgnoreRef3 = none, Actor IgnoreRef4 = none)
-		Return zzzmoaIntPsc.FindRapistSL(SexLabQuestFramework, CenterRef, Radius, FindGender, IgnoreRef1, IgnoreRef2, IgnoreRef3, IgnoreRef4)
+		Return zzzmoa_int_sexlab.FindRapistSL(SexLabQuestFramework, CenterRef, Radius, FindGender, IgnoreRef1, IgnoreRef2, IgnoreRef3, IgnoreRef4)
 	EndFunction
 	
 	Int Function StartSex(Actor[] Positions, sslBaseAnimation[] Anims, Actor Victim = none, ObjectReference CenterOn = none, bool AllowBed = true, string Hook = "")
-		Return zzzmoaIntPsc.StartSexSL(SexLabQuestFramework, Positions, Anims, Victim, CenterOn, AllowBed, Hook)
+		Return zzzmoa_int_sexlab.StartSexSL(SexLabQuestFramework, Positions, Anims, Victim, CenterOn, AllowBed, Hook)
 	EndFunction
 	
 	Bool Function IsValidActor(Actor ActorRef)
-		Return zzzmoaIntPsc.IsValidActorSL(SexLabQuestFramework, ActorRef)
+		Return zzzmoa_int_sexlab.IsValidActorSL(SexLabQuestFramework, ActorRef)
 	EndFunction
 
 EndState

@@ -49,8 +49,8 @@ EndFunction
 
 
 Bool Function isRapistValid(Actor rapist)
-	Int iSex = getActorSex(rapist)
 	If rapist
+		Int iSex = getActorSex(rapist)
 		If rapist.hasKeywordString("actortypenpc")
 			If (ConfigMenu.iRapistGender == 0) || ((iSex > -1) && ((iSex + 1) == ConfigMenu.iRapistGender))
 				If !ReviveScript.NPCScript.isActorChild(rapist)

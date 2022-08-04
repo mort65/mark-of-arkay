@@ -43,6 +43,6 @@ EndFunction
 
 State Installed
 	Bool Function StartScene(Actor Dom, Actor Sub, Bool zUndressDom = False, Bool zUndressSub = False, Bool zAnimateUndress = False, String zStartingAnimation = "", Actor zThirdActor = None, ObjectReference Bed = None, Bool Aggressive = False, Actor AggressingActor = None)
-		Return zzzmoaIntPsc.StartSceneOS(OSexIntegrationMainQuest, Dom, Sub, zUndressDom, zUndressSub, zAnimateUndress, zStartingAnimation, zThirdActor, Bed, Aggressive, AggressingActor)
+		Return zzzmoa_int_ostim.StartSceneOS(OSexIntegrationMainQuest, Dom, Sub, zUndressDom, zUndressSub, zAnimateUndress, zStartingAnimation, zThirdActor, Bed, Aggressive, AggressingActor)
 	EndFunction
 EndState

@@ -48,14 +48,14 @@ EndFunction
 
 State Installed
 	Function RandomScene(Actor actor1, Actor actor2)
-		zzzmoaIntPsc.RandomSceneFG(FlowerGirls, actor1, actor2)
+		zzzmoa_int_flowergirls.RandomSceneFG(FlowerGirls, actor1, actor2)
 	EndFunction
 	
 	Function PlayThreesome(Actor participant1 = NONE, Actor participant2 = NONE, Actor participant3 = NONE)
-		zzzmoaIntPsc.PlayThreesomeFG(FlowerGirls, participant1, participant2, participant3)
+		zzzmoa_int_flowergirls.PlayThreesomeFG(FlowerGirls, participant1, participant2, participant3)
 	EndFunction	
 	
 	dxSceneThread Function GetActiveThreadForActor(ObjectReference ActorRef)
-		Return zzzmoaIntPsc.GetActiveThreadForActorFG(FlowerGirls, ActorRef)
+		Return zzzmoa_int_flowergirls.GetActiveThreadForActorFG(FlowerGirls, ActorRef)
 	EndFunction
 EndState

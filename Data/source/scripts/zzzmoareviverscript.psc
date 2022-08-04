@@ -10,6 +10,9 @@ zzzmoanpcscript Property NPCScript Auto Hidden
 zzzmoa_HealthMonitor Property HealthMonitorScript Auto
 zzzmoadiseasecursescript Property DiseaseScript Auto
 zzzmoasexlabinterface Property SexLabInterface Auto
+zzzmoaostiminterface Property OStimInterface Auto
+zzzmoaflowergirlsinterface Property FlowerGirlsInterface Auto
+zzzmoarapescript Property RapeScript Auto Hidden
 Quest Property moaReviveMCMscript Auto
 Quest Property moaHostileNPCDetector Auto
 Quest Property moaHostileNPCDetector01 Auto
@@ -140,6 +143,7 @@ Message Property DeathMessage Auto
 Bool Property bReadyForRespawn = False Auto Hidden
 Bool Property bInfectingPlayer = False Auto Hidden
 Bool Property bPlayerIsVoiceless = False Auto Hidden
+Bool Property bIsraped = False Auto Hidden
 Bool bIsBusy = False
 Float fHealrate = 0.0
 Int iIsBeast = 0
@@ -238,6 +242,7 @@ Event OnInit()
 	ItemScript = GetOwningQuest() As zzzmoaitemcursescript
 	RespawnScript = GetOwningQuest() As zzzmoarespawnscript
 	NPCScript = GetOwningQuest() As zzzmoanpcscript
+	RapeScript = GetOwningQuest() As zzzmoarapescript
 	PermaDeathScript = PermaDeathQuest As zzzmoaPermaDeathScript
 	ConfigMenu.checkMods()
 	SetGameVars(True)
@@ -618,6 +623,7 @@ Function checkHealth()
 EndFunction
 
 Function restore(Int iRevivePlayer = 1, Bool bReviveFollower = True, Bool bEffect = False, Int iPotionIndex = -1, Bool bWait = False, String sTrace = "")
+	RapeScript.unPacify()
 	If !PlayerRef.IsDead()
 		If bEffect
 			moaReviveAfterEffect.Cast(PlayerRef)
@@ -1304,17 +1310,52 @@ Bool Function bSendToSlavery()
 	If Attacker != None
 		If Utility.RandomInt(0,99) < ConfigMenu.fSimpleSlaveryChanceSlider
 			If (PlayerRef.GetDistance(Attacker) < 10000.0) || (Attacker.GetParentCell() == PlayerRef.GetParentCell())
-				If !ConfigMenu.bOnlyEnslavedByEnemyFaction || (PlayerRef.GetFactionReaction(Attacker) == 1)
+				If bIsraped || !ConfigMenu.bSlaveryOnlyAfterRape
+					If !ConfigMenu.bOnlyEnslavedByEnemyFaction || bIsraped || (PlayerRef.GetFactionReaction(Attacker) == 1)
+						Return True
+					EndIf
+				EndIf
+			EndIf
+		EndIf
+	EndIf
+	Return False
+EndFunction
+
+Bool Function bRape()
+	If (Attacker != None) 
+		If (Attacker.IsHostileToActor(PlayerRef) || (Attacker.GetFactionReaction(PlayerRef) == 1))
+			If Utility.RandomInt(0,99) < ConfigMenu.fRapeChanceSlider
+				If (PlayerRef.GetDistance(Attacker) < 50000.0) || (Attacker.GetParentCell() == PlayerRef.GetParentCell())
 					Return True
 				EndIf
 			EndIf
 		EndIf
 	EndIf
 	Return False
-	((Attacker != None) && (Utility.RandomInt(0,99) < ConfigMenu.fSimpleSlaveryChanceSlider) && ((Attacker.GetParentCell() == PlayerRef.GetParentCell()) || PlayerRef.GetDistance(Attacker) < 10000.0 ))
 EndFunction
 
 Function RevivePlayer(Bool bRevive)
+	bIsraped = False
+	If !bRevive && bRape()
+		Actor[] rapistActors = RapeScript.getRapists(PlayerRef,Attacker)
+		bIsraped = RapeScript.rapePlayer(rapistActors)
+		If bIsraped
+			int i = Utility.randomInt(0,(ConfigMenu.fMaxRapes - 1) As int)
+			While i > 0
+				Game.DisablePlayerControls()
+				Utility.Wait(6.0)
+				RapeScript.rapePlayer(rapistActors)
+				i -= 1
+			EndWhile
+		EndIf
+		PlayerRef.RemoveFromFaction(RapeScript.CalmFaction)
+		Attacker && Attacker.RemoveFromFaction(RapeScript.CalmFaction)
+		PlayerRef.DrawWeapon()
+		Utility.Wait(1.0)
+		PlayerRef.SheatheWeapon()
+		Game.DisablePlayerControls()
+		ConfigMenu.bIsLoggingEnabled && Debug.trace("MarkOfArkay: Player raped = " + bIsraped)
+	EndIf
 	Bool bSendToSlavery = bSendToSlavery()
 	If bRevive || bSendToSlavery
 		If ConfigMenu.bShiftBack || bSendToSlavery
@@ -1391,9 +1432,11 @@ Function RevivePlayer(Bool bRevive)
 							RespawnScript.PlayerMarker.SetPosition(PlayerRef.GetPositionx(), PlayerRef.GetPositiony(), PlayerRef.GetPositionz())
 							RespawnScript.PlayerMarker.SetAngle(0.0, 0.0, PlayerRef.GetAnglez())
 							Utility.Wait(0.5)
-							PlayerRef.PushActorAway(PlayerRef,0)
-							Utility.Wait(0.1)
-							RespawnScript.PlayerMarker.Say(DeathTopic, PlayerRef, True)
+							If !bIsraped
+								PlayerRef.PushActorAway(PlayerRef,0)
+								Utility.Wait(0.1)
+								RespawnScript.PlayerMarker.Say(DeathTopic, PlayerRef, True)
+							EndIf
 						EndIf
 						If !bIsCameraStateSafe()
 							Game.ForceThirdPerson()
@@ -1789,6 +1832,7 @@ Function RevivePlayer(Bool bRevive)
 				EndIf
 				moaHostileNPCDetector.Stop()
 				moaHostileNPCDetector01.Stop()
+				RapeScript.unPacify()
 				If !bIsCameraStateSafe()
 					Game.ForceThirdPerson()
 				EndIf
@@ -1936,6 +1980,9 @@ Function SetGameVars(Bool abFast = False)
 	If !NPCScript
 		NPCScript = GetOwningQuest() As zzzmoanpcscript
 	EndIf
+	If !RapeScript
+		RapeScript = GetOwningQuest() As zzzmoarapescript
+	EndIf
 	If !PermaDeathScript
 		PermaDeathScript = PermaDeathQuest As zzzmoaPermaDeathScript
 	EndIf
@@ -1950,6 +1997,9 @@ Function SetGameVars(Bool abFast = False)
 	EndIf
 	sendModEvent("MOA_Int_PlayerLoadsGame")
 	DiseaseScript.RegisterForModEvent("MOA_RecalcCursedDisCureCost", "RecalcCursedDisCureCost")
+	If  (!PlayerRef.IsBleedingOut() && GetState() == "")
+		RapeScript.unPacify()
+	EndIf
 	checkMarkers(bFast = abFast)
 EndFunction
 
@@ -2114,4 +2164,9 @@ Function startInfectingPlayer()
 		ModEvent.Send(Handle)
 	EndIf
 EndFunction
+
+Event zzzmoa_Rape_End(string eventName, string argString, float argNum, form sender)
+	ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Rape scene ended.")
+	RapeScript.bIsBusy = False	
+EndEvent
 

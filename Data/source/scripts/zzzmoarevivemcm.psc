@@ -213,6 +213,12 @@ Int oidGhostShader
 Int oidLiteGhostCurse
 Int oidSimpleSlaveryChanceSlider
 Int oidOnlyEnslavedByEnemyFaction
+Int oidRapeChanceSlider
+Int oidRapesMaxSlider
+Int oidRapistsMaxSlider
+Int oidRapistGender_M
+Int oidSlaveryOnlyAfterRape
+Int oidSexInterface_M
 
 GlobalVariable Property moaGhostShader Auto
 Int Property iGhostShader = 0 Auto Hidden
@@ -482,7 +488,16 @@ Bool Property bVoicelessCurse = False Auto Hidden
 Bool Property bGhostCurse = False Auto Hidden
 Int Property iNameTagBackup Auto Hidden
 Spell Property GhostVisual Auto
-Bool Property bLiteGhostCurse Auto
+Bool Property bLiteGhostCurse Auto Hidden
+Float Property fRapeChanceSlider = 0.0 Auto Hidden
+Int Property iRapistGender = 0 Auto Hidden
+Float Property fMaxRapes = 1.0 Auto Hidden
+Float Property fMaxRapists = 1.0 Auto Hidden
+Bool Property bSlaveryOnlyAfterRape = False Auto Hidden
+Int Property iSexInterface = 0 Auto Hidden
+Bool Property bIsSexlabActive = False Auto Hidden
+Bool Property bIsOStimActive = False Auto Hidden
+Bool Property bIsFlowerGirlsActive = False Auto Hidden
 
 Event OnPageReset(String page)
 	SetCursorFillMode(LEFT_TO_RIGHT)
@@ -1250,40 +1265,69 @@ Event OnPageReset(String page)
 		EndIf
 		oidPlayerProtectFollower = AddToggleOption("$mrt_MarkofArkay_PlayerProtectFollower", bPlayerProtectFollower, flags)
 		SetCursorPosition(5)
-		oidFollowerProtectPlayer = AddToggleOption("$mrt_MarkofArkay_FollowerProtectPlayer", bFollowerProtectPlayer, flags)
+		oidFollowerProtectPlayer = AddToggleOption("$mrt_MarkofArkay_FollowerProtectPlayer", bFollowerProtectPlayer, flags)		
 		SetCursorPosition(9)
-		AddHeaderOption("$mrt_MarkofArkay_Simple_Slavery")
+		AddHeaderOption("$Rape")
 		SetCursorPosition(11)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && (bIsSexlabActive || bIsOStimActive || bIsFlowerGirlsActive)
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidSexInterface_M = AddMenuOption("$mrt_MarkofArkay_SexInterface_M", sGetSexInterface()[iSexInterface], flags)
+		SetCursorPosition(13)
+		oidRapeChanceSlider = AddSliderOption("$mrt_MarkofArkay_RapeChanceSlider_1", fRapeChanceSlider, "$mrt_MarkofArkay_RapeChanceSlider_2", flags)
+		SetCursorPosition(15)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && fRapeChanceSlider > 0.0
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidRapistGender_M = AddMenuOption("$mrt_MarkofArkay_RapistGender_M", sGetGenders()[iRapistGender], flags)
+		SetCursorPosition(17)
+		oidRapesMaxSlider = AddSliderOption("$mrt_MarkofArkay_RapesMaxSlider_1", fMaxRapes, "$mrt_MarkofArkay_RapesMaxSlider_2", flags)
+		SetCursorPosition(19)
+		oidRapistsMaxSlider = AddSliderOption("$mrt_MarkofArkay_RapistsMaxSlider_1", fMaxRapists, "$mrt_MarkofArkay_RapistsMaxSlider_2", flags)		
+		SetCursorPosition(23)
+		AddHeaderOption("$mrt_MarkofArkay_Simple_Slavery")
+		SetCursorPosition(25)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1)
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidSimpleSlaveryChanceSlider = AddSliderOption("$mrt_MarkofArkay_SimpleSlaveryChanceSlider_1", fSimpleSlaveryChanceSlider, "$mrt_MarkofArkay_SimpleSlaveryChanceSlider_2", flags)
-		SetCursorPosition(13)
+		SetCursorPosition(27)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && fRapeChanceSlider > 0.0 && fSimpleSlaveryChanceSlider > 0.0
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidSlaveryOnlyAfterRape = AddToggleOption("$mrt_MarkofArkay_SlaveryOnlyAfterRape", bSlaveryOnlyAfterRape, flags)
+		SetCursorPosition(29)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && fSimpleSlaveryChanceSlider > 0.0
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidOnlyEnslavedByEnemyFaction = AddToggleOption("$mrt_MarkofArkay_OnlyEnslavedByEnemyFaction", bOnlyEnslavedByEnemyFaction, flags)
-		SetCursorPosition(17)
+		SetCursorPosition(33)
 		AddHeaderOption("$mrt_MarkofArkay_Boss_Chest")
-		SetCursorPosition(19)
+		SetCursorPosition(35)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1)
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidBossChestChanceSlider = AddSliderOption("$mrt_MarkofArkay_BossChestChanceSlider_1", fBossChestChanceSlider, "$mrt_MarkofArkay_BossChestChanceSlider_2", flags)
-		SetCursorPosition(21)
+		SetCursorPosition(37)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && fBossChestChanceSlider > 0.0
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf		
 		oidBossChestNotClearedLoc = AddToggleOption("$mrt_MarkofArkay_BossChestNotClearedLoc", bBossChestNotInClearedLoc, flags)
-		SetCursorPosition(23)
+		SetCursorPosition(39)
 		oidBossChestOnlyCurLoc = AddToggleOption("$mrt_MarkofArkay_BossChestOnlyCurLoc",bBossChestOnlyCurLoc,flags)
 	ElseIf (page == "$Debug")
 		SetCursorPosition(0)
@@ -2104,6 +2148,9 @@ Event OnOptionSelect(Int option)
 	ElseIf (option == oidOnlyEnslavedByEnemyFaction)
 		bOnlyEnslavedByEnemyFaction = !bOnlyEnslavedByEnemyFaction
 		SetToggleOptionValue(oidOnlyEnslavedByEnemyFaction,bOnlyEnslavedByEnemyFaction)
+	ElseIf (option == oidSlaveryOnlyAfterRape)
+		bSlaveryOnlyAfterRape = !bSlaveryOnlyAfterRape
+		SetToggleOptionValue(oidSlaveryOnlyAfterRape,bSlaveryOnlyAfterRape)
 	ElseIf (option == oidAlwaysSpawn)
 		bAlwaysSpawn = !bAlwaysSpawn
 		SetToggleOptionValue(oidAlwaysSpawn,bAlwaysSpawn)
@@ -2621,6 +2668,21 @@ Event OnOptionSliderOpen(Int option)
 		SetSliderDialogDefaultValue(0.0)
 		SetSliderDialogRange(0.0, 100.0)
 		SetSliderDialogInterval(1.0)
+	ElseIf (option == oidRapeChanceSlider)
+		SetSliderDialogStartValue(fRapeChanceSlider)
+		SetSliderDialogDefaultValue(0.0)
+		SetSliderDialogRange(0.0, 100.0)
+		SetSliderDialogInterval(1.0)
+	ElseIf (option == oidRapesMaxSlider)
+		SetSliderDialogStartValue(fMaxRapes)
+		SetSliderDialogDefaultValue(1.0)
+		SetSliderDialogRange(1.0, 5.0)
+		SetSliderDialogInterval(1.0)
+	ElseIf (option == oidRapistsMaxSlider)
+		SetSliderDialogStartValue(fMaxRapists)
+		SetSliderDialogDefaultValue(1.0)
+		SetSliderDialogRange(1.0, 4.0)
+		SetSliderDialogInterval(1.0)
 	ElseIf (option == oidRespawnTimeSlider)
 		SetSliderDialogStartValue(fRespawnTimeSlider)
 		SetSliderDialogDefaultValue(0.0)
@@ -2857,6 +2919,18 @@ Event OnOptionSliderAccept(int option, Float value)
 		fSimpleSlaveryChanceSlider = value
 		SetSliderOptionValue(oidSimpleSlaveryChanceSlider, fSimpleSlaveryChanceSlider, "$mrt_MarkofArkay_SimpleSlaveryChanceSlider_2")
 		ForcePageReset()
+	ElseIf (option == oidRapeChanceSlider)
+		fRapeChanceSlider = value
+		SetSliderOptionValue(oidRapeChanceSlider, fRapeChanceSlider, "$mrt_MarkofArkay_RapeChanceSlider_2")
+		ForcePageReset()
+	ElseIf (option == oidRapesMaxSlider)
+		fMaxRapes = value
+		SetSliderOptionValue(oidRapesMaxSlider, fMaxRapes, "$mrt_MarkofArkay_RapesMaxSlider_2")
+		ForcePageReset()
+	ElseIf (option == oidRapistsMaxSlider)
+		fMaxRapists = value
+		SetSliderOptionValue(oidRapistsMaxSlider, fMaxRapists, "$mrt_MarkofArkay_RapistsMaxSlider_2")
+		ForcePageReset()
 	ElseIf (option == oidTotalCustomRPSlotSlider)
 		fTotalCustomRPSlotSlider = value
 		SetCustomRPFlags()
@@ -2907,6 +2981,14 @@ Event OnOptionMenuOpen(Int option)
 	ElseIf (option == oidEquipInclude_M)
 		SetMenuDialogoptions(sGetLoseInclusions())
 		SetMenuDialogStartIndex(iLoseInclusion)
+		SetMenuDialogDefaultIndex(0)
+	ElseIf (option == oidRapistGender_M)
+		SetMenuDialogoptions(sGetGenders())
+		SetMenuDialogStartIndex(iRapistGender)
+		SetMenuDialogDefaultIndex(0)
+	ElseIf (option == oidSexInterface_M)
+		SetMenuDialogoptions(sGetSexInterface())
+		SetMenuDialogStartIndex(iSexInterface)
 		SetMenuDialogDefaultIndex(0)
 	ElseIf (option == oidSelectedCustomRPSlot_M)
 		SetMenuDialogoptions(sCustomRPs)
@@ -2975,6 +3057,14 @@ Event OnOptionMenuAccept(Int option, Int index)
 	ElseIf (option == oidEquipInclude_M)
 		iLoseInclusion = index
 		SetMenuOptionValue(oidEquipInclude_M, sGetLoseInclusions()[iLoseInclusion])
+		ForcePageReset()
+	ElseIf (option == oidRapistGender_M)
+		iRapistGender = index
+		SetMenuOptionValue(oidRapistGender_M, sGetGenders()[iRapistGender])
+		ForcePageReset()
+	ElseIf (option == oidSexInterface_M)
+		iSexInterface = index
+		SetMenuOptionValue(oidSexInterface_M, sGetSexInterface()[iSexInterface])
 		ForcePageReset()
 	ElseIf (option == oidHostileOptions_M)
 		iHostileOption = index
@@ -3383,6 +3473,14 @@ Event OnOptionDefault(Int option)
 		iLoseInclusion = 0
 		SetMenuOptionValue(oidEquipInclude_M, sGetLoseInclusions()[iLoseInclusion])
 		ForcePageReset()
+	ElseIf (option == oidRapistGender_M)
+		iRapistGender = 0
+		SetMenuOptionValue(oidRapistGender_M, sGetGenders()[iRapistGender])
+		ForcePageReset()
+	ElseIf (option == oidSexInterface_M)
+		iSexInterface = 0
+		SetMenuOptionValue(oidSexInterface_M, sGetSexInterface()[iSexInterface])
+		ForcePageReset()
 	ElseIf (option == oidSkillReduceRandomVal)
 		bSkillReduceRandomVal = False
 		SetToggleOptionValue(oidSkillReduceRandomVal,bSkillReduceRandomVal)
@@ -3418,6 +3516,9 @@ Event OnOptionDefault(Int option)
 	ElseIf (option == oidOnlyEnslavedByEnemyFaction )
 		bOnlyEnslavedByEnemyFaction = False
 		SetToggleOptionValue(oidOnlyEnslavedByEnemyFaction ,bOnlyEnslavedByEnemyFaction)
+	ElseIf (option == oidSlaveryOnlyAfterRape )
+		bSlaveryOnlyAfterRape = False
+		SetToggleOptionValue(oidSlaveryOnlyAfterRape ,bSlaveryOnlyAfterRape)
 	ElseIf (option == oidAlwaysSpawn )
 		bAlwaysSpawn = False
 		SetToggleOptionValue(oidAlwaysSpawn ,bAlwaysSpawn)
@@ -3512,6 +3613,18 @@ Event OnOptionDefault(Int option)
 	ElseIf (option == oidSimpleSlaveryChanceSlider)
 		fSimpleSlaveryChanceSlider = 0.0
 		SetSliderOptionValue(oidSimpleSlaveryChanceSlider, fSimpleSlaveryChanceSlider, "$mrt_MarkofArkay_SimpleSlaveryChanceSlider_2")
+		ForcePageReset()
+	ElseIf (option == oidRapeChanceSlider)
+		fRapeChanceSlider = 0.0
+		SetSliderOptionValue(oidRapeChanceSlider, fRapeChanceSlider, "$mrt_MarkofArkay_RapeChanceSlider_2")
+		ForcePageReset()
+	ElseIf (option == oidRapesMaxSlider)
+		fMaxRapes = 1.0
+		SetSliderOptionValue(oidRapesMaxSlider, fMaxRapes, "$mrt_MarkofArkay_RapesMaxSlider_2")
+		ForcePageReset()
+	ElseIf (option == oidRapistsMaxSlider)
+		fMaxRapists = 1.0
+		SetSliderOptionValue(oidRapistsMaxSlider, fMaxRapists, "$mrt_MarkofArkay_RapistsMaxSlider_2")
 		ForcePageReset()
 	ElseIf (option == oidHealthTriggerSlider)
 		fHealthPercTrigger = 0.00
@@ -3974,6 +4087,10 @@ Event OnOptionHighlight(Int option)
 		SetInfoText("$mrt_MarkofArkay_DESC_MoreRandomRespawn")
 	ElseIf (option == oidEquipInclude_M)
 		SetInfoText("$mrt_MarkofArkay_DESC_EquipInclude_M")
+	ElseIf (option == oidRapistGender_M)
+		SetInfoText("$mrt_MarkofArkay_DESC_RapistGender_M")
+	ElseIf (option == oidSexInterface_M)
+		SetInfoText("$mrt_MarkofArkay_DESC_SexInterface_M")
 	ElseIf (option == oidDisableUnsafe)
 		SetInfoText("$mrt_MarkofArkay_DESC_DisableUnsafe")
 	ElseIf (option == oidMinLoseGoldSlider)
@@ -4020,6 +4137,12 @@ Event OnOptionHighlight(Int option)
 		SetInfoText("$mrt_MarkofArkay_DESC_BossChestChanceSlider")
 	ElseIf (option == oidSimpleSlaveryChanceSlider)
 		SetInfoText("$mrt_MarkofArkay_DESC_SimpleSlaveryChanceSlider")
+	ElseIf (option == oidRapeChanceSlider)
+		SetInfoText("$mrt_MarkofArkay_DESC_RapeChanceSlider")
+	ElseIf (option == oidRapesMaxSlider)
+		SetInfoText("$mrt_MarkofArkay_DESC_RapesMaxSlider")
+	ElseIf (option == oidRapistsMaxSlider)
+		SetInfoText("$mrt_MarkofArkay_DESC_RapistsMaxSlider")
 	ElseIf (option == oidHealthTriggerSlider)
 		SetInfoText("$mrt_MarkofArkay_DESC_HealthPercSlider")	
 	ElseIf (option == oidExcludeQuestItems)		
@@ -4086,6 +4209,8 @@ Event OnOptionHighlight(Int option)
 		SetInfoText("$mrt_MarkofArkay_DESC_BossChestNotClearedLoc")
 	ElseIf (option == oidOnlyEnslavedByEnemyFaction)
 		SetInfoText("$mrt_MarkofArkay_DESC_OnlyEnslavedByEnemyFaction")
+	ElseIf (option == oidSlaveryOnlyAfterRape)
+		SetInfoText("$mrt_MarkofArkay_DESC_SlaveryOnlyAfterRape")
 	ElseIf (option == oidAlwaysSpawn)
 		SetInfoText("$mrt_MarkofArkay_DESC_AlwaysSpawn")
 	ElseIf (option == oidOnlySpawn)
@@ -4183,6 +4308,7 @@ Function moaStop(Bool bReset = False)
 		PlayerRef.RemoveSpell(MoveCustomMarker)
 		PlayerRef.RemoveSpell(RecallMarker)
 		ReviveScript.DiseaseScript.cureAllDiseases(False)
+		ReviveScript.RapeScript.unPacify()
 		DetachMarker1.MoveToMyEditorLocation()
 		DetachMarker2.MoveToMyEditorLocation()
 		DetachMarker3.MoveToMyEditorLocation()
@@ -4716,6 +4842,57 @@ String[] Function sGetSpawns()
 	Return sSpawns
 EndFunction
 
+String[] Function sGetGenders()
+	String[] sGenders = New String[3]
+	sGenders[0] = "$Both"
+	sGenders[1] = "$Male"
+	sGenders[2] = "$Female"
+	return sGenders
+EndFunction
+
+String[] Function sGetSexInterface()
+	Int i = 0
+	If bIsSexlabActive
+		i += 1
+	EndIf
+	If bIsOStimActive
+		i += 1
+	EndIf
+	If bIsFlowerGirlsActive
+		i += 1
+	EndIf
+	String[] sSexInterfaces = Utility.CreateStringArray(i)
+	i = 0
+	If bIsSexlabActive
+		sSexInterfaces[i] = "$sexlab"
+		i += 1
+	EndIf
+	If bIsOStimActive
+		sSexInterfaces[i] = "$ostim"
+		i += 1
+	EndIf
+	If bIsFlowerGirlsActive
+		sSexInterfaces[i] = "$flowergirls"
+		i += 1
+	EndIf
+	If iSexInterface > (sSexInterfaces.length - 1)
+		iSexInterface = 0
+	EndIf
+	Return sSexInterfaces
+EndFunction
+
+Int Function iGetCurSexInterface()
+	String[] interfs = sGetSexInterface()
+	If interfs[iSexInterface] == "$sexlab"
+		Return 0
+	ElseIf interfs[iSexInterface] == "$ostim"
+		Return 1
+	ElseIf interfs[iSexInterface] == "$flowergirls"
+		Return 2
+	EndIf
+	Return -1
+EndFunction
+
 Int Function iGetType(Int iType, Bool bEnabled)
 	Return  ((iType + iType) * (bEnabled As Int)) - iType
 Endfunction
@@ -4929,6 +5106,9 @@ Bool function bLoadUserSettings(String sFileName)
 	bLoseSkillForever = fiss.loadBool("bLoseSkillForever")
 	bIsRagdollEnabled = fiss.loadBool("bIsRagdollEnabled")
 	iLoseInclusion = fiss.loadInt("iLoseInclusion")
+	iRapistGender = fiss.loadInt("iRapistGender")
+	iSexInterface = fiss.loadInt("iSexInterface")
+	sGetSexInterface()
 	fRespawnTimeSlider = fiss.loadFloat("fRespawnTimeSlider")
 	If fRespawnTimeSlider > 0.0
 		bShowTimeScaleWarning = False
@@ -4957,6 +5137,9 @@ Bool function bLoadUserSettings(String sFileName)
 	fLowerNPCMaxLvlDiff = fiss.loadFloat("fLowerNPCMaxLvlDiff")
 	fHealthPercTrigger = fiss.loadFloat("fHealthPercTrigger")
 	fSimpleSlaveryChanceSlider = fiss.loadFloat("fSimpleSlaveryChanceSlider")
+	fRapeChanceSlider = fiss.loadFloat("fRapeChanceSlider")
+	fMaxRapes = fiss.loadFloat("fMaxRapes")
+	fMaxRapists = fiss.loadFloat("fMaxRapists")
 	fBossChestChanceSlider = fiss.loadFloat("fBossChestChanceSlider")
 	bLoseItem = fiss.loadBool("bLoseItem")
 	bExcludeQuestItems = fiss.loadBool("bExcludeQuestItems")
@@ -4989,6 +5172,7 @@ Bool function bLoadUserSettings(String sFileName)
 	bBossChestNotInClearedLoc = fiss.loadBool("bBossChestNotInClearedLoc")
 	moaBossChestNotInclearedLoc.SetValue(bBossChestNotInClearedLoc As Int)
 	bOnlyEnslavedByEnemyFaction = fiss.loadBool("bOnlyEnslavedByEnemyFaction")
+	bSlaveryOnlyAfterRape = fiss.loadBool("bSlaveryOnlyAfterRape")
 	bAlwaysSpawn = fiss.loadBool("bAlwaysSpawn")
 	bOnlySpawn = fiss.loadBool("bOnlySpawn")
 	bDisableUnsafe = fiss.loadBool("bDisableUnsafe")
@@ -5034,6 +5218,12 @@ Bool Function bCheckFissErrors(String strErrors)
 			fHealthPercTrigger = 0.00
 		ElseIf strError == "Element fSimpleSlaveryChanceSlider not found"
 			fSimpleSlaveryChanceSlider = 0.00
+		ElseIf strError == "Element fRapeChanceSlider not found"
+			fRapeChanceSlider = 0.00
+		ElseIf strError == "Element fMaxRapes not found"
+			fMaxRapes = 1.00
+		ElseIf strError == "Element fMaxRapists not found"
+			fMaxRapists = 1.00
 		ElseIf strError == "Element fDisChanceSlider not found"
 			fDisChanceSlider = 25.00
 		ElseIf strError == "Element fDisProgChanceSlider not found"
@@ -5083,6 +5273,8 @@ Bool Function bCheckFissErrors(String strErrors)
 			moaBossChestNotInclearedLoc.SetValueInt(0)
 		ElseIf strError == "Element bOnlyEnslavedByEnemyFaction not found"
 			bOnlyEnslavedByEnemyFaction = False
+		ElseIf strError == "Element bSlaveryOnlyAfterRape not found"
+			bSlaveryOnlyAfterRape = False
 		ElseIf strError == "Element bNPCHasLevelRange not found"
 			bNPCHasLevelRange = True
 			moaNPCHasLevelRange.SetValueInt(0)
@@ -5281,6 +5473,8 @@ bool function bSaveUserSettings(String sFileName)
 	fiss.saveBool("bAltEyeFix", bAltEyeFix)
 	fiss.saveInt("iReducedSkill", iReducedSkill)
 	fiss.saveInt("iLoseInclusion", iLoseInclusion)
+	fiss.saveInt("iRapistGender", iRapistGender)
+	fiss.saveInt("iSexInterface", iSexInterface)
 	fiss.saveBool("bSkillReduceRandomVal", bSkillReduceRandomVal)
 	fiss.saveFloat("fSkillReduceValSlider", fSkillReduceValSlider)
 	fiss.saveFloat("fSkillReduceMinValSlider", fSkillReduceMinValSlider)
@@ -5313,6 +5507,9 @@ bool function bSaveUserSettings(String sFileName)
 	fiss.saveFloat("fBossChestChanceSlider",fBossChestChanceSlider)
 	fiss.saveFloat("fHealthPercTrigger",fHealthPercTrigger)
 	fiss.saveFloat("fSimpleSlaveryChanceSlider",fSimpleSlaveryChanceSlider)
+	fiss.saveFloat("fRapeChanceSlider",fRapeChanceSlider)
+	fiss.saveFloat("fMaxRapes",fMaxRapes)
+	fiss.saveFloat("fMaxRapists",fMaxRapists)
 	fiss.saveBool("bExcludeQuestItems",bExcludeQuestItems)
 	fiss.saveBool("bLoseItem",bLoseItem)
 	fiss.saveBool("bLoseGold",bLoseGold)
@@ -5343,6 +5540,7 @@ bool function bSaveUserSettings(String sFileName)
 	fiss.SaveBool("bBossChestOnlyCurLoc", bBossChestOnlyCurLoc)
 	fiss.SaveBool("bBossChestNotInClearedLoc", bBossChestNotInClearedLoc)
 	fiss.SaveBool("bOnlyEnslavedByEnemyFaction", bOnlyEnslavedByEnemyFaction)
+	fiss.SaveBool("bSlaveryOnlyAfterRape", bSlaveryOnlyAfterRape)
 	fiss.SaveBool("bAlwaysSpawn", bAlwaysSpawn)
 	fiss.SaveBool("bOnlySpawn", bOnlySpawn)
 	fiss.saveBool("bDoNotStopCombat", bDoNotStopCombat)
@@ -5473,6 +5671,8 @@ function LoadDefaultSettings()
 	bRandomItemCurse = False
 	bMoreRandomRespawn = False
 	iLoseInclusion = 0
+	iRapistGender = 0
+	iSexInterface = 0
 	fMinLoseGoldSlider = 50.0
 	fMaxLoseGoldSlider = 250.0
 	bLoseGoldAll = False
@@ -5493,7 +5693,11 @@ function LoadDefaultSettings()
 	fMaxItemsToCheckSlider = 100.0
 	fBossChestChanceSlider = 0.0
 	fSimpleSlaveryChanceSlider = 0.0
+	fRapeChanceSlider = 0.0
+	fMaxRapes = 1.0
+	fMaxRapists = 1.0
 	bOnlyEnslavedByEnemyFaction = False
+	bSlaveryOnlyAfterRape = False
 	fHealthPercTrigger = 0.00
 	bExcludeQuestItems = True
 	bLoseItem = False

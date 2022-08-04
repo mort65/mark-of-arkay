@@ -37,6 +37,7 @@ FormList Property ExtraCloneItems Auto
 FormList Property Thalmors Auto
 FormList Property Spriggans Auto
 FormList Property Witches Auto
+FormList Property ChildRaces Auto
 Location Property ThalmorEmbassyLocation Auto
 Location Property BthardamzLocation Auto
 Location Property ShrineofMehrunesDagonLocation Auto
@@ -1299,4 +1300,8 @@ Function RemoveSpawnedThiefs()
 		EndIf
 		i += 1
 	EndWhile
+EndFunction
+
+Bool Function isActorChild(Actor actorRef)
+	return (actorRef.isChild() || (actorRef.GetRace() && childRaces.find(actorRef.GetRace()) > -1))
 EndFunction

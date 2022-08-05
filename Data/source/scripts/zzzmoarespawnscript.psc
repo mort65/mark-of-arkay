@@ -382,7 +382,7 @@ EndFunction
 
 Bool Function bIsArrived(ObjectReference akMarker)
 	While !ReviveScript.bReadyForRespawn
-		Utility.Wait(0.1)
+		Utility.WaitMenuMode(0.2)
 	EndWhile
 	Float fMinDistance = 1000.0
 	If ConfigMenu.bIsRagdollEnabled

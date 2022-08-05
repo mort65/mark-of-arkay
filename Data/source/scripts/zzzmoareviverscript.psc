@@ -13,6 +13,7 @@ zzzmoasexlabinterface Property SexLabInterface Auto
 zzzmoaostiminterface Property OStimInterface Auto
 zzzmoaflowergirlsinterface Property FlowerGirlsInterface Auto
 zzzmoarapescript Property RapeScript Auto Hidden
+Quest Property ReviverQuest Auto
 Quest Property moaReviveMCMscript Auto
 Quest Property moaHostileNPCDetector Auto
 Quest Property moaHostileNPCDetector01 Auto
@@ -238,11 +239,11 @@ Event OnInit()
 	EndIf
 	moaBleedoutHandlerState.SetValue(0)
 	PriorityArray = New Float[5]
-	SkillScript = GetOwningQuest() As zzzmoaskillcursescript
-	ItemScript = GetOwningQuest() As zzzmoaitemcursescript
-	RespawnScript = GetOwningQuest() As zzzmoarespawnscript
-	NPCScript = GetOwningQuest() As zzzmoanpcscript
-	RapeScript = GetOwningQuest() As zzzmoarapescript
+	SkillScript = ReviverQuest As zzzmoaskillcursescript
+	ItemScript = ReviverQuest As zzzmoaitemcursescript
+	RespawnScript = ReviverQuest As zzzmoarespawnscript
+	NPCScript = ReviverQuest As zzzmoanpcscript
+	RapeScript = ReviverQuest As zzzmoarapescript
 	PermaDeathScript = PermaDeathQuest As zzzmoaPermaDeathScript
 	ConfigMenu.checkMods()
 	SetGameVars(True)
@@ -302,7 +303,7 @@ Function checkMarkers(Bool bTavern = True, Bool bExtra = True, Bool bCustom = Tr
 	RespawnScript.RegisterForModEvent("MOA_CheckMarkers","OnCheckingMarkers")
 	Int handle = ModEvent.Create("MOA_CheckMarkers")
 	If (handle)
-		ModEvent.PushForm(handle, GetOwningQuest())
+		ModEvent.PushForm(handle, ReviverQuest)
 		ModEvent.PushBool(handle, bTavern)
 		ModEvent.PushBool(handle, bExtra)
 		ModEvent.PushBool(handle, bCustom)
@@ -657,6 +658,9 @@ Function restore(Int iRevivePlayer = 1, Bool bReviveFollower = True, Bool bEffec
 		If !ConfigMenu.bDoNotStopCombatAfterRevival
 			!moaPlayerGhostQuest.IsRunning() && PlayerRef.StopCombatAlarm()
 		EndIf
+		PlayerRef.DrawWeapon()
+		Utility.wait(2.0)
+		PlayerRef.SheatheWeapon()
 	EndIf
 	Attacker = None
 	If PlayerRef.GetActorValue("paralysis")
@@ -1322,15 +1326,18 @@ Bool Function bSendToSlavery()
 EndFunction
 
 Bool Function bRape()
-	If (Attacker != None) 
-		If (Attacker.IsHostileToActor(PlayerRef) || (Attacker.GetFactionReaction(PlayerRef) == 1))
-			If Utility.RandomInt(0,99) < ConfigMenu.fRapeChanceSlider
-				If (PlayerRef.GetDistance(Attacker) < 50000.0) || (Attacker.GetParentCell() == PlayerRef.GetParentCell())
-					Return True
-				EndIf
+	If !Attacker || (Attacker == None) || playerRef.IsFlying() || playerRef.IsOnMount()
+		Return False
+	EndIf
+	
+	If !ConfigMenu.bOnlyHostilesRape || (Attacker.IsHostileToActor(PlayerRef) || (Attacker.GetFactionReaction(PlayerRef) == 1))
+		If Utility.RandomInt(0,99) < ConfigMenu.fRapeChanceSlider
+			If (PlayerRef.GetDistance(Attacker) < 5000.0) || (Attacker.GetParentCell() == PlayerRef.GetParentCell())
+				Return True
 			EndIf
 		EndIf
 	EndIf
+
 	Return False
 EndFunction
 
@@ -1706,11 +1713,11 @@ Function RevivePlayer(Bool bRevive)
 					ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Last attacker and other actors are healed.")
 				EndIf
 				While bInfectingPlayer
-					Utility.Wait(0.1)
+					Utility.WaitMenuMode(0.2)
 				EndWhile
-				bReadyForRespawn = True
+				bReadyForRespawn = True ;allowing bIsArrived in respawnscript to teleport player
 				While bReadyForRespawn
-					Utility.Wait(0.1)
+					Utility.WaitMenuMode(0.2)
 				EndWhile
 				Utility.Wait(0.5)
 				If PlayerRef.IsDead()
@@ -1969,19 +1976,19 @@ EndFunction
 Function SetGameVars(Bool abFast = False)
 	Game.SetGameSettingFloat("fPlayerDeathReloadTime", 5.00000)
 	If !SkillScript
-		SkillScript = GetOwningQuest() As zzzmoaskillcursescript
+		SkillScript = ReviverQuest As zzzmoaskillcursescript
 	EndIf
 	If !ItemScript
-		ItemScript = GetOwningQuest() As zzzmoaitemcursescript
+		ItemScript = ReviverQuest As zzzmoaitemcursescript
 	EndIf
 	If !RespawnScript
-		RespawnScript = GetOwningQuest() As zzzmoarespawnscript
+		RespawnScript = ReviverQuest As zzzmoarespawnscript
 	EndIf
 	If !NPCScript
-		NPCScript = GetOwningQuest() As zzzmoanpcscript
+		NPCScript = ReviverQuest As zzzmoanpcscript
 	EndIf
 	If !RapeScript
-		RapeScript = GetOwningQuest() As zzzmoarapescript
+		RapeScript = ReviverQuest As zzzmoarapescript
 	EndIf
 	If !PermaDeathScript
 		PermaDeathScript = PermaDeathQuest As zzzmoaPermaDeathScript
@@ -1996,6 +2003,7 @@ Function SetGameVars(Bool abFast = False)
 		ConfigMenu.ToggleFallDamage(False)
 	EndIf
 	sendModEvent("MOA_Int_PlayerLoadsGame")
+	ItemScript.RegisterItemCheckers()
 	DiseaseScript.RegisterForModEvent("MOA_RecalcCursedDisCureCost", "RecalcCursedDisCureCost")
 	If  (!PlayerRef.IsBleedingOut() && GetState() == "")
 		RapeScript.unPacify()
@@ -2150,7 +2158,7 @@ Function startRespawning()
 	RespawnScript.RegisterForModEvent("MOA_Respawn","OnRespawn")
 	Int handle = ModEvent.Create("MOA_Respawn")
 	If (handle)
-		ModEvent.PushForm(handle, GetOwningQuest())
+		ModEvent.PushForm(handle, ReviverQuest)
 		ModEvent.Send(Handle)
 	EndIf
 EndFunction
@@ -2160,7 +2168,7 @@ Function startInfectingPlayer()
 	DiseaseScript.RegisterForModEvent("MOA_InfectPlayer","OnInfectPlayer")
 	Int handle = ModEvent.Create("MOA_InfectPlayer")
 	If (handle)
-		ModEvent.PushForm(handle, GetOwningQuest())
+		ModEvent.PushForm(handle, ReviverQuest)
 		ModEvent.Send(Handle)
 	EndIf
 EndFunction

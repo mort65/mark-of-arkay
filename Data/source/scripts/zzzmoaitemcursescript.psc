@@ -3,16 +3,16 @@ Scriptname zzzmoaitemcursescript extends Quest
 Import zzzmoautilscript
 zzzmoaReviveMCM Property ConfigMenu Auto
 zzzmoaReviverScript Property ReviveScript Auto
-zzzmoaitemcheckerscriptA Property ItemcheckerA Auto Hidden
-zzzmoaitemcheckerscriptB Property ItemcheckerB Auto Hidden
-zzzmoaitemcheckerscriptC Property ItemcheckerC Auto Hidden
-zzzmoaitemcheckerscriptD Property ItemcheckerD Auto Hidden
-zzzmoaitemcheckerscriptE Property ItemcheckerE Auto Hidden
-zzzmoaitemcheckerscriptF Property ItemcheckerF Auto Hidden
-zzzmoaitemcheckerscriptG Property ItemcheckerG Auto Hidden
-zzzmoaitemcheckerscriptH Property ItemcheckerH Auto Hidden
-zzzmoaitemcheckerscriptI Property ItemcheckerI Auto Hidden
-zzzmoaitemcheckerscriptJ Property ItemcheckerJ Auto Hidden
+zzzmoaitemcheckerscriptA Property ItemcheckerA Auto
+zzzmoaitemcheckerscriptB Property ItemcheckerB Auto
+zzzmoaitemcheckerscriptC Property ItemcheckerC Auto
+zzzmoaitemcheckerscriptD Property ItemcheckerD Auto
+zzzmoaitemcheckerscriptE Property ItemcheckerE Auto
+zzzmoaitemcheckerscriptF Property ItemcheckerF Auto
+zzzmoaitemcheckerscriptG Property ItemcheckerG Auto
+zzzmoaitemcheckerscriptH Property ItemcheckerH Auto
+zzzmoaitemcheckerscriptI Property ItemcheckerI Auto
+zzzmoaitemcheckerscriptJ Property ItemcheckerJ Auto
 MiscObject Property Gold001 Auto
 MiscObject Property MarkOfArkay Auto
 SoulGem Property BlackFilledGem Auto
@@ -34,6 +34,7 @@ Int Property iTotalValues = 0 Auto Hidden;
 Int Property iItemCheckers = 0 Auto Hidden
 Container Property ItemChest Auto
 Bool Property bEquipmentRegistered = False Auto Hidden
+Quest Property ReviverQuest Auto
 
 Function SetVars()
 	If Equipment.Length != 35
@@ -41,6 +42,19 @@ Function SetVars()
 	EndIf
 	bEquipmentRegistered = False
 Endfunction
+
+Function RegisterItemCheckers()
+	ItemcheckerA.RegisterForModEvent("MOA_CheckItemsA","OnCheckItemsA")
+	ItemcheckerB.RegisterForModEvent("MOA_CheckItemsB","OnCheckItemsB")
+	ItemcheckerC.RegisterForModEvent("MOA_CheckItemsC","OnCheckItemsC")
+	ItemcheckerD.RegisterForModEvent("MOA_CheckItemsD","OnCheckItemsD")
+	ItemcheckerE.RegisterForModEvent("MOA_CheckItemsE","OnCheckItemsE")
+	ItemcheckerF.RegisterForModEvent("MOA_CheckItemsF","OnCheckItemsF")
+	ItemcheckerG.RegisterForModEvent("MOA_CheckItemsG","OnCheckItemsG")
+	ItemcheckerH.RegisterForModEvent("MOA_CheckItemsH","OnCheckItemsH")
+	ItemcheckerI.RegisterForModEvent("MOA_CheckItemsI","OnCheckItemsI")
+	ItemcheckerJ.RegisterForModEvent("MOA_CheckItemsJ","OnCheckItemsJ")
+EndFunction
 
 Function RestoreLostItems(Actor ActorRef)
 	bIsBusy = True ;prevent loop if runed from thiefnpc
@@ -369,68 +383,28 @@ Function LoseOtherItems()
 				iIndex -= 1
 				If iIndex > 8
 					sModEvent = "MOA_CheckItemsJ"
-					If !ItemcheckerJ
-						ItemcheckerJ = (Self As Quest) As zzzmoaitemcheckerscriptJ
-					EndIf
-					ItemcheckerJ.RegisterForModEvent(sModEvent,"OnCheckItemsJ")
 				ElseIf iIndex > 7
 					sModEvent = "MOA_CheckItemsI"
-					If !ItemcheckerI
-						ItemcheckerI = (Self As Quest) As zzzmoaitemcheckerscriptI
-					EndIf
-					ItemcheckerI.RegisterForModEvent(sModEvent,"OnCheckItemsI")
 				ElseIf iIndex > 6
 					sModEvent = "MOA_CheckItemsH"
-					If !ItemcheckerH
-						ItemcheckerH = (Self As Quest) As zzzmoaitemcheckerscriptH
-					EndIf
-					ItemcheckerH.RegisterForModEvent(sModEvent,"OnCheckItemsH")
 				ElseIf iIndex > 5
 					sModEvent = "MOA_CheckItemsG"
-					If !ItemcheckerG
-						ItemcheckerG = (Self As Quest) As zzzmoaitemcheckerscriptG
-					EndIf
-					ItemcheckerG.RegisterForModEvent(sModEvent,"OnCheckItemsG")
 				ElseIf iIndex > 4
 					sModEvent = "MOA_CheckItemsF"
-					If !ItemcheckerF
-						ItemcheckerF = (Self As Quest) As zzzmoaitemcheckerscriptF
-					EndIf
-					ItemcheckerF.RegisterForModEvent(sModEvent,"OnCheckItemsF")
 				ElseIf iIndex > 3
 					sModEvent = "MOA_CheckItemsE"
-					If !ItemcheckerE
-						ItemcheckerE = (Self As Quest) As zzzmoaitemcheckerscriptE
-					EndIf
-					ItemcheckerE.RegisterForModEvent(sModEvent,"OnCheckItemsE")
 				ElseIf iIndex > 2
 					sModEvent = "MOA_CheckItemsD"
-					If !ItemcheckerD
-						ItemcheckerD = (Self As Quest) As zzzmoaitemcheckerscriptD
-					EndIf
-					ItemcheckerD.RegisterForModEvent(sModEvent,"OnCheckItemsD")
 				ElseIf iIndex > 1
 					sModEvent = "MOA_CheckItemsC"
-					If !ItemcheckerC
-						ItemcheckerC = (Self As Quest) As zzzmoaitemcheckerscriptC
-					EndIf
-					ItemcheckerC.RegisterForModEvent(sModEvent,"OnCheckItemsC")
 				ElseIf iIndex > 0
 					sModEvent = "MOA_CheckItemsB"
-					If !ItemcheckerB
-						ItemcheckerB = (Self As Quest) As zzzmoaitemcheckerscriptB
-					EndIf
-					ItemcheckerB.RegisterForModEvent(sModEvent,"OnCheckItemsB")
 				Else
 					sModEvent = "MOA_CheckItemsA"
-					If !ItemcheckerA
-						ItemcheckerA = (Self As Quest) As zzzmoaitemcheckerscriptA
-					EndIf
-					ItemcheckerA.RegisterForModEvent(sModEvent,"OnCheckItemsA")
 				EndIf
 				handle = ModEvent.Create(sModEvent)
 				If (handle)
-					ModEvent.PushForm(handle, Self)
+					ModEvent.PushForm(handle, ReviverQuest)
 					If iIndex > 0
 						containerArr[iIndex] = LostItemsChest.PlaceAtMe(ItemChest,abForcePersist = True)
 						transferItems(PlayerRef, containerArr[iIndex] As ObjectReference, Utility.RandomInt(0, PlayerRef.GetNumItems() - iNum), iNum)
@@ -446,9 +420,10 @@ Function LoseOtherItems()
 						ModEvent.Send(Handle)
 					EndIf
 				EndIf
+				Utility.WaitMenuMode(0.1)
 			EndWhile
 			While iItemCheckers > 0
-				Utility.Wait(0.1)
+				Utility.WaitMenuMode(0.2)
 			Endwhile
 			iIndex = containerArr.Length
 			While iIndex > 1

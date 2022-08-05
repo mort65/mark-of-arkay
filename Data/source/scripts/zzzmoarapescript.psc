@@ -20,6 +20,7 @@ ReferenceAlias Property Rapist10 Auto
 ReferenceAlias Property Victim1 Auto
 Formlist Property PacifiedHostiles Auto
 Formlist Property PacifiedTeamMates Auto
+FormList Property BedsList Auto
 
 Event OnInit()
 	RegisterForModEvent("MOA_Int_PlayerLoadsGame", "On_MOA_Int_PlayerLoadsGame")
@@ -49,9 +50,28 @@ EndFunction
 
 
 Bool Function isRapistValid(Actor rapist)
-	If rapist
-		Int iSex = getActorSex(rapist)
+	If rapist && (rapist != None)
+		If (getInteface() != "sexlab") ;sexlab's IsValidActor check for these
+			If !rapist.Is3DLoaded()
+				Utility.WaitMenuMode(2.0)
+				If !rapist.Is3DLoaded()
+					Return False
+				EndIf
+			EndIf
+			Race ActorRace = rapist.GetLeveledActorBase().GetRace()
+			string RaceName = ActorRace.GetName()
+			If ConfigMenu.bPUOK
+				RaceName = RaceName + MiscUtil.GetRaceEditorID(ActorRace)
+			EndIf
+			If StringUtil.Find(RaceName, "Child") != -1
+				Return False
+			EndIf
+		EndIf
 		If rapist.hasKeywordString("actortypenpc")
+			Int iSex = getActorSex(rapist)
+			If ((iSex < -1 ) || (iSex > 1))
+				Return False
+			EndIf
 			If (ConfigMenu.iRapistGender == 0) || ((iSex > -1) && ((iSex + 1) == ConfigMenu.iRapistGender))
 				If !ReviveScript.NPCScript.isActorChild(rapist)
 					If !rapist.IsGuard()
@@ -90,27 +110,33 @@ Actor[] Function getRapists(Actor Victim, Actor Attacker = None)
 		Bool bBreak = False
 		Actor act
 		Utility.wait(5.0)
-		While i < (RapistCount * 3)
+		While i < (RapistCount)
 			If (i == 0) && isRapistValid(Attacker)
 				rapists[0] = Attacker
 			Else
 				If interface == "sexlab"
 					rapist = ReviveScript.SexLabInterface.FindRapist(Victim as ObjectReference, 5000.0, 0, Victim, rapists[0], rapists[1], rapists[2])
-					If isRapistValid(rapist) && !rapist.IsHostileToActor(Attacker) && (rapist.GetFactionReaction(Attacker) != 1)
+					If isRapistValid(rapist) && (!ConfigMenu.bOnlyHostilesRape || (!rapist.IsHostileToActor(Attacker) && (rapist.GetFactionReaction(Attacker) > 1)))
 						rapists[rapists.find(None)] = rapist
 					EndIf
 				Else
 					c = 0
 					l = PacifiedHostiles.GetSize()
-					While !bBreak && !rapists[i] && (j <  l) && (c < m)
+					While !bBreak && (j <  l) && (c < m)
 						act = PacifiedHostiles.GetAt(j) As actor
-						If act && rapists.Find(act) < 0 && isRapistValid(act) && !act.IsHostileToActor(Attacker) && (act.GetFactionReaction(Attacker) != 1)
+						If act && rapists.Find(act) < 0 && isRapistValid(act) && (!ConfigMenu.bOnlyHostilesRape || (!act.IsHostileToActor(Attacker) && (act.GetFactionReaction(Attacker) > 1)))
 							rapists[rapists.find(None)] = act
 							bBreak = True
 						EndIf
 						j+=1
 						c+=1
 					EndWhile
+					If !bBreak
+						rapist = FindAvailableActor(Victim as ObjectReference, 5000.0, 0, Victim, rapists[0], rapists[1], rapists[2])
+						If isRapistValid(rapist) && (!ConfigMenu.bOnlyHostilesRape || (!rapist.IsHostileToActor(Attacker) && (rapist.GetFactionReaction(Attacker) > 1)))
+							rapists[rapists.find(None)] = rapist
+						EndIf
+					EndIf
 				EndIf
 			EndIf
 			i += 1
@@ -130,6 +156,17 @@ Bool Function rapePlayer(Actor[] rapists)
 	playerRef.StopCombatAlarm()
 	playerRef.AddToFaction(calmFaction)
 	PacifyNPC.SetValueInt(1)
+	Bool bSwim = False
+	bSwim = PlayerRef.IsSwimming() || (ConfigMenu.bPO3Ok && (PO3_SKSEFunctions.IsActorUnderwater(PlayerRef) || PO3_SKSEFunctions.IsActorInWater(PlayerRef)))
+	If bSwim || (getInteface() != "sexlab")
+		ObjectReference bedRef = FindBed(playerRef as ObjectReference, 2000.0)
+		If bedRef
+			playerRef.SetPosition(bedRef.GetPositionX(), bedRef.GetPositiony(), bedRef.GetPositionz() + 5.0)
+		ElseIf bSwim
+		     ConfigMenu.bIsLoggingEnabled && Debug.trace("MarkOfArkay: Player Can't be raped while swimming.")
+			 Return False
+		EndIf
+	EndIf		
 	Rapist1.ForceRefTo(rapists[0])
 	Float z = PlayerRef.GetAnglez() + 180.0
 	If z > 360.0
@@ -442,3 +479,73 @@ EndFunction
 Int Function getActorSex(Actor act)
 	Return act.GetLeveledActorBase().GetSex()
 EndFunction
+
+;copied from sexlab and modified:
+ObjectReference function FindBed(ObjectReference CenterRef, float Radius = 1000.0, bool IgnoreUsed = true ,ObjectReference IgnoreRef1 = none, ObjectReference IgnoreRef2 = none)
+	if !CenterRef || CenterRef == none || Radius < 1.0
+		return none ; Invalid args
+	endIf
+	ObjectReference NearRef
+	ObjectReference BedRef
+	Form[] Suppressed = new Form[10]
+	Suppressed[9] = IgnoreRef1
+	Suppressed[8] = IgnoreRef2
+	int i = BedsList.GetSize()
+	while i
+		i -= 1
+		Form BedType = BedsList.GetAt(i)
+		if BedType
+			BedRef = Game.FindClosestReferenceOfTypeFromRef(BedType, CenterRef, Radius)
+			if BedRef && (Suppressed.Find(BedRef) == -1) && CheckBed(BedRef, IgnoreUsed)
+				if !NearRef || (BedRef.GetDistance(CenterRef) < NearRef.GetDistance(CenterRef))
+					NearRef = BedRef
+				endIf
+			endIf
+		endIf
+	endWhile
+	if NearRef && NearRef != none
+		return NearRef
+	endIf
+	while i
+		i -= 1
+		BedRef = Game.FindRandomReferenceOfAnyTypeInListFromRef(BedsList, CenterRef, Radius)
+		if !BedRef || ((Suppressed.Find(BedRef) == -1) && CheckBed(BedRef, IgnoreUsed))
+			return BedRef ; Found valid bed or none nearby and we should give up
+		else
+			Suppressed[i] = BedRef ; Add to suppression list
+		endIf
+	endWhile
+	return none ; Nothing found in search loop
+endFunction
+
+
+
+Actor function FindAvailableActor(ObjectReference CenterRef, float Radius = 5000.0, int FindGender = -1, Actor IgnoreRef1 = none, Actor IgnoreRef2 = none, Actor IgnoreRef3 = none, Actor IgnoreRef4 = none )
+	if !CenterRef || FindGender > 1 || FindGender < -1 || Radius < 0.1
+		return none ; Invalid args
+	endIf
+	; Create supression list
+	Form[] Suppressed = new Form[25]
+	Suppressed[24] = CenterRef
+	Suppressed[23] = IgnoreRef1
+	Suppressed[22] = IgnoreRef2
+	Suppressed[21] = IgnoreRef3
+	Suppressed[20] = IgnoreRef4
+	; Attempt 20 times before giving up.
+	int i = Suppressed.Length - 5
+	while i > 0
+		i -= 1
+		Actor FoundRef = Game.FindRandomActorFromRef(CenterRef, Radius)
+		if !FoundRef || FoundRef == none || (Suppressed.Find(FoundRef) == -1 && ((FindGender == -1) || (getActorSex(FoundRef) == FindGender)))
+			return FoundRef ; None means no actor in radius, give up now
+		endIf
+		Suppressed[i] = FoundRef
+	endWhile
+	; No actor found in attempts
+	return none
+endFunction
+
+
+bool function CheckBed(ObjectReference BedRef, bool IgnoreUsed = true)
+	return BedRef && BedRef.IsEnabled() && BedRef.Is3DLoaded() && (!IgnoreUsed || (IgnoreUsed && !BedRef.IsFurnitureInUse(true)))
+endFunction

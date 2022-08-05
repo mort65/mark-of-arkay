@@ -34,6 +34,7 @@ You can also toggle losing your items permanently whenever you respawn before fi
     Ghost: You'll become a ghost and NPCs will attack you on sight.
     Arkay's curse:  50% worse prices, 50% harder persuasion and intimidation and 25 points lower Health, Stamina and Magicka.
     Slavery: You'll be sold into slavery (Requires the Simple slavery mod).
+    Rape: Requires Sexlab, OStim or FlowerGirls.
  
  Respawn points can be set to one of these locations:
 

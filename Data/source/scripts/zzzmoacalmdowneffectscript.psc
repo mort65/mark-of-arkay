@@ -23,9 +23,12 @@ Actor mySelf
 Event OnEffectStart(Actor akTarget, Actor akCaster)
 	If akTarget
 		mySelf = akTarget
-		mySelf.addToFaction(CalmFaction)
-		mySelf.StopCombatAlarm()
-		mySelf.StopCombat()
+		;Debug.trace(self + " effect finished for " +mySelf )
+		If !mySelf.IsInFaction(CalmFaction)
+			mySelf.addToFaction(CalmFaction)
+			mySelf.StopCombatAlarm()
+			mySelf.StopCombat()
+		EndIf
 		If PacifiedHostiles.Find(mySelf) > -1
 			If !Rapist5.GetActorRef()
 				Rapist5.ForceRefTo(mySelf)
@@ -50,10 +53,10 @@ Event OnEffectStart(Actor akTarget, Actor akCaster)
 						ActorUtil.AddPackageOverride(mySelf,RapistCheerPackage,99)
 					EndIf
 					ActorUtil.AddPackageOverride(mySelf,RapistApproachPackage,99)
+					mySelf.EvaluatePackage()
 				EndIf
 			EndIf
 		EndIf
-		mySelf.EvaluatePackage()
 	EndIf
 EndEvent
 
@@ -71,6 +74,7 @@ Event OnEffectFinish(Actor akTarget, Actor akCaster)
 		ActorUtil.RemovePackageOverride(mySelf, RapistWaitPackage)
 		ActorUtil.RemovePackageOverride(mySelf, RapistApproachPackage)
 	EndIf
+	;mySelf && Debug.trace(self + " effect finished for " +mySelf )
 	mySelf && mySelf.removeFromFaction(CalmFaction)
 	mySelf && mySelf.EvaluatePackage()
 EndEvent

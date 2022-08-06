@@ -465,10 +465,13 @@ Form Function getFromMergedFormList(FormList akMergedlist,Int aiIndex = 0) Globa
 EndFunction
 
 
-Function transferItems(ObjectReference akInContainer, ObjectReference akOutContainer, Int aiIndex, Int aiCount) Global
+Function transferItems(ObjectReference akInContainer, ObjectReference akOutContainer, Int aiIndex = 0, Int aiCount = -1) Global
 {transfers items from an object reference to another.}
 	If aiIndex > akInContainer.GetNumItems() - 1
 		Return
+	EndIf
+	If aiCount == -1
+		aiCount = akInContainer.GetNumItems()
 	EndIf
 	Int aiLast = iMin(akInContainer.GetNumItems() - 1,(aiIndex + aiCount) - 1)
 	Form kItem

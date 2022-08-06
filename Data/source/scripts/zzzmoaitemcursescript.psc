@@ -322,7 +322,8 @@ Function LoseOtherItems()
 				QuestItems.AddForm(kItem)
 			EndIf
 		Endwhile
-		ValuableItemsChest.RemoveAllItems(PlayerRef,True,True)
+		;ValuableItemsChest.RemoveAllItems(PlayerRef,True,True) Causes the script to halt until opening and closing a menu :/
+		transferItems(ValuableItemsChest, PlayerRef As ObjectReference)
 		Utility.Wait(0.2)
 	EndIf
 	If ConfigMenu.iLoseInclusion == 2 ;Exclude Equipped Items

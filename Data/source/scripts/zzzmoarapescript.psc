@@ -175,7 +175,7 @@ Bool Function rapePlayer(Actor[] rapists)
 	If rapists[0].GetDistance(PlayerRef) > 1000.0
 		rapists[0].MoveTo(PlayerRef)
 		rapists[0].SetPosition(PlayerRef.GetPositionx() + Utility.RandomInt(50,100), PlayerRef.GetPositiony() + Utility.RandomInt(50,100), PlayerRef.GetPositionz())
-		rapists[0].SetAngle(0.0, 0.0, z)		
+		rapists[0].SetAngle(PlayerRef.GetAngleX(), PlayerRef.GetAngleY(), z)		
 	EndIf
 	rapists[0].EvaluatePackage()
 	If rapists.Length > 1 && rapists[1]
@@ -183,7 +183,7 @@ Bool Function rapePlayer(Actor[] rapists)
 		If rapists[1].GetDistance(PlayerRef) > 1000.0
 			rapists[1].MoveTo(PlayerRef)
 			rapists[0].SetPosition(PlayerRef.GetPositionx() + Utility.RandomInt(50,100), PlayerRef.GetPositiony() + Utility.RandomInt(50,100), PlayerRef.GetPositionz())
-			rapists[0].SetAngle(0.0, 0.0, z)			
+			rapists[0].SetAngle(PlayerRef.GetAngleX(), PlayerRef.GetAngleY(), z)			
 		EndIf
 		rapists[1].EvaluatePackage()
 	Else
@@ -194,7 +194,7 @@ Bool Function rapePlayer(Actor[] rapists)
 		If rapists[2].GetDistance(PlayerRef) > 1000.0
 			rapists[2].MoveTo(PlayerRef)
 			rapists[0].SetPosition(PlayerRef.GetPositionx() + Utility.RandomInt(50,100), PlayerRef.GetPositiony() + Utility.RandomInt(50,100), PlayerRef.GetPositionz())
-			rapists[0].SetAngle(0.0, 0.0, z)			
+			rapists[0].SetAngle(PlayerRef.GetAngleX(), PlayerRef.GetAngleY(), z)			
 		EndIf
 		rapists[2].EvaluatePackage()
 	Else
@@ -205,7 +205,7 @@ Bool Function rapePlayer(Actor[] rapists)
 		If rapists[3].GetDistance(PlayerRef) > 1000.0
 			rapists[3].MoveTo(PlayerRef)
 			rapists[0].SetPosition(PlayerRef.GetPositionx() + Utility.RandomInt(50,100), PlayerRef.GetPositiony() + Utility.RandomInt(50,100), PlayerRef.GetPositionz())
-			rapists[0].SetAngle(0.0, 0.0, z)		
+			rapists[0].SetAngle(PlayerRef.GetAngleX(), PlayerRef.GetAngleY(), z)		
 		EndIf
 		rapists[3].EvaluatePackage()
 	Else

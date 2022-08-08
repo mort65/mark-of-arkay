@@ -483,3 +483,19 @@ Function transferItems(ObjectReference akInContainer, ObjectReference akOutConta
 		aiIndex += 1
 	EndWhile
 EndFunction
+
+Float Function checkFloat(Float fVar, Float fMin, Float fMax, Float fDefault) Global
+{Check if a float is between the minimum and maximum value, if not, return the default value.} 
+	If ((fVar >= fMin) && (fVar <= fMax))
+		Return fVar
+	EndIf
+	Return fDefault
+EndFunction
+
+Int Function checkInt(Int iVar, Int iMin, Int iMax, Int iDefault) Global
+{Check if an int is between the minimum and maximum value, if not, return the default value.} 
+	If ((iVar >= iMin) && (iVar <= iMax))
+		Return iVar
+	EndIf
+	Return iDefault
+EndFunction

@@ -148,7 +148,7 @@ Endfunction
 Event OnCheckingMarkers(Form sender,Bool bTavern, Bool bExtra, Bool bCustom, Bool bFast)
 	If sender == (self As Quest) As Form
 		checkMarkers(bTavern, bExtra, bCustom, bFast)
-		CheckLocBlackListJson()
+		checkJsonBlackListedLocations()
 	EndIf
 EndEvent
 
@@ -182,7 +182,7 @@ Function checkMarkers(Bool bCheckInn, Bool bCheckExtra, Bool bCheckCustom, Bool 
 	Debug.Notification("$mrt_MarkofArkay_Notification_Checking_Markers_Finished")
 EndFunction
 
-Function CheckLocBlackListJson()
+Function checkJsonBlackListedLocations()
 	If !ConfigMenu.bLocBlackListJsonChecked
 		If ConfigMenu.bPUOK
 			If JsonUtil.JsonExists("/MarkofArkay/MOA_BlackLists")
@@ -660,7 +660,7 @@ Bool Function bCanTeleport()
 			EndIf
 		EndIf
 	EndWhile
-	If isJsonBlacklistQuestsRunning()
+	If isJsonBlacklistedQuestsRunning()
 		ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: You can't Respawn while a blacklisted quest is running.")
 		Return False
 	EndIf
@@ -678,7 +678,7 @@ Bool Function bCanTeleport()
 	Return True
 EndFunction
 
-Bool Function isJsonBlacklistQuestsRunning()
+Bool Function isJsonBlacklistedQuestsRunning()
 	If ConfigMenu.bPUOK
 		If JsonUtil.JsonExists("/MarkofArkay/MOA_BlackLists")
 			Form[] QuestArr = JsonUtil.FormListToArray("/MarkofArkay/MOA_BlackLists", "QuestBlackList")

@@ -1,0 +1,12 @@
+{
+	"formList" : 
+	{
+		"locationblacklist" : 
+		[
+			"0xecf4c|Skyrim.esm"
+		],
+		"questblacklist" : 
+		[
+		]
+	}
+}

@@ -148,6 +148,7 @@ Endfunction
 Event OnCheckingMarkers(Form sender,Bool bTavern, Bool bExtra, Bool bCustom, Bool bFast)
 	If sender == (self As Quest) As Form
 		checkMarkers(bTavern, bExtra, bCustom, bFast)
+		CheckLocBlackListJson()
 	EndIf
 EndEvent
 
@@ -179,6 +180,24 @@ Function checkMarkers(Bool bCheckInn, Bool bCheckExtra, Bool bCheckCustom, Bool 
 	EndIf
 	moaCheckingMarkers.SetValue(0.0)
 	Debug.Notification("$mrt_MarkofArkay_Notification_Checking_Markers_Finished")
+EndFunction
+
+Function CheckLocBlackListJson()
+	If !ConfigMenu.bLocBlackListJsonChecked
+		If ConfigMenu.bPUOK
+			If JsonUtil.JsonExists("/MarkofArkay/MOA_BlackLists")
+				Form[] LocArr = JsonUtil.FormListToArray("/MarkofArkay/MOA_BlackLists", "LocationBlackList")
+				Int i = LocArr.Length
+				While i > 0
+					i -= 1
+					If !ReviveScript.LocationBlackList2.HasForm(LocArr[i])
+						ReviveScript.LocationBlackList2.AddForm(LocArr[i])
+					EndIf
+				Endwhile
+				ConfigMenu.bLocBlackListJsonChecked = True
+			EndIf
+		EndIf
+	EndIf
 EndFunction
 
 Function AddExternalMarkers(Bool bFast = False)
@@ -641,19 +660,39 @@ Bool Function bCanTeleport()
 			EndIf
 		EndIf
 	EndWhile
+	If isJsonBlacklistQuestsRunning()
+		Return False
+	EndIf
 	Location CurrLoc = PlayerRef.GetCurrentLocation()
 	If CurrLoc
 		If CurrLoc.HasKeywordString("loctypejail")
 			ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Respawn from jail is disabled.")
 			Return False
 		EndIf
-		If bIsLocForbidden(CurrLoc)
+		If bIsLocForbidden(CurrLoc) || bIsRespawnForbidden(CurrLoc)
 			ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Respawn from " + CurrLoc + " is disabled.")
 			Return False
 		EndIf
 	EndIf
 	Return True
 EndFunction
+
+Bool Function isJsonBlacklistQuestsRunning()
+	If ConfigMenu.bPUOK
+		If JsonUtil.JsonExists("/MarkofArkay/MOA_BlackLists")
+			Form[] QuestArr = JsonUtil.FormListToArray("/MarkofArkay/MOA_BlackLists", "QuestBlackList")
+			Int i = QuestArr.Length
+			While i > 0
+				i -= 1
+				If (QuestArr[i] As Quest) && (QuestArr[i] As Quest).IsRunning()
+					Return True
+				EndIf
+			Endwhile
+		EndIf
+	EndIf
+	Return False
+EndFunction
+
 
 Bool Function bCanTeleportToExtMarker( Objectreference ExternalMarker )
 	If ExternalMarker
@@ -676,6 +715,20 @@ Bool Function bIsLocForbidden(Location akLoc)
 	While iIndex > 0
 		iIndex -= 1
 		Location ForbiddenLocation = LocationBlackList.GetAt(iIndex) As Location
+		If ForbiddenLocation
+			If akLoc == ForbiddenLocation || ForbiddenLocation.IsChild(akLoc)
+				Return True
+			EndIf
+		EndIf
+	EndWhile
+	Return False
+Endfunction
+
+Bool Function bIsRespawnForbidden(Location akLoc)
+	Int iIndex = ReviveScript.LocationBlackList2.GetSize()
+	While iIndex > 0
+		iIndex -= 1
+		Location ForbiddenLocation = ReviveScript.LocationBlackList2.GetAt(iIndex) As Location
 		If ForbiddenLocation
 			If akLoc == ForbiddenLocation || ForbiddenLocation.IsChild(akLoc)
 				Return True

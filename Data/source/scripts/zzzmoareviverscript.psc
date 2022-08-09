@@ -49,6 +49,7 @@ FormList Property ArkayAmulets Auto
 FormList Property QuestBlackList Auto
 FormList Property MarkerList Auto
 FormList Property LocationBlackList Auto
+FormList Property LocationBlackList2 Auto
 FormList Property CityMarkersList Auto
 MagicEffect Property FortifyHealthFFSelf Auto
 Spell Property moaReviveAfterEffect Auto
@@ -433,7 +434,7 @@ Event OnUpdate()
 		bParalyzed = False
 		bSheathed = False
 		PlayerRef.RemovePerk(Invulnerable)
-		Debug.SetGodMode(False)
+		Debug.SetGodMode(False)		
 	EndIf
 EndEvent
 

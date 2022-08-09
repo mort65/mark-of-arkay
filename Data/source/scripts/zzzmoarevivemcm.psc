@@ -220,6 +220,7 @@ Int oidRapistGender_M
 Int oidSlaveryOnlyAfterRape
 Int oidSexInterface_M
 Int oidOnlyHostilesRape
+Int oidRespawnBlackListLocation
 
 GlobalVariable Property moaGhostShader Auto
 Int Property iGhostShader = 0 Auto Hidden
@@ -500,6 +501,7 @@ Int Property iSexInterface = 0 Auto Hidden
 Bool Property bIsSexlabActive = False Auto Hidden
 Bool Property bIsOStimActive = False Auto Hidden
 Bool Property bIsFlowerGirlsActive = False Auto Hidden
+Bool Property bLocBlackListJsonChecked = False Auto Hidden
 
 Event OnPageReset(String page)
 	SetCursorFillMode(LEFT_TO_RIGHT)
@@ -1357,10 +1359,24 @@ Event OnPageReset(String page)
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
-		oidRestoreItems = AddTextOption("$mrt_MarkofArkay_RestoreItems", "", flags )
+		oidRestoreItems = AddTextOption("$mrt_MarkofArkay_RestoreItems", "", flags )		
 		SetCursorPosition(10)
+		If PlayerRef.GetCurrentLocation() && !ReviveScript.LocationBlackList.HasForm(PlayerRef.GetCurrentLocation())
+			AddHeaderOption(PlayerRef.GetCurrentLocation().GetName())
+			SetCursorPosition(12)
+			If (ReviveScript.LocationBlackList2.Find(PlayerRef.GetCurrentLocation()) > -1) || (bPUOK && JsonUtil.FormListHas("/MarkofArkay/MOA_BlackLists", "LocationBlackList", PlayerRef.GetCurrentLocation()))
+				oidRespawnBlackListLocation = AddTextOption("$mrt_MarkofArkay_RespawnBlackListLocation_Remove", "")
+			Else
+				oidRespawnBlackListLocation = AddTextOption("$mrt_MarkofArkay_RespawnBlackListLocation_Add", "")
+			EndIf
+		Else
+			AddHeaderOption("")
+			SetCursorPosition(12)
+			oidRespawnBlackListLocation = AddTextOption("$mrt_MarkofArkay_RespawnBlackListLocation_Remove", "", OPTION_FLAG_DISABLED)
+		EndIf		
+		SetCursorPosition(14)
 		AddHeaderOption("")
-		SetCursorPosition(12)
+		SetCursorPosition(16)
 		If ( moaState.getValue() == 1 )
 			flags =	OPTION_FLAG_NONE
 		Else
@@ -1371,113 +1387,113 @@ Event OnPageReset(String page)
 		Else
 			oidToggleSpells = AddTextOption("$mrt_MarkofArkay_ToggleSpells2", "", flags) 
 		EndIf
-		SetCursorPosition(14)
+		SetCursorPosition(18)
 		If ( PlayerRef.HasSpell(RevivalPower) || PlayerRef.HasSpell(SacrificePower) )
 			oidTogglePowers = AddTextOption("$mrt_MarkofArkay_TogglePowers1", "", flags) 
 		Else
 			oidTogglePowers = AddTextOption("$mrt_MarkofArkay_TogglePowers2", "", flags) 
 		EndIf
-		SetCursorPosition(16)
+		SetCursorPosition(20)
 		sResetHistory = ""
 		oidResetHistory = AddTextOption("$mrt_MarkofArkay_ResetHistory", sResetHistory, flags)
-		SetCursorPosition(18)
+		SetCursorPosition(22)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidDisableUnsafe = AddToggleOption("$mrt_MarkofArkay_DisableUnsafe", bDisableUnsafe, flags)
-		SetCursorPosition(20)
+		SetCursorPosition(24)
 		oidLogging = AddToggleOption("$mrt_MarkofArkay_Logging", bIsLoggingEnabled, flags )
-		SetCursorPosition(22)
+		SetCursorPosition(26)
 		If ( moaState.getValue() == 1 )
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidInformation = AddToggleOption("$mrt_MarkofArkay_Info", bIsInfoEnabled, flags )
-		SetCursorPosition(24)
-		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled
-			flags =	OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		oidNotification = AddToggleOption("$mrt_MarkofArkay_Notification", bIsNotificationEnabled, flags )
-		SetCursorPosition(26)
-		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled
-			flags =	OPTION_FLAG_NONE
-		Else
-			flags = OPTION_FLAG_DISABLED
-		EndIf
-		oidRagdollEffect = AddToggleOption("$mrt_MarkofArkay_RagdollEffect", bIsRagdollEnabled,flags)
 		SetCursorPosition(28)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
-		oidFadeToBlack = AddToggleOption("$mrt_MarkofArkay_FadeToBlack", bFadeToBlack, flags )
+		oidNotification = AddToggleOption("$mrt_MarkofArkay_Notification", bIsNotificationEnabled, flags )
 		SetCursorPosition(30)
-		oidInvisibility = AddToggleOption("$mrt_MarkofArkay_Invisibility", bInvisibility, flags)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidRagdollEffect = AddToggleOption("$mrt_MarkofArkay_RagdollEffect", bIsRagdollEnabled,flags)
 		SetCursorPosition(32)
+		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled
+			flags =	OPTION_FLAG_NONE
+		Else
+			flags = OPTION_FLAG_DISABLED
+		EndIf
+		oidFadeToBlack = AddToggleOption("$mrt_MarkofArkay_FadeToBlack", bFadeToBlack, flags )
+		SetCursorPosition(34)
+		oidInvisibility = AddToggleOption("$mrt_MarkofArkay_Invisibility", bInvisibility, flags)
+		SetCursorPosition(36)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && !bIsRagdollEnabled && (bFadeToBlack || bInvisibility)
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidDeathEffect = AddToggleOption("$mrt_MarkofArkay_DeathEffect", bDeathEffect,flags)		
-		SetCursorPosition(34)
+		SetCursorPosition(38)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && bARCCOK
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidAltEyeFix = AddToggleOption("$mrt_MarkofArkay_AltEyeFix", bAltEyeFix, flags)
-		SetCursorPosition(36)
+		SetCursorPosition(40)
 		AddHeaderOption("$mrt_MarkofArkay_Locks")
-		SetCursorPosition(38)
+		SetCursorPosition(42)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && !bTradeLock
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidTradeLock = AddToggleOption("$mrt_MarkofArkay_TradeLock",bTradeLock,flags)
-		SetCursorPosition(40)
+		SetCursorPosition(44)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && !bCurseLock
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidCurseLock = AddToggleOption("$mrt_MarkofArkay_CurseLock",bCurseLock,flags)
-		SetCursorPosition(42)
+		SetCursorPosition(46)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && !bSaveLock
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidSaveLock = AddToggleOption("$mrt_MarkofArkay_SaveLock",bSaveLock,flags)
-		SetCursorPosition(44)
+		SetCursorPosition(48)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && !bLootChanceLock
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidLootChanceLock = AddToggleOption("$mrt_MarkofArkay_LootChanceLock",bLootChanceLock,flags)
-		SetCursorPosition(46)
+		SetCursorPosition(50)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && !bMarkRecallCostLock
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidMarkRecallCostLock = AddToggleOption("$mrt_MarkofArkay_MarkRecallCostLock",bMarkRecallCostLock,flags)
-		SetCursorPosition(48)
+		SetCursorPosition(52)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && (iNotTradingAftermath == 1) && !bRespawnCounter
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		oidRespawnCounter = AddSliderOption("$mrt_MarkofArkay_RespawnCounter1", fRespawnCounterSlider, "$mrt_MarkofArkay_RespawnCounter2", flags)
-		SetCursorPosition(50)
+		SetCursorPosition(54)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && !bLockPermaDeath && bPUOK
 			flags =	OPTION_FLAG_NONE
 		Else
@@ -2397,6 +2413,27 @@ Event OnOptionSelect(Int option)
 		EndIf
 		Utility.Wait(1)
 		moaIsBusy.SetValueInt(0)
+	ElseIf (option == oidRespawnBlackListLocation)
+		If PlayerRef.GetCurrentLocation() && !ReviveScript.LocationBlackList.HasForm(PlayerRef.GetCurrentLocation())
+			If !self.ShowMessage("$Are_You_Sure", True, "$Yes", "$No")
+				Return
+			EndIf
+			If ReviveScript.LocationBlackList2.Find(PlayerRef.GetCurrentLocation()) > -1 || (bPUOK && JsonUtil.FormListHas("/MarkofArkay/MOA_BlackLists", "LocationBlackList", PlayerRef.GetCurrentLocation()))
+				ReviveScript.LocationBlackList2.RemoveAddedForm(PlayerRef.GetCurrentLocation())
+				If bPUOK
+					JsonUtil.FormListRemove("/MarkofArkay/MOA_BlackLists", "LocationBlackList", PlayerRef.GetCurrentLocation(), True)
+				EndIf
+			Else
+				ReviveScript.LocationBlackList2.AddForm(PlayerRef.GetCurrentLocation())
+				If bPUOK
+					JsonUtil.FormListAdd("/MarkofArkay/MOA_BlackLists", "LocationBlackList", PlayerRef.GetCurrentLocation(), False)
+				EndIf
+			EndIf
+			If bPUOK
+				JsonUtil.Save("/MarkofArkay/MOA_BlackLists")
+			EndIf
+			ForcePageReset()
+		EndIf
 	ElseIf (option == oidReset)
 		If !self.ShowMessage("$Are_You_Sure", True, "$Yes", "$No")
 			Return
@@ -3654,6 +3691,8 @@ Event OnOptionHighlight(Int option)
 		SetInfoText("$mrt_MarkofArkay_DESC_AutoDrinkPotion")
 	ElseIf (option == oidStatus)
 		SetInfoText("$mrt_MarkofArkay_DESC_Status")
+	ElseIf (option == oidRespawnBlackListLocation)
+		SetInfoText("$mrt_MarkofArkay_DESC_RespawnBlackListLocation")
 	ElseIf (option == oidReset)
 		SetInfoText("$mrt_MarkofArkay_DESC_Reset")
 	ElseIf (option == oidResetPlayer)

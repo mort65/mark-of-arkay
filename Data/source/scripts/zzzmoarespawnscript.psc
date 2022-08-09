@@ -661,6 +661,7 @@ Bool Function bCanTeleport()
 		EndIf
 	EndWhile
 	If isJsonBlacklistQuestsRunning()
+		ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: You can't Respawn while a blacklisted quest is running.")
 		Return False
 	EndIf
 	Location CurrLoc = PlayerRef.GetCurrentLocation()

@@ -1362,7 +1362,7 @@ Event OnPageReset(String page)
 		oidRestoreItems = AddTextOption("$mrt_MarkofArkay_RestoreItems", "", flags )		
 		SetCursorPosition(10)
 		If PlayerRef.GetCurrentLocation() && !ReviveScript.LocationBlackList.HasForm(PlayerRef.GetCurrentLocation())
-			AddHeaderOption(PlayerRef.GetCurrentLocation().GetName())
+			AddHeaderOption(shortenString(PlayerRef.GetCurrentLocation().GetName(),59))
 			SetCursorPosition(12)
 			If (ReviveScript.LocationBlackList2.Find(PlayerRef.GetCurrentLocation()) > -1) || (bPUOK && JsonUtil.FormListHas("/MarkofArkay/MOA_BlackLists", "LocationBlackList", PlayerRef.GetCurrentLocation()))
 				oidRespawnBlackListLocation = AddTextOption("$mrt_MarkofArkay_RespawnBlackListLocation_Remove", "")
@@ -2083,9 +2083,9 @@ Event OnOptionSelect(Int option)
 	ElseIf (option == oidLevelReduce)
 		bLevelReduce = !bLevelReduce
 		SetToggleOptionValue(oidLevelReduce,bLevelReduce)
-		If bLevelReduce
-			ReviveScript.SkillScript.RegisterForLevel()
-		EndIf
+		;If bLevelReduce
+		;	ReviveScript.SkillScript.RegisterForLevel()
+		;EndIf
 	ElseIf (option == oidOnlyLoseSkillXP)
 		bOnlyLoseSkillXP = !bOnlyLoseSkillXP
 		SetToggleOptionValue(oidOnlyLoseSkillXP,bOnlyLoseSkillXP)
@@ -2457,9 +2457,9 @@ Event OnOptionSelect(Int option)
 				SetTriggerMethod(2)
 			EndIf
 			ReviveScript.RegisterForSleep()
-			If bLevelReduce
-				ReviveScript.SkillScript.RegisterForLevel()
-			EndIf
+			;If bLevelReduce
+			;	ReviveScript.SkillScript.RegisterForLevel()
+			;EndIf
 		Else
 			setTriggerMethod(0)
 		EndIf
@@ -5212,9 +5212,9 @@ Bool function bLoadUserSettings(String sFileName)
 	bCheckKeyword = fiss.loadBool("bCheckKeyword")
 	bCheckWeight = fiss.loadBool("bCheckWeight")
 	bLevelReduce = fiss.loadBool("bLevelReduce")
-	If bLevelReduce
-		ReviveScript.SkillScript.RegisterForLevel()
-	EndIf
+	;If bLevelReduce
+	;	ReviveScript.SkillScript.RegisterForLevel()
+	;EndIf
 	bOnlyLoseSkillXP = fiss.loadBool("bOnlyLoseSkillXP")
 	bSpawnHostile = fiss.loadBool("bSpawnHostile")
 	bBossChestOnlyCurLoc = fiss.loadBool("bBossChestOnlyCurLoc")

@@ -3,7 +3,7 @@ Scriptname zzzmoautilscript
 Import StringUtil
 
 Int Function iMin(Int a,Int b) Global
-{find minimum of two ints.}
+{Find minimum of two ints.}
 	If a <= b
 		Return a
 	EndIf
@@ -11,7 +11,7 @@ Int Function iMin(Int a,Int b) Global
 EndFunction
 
 Float Function fMin(Float a,Float b) Global
-{finds minimum of two floats.}
+{Finds minimum of two floats.}
 	If a <= b
 		Return a
 	EndIf
@@ -19,7 +19,7 @@ Float Function fMin(Float a,Float b) Global
 EndFunction
 
 Float Function fMax(Float a,Float b) Global
-{finds maximum of two floats.}
+{Finds maximum of two floats.}
 	If a >= b
 		Return a
 	EndIf
@@ -27,7 +27,7 @@ Float Function fMax(Float a,Float b) Global
 EndFunction
 
 Int Function iMax(Int a,Int b) Global
-{finds maximum of two ints.}
+{Finds maximum of two ints.}
 	If a >= b
 		Return a
 	EndIf
@@ -90,7 +90,7 @@ Int Function iGetRandomWithExclusionIntArray( Int iFrom, Int iTo, Int[] iExclude
 EndFunction
 
 Int Function ichangeVar(Int iVar,Int iMin,Int iMax, Int iAmount ) Global
-{increase or decrease a global variable by an amount in a circle between iMin and iMax.}
+{Increase or decrease a global variable by an amount in a circle between iMin and iMax.}
 	iVar = ( iVar + iAmount )
 	If ( iVar > iMax )
 		iVar = iMin
@@ -177,7 +177,7 @@ Int Function RandomIntWithShuffledExclusionArray( Int iFrom, Int iTo, Bool[] iFl
 EndFunction
 
 Function iArrayClear(Int[] Arr) Global
-{clears an int array.}
+{Clears an int array.}
 	If Arr
 		int i = Arr.Length
 		While i > 0 
@@ -210,7 +210,7 @@ Function kArrayClear(Form[] Arr) Global
 EndFunction
 
 Bool Function bIsFormArrEmpty(Form[] Arr) Global
-{checking if a form array is empty.}
+{Checking if a form array is empty.}
 	If Arr
 		Int i = Arr.Length
 		While i > 0 
@@ -298,7 +298,7 @@ Bool Function bIsInteger(String s) Global
 EndFunction
 
 Bool Function stopAndConfirm(Quest akQuest, Float afSecs = 3.0, Int aiStage = -1) Global
-{stops a quest and wait for it to stop, optionaly set stage of the quest to a stage that would stop it.}
+{Stops a quest and wait for it to stop, optionaly set stage of the quest to a stage that would stop it.}
 	If !akQuest.IsRunning()
 		Return True
 	EndIf
@@ -316,7 +316,7 @@ Bool Function stopAndConfirm(Quest akQuest, Float afSecs = 3.0, Int aiStage = -1
 EndFunction
 
 Function disintegrateWhenAble(Actor akActor) Global
-{removes a leveled actor from the game when player is not around.}
+{Removes a leveled actor from the game when player is not around.}
 	While akActor && akActor.GetParentCell() && akActor.GetParentCell().IsAttached()
 		Utility.Wait(5)
 	EndWhile
@@ -326,7 +326,7 @@ Function disintegrateWhenAble(Actor akActor) Global
 EndFunction
 
 Function disintegrateNow(Actor akActor) Global
-{removes a leveled actor from the game instantly.}
+{Removes a leveled actor from the game instantly.}
 	akActor && akActor.RemoveAllItems()
 	akActor && akActor.SetCriticalStage(akActor.CritStage_DisintegrateEnd)
 	akActor && akActor.DisableNoWait()
@@ -366,7 +366,7 @@ Int Function randIntFromlimitedRange(Int iMin, Int iMax, Int iLimit, Int iMinVal
 EndFunction
 
 Function killPlayer() Global
-{kills the player even if the player is essential or Invulnerable or god mod is active.}
+{Kills the player even if the player is essential or Invulnerable or god mod is active.}
 	Actor player = Game.GetPlayer()
 	ActorBase playerBase = player.GetBaseObject() As ActorBase
 	Debug.SetGodMode(False)
@@ -376,7 +376,7 @@ Function killPlayer() Global
 EndFunction
 
 String Function shortenString(String sString, Int iLimit) Global
-{shortens the input string and put ... at the end of it.}
+{Shortens the input string and put ... at the end of it.}
 	Int iLen = GetLength(sString)
 	If iLimit < 4
 		If iLimit < 1
@@ -396,7 +396,7 @@ String Function shortenString(String sString, Int iLimit) Global
 EndFunction
 
 FormList Function checkAndFixFormList(FormList akList, Bool abCheckSize = False, Bool abOnlyRef = False, Bool abCheckRefPlace = False, Int aiBaseType = -1,FormList akOtherList = None) Global
-{checking a Form list for nones, invalid refs, reducing number of forms to 128 and removing invalids in place or adding valid forms to another form list.}
+{Checking a Form list for nones, invalid refs, reducing number of forms to 128 and removing invalids in place or adding valid forms to another form list.}
 	Bool bHasNone = False
 	Int i = 0
 	While i < akList.GetSize() && !bHasNone
@@ -452,7 +452,7 @@ FormList Function checkAndFixFormList(FormList akList, Bool abCheckSize = False,
 EndFunction
 
 Form Function getFromMergedFormList(FormList akMergedlist,Int aiIndex = 0) Global
-{gets a value by index from a formlist of formlists by using an index that is betwwen 0 and sum of the size of all formlists in the formlist minus 1.}
+{Gets a value by index from a formlist of formlists by using an index that is betwwen 0 and sum of the size of all formlists in the formlist minus 1.}
 	Int i = 0
 	While i < akMergedlist.GetSize() && aiIndex > -1
 		If aiIndex < (akMergedlist.GetAt(i) As FormList).GetSize()
@@ -465,8 +465,8 @@ Form Function getFromMergedFormList(FormList akMergedlist,Int aiIndex = 0) Globa
 EndFunction
 
 
-Function transferItems(ObjectReference akInContainer, ObjectReference akOutContainer, Int aiIndex = 0, Int aiCount = -1) Global
-{transfers items from an object reference to another.}
+Function transferItems(ObjectReference akInContainer, ObjectReference akOutContainer, Int aiIndex = 0, Int aiCount = -1, Int aiNumber = -1) Global
+{Transfers specified numbers or all of each item from an object reference to another}
 	If aiIndex > akInContainer.GetNumItems() - 1
 		Return
 	EndIf
@@ -477,15 +477,71 @@ Function transferItems(ObjectReference akInContainer, ObjectReference akOutConta
 	Form kItem
 	While aiIndex < aiLast + 1
 		kItem = akInContainer.GetNthForm(aiIndex)
-		If kItem
-			akInContainer.RemoveItem(kItem, akInContainer.GetItemCount(kItem), True, akOutContainer)
+		If kItem 
+			If (aiNumber <= -1) || (aiNumber > akInContainer.GetItemCount(kItem))
+				akInContainer.RemoveItem(kItem, akInContainer.GetItemCount(kItem), True, akOutContainer)
+			Else
+				akInContainer.RemoveItem(kItem, aiNumber, True, akOutContainer)
+			EndIf
+		EndIf
+		aiIndex += 1
+	EndWhile
+EndFunction
+
+Function transferItemsWithExclusionArr(ObjectReference akInContainer, ObjectReference akOutContainer, Form[] excludesArr, Int aiIndex = 0, Int aiCount = -1, Int aiNumber = -1) Global
+{Transfers specified numbers or all of each item from an object reference to another excluding the items that are in excludesArr}
+	If aiIndex > akInContainer.GetNumItems() - 1
+		Return
+	EndIf
+	If aiCount == -1
+		aiCount = akInContainer.GetNumItems()
+	EndIf
+	Int aiLast = iMin(akInContainer.GetNumItems() - 1,(aiIndex + aiCount) - 1)
+	Bool bExcludeArr = (excludesArr && (excludesArr.Length > 0))
+	Form kItem
+	While aiIndex < aiLast + 1
+		kItem = akInContainer.GetNthForm(aiIndex)
+		If kItem 
+			If (!bExcludeArr || (excludesArr.Find(kItem) < 0))
+				If (aiNumber <= -1) || (aiNumber > akInContainer.GetItemCount(kItem))
+					akInContainer.RemoveItem(kItem, akInContainer.GetItemCount(kItem), True, akOutContainer)
+				Else
+					akInContainer.RemoveItem(kItem, aiNumber, True, akOutContainer)
+				EndIf
+			EndIf
+		EndIf
+		aiIndex += 1
+	EndWhile
+EndFunction
+
+Function transferItemsWithExclusions(ObjectReference akInContainer, ObjectReference akOutContainer, FormList excludeList, Form[] excludesArr, Int aiIndex = 0, Int aiCount = -1, Int aiNumber = -1) Global
+{Transfers specified numbers or all of each item from an object reference to another excluding the items that are in excludeList or excludesArr}
+	If aiIndex > akInContainer.GetNumItems() - 1
+		Return
+	EndIf
+	If aiCount == -1
+		aiCount = akInContainer.GetNumItems()
+	EndIf
+	Int aiLast = iMin(akInContainer.GetNumItems() - 1,(aiIndex + aiCount) - 1)
+	Bool bExcludeArr = (excludesArr && (excludesArr.Length > 0))
+	Form kItem
+	While aiIndex < aiLast + 1
+		kItem = akInContainer.GetNthForm(aiIndex)
+		If kItem 
+			If (!bExcludeArr || (excludesArr.Find(kItem) < 0)) && (!excludeList && excludeList.Find(kItem) < 0)
+				If (aiNumber <= -1) || (aiNumber > akInContainer.GetItemCount(kItem))
+					akInContainer.RemoveItem(kItem, akInContainer.GetItemCount(kItem), True, akOutContainer)
+				Else
+					akInContainer.RemoveItem(kItem, aiNumber, True, akOutContainer)
+				EndIf
+			EndIf
 		EndIf
 		aiIndex += 1
 	EndWhile
 EndFunction
 
 Float Function checkFloat(Float fVar, Float fMin, Float fMax, Float fDefault) Global
-{Check if a float is between the minimum and maximum value, if not, return the default value.}
+{Checks if a float is between the minimum and maximum value, if not, returns the default value.}
 	If fMin > fMax
 		Float fTemp = fMin
 		fMin = fMax
@@ -498,7 +554,7 @@ Float Function checkFloat(Float fVar, Float fMin, Float fMax, Float fDefault) Gl
 EndFunction
 
 Int Function checkInt(Int iVar, Int iMin, Int iMax, Int iDefault) Global
-{Check if an int is between the minimum and maximum value, if not, return the default value.}
+{Checks if an int is between the minimum and maximum value, if not, returns the default value.}
 	If iMin > iMax
 		Int iTemp = iMin
 		iMin = iMax

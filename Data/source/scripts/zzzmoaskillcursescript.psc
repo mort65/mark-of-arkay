@@ -668,13 +668,13 @@ Function ChangePerkDept(Int toChange)
 	PerkPointDebt += toChange
 EndFunction
 
-Function RegisterForLevel()
-	dsl_levelincreaseevent.RegisterForLevelIncrease(Self As Form, "OnLevelIncrease")
-Endfunction
+;Function RegisterForLevel()
+;	dsl_levelincreaseevent.RegisterForLevelIncrease(Self As Form, "OnLevelIncrease")
+;Endfunction
 
-Function UnRegisterForLevel()
-	dsl_levelincreaseevent.UnregisterForLevelIncrease(Self As Form, "OnLevelIncrease")
-Endfunction
+;Function UnRegisterForLevel()
+;	dsl_levelincreaseevent.UnregisterForLevelIncrease(Self As Form, "OnLevelIncrease")
+;Endfunction
 
 Event OnLevelIncrease(Int aiNewLevel)
 	If (ReviveScript.moaState.GetValue() == 0 )

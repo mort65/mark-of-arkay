@@ -84,7 +84,7 @@ Function RestoreLostItems(Actor ActorRef)
 	stopandConfirm(ReviveScript.moaBossChest01,1,20)
 	ReviveScript.LostItemsMarker.MoveToMyEditorLocation()
 	ReviveScript.LostItemsMarker.Disable()
-	LostItemsChest.RemoveAllItems(ActorRef, True, True)
+	transferItems(LostItemsChest,ActorRef as ObjectReference)
 	If fLostSouls > 0.0
 		ActorRef.ModActorValue("DragonSouls", fLostSouls)
 		fLostSouls = 0.0
@@ -136,7 +136,7 @@ Function DestroyLostItems(Actor ActorRef)
 	bIsItemsRemoved = False
 	ReviveScript.LostItemsMarker.MoveToMyEditorLocation()
 	ReviveScript.LostItemsMarker.Disable()
-	LostItemsChest.RemoveAllItems(ActorRef, True, True)
+	transferItems(LostItemsChest, ActorRef As ObjectReference)
 	ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Previously lost items are destroyed.")
 	bIsBusy = False
 EndFunction
@@ -278,7 +278,7 @@ Function LoseItems()
 			LoseOtherItems()
 		;EndIf
 	EndIf
-	ValuableItemsChest.RemoveAllItems(PlayerRef, True, True)
+	transferItems(ValuableItemsChest, PlayerRef as ObjectReference)
 	If ConfigMenu.bRespawnNaked
 		If !ConfigMenu.bExcludeQuestItems
 			PlayerRef.Unequipall()
@@ -312,33 +312,31 @@ Function LoseOtherItems()
 	Form kItem = None
 	QuestItems.Revert()
 	If ConfigMenu.bExcludeQuestItems
-		PlayerRef.RemoveAllItems(ValuableItemsChest,True,False)
-		Utility.Wait(0.2)
-		iIndex = PlayerRef.GetNumItems()
-		While iIndex > 0
-			iIndex -= 1
-			kItem = PlayerRef.GetNthForm(iIndex)
-			If kItem
-				QuestItems.AddForm(kItem)
-			EndIf
-		Endwhile
-		;ValuableItemsChest.RemoveAllItems(PlayerRef,True,True) Causes the script to halt until opening and closing a menu :/
-		transferItems(ValuableItemsChest, PlayerRef As ObjectReference)
-		Utility.Wait(0.2)
-	EndIf
-	If ConfigMenu.iLoseInclusion == 2 ;Exclude Equipped Items
-		iIndex = Equipment.Length
-		While iIndex > 0
-			iIndex -= 1
-			If Equipment[iIndex] && !QuestItems.HasForm(Equipment[iIndex])
-				If Equipment[iIndex] == ReviveScript.EquippedAmmo
-					PlayerRef.RemoveItem(Equipment[iIndex],PlayerRef.GetItemCount(Equipment[iIndex]),True,ValuableItemsChest)
-				Else
-					PlayerRef.RemoveItem(Equipment[iIndex],1,True,ValuableItemsChest)
+		If ConfigMenu.bPO3OK
+			Form[] QuestItemsArr = PO3_SKSEFunctions.GetQuestItems(PlayerRef As ObjectReference)
+			iIndex = QuestItemsArr.Length
+			While iIndex > 0
+				iIndex -= 1
+				kItem = QuestItemsArr[iIndex]
+				If kItem && (kItem != None)
+					QuestItems.AddForm(kItem)
+				EndIf			
+			EndWhile
+		Else
+			PlayerRef.RemoveAllItems(ValuableItemsChest,True,False)
+			Utility.Wait(0.2)
+			iIndex = PlayerRef.GetNumItems()
+			While iIndex > 0
+				iIndex -= 1
+				kItem = PlayerRef.GetNthForm(iIndex)
+				If kItem && (kItem != None)
+					QuestItems.AddForm(kItem)
 				EndIf
-			EndIf
-		EndWhile
+			Endwhile
+		EndIf
 	EndIf
+	;RemoveAllItems Causes the script to halt until opening and closing a menu
+	transferItems(ValuableItemsChest, PlayerRef As ObjectReference)	
 	Utility.Wait(0.2)
 	Bool bRemove = False
 	Bool bRemoveAll = True
@@ -358,82 +356,94 @@ Function LoseOtherItems()
 		!ConfigMenu.bRandomItemCurse
 			PlayerRef.RemoveAllItems(LostItemsChest, True, !ConfigMenu.bExcludeQuestItems)
 		Else
-			Int iTotal = PlayerRef.GetNumItems()
-			iCheckLimit = ConfigMenu.fMaxItemsToCheckSlider As Int
-			If (iCheckLimit == 0) || (iCheckLimit > iTotal)
-				iCheckLimit = iTotal
-			EndIf
 			Tradables = New Form[4]
 			Tradables[0] = Gold001 As Form
 			Tradables[1] = MarkOfArkay As Form
 			Tradables[2] = BlackFilledGem As Form
 			Tradables[3] = GrandFilledGem As Form 
-			iItemCheckers = 10
-			While iItemCheckers > 1 && (iCheckLimit / iItemCheckers) < 50
-				iItemCheckers -= 1 
-			EndWhile
-			Form[] containerArr = Utility.CreateFormArray(iItemCheckers)
-			containerArr[0] = PlayerRef
-			iIndex = iItemCheckers
-			Int handle
-			String sModEvent
-			Int iNum = iCheckLimit / iItemCheckers
-			Int iChecked = iCheckLimit
-			iTotalValues = 0
-			While iIndex > 0
-				iIndex -= 1
-				If iIndex > 8
-					sModEvent = "MOA_CheckItemsJ"
-				ElseIf iIndex > 7
-					sModEvent = "MOA_CheckItemsI"
-				ElseIf iIndex > 6
-					sModEvent = "MOA_CheckItemsH"
-				ElseIf iIndex > 5
-					sModEvent = "MOA_CheckItemsG"
-				ElseIf iIndex > 4
-					sModEvent = "MOA_CheckItemsF"
-				ElseIf iIndex > 3
-					sModEvent = "MOA_CheckItemsE"
-				ElseIf iIndex > 2
-					sModEvent = "MOA_CheckItemsD"
-				ElseIf iIndex > 1
-					sModEvent = "MOA_CheckItemsC"
-				ElseIf iIndex > 0
-					sModEvent = "MOA_CheckItemsB"
-				Else
-					sModEvent = "MOA_CheckItemsA"
+			transferItems(ValuableItemsChest, PlayerRef as ObjectReference)
+			If (ConfigMenu.iLoseInclusion == 1)
+				iCheckLimit = ConfigMenu.fMaxItemsToCheckSlider As Int
+				removeEquipments(PlayerRef As ObjectReference, LostItemsChest, Tradables, Equipment)
+			Else
+				Int iTotal = PlayerRef.GetNumItems()
+				iCheckLimit = ConfigMenu.fMaxItemsToCheckSlider As Int
+				If (iCheckLimit == 0) || (iCheckLimit > iTotal)
+					iCheckLimit = iTotal
 				EndIf
-				handle = ModEvent.Create(sModEvent)
-				If (handle)
-					ModEvent.PushForm(handle, ReviverQuest)
-					If iIndex > 0
-						containerArr[iIndex] = LostItemsChest.PlaceAtMe(ItemChest,abForcePersist = True)
-						transferItems(PlayerRef, containerArr[iIndex] As ObjectReference, Utility.RandomInt(0, PlayerRef.GetNumItems() - iNum), iNum)
-						Int iCount = iMin(iNum,(containerArr[iIndex] As ObjectReference).GetNumItems())
-						iChecked -= iCount
-						ModEvent.PushInt(handle, iCount)
+				iItemCheckers = 10
+				While iItemCheckers > 1 && (iCheckLimit / iItemCheckers) < 50
+					iItemCheckers -= 1 
+				EndWhile
+				Form[] containerArr = Utility.CreateFormArray(iItemCheckers)
+				containerArr[0] = PlayerRef
+				iIndex = iItemCheckers
+				Int handle
+				String sModEvent
+				Int iNum = iCheckLimit / iItemCheckers
+				Int iChecked = iCheckLimit
+				iTotalValues = 0
+				While iIndex > 0
+					iIndex -= 1
+					If iIndex > 8
+						sModEvent = "MOA_CheckItemsJ"
+					ElseIf iIndex > 7
+						sModEvent = "MOA_CheckItemsI"
+					ElseIf iIndex > 6
+						sModEvent = "MOA_CheckItemsH"
+					ElseIf iIndex > 5
+						sModEvent = "MOA_CheckItemsG"
+					ElseIf iIndex > 4
+						sModEvent = "MOA_CheckItemsF"
+					ElseIf iIndex > 3
+						sModEvent = "MOA_CheckItemsE"
+					ElseIf iIndex > 2
+						sModEvent = "MOA_CheckItemsD"
+					ElseIf iIndex > 1
+						sModEvent = "MOA_CheckItemsC"
+					ElseIf iIndex > 0
+						sModEvent = "MOA_CheckItemsB"
 					Else
-						ModEvent.PushInt(handle, iChecked)
+						sModEvent = "MOA_CheckItemsA"
 					EndIf
-					ModEvent.PushForm(handle, containerArr[iIndex])
-					ModEvent.PushBool(handle, bRemoveAll)
-					If (containerArr[iIndex] As ObjectReference).GetNumItems() > 0
-						ModEvent.Send(Handle)
+					handle = ModEvent.Create(sModEvent)
+					If (handle)
+						ModEvent.PushForm(handle, ReviverQuest)
+						If iIndex > 0
+							containerArr[iIndex] = LostItemsChest.PlaceAtMe(ItemChest,abForcePersist = True)
+							If ConfigMenu.bExcludeQuestItems
+								transferItemsWithExclusions(PlayerRef, containerArr[iIndex] As ObjectReference, QuestItems, Equipment, Utility.RandomInt(0, PlayerRef.GetNumItems() - iNum), iNum)
+							Else
+								transferItemsWithExclusionArr(PlayerRef, containerArr[iIndex] As ObjectReference, Equipment, Utility.RandomInt(0, PlayerRef.GetNumItems() - iNum), iNum)
+							EndIf
+							Int iCount = iMin(iNum,(containerArr[iIndex] As ObjectReference).GetNumItems())
+							iChecked -= iCount
+							ModEvent.PushInt(handle, iCount)
+						Else
+							ModEvent.PushInt(handle, iChecked)
+						EndIf
+						ModEvent.PushForm(handle, containerArr[iIndex])
+						ModEvent.PushBool(handle, bRemoveAll)
+						If (containerArr[iIndex] As ObjectReference).GetNumItems() > 0
+							ModEvent.Send(Handle)
+						Else
+							iItemCheckers -= 1
+						EndIf
 					EndIf
-				EndIf
-				Utility.WaitMenuMode(0.1)
-			EndWhile
-			While iItemCheckers > 0
-				Utility.WaitMenuMode(0.2)
-			Endwhile
-			iIndex = containerArr.Length
-			While iIndex > 1
-				iIndex -= 1
-				(containerArr[iIndex] As ObjectReference).DisableNoWait()
-				(containerArr[iIndex] As ObjectReference).Delete()
-				containerArr[iIndex] = None
-			EndWhile
-			ValuableItemsChest.RemoveAllItems(PlayerRef, True, True)
+					Utility.WaitMenuMode(0.1)
+				EndWhile
+				While iItemCheckers > 0
+					Utility.WaitMenuMode(0.2)
+				Endwhile
+				iIndex = containerArr.Length
+				While iIndex > 1
+					iIndex -= 1
+					(containerArr[iIndex] As ObjectReference).DisableNoWait()
+					(containerArr[iIndex] As ObjectReference).Delete()
+					containerArr[iIndex] = None
+				EndWhile
+			EndIf
+			transferItems(ValuableItemsChest, PlayerRef as ObjectReference)
 		EndIf
 	EndIf
 	QuestItems.Revert()
@@ -469,7 +479,7 @@ Bool Function bSoulReduced()
 Endfunction
 
 
-Function PO3LoseOtherItems() ;Very Slow
+Function PO3LoseOtherItems() ;Slow?
 	If !PlayerRef.GetNumItems() || ((ConfigMenu.iLoseInclusion == 1) && !(ConfigMenu.bLoseArmor || ConfigMenu.bLoseWeapon || ConfigMenu.bLoseAmmo))
 		ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay:  Nothing else can be removed.")
 		Return
@@ -648,4 +658,134 @@ Function PO3LoseOtherItems() ;Very Slow
 		EndIf
 	
 	Endwhile
+EndFunction
+
+
+Function removeEquipments(ObjectReference akInChest, ObjectReference akOutChest, Form[] Tradables, Form[] Equipment)
+	Bool bContinue = False
+	Bool bBreak = False
+	Form kItem = None
+	Int iValue = 0
+	Int iAmount = 0
+	Int iToRemove = 0
+	Int iChecked = 0
+	Bool bIsLoggingEnabled = ConfigMenu.bIsLoggingEnabled
+	Int i = Equipment.Length
+	While !bBreak && (i > 0)
+		i -= 1
+		bContinue = False
+		kItem = Equipment[i]
+		If (!kItem)
+			iChecked-=1
+			;Debug.TraceConditional("MarkOfArkay: Unknown item at index(" + i + ")",bIsLoggingEnabled)	
+			bContinue = True
+		EndIf
+		If !bContinue
+			If Tradables.Find(kItem) > -1
+				Debug.TraceConditional("MarkOfArkay: (" + kItem + "," + kItem.GetName()+ ") Skipped -> IsTradable()",bIsLoggingEnabled)
+				bContinue = True
+			EndIf
+		EndIf
+		If !bContinue
+			If QuestItems.HasForm(kItem)
+				Debug.TraceConditional("MarkOfArkay: (" + kItem + "," + kItem.GetName()+ ") Skipped -> IsQuestItem()",bIsLoggingEnabled)
+				bContinue = True
+			EndIf
+		EndIf
+		If !bContinue
+			iAmount = akInChest.GetItemCount(kItem)
+			If ConfigMenu.bRandomItemCurse
+				iToRemove = Utility.RandomInt(0,1)
+			Else
+				iToRemove = 1
+			EndIf
+			If (!iToRemove) || (!iAmount)
+				Debug.TraceConditional("MarkOfArkay: (" + kItem + "," + kItem.GetName()+ ") Skipped -> Amount is 0",bIsLoggingEnabled)
+				bContinue = True
+			EndIf
+		EndIf
+		If !bContinue
+			If (ConfigMenu.iValidTypes.Find(kItem.GetType()) < 0)
+				Debug.TraceConditional("MarkOfArkay: (" + kItem + "," + kItem.GetName() + ") Skipped -> InvalidType(" + kItem.GetType() +")",bIsLoggingEnabled)	
+				bContinue = True
+			EndIf
+		EndIf
+		If !bContinue
+			If ConfigMenu.bCheckKeyword
+				If (kItem.HasKeywordString("zzzmoa_ignoreitem") || kItem.HasKeywordString("vendornosale") || kItem.HasKeywordString("magicdisallowenchanting") || kItem.HasKeywordString("sos_underwear") || kItem.HasKeywordString("sos_genitals"))
+					Debug.TraceConditional("MarkOfArkay: (" + kItem + "," + kItem.GetName() + ") skipped -> InvalidKeyword()",bIsLoggingEnabled)	
+					bContinue = True
+				EndIf
+			EndIf
+		EndIf
+		If !bContinue
+			If ConfigMenu.bCheckWeight
+				If !kItem.GetWeight()
+					Debug.TraceConditional("MarkOfArkay: (" + kItem + "," + kItem.GetName() + ") skipped -> NoWeight()",bIsLoggingEnabled)	
+					bContinue = True
+				EndIf
+			EndIf
+		EndIf
+		If !bContinue
+			If (ConfigMenu.fLoseOtherMinValueSlider > 0) || (ConfigMenu.fLoseOtherTotalValueSlider > 0)
+				iValue = kItem.GetGoldValue()
+				If ConfigMenu.fLoseOtherMinValueSlider > 0
+					If iValue < (ConfigMenu.fLoseOtherMinValueSlider As Int)
+						Debug.TraceConditional("MarkOfArkay: (" + kItem + "," + kItem.GetName() + ") skipped -> IsCheap(" + iValue +")",bIsLoggingEnabled)	
+						bContinue = True
+					EndIf
+				EndIf
+				If !bContinue
+					If ConfigMenu.fLoseOtherTotalValueSlider > 0
+						If (iTotalValues + (iValue * iToRemove)) > (ConfigMenu.fLoseOtherTotalValueSlider As Int)
+							Int iCount = iToRemove
+							While iCount > 0 && ((iTotalValues + (iValue * iCount)) > (ConfigMenu.fLoseOtherTotalValueSlider As Int))
+								iCount -= 1
+							Endwhile
+							If iCount
+								iToRemove = iCount									
+							Else
+								Debug.TraceConditional("MarkOfArkay: (" + kItem + "," + kItem.GetName() + ") skipped -> IsExpensive(" + iValue +"," + iTotalValues + ")",bIsLoggingEnabled)	
+								bContinue = True
+							EndIf
+						EndIf
+					EndIf
+				EndIf
+			EndIf
+		EndIf
+		If !bContinue
+			akInChest.RemoveItem(kItem, iToRemove, True, akOutChest )
+			Debug.TraceConditional("MarkOfArkay: " + iToRemove + " (" + kItem + "," + kItem.GetName() + ") removed. Values = (" + iTotalValues + "+" + iValue + ")",bIsLoggingEnabled )	
+			If ConfigMenu.fLoseOtherTotalValueSlider > 0  
+				If iTotalValues < ConfigMenu.fLoseOtherTotalValueSlider As Int
+					iTotalValues = iTotalValues + (iValue * iToRemove)
+					If iTotalValues >= ConfigMenu.fLoseOtherTotalValueSlider As Int
+						Debug.TraceConditional("MarkOfArkay: " + "Values(" + iTotalValues + ")" + " >= " + ConfigMenu.fLoseOtherTotalValueSlider As Int,bIsLoggingEnabled)	
+						bBreak = True
+					EndIf
+				Else
+					Debug.TraceConditional("MarkOfArkay: " + "Values(" + iTotalValues + ")" + " >= " + ConfigMenu.fLoseOtherTotalValueSlider As Int,bIsLoggingEnabled)	
+					bBreak = True
+				EndIf
+				If !bBreak && ConfigMenu.fLoseOtherMinValueSlider > 0
+					If (iTotalValues + ConfigMenu.fLoseOtherMinValueSlider) > ConfigMenu.fLoseOtherTotalValueSlider
+						Debug.TraceConditional("MarkOfArkay: " + "Values(" + iTotalValues + ")" + " + MinValue(" + ConfigMenu.fLoseOtherMinValueSlider As Int + ") >= TotalValue(" + ConfigMenu.fLoseOtherTotalValueSlider As Int + ")",bIsLoggingEnabled)	
+						bBreak = True
+					EndIf
+				EndIf
+			EndIf						
+		EndIf
+		iChecked += 1
+		If (iCheckLimit > 0)
+			If (iChecked >= iCheckLimit)
+				bBreak = True
+			EndIf
+		EndIf
+		If bBreak || (i <=0)
+			Debug.TraceConditional("MarkOfArkay: "+ iChecked +" items checked by ItemCheckerA",bIsLoggingEnabled)
+		EndIf
+	Endwhile
+	If akInChest != PlayerRef
+		akInChest.RemoveAllItems(PlayerRef, True, True)
+	EndIf
 EndFunction

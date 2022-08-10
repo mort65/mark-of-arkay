@@ -107,6 +107,7 @@ Actor[] Function getRapists(Actor Victim, Actor Attacker = None)
 		int l = PacifiedHostiles.GetSize()
 		int m = 32
 		int c = 0
+		int k
 		Bool bBreak = False
 		Actor act
 		Utility.wait(5.0)
@@ -117,7 +118,10 @@ Actor[] Function getRapists(Actor Victim, Actor Attacker = None)
 				If interface == "sexlab"
 					rapist = ReviveScript.SexLabInterface.FindRapist(Victim as ObjectReference, 5000.0, 0, Victim, rapists[0], rapists[1], rapists[2])
 					If isRapistValid(rapist) && (!ConfigMenu.bOnlyHostilesRape || (!rapist.IsHostileToActor(Attacker) && (rapist.GetFactionReaction(Attacker) > 1)))
-						rapists[rapists.find(None)] = rapist
+						k = rapists.find(None)
+						If k > -1
+							rapists[k] = rapist
+						EndIf
 					EndIf
 				Else
 					c = 0
@@ -125,7 +129,10 @@ Actor[] Function getRapists(Actor Victim, Actor Attacker = None)
 					While !bBreak && (j <  l) && (c < m)
 						act = PacifiedHostiles.GetAt(j) As actor
 						If act && rapists.Find(act) < 0 && isRapistValid(act) && (!ConfigMenu.bOnlyHostilesRape || (!act.IsHostileToActor(Attacker) && (act.GetFactionReaction(Attacker) > 1)))
-							rapists[rapists.find(None)] = act
+							k = rapists.find(None)
+							If k > -1
+								rapists[k] = act
+							EndIf
 							bBreak = True
 						EndIf
 						j+=1
@@ -134,7 +141,10 @@ Actor[] Function getRapists(Actor Victim, Actor Attacker = None)
 					If !bBreak
 						rapist = FindAvailableActor(Victim as ObjectReference, 5000.0, 0, Victim, rapists[0], rapists[1], rapists[2])
 						If isRapistValid(rapist) && (!ConfigMenu.bOnlyHostilesRape || (!rapist.IsHostileToActor(Attacker) && (rapist.GetFactionReaction(Attacker) > 1)))
-							rapists[rapists.find(None)] = rapist
+							k = rapists.find(None)
+							If k > -1
+								rapists[k] = rapist
+							EndIf
 						EndIf
 					EndIf
 				EndIf

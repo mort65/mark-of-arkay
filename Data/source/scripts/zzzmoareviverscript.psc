@@ -250,9 +250,9 @@ Event OnInit()
 	SetGameVars(True)
 	SetVars()
 	RegisterForSleep()
-	If ConfigMenu.bLevelReduce
-		SkillScript.RegisterForLevel()
-	EndIf
+	;If ConfigMenu.bLevelReduce
+	;	SkillScript.RegisterForLevel()
+	;EndIf
 	DetachMarker2.Enable()
 	DetachMarker2.MoveTo(PlayerRef)
 	DetachMarker2.SetPosition(PlayerRef.GetPositionX(), PlayerRef.GetPositionY(), PlayerRef.GetPositionZ())

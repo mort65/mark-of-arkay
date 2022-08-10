@@ -528,7 +528,7 @@ Function transferItemsWithExclusions(ObjectReference akInContainer, ObjectRefere
 	While aiIndex < aiLast + 1
 		kItem = akInContainer.GetNthForm(aiIndex)
 		If kItem 
-			If (!bExcludeArr || (excludesArr.Find(kItem) < 0)) && (!excludeList && excludeList.Find(kItem) < 0)
+			If (!bExcludeArr || (excludesArr.Find(kItem) < 0)) && (!excludeList || excludeList.Find(kItem) < 0)
 				If (aiNumber <= -1) || (aiNumber > akInContainer.GetItemCount(kItem))
 					akInContainer.RemoveItem(kItem, akInContainer.GetItemCount(kItem), True, akOutContainer)
 				Else

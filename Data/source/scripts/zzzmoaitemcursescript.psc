@@ -361,13 +361,12 @@ Function LoseOtherItems()
 			Tradables[1] = MarkOfArkay As Form
 			Tradables[2] = BlackFilledGem As Form
 			Tradables[3] = GrandFilledGem As Form 
+			iCheckLimit = ConfigMenu.fMaxItemsToCheckSlider As Int
 			transferItems(ValuableItemsChest, PlayerRef as ObjectReference)
 			If (ConfigMenu.iLoseInclusion == 1)
-				iCheckLimit = ConfigMenu.fMaxItemsToCheckSlider As Int
 				removeEquipments(PlayerRef As ObjectReference, LostItemsChest, Tradables, Equipment)
 			Else
-				Int iTotal = PlayerRef.GetNumItems()
-				iCheckLimit = ConfigMenu.fMaxItemsToCheckSlider As Int
+				Int iTotal = PlayerRef.GetNumItems()				
 				If (iCheckLimit == 0) || (iCheckLimit > iTotal)
 					iCheckLimit = iTotal
 				EndIf
@@ -677,7 +676,6 @@ Function removeEquipments(ObjectReference akInChest, ObjectReference akOutChest,
 		kItem = Equipment[i]
 		If (!kItem)
 			iChecked-=1
-			;Debug.TraceConditional("MarkOfArkay: Unknown item at index(" + i + ")",bIsLoggingEnabled)	
 			bContinue = True
 		EndIf
 		If !bContinue

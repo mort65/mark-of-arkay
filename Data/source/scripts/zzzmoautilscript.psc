@@ -3,7 +3,7 @@ Scriptname zzzmoautilscript
 Import StringUtil
 
 Int Function iMin(Int a,Int b) Global
-{Find minimum of two ints.}
+{Finds minimum of two ints.}
 	If a <= b
 		Return a
 	EndIf

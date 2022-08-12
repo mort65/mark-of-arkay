@@ -71,14 +71,6 @@ Bool Function quickRapeSL(Quest SexLabQuestFramework, Actor[] rapists, Actor vic
 	Return False
 EndFunction
 
-int Function StartSexSL(Quest SexLabQuestFramework, Actor[] Positions, sslBaseAnimation[] Anims, Actor Victim = none, ObjectReference CenterOn = none, bool AllowBed = true, string Hook = "") Global
-	SexLabFramework SLFramework =  SexLabQuestFramework as SexLabFramework
-	If SLFramework != None
-		Return SLFramework.StartSex(Positions, Anims, Victim, CenterOn, AllowBed, Hook)
-	EndIf
-	Return -1
-EndFunction
-
 Actor Function FindRapistSL(Quest SexLabQuestFramework, ObjectReference CenterRef, float Radius = 5000.0, int FindGender = -1, Actor IgnoreRef1 = none, Actor IgnoreRef2 = none, Actor IgnoreRef3 = none, Actor IgnoreRef4 = none) Global
 	SexLabFramework SLFramework =  SexLabQuestFramework as SexLabFramework
 	Return SLFramework.FindAvailableActor(CenterRef, Radius, FindGender, IgnoreRef1, IgnoreRef2, IgnoreRef3, IgnoreRef4 = none)

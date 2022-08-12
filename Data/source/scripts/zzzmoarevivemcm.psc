@@ -365,7 +365,7 @@ Float Property fLootChanceSlider = 50.0 Auto Hidden
 Float Property fScrollChanceSlider = 25.0 Auto Hidden
 Float Property fRecallCastSlider = 0.0 Auto Hidden
 Float Property fMarkCastSlider = 0.0 Auto Hidden
-Float Property fRPMinDistanceSlider = 2000.0 Auto Hidden
+Float Property fRPMinDistanceSlider = 500.0 Auto Hidden
 Int Property iExternalIndex = -1 Auto Hidden
 Int Property iSpawnMinLevel = 4 Auto Hidden
 Int Property iSpawnMaxLevel = 4 Auto Hidden
@@ -3036,7 +3036,7 @@ Event OnOptionDefault(Int option)
 		fRecoveryTimeSlider = 1.0
 		SetSliderOptionValue(oidRecoveryTime, fRecoveryTimeSlider, "$mrt_MarkofArkay_RecoveryTime_2")
 	ElseIf (option == oidRPMinDistanceSlider)
-		fRPMinDistanceSlider = 2000.0
+		fRPMinDistanceSlider = 500.0
 		moaRPMinDistance.SetValue(fRPMinDistanceSlider)
 		SetSliderOptionValue(oidRPMinDistanceSlider, fRPMinDistanceSlider, "{0}")
 	ElseIf (option == oidDisChanceSlider)
@@ -4772,7 +4772,7 @@ Event OnOptionSliderOpen(Int option)
 		SetSliderDialogInterval(1.0)
 	ElseIf(option == oidRPMinDistanceSlider)
 		SetSliderDialogStartValue(fRPMinDistanceSlider)
-		SetSliderDialogDefaultValue(2000.0)
+		SetSliderDialogDefaultValue(500.0)
 		SetSliderDialogRange(0.0, 10000.0)
 		SetSliderDialogInterval(250.0)
 	ElseIf(option == oidDisChanceSlider)
@@ -5054,7 +5054,7 @@ Bool function bLoadUserSettings(String sFileName)
 	moaNPCHasLevelRange.SetValue(bNPCHasLevelRange As Int)
 	iTeleportLocation = checkInt(fiss.loadInt("iTeleportLocation"),0,sRespawnPoints.Length - 1,0)
 	iExternalIndex = checkInt(fiss.loadInt("iExternalIndex"),0,sExtraRPs.Length - 1,-1)
-	fRPMinDistanceSlider = checkFloat(fiss.loadFloat("fRPMinDistanceSlider"),0,10000,2000)
+	fRPMinDistanceSlider = checkFloat(fiss.loadFloat("fRPMinDistanceSlider"),0,10000,500)
 	moaRPMinDistance.SetValue(fRPMinDistanceSlider)
 	fDisChanceSlider = checkFloat(fiss.loadFloat("fDisChanceSlider"),0,100,25)
 	fDisPriceSlider = checkFloat(fiss.loadFloat("fDisPriceSlider"),0,10000,100)
@@ -5686,7 +5686,7 @@ function LoadDefaultSettings()
 	moaMoralityMatters.SetValue(bMoralityMatters As Int)
 	iTeleportLocation = 0
 	iExternalIndex = -1
-	fRPMinDistanceSlider = 2000.0
+	fRPMinDistanceSlider = 500.0
 	moaRPMinDistance.SetValue(fRPMinDistanceSlider)
 	fDisChanceSlider = 25.0
 	fDisProgChanceSlider = 50.0

@@ -2003,6 +2003,7 @@ Function SetGameVars(Bool abFast = False)
 	Else
 		ConfigMenu.ToggleFallDamage(False)
 	EndIf
+	RapeScript.RegisterForModEvent("MOA_Int_PlayerLoadsGame", "On_MOA_Int_PlayerLoadsGame")
 	sendModEvent("MOA_Int_PlayerLoadsGame")
 	ItemScript.RegisterItemCheckers()
 	DiseaseScript.RegisterForModEvent("MOA_RecalcCursedDisCureCost", "RecalcCursedDisCureCost")

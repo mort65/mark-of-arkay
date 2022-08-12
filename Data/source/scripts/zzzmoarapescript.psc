@@ -27,10 +27,15 @@ Event OnInit()
 EndEvent
 
 Event On_MOA_Int_PlayerLoadsGame(string eventName, string strArg, float numArg, Form sender)
-	RegisterForSingleUpdate(10.0)
+	Debug.trace("MarkOfArkay: On_MOA_Int_PlayerLoadsGame() triggered by "+sender)
+	RegisterForSingleUpdate(1.0)
 EndEvent
 
 Event OnUpdate()
+	ReviveScript.SexLabInterface.PlayerLoadsGame()
+	ReviveScript.OStimInterface.PlayerLoadsGame()
+	ReviveScript.FlowerGirlsInterface.PlayerLoadsGame()
+	Utility.Wait(10.0)
 	ConfigMenu.bIsSexlabActive = ReviveScript.SexLabInterface.GetIsInterfaceActive()
 	ConfigMenu.bIsOStimActive = ReviveScript.OStimInterface.GetIsInterfaceActive()
 	ConfigMenu.bIsFlowerGirlsActive = ReviveScript.FlowerGirlsInterface.GetIsInterfaceActive()
@@ -74,7 +79,7 @@ Bool Function isRapistValid(Actor rapist)
 			EndIf
 			If (ConfigMenu.iRapistGender == 0) || ((iSex > -1) && ((iSex + 1) == ConfigMenu.iRapistGender))
 				If !ReviveScript.NPCScript.isActorChild(rapist)
-					If !rapist.IsGuard()
+					If (!rapist.IsGuard() || !ConfigMenu.bOnlyHostilesRape)
 						If !rapist.IsPlayerTeammate()
 							If !rapist.IsCommandedActor()
 								If ((getInteface() != "sexlab") || ReviveScript.SexLabInterface.IsValidActor(rapist))
@@ -116,7 +121,7 @@ Actor[] Function getRapists(Actor Victim, Actor Attacker = None)
 				rapists[0] = Attacker
 			Else
 				If interface == "sexlab"
-					rapist = ReviveScript.SexLabInterface.FindRapist(Victim as ObjectReference, 5000.0, 0, Victim, rapists[0], rapists[1], rapists[2])
+					rapist = ReviveScript.SexLabInterface.FindRapist(Victim as ObjectReference, 5000.0, ConfigMenu.iRapistGender - 1, Victim, rapists[0], rapists[1], rapists[2])
 					If isRapistValid(rapist) && (!ConfigMenu.bOnlyHostilesRape || (!rapist.IsHostileToActor(Attacker) && (rapist.GetFactionReaction(Attacker) > 1)))
 						k = rapists.find(None)
 						If k > -1
@@ -355,67 +360,66 @@ Bool Function rapePlayer(Actor[] rapists)
 			EndWhile
 		EndIf
 		result = sceneStarted
-	ElseIf interface == "fg"
-		If ReviveScript.FlowerGirlsInterface.GetActiveThreadForActor(playerRef as ObjectReference) != None
-			result = False
-		Else
-			If playerRef.IsBleedingOut()
-				PlayerRef.DispelSpell(ReviveScript.Bleed)
-				playerRef.ResetHealthAndLimbs()
-				Game.EnablePlayerControls( abMovement = False, abFighting = False, abCamSwitch = true, abLooking = true, abSneaking = False, abMenu = False, abActivate = False, abJournalTabs = False)
-			EndIf
-			extraRapist = None
-			int l = PacifiedHostiles.GetSize()
-			If l > 0
-				i = utility.randomint(0, l - 1)
-				int j = i - 1
-				If j < 0 
-					j = l - 1
-				EndIf
-				Bool bBreak = False
-				While !bBreak && (extraRapist == None)
-					extraRapist = PacifiedHostiles.getAt(i) as Actor
-					If (extraRapist == rapists[0]) || !isRapistValid(extraRapist)
-						extraRapist = None
-					EndIf
-					If i == j
-						bBreak = True
-					ElseIf i == (l - 1)
-						i = 0
-					Else
-						i += 1
-					EndIf
-				EndWhile
-			EndIf
-			If extraRapist && (Utility.RandomInt(0,1) == 1)
-				If (ConfigMenu.fMaxRapists > 1) && (Utility.RandomInt(0,1) == 1)
-					ReviveScript.FlowerGirlsInterface.PlayThreesome(rapists[0], playerRef, extraRapist)
-				Else 
-					ReviveScript.FlowerGirlsInterface.RandomScene(extraRapist,playerRef)
-				EndIf
-			Else
-				ReviveScript.FlowerGirlsInterface.RandomScene(rapists[0],playerRef)
-			EndIf
-			Utility.wait(3.0)
-			dxSceneThread startedScene = ReviveScript.FlowerGirlsInterface.GetActiveThreadForActor(playerRef as ObjectReference)
-			If startedScene != None
-				playerRef.StopCombat()
-				playerRef.StopCombatAlarm()
-				While startedScene.IsRunning()
-					If !NPCPacifier.Isrunning()
-						NPCPacifier.Start()
-						Utility.Wait(1.0)
-					EndIf
-					NPCPacifier.Stop()
-					i = 0
-					While !NPCPacifier.IsStopped() && i < 50
-						Utility.Wait(0.1)
-						i += 1
-					EndWhile
-				EndWhile
-			EndIf
-			result = (startedScene As Bool)
+	ElseIf interface == "fg"	
+		If playerRef.IsBleedingOut()
+			PlayerRef.DispelSpell(ReviveScript.Bleed)
+			playerRef.ResetHealthAndLimbs()
+			Game.EnablePlayerControls( abMovement = False, abFighting = False, abCamSwitch = true, abLooking = true, abSneaking = False, abMenu = False, abActivate = False, abJournalTabs = False)
 		EndIf
+		extraRapist = None
+		int l = PacifiedHostiles.GetSize()
+		If l > 0
+			i = utility.randomint(0, l - 1)
+			int j = i - 1
+			If j < 0 
+				j = l - 1
+			EndIf
+			Bool bBreak = False
+			While !bBreak && (extraRapist == None)
+				extraRapist = PacifiedHostiles.getAt(i) as Actor
+				If (extraRapist == rapists[0]) || !isRapistValid(extraRapist)
+					extraRapist = None
+				EndIf
+				If i == j
+					bBreak = True
+				ElseIf i == (l - 1)
+					i = 0
+				Else
+					i += 1
+				EndIf
+			EndWhile
+		EndIf
+		If extraRapist && (Utility.RandomInt(0,1) == 1)
+			If (ConfigMenu.fMaxRapists > 1) && (Utility.RandomInt(0,1) == 1)
+				ReviveScript.FlowerGirlsInterface.Actor1 = rapists[0]
+				ReviveScript.FlowerGirlsInterface.Actor2 = playerRef
+				ReviveScript.FlowerGirlsInterface.Actor3 = extraRapist
+				sendModEvent("MOA_Int_FG_PlayThreesome")
+			Else 
+				ReviveScript.FlowerGirlsInterface.Actor1 = extraRapist
+				ReviveScript.FlowerGirlsInterface.Actor2 = playerRef
+				sendModEvent("MOA_Int_FG_RandomScene")
+			EndIf
+		Else
+			ReviveScript.FlowerGirlsInterface.Actor1 = rapists[0]
+			ReviveScript.FlowerGirlsInterface.Actor2 = playerRef
+			sendModEvent("MOA_Int_FG_RandomScene")
+		EndIf
+		playerRef.StopCombat()
+		playerRef.StopCombatAlarm()
+		While ReviveScript.FlowerGirlsInterface.isBusy
+			If !NPCPacifier.Isrunning()
+				NPCPacifier.Start()
+				Utility.Wait(1.0)
+			EndIf
+			NPCPacifier.Stop()
+			i = 0
+			While !NPCPacifier.IsStopped() && i < 50
+				Utility.Wait(0.1)
+				i += 1
+			EndWhile
+		EndWhile
+		result = ReviveScript.FlowerGirlsInterface.Result
 	EndIf
 	(NPCPacifier As zzzmoa_npc_pacifier_quest_script).ToggleTeamMates(True)
 	Game.SetPlayerAIDriven(False)

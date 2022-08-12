@@ -3,6 +3,7 @@ Scriptname zzzmoasexlabinterface extends Quest
 Quest SexLabQuestFramework
 
 Event OnInit()
+	Debug.trace("MarkofArkay: OnInit() trigged for "+self)
 	RegisterForModEvent("MOA_Int_PlayerLoadsGame", "On_MOA_Int_PlayerLoadsGame")
 EndEvent
 
@@ -11,6 +12,7 @@ Event On_MOA_Int_PlayerLoadsGame(string eventName, string strArg, float numArg, 
 EndEvent
 
 Function PlayerLoadsGame()
+	Debug.trace("MarkofArkay: PlayerLoadsGame() trigged for "+self)
 	; Is the soft dependency installed and is our script in the right state? If not change state. 
 
 	If Game.GetModByName("SexLab.esm") != 255
@@ -47,10 +49,6 @@ Bool Function rape(Actor[] rapists, Actor victim)
 	Return False
 EndFunction
 
-Int Function StartSex(Actor[] Positions, sslBaseAnimation[] Anims, Actor Victim = none, ObjectReference CenterOn = none, bool AllowBed = true, string Hook = "")
-	Return -1
-EndFunction
-
 Actor Function FindRapist(ObjectReference CenterRef, float Radius = 5000.0, int FindGender = -1, Actor IgnoreRef1 = none, Actor IgnoreRef2 = none, Actor IgnoreRef3 = none, Actor IgnoreRef4 = none)
 	Return None
 EndFunction
@@ -74,12 +72,12 @@ State Installed
 		Return zzzmoa_int_sexlab.FindRapistSL(SexLabQuestFramework, CenterRef, Radius, FindGender, IgnoreRef1, IgnoreRef2, IgnoreRef3, IgnoreRef4)
 	EndFunction
 	
-	Int Function StartSex(Actor[] Positions, sslBaseAnimation[] Anims, Actor Victim = none, ObjectReference CenterOn = none, bool AllowBed = true, string Hook = "")
-		Return zzzmoa_int_sexlab.StartSexSL(SexLabQuestFramework, Positions, Anims, Victim, CenterOn, AllowBed, Hook)
-	EndFunction
-	
 	Bool Function IsValidActor(Actor ActorRef)
 		Return zzzmoa_int_sexlab.IsValidActorSL(SexLabQuestFramework, ActorRef)
 	EndFunction
+	
+	Event On_MOA_Int_PlayerLoadsGame(string eventName, string strArg, float numArg, Form sender)
+		PlayerLoadsGame()
+	EndEvent
 
 EndState

@@ -52,6 +52,25 @@ On the debug page if Information is enabled, currently lost items can be viewed 
 
 Some of the MCM settings can be locked from the debug page. You can set a maximum number of respawns, after reaching that number of respawns if you don't have any items for revival you'll die. Also, you can make it a permanent death (Requires PapyrusUtil) and prevent yourself from loading saves from that character after using all allowed respawns. 
 
+**Hard Requirement**
+
+    SKSE
+    SkyUI
+    UIExtensions
+
+ 
+
+**Soft Requirements**
+
+    PapyrusUtil
+    FISSES
+    powerofthree's Papyrus Extender
+    SexLab
+    Flower Girls
+    OStim
+    Simple Slavery ++
+
+
 **Compatibility**
 
 This mod should be compatible with almost anything except mods that do the same thing or remove the essential flag from the player.

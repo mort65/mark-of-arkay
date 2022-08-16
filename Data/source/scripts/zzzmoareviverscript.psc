@@ -358,6 +358,7 @@ Event OnEnterBleedout()
 			Attacker = None
 			PlayerRef.RemoveSpell(Bleed)
 			PlayerRef.SetActorValue("HealRate",fHealrate)
+			PlayerRef.SetDontMove(False)
 			Game.EnablePlayerControls()
 			LowHealthImod.Remove()
 			moaBleedoutHandlerState.SetValue(0)
@@ -414,10 +415,12 @@ Event OnUpdate()
 		If bParalyzed 
 			If bInBleedoutAnim
 				If !bSheathed
+					PlayerRef.SetDontMove(False)
 					Game.EnablePlayerControls()
 					PlayerRef.DrawWeapon()
 				EndIf		
 			Else	 ;auto fix for can't draw weapon, jump,.. after paralysis	
+				PlayerRef.SetDontMove(False)
 				Game.EnablePlayerControls()
 				Form rw = PlayerRef.GetEquippedObject(1)
 				If rw
@@ -611,6 +614,7 @@ Function checkHealth()
 				If GetState() == ""
 					Attacker = None
 					PlayerRef.SetActorValue("HealRate",fHealrate)
+					PlayerRef.SetDontMove(False)
 					Game.EnablePlayerControls()
 					LowHealthImod.Remove()
 					moaBleedoutHandlerState.SetValue(0)
@@ -844,6 +848,7 @@ Function BleedoutHandler(String CurrentState)
 				PlayerRef.RemovePerk(Invulnerable)
 				Debug.SetGodMode(False)
 			Else
+				PlayerRef.SetDontMove(False)
 				Game.EnablePlayerControls()
 				PlayerRef.RemovePerk(Invulnerable)
 				Debug.SetGodMode(False)
@@ -1362,6 +1367,7 @@ Function RevivePlayer(Bool bRevive)
 		Utility.Wait(1.0)
 		PlayerRef.SheatheWeapon()
 		Game.DisablePlayerControls()
+		PlayerRef.SetDontMove(True)
 		ConfigMenu.bIsLoggingEnabled && Debug.trace("MarkOfArkay: Player raped = " + bIsraped)
 	EndIf
 	Bool bSendToSlavery = bSendToSlavery()
@@ -1890,6 +1896,7 @@ Function RevivePlayer(Bool bRevive)
 					Return
 				EndIf
 				ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Exiting to the Main menu...")
+				PlayerRef.SetDontMove(False)
 				Game.EnablePlayerControls()
 				Game.EnableFastTravel(True)
 				Attacker = None

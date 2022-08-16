@@ -434,6 +434,7 @@ Bool Function bIsArrived(ObjectReference akMarker)
 			Return True
 		EndIf
 	EndIf
+	playerRef.SetDontMove(False)
 	Float fTravel = PlayerMarker.GetDistance(akMarker)
 	PlayerRef.MoveTo(akMarker,afZOffset = 15.0)
 	Utility.Wait(0.5)

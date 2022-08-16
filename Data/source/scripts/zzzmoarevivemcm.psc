@@ -507,16 +507,16 @@ Event OnPageReset(String page)
 	SetCursorFillMode(LEFT_TO_RIGHT)
 	Int iCurStatus = iGetModStatus()
 	If iCurStatus == 1
-		AddHeaderOption("$mrt_MarkofArkay_HEAD_Mod_Status_1")
+		_AddHeaderOption("$mrt_MarkofArkay_HEAD_Mod_Status_1")
 		Return
 	ElseIf iCurStatus == 2
-		AddHeaderOption("$mrt_MarkofArkay_HEAD_Mod_Status_2")
+		_AddHeaderOption("$mrt_MarkofArkay_HEAD_Mod_Status_2")
 		Return
 	EndIf
 	setArrays()
 	If (page == "$General")
 		SetCursorPosition(0)
-		AddHeaderOption("$General")
+		_AddHeaderOption("$General")
 		SetCursorPosition(2)
 		If ( moaState.getValue() == 1 )
 			flags =	OPTION_FLAG_NONE
@@ -596,7 +596,7 @@ Event OnPageReset(String page)
 		oidGoldScaleSlider = AddSliderOption("$mrt_MarkofArkay_GoldScaleSlider_1", fValueGoldScaleSlider, "$mrt_MarkofArkay_GoldScaleSlider_2", flags)
 	ElseIf (page == "$Extra")
 		SetCursorPosition(0)
-		AddHeaderOption("$Extra")
+		_AddHeaderOption("$Extra")
 		SetCursorPosition(2)
 		If ( moaState.getValue() == 1 ) && !bSaveLock
 			flags =	OPTION_FLAG_NONE
@@ -703,7 +703,7 @@ Event OnPageReset(String page)
 		oidRecallCost = AddSliderOption("$mrt_MarkofArkay_RecallCast",fRecallCastSlider,"$mrt_MarkofArkay_MarkSlider_2", flags)
 	ElseIf (page == "$Aftermath")
 		SetCursorPosition(0)
-		AddHeaderOption("$Aftermath")
+		_AddHeaderOption("$Aftermath")
 		SetCursorPosition(2)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled
 			flags =	OPTION_FLAG_NONE
@@ -712,7 +712,7 @@ Event OnPageReset(String page)
 		EndIf
 		oidNoTradingAftermath_M = AddMenuOption("Aftermath", sGetAftermathOptions()[iNotTradingAftermath], flags)
 		SetCursorPosition(6)
-		AddHeaderOption("$Respawn")
+		_AddHeaderOption("$Respawn")
 		SetCursorPosition(8)
 		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1))
 			flags =	OPTION_FLAG_NONE
@@ -761,7 +761,7 @@ Event OnPageReset(String page)
 		EndIf
 		oidDoNotStopCombat = AddToggleOption("$mrt_MarkofArkay_DoNotStopCombat",bDoNotStopCombat, flags)
 		SetCursorPosition(1)
-		AddHeaderOption("$mrt_MarkofArkay_HEAD_Destination")
+		_AddHeaderOption("$mrt_MarkofArkay_HEAD_Destination")
 		SetCursorPosition(3)
 		If ( moaState.getValue() == 1 )
 			flags =	OPTION_FLAG_NONE
@@ -831,7 +831,7 @@ Event OnPageReset(String page)
 		EndIf
 		oidRespawnTimeSlider = AddSliderOption("$mrt_MarkofArkay_RespawnTimeSlider_1", fRespawnTimeSlider, "$mrt_MarkofArkay_RespawnTimeSlider_2", flags)
 		SetCursorPosition(23)
-		AddHeaderOption("$mrt_MarkofArkay_HEAD_City")
+		_AddHeaderOption("$mrt_MarkofArkay_HEAD_City")
 		SetCursorPosition(25)
 		If ( moaState.getValue() == 1 )
 			flags =	OPTION_FLAG_NONE
@@ -859,7 +859,7 @@ Event OnPageReset(String page)
 		oidRespawnPoint9 = AddToggleOption("$Dawnstar", bRespawnPointsFlags[9], flags )
 	ElseIf (page == "$Curse")
 		SetCursorPosition(0)
-		AddHeaderOption("$Curse")
+		_AddHeaderOption("$Curse")
 		SetCursorPosition(2)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && !bCurseLock
 			flags =	OPTION_FLAG_NONE
@@ -877,7 +877,7 @@ Event OnPageReset(String page)
 		SetCursorPosition(6)
 		oidArkayCurses_M = AddMenuOption("$mrt_MarkofArkay_ArkayCurses_M", sGetArkayCurses()[iArkayCurse], flags)
 		SetCursorPosition(10)
-		AddHeaderOption("$mrt_MarkofArkay_HEAD_Disease_Curse")
+		_AddHeaderOption("$mrt_MarkofArkay_HEAD_Disease_Curse")
 		SetCursorPosition(12)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && !bCurseLock
 			flags =	OPTION_FLAG_NONE
@@ -909,7 +909,7 @@ Event OnPageReset(String page)
 		SetCursorPosition(30)
 		oidSoulMarkCureDiseases = AddToggleOption("$mrt_MarkofArkay_SoulMarkCureDiseases", bSoulMarkCureDiseases, flags)
 		SetCursorPosition(34)
-		AddHeaderOption("$mrt_MarkofArkay_HEAD_Skill_Reduction")
+		_AddHeaderOption("$mrt_MarkofArkay_HEAD_Skill_Reduction")
 		SetCursorPosition(36)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && !bCurseLock
 			flags =	OPTION_FLAG_NONE
@@ -962,7 +962,7 @@ Event OnPageReset(String page)
 		;EndIf
 		;oidLoseSkillForever = AddToggleOption("$mrt_MarkofArkay_LoseSkillForever",bLoseSkillForever, flags)
 		SetCursorPosition(54)
-		AddHeaderOption("$mrt_MarkofArkay_HEAD_Other_Curses")
+		_AddHeaderOption("$mrt_MarkofArkay_HEAD_Other_Curses")
 		SetCursorPosition(56)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && !bCurseLock
 			flags =	OPTION_FLAG_NONE
@@ -982,7 +982,7 @@ Event OnPageReset(String page)
 		SetCursorPosition(62)	
 		oidGhostShader = AddMenuOption("$mrt_MarkofArkay_GhostShader_M", sGetGhostShader()[iGhostShader], flags)
 		SetCursorPosition(66)
-		AddHeaderOption("$mrt_MarkofArkay_HEAD_Curse_Recovery")
+		_AddHeaderOption("$mrt_MarkofArkay_HEAD_Curse_Recovery")
 		SetCursorPosition(68)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled
 			flags =	OPTION_FLAG_NONE
@@ -1005,7 +1005,7 @@ Event OnPageReset(String page)
 		EndIf
 		oidLoseforever = AddToggleOption("$mrt_MarkofArkay_Loseforever",bLoseForever, flags)
 		SetCursorPosition(1)
-		AddHeaderOption("$mrt_MarkofArkay_HEAD_Item_Curse")
+		_AddHeaderOption("$mrt_MarkofArkay_HEAD_Item_Curse")
 		SetCursorPosition(3)
 		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1)) && !bCurseLock
 			flags =	OPTION_FLAG_NONE
@@ -1014,7 +1014,7 @@ Event OnPageReset(String page)
 		EndIf
 		oidLoseItem = AddToggleOption("$mrt_MarkofArkay_Lose_Items", bLoseItem,flags)
 		SetCursorPosition(5)
-		AddHeaderOption("")
+		_AddHeaderOption("")
 		SetCursorPosition(7)
 		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bLoseItem) && !bCurseLock
 			flags =	OPTION_FLAG_NONE
@@ -1034,7 +1034,7 @@ Event OnPageReset(String page)
 		SetCursorPosition(13)
 		oidMaxLoseGoldSlider = AddSliderOption("$mrt_MarkofArkay_MaxLoseGoldSlider", fMaxLoseGoldSlider, "{0}", flags)
 		SetCursorPosition(15)
-		AddHeaderOption("")
+		_AddHeaderOption("")
 		SetCursorPosition(17)
 		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bLoseItem ) && !bCurseLock
 			flags =	OPTION_FLAG_NONE
@@ -1054,7 +1054,7 @@ Event OnPageReset(String page)
 		SetCursorPosition(23)
 		oidMaxLoseArkayMarkSlider = AddSliderOption("$mrt_MarkofArkay_MaxLoseArkayMarkSlider", fMaxLoseArkayMarkSlider, "{0}", flags)
 		SetCursorPosition(25)
-		AddHeaderOption("")
+		_AddHeaderOption("")
 		SetCursorPosition(27)
 		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bLoseItem) && !bCurseLock
 			flags =	OPTION_FLAG_NONE
@@ -1074,7 +1074,7 @@ Event OnPageReset(String page)
 		SetCursorPosition(33)
 		oidMaxLoseDragonSoulSlider = AddSliderOption("$mrt_MarkofArkay_MaxLoseDragonSoulSlider", fMaxLoseDragonSoulSlider, "{0}", flags)
 		SetCursorPosition(35)
-		AddHeaderOption("")
+		_AddHeaderOption("")
 		SetCursorPosition(37)
 		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bLoseItem) && !bCurseLock
 			flags =	OPTION_FLAG_NONE
@@ -1094,7 +1094,7 @@ Event OnPageReset(String page)
 		SetCursorPosition(43)
 		oidMaxLoseBlackSoulGemSlider = AddSliderOption("$mrt_MarkofArkay_MaxLoseBlackSoulGemSlider", fMaxLoseBlackSoulGemSlider, "{0}", flags)
 		SetCursorPosition(45)
-		AddHeaderOption("")
+		_AddHeaderOption("")
 		SetCursorPosition(47)
 		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bLoseItem) && !bCurseLock
 			flags =	OPTION_FLAG_NONE
@@ -1114,7 +1114,7 @@ Event OnPageReset(String page)
 		SetCursorPosition(53)
 		oidMaxLoseGrandSoulGemSlider = AddSliderOption("$mrt_MarkofArkay_MaxLoseGrandSoulGemSlider", fMaxLoseGrandSoulGemSlider, "{0}", flags)
 		SetCursorPosition(55)
-		AddHeaderOption("$mrt_MarkofArkay_HEAD_Extra_Item_Curse")
+		_AddHeaderOption("$mrt_MarkofArkay_HEAD_Extra_Item_Curse")
 		SetCursorPosition(57)
 		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && bLoseItem) && !bCurseLock
 			flags =	OPTION_FLAG_NONE
@@ -1144,7 +1144,7 @@ Event OnPageReset(String page)
 		SetCursorPosition(73)
 		oidMaxItemsToCheckSlider = AddSliderOption("$mrt_MarkofArkay_MaxItemsToCheckSlider", fMaxItemsToCheckSlider, "{0}", flags)
 		SetCursorPosition(75)
-		AddHeaderOption("")
+		_AddHeaderOption("")
 		SetCursorPosition(77)
 		oidLoseArmor = AddToggleOption("$mrt_MarkofArkay_LoseArmor", bLoseArmor,flags)
 		SetCursorPosition(79)
@@ -1172,7 +1172,7 @@ Event OnPageReset(String page)
 		oidLoseIngredient = AddToggleOption("$mrt_MarkofArkay_LoseIngredient", bLoseIngredient,flags)
 	ElseIf (page == "NPC")
 		SetCursorPosition(0)
-		AddHeaderOption("$mrt_MarkofArkay_HEAD_NPC")
+		_AddHeaderOption("$mrt_MarkofArkay_HEAD_NPC")
 		SetCursorPosition(2)
 		If (( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1))
 			flags =	OPTION_FLAG_NONE
@@ -1212,7 +1212,7 @@ Event OnPageReset(String page)
 		oidHigherNPCMaxLvlDiff = AddSliderOption("$mrt_MarkofArkay_HigherNPCMaxLvlDiff", fHigherNPCMaxLvlDiff, "{0}", flags)
 		
 		SetCursorPosition(16)
-		AddHeaderOption("$mrt_MarkofArkay_HEAD_Spawn")
+		_AddHeaderOption("$mrt_MarkofArkay_HEAD_Spawn")
 		SetCursorPosition(18)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && iHostileOption == 2
 			flags =	OPTION_FLAG_NONE
@@ -1252,7 +1252,7 @@ Event OnPageReset(String page)
 		SetCursorPosition(34)
 		oidSpawnMaxLevel_M = AddMenuOption("$mrt_MarkofArkay_SpawnMaxLevel_M", sGetSpawnLevels()[iSpawnMaxLevel], flags)
 		SetCursorPosition(36)
-		AddHeaderOption("")
+		_AddHeaderOption("")
 		SetCursorPosition(38)
 		oidSpawns_M = AddMenuOption("$mrt_MarkofArkay_Spawns_M", sGetSpawns()[iSpawn], flags)
 		SetCursorPosition(40)
@@ -1260,7 +1260,7 @@ Event OnPageReset(String page)
 		SetCursorPosition(42)
 		oidSpawnCountSlider = AddSliderOption("$mrt_MarkofArkay_SpawnCountSlider_1", iSpawnCounts[iSpawn], "$mrt_MarkofArkay_SpawnCountSlider_2", flags)		
 		SetCursorPosition(1)
-		AddHeaderOption("$Follower")
+		_AddHeaderOption("$Follower")
 		SetCursorPosition(3)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled
 			flags =	OPTION_FLAG_NONE
@@ -1271,7 +1271,7 @@ Event OnPageReset(String page)
 		SetCursorPosition(5)
 		oidFollowerProtectPlayer = AddToggleOption("$mrt_MarkofArkay_FollowerProtectPlayer", bFollowerProtectPlayer, flags)		
 		SetCursorPosition(9)
-		AddHeaderOption("$Rape")
+		_AddHeaderOption("$Rape")
 		SetCursorPosition(11)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1) && (bIsSexlabActive || bIsOStimActive || bIsFlowerGirlsActive)
 			flags =	OPTION_FLAG_NONE
@@ -1295,7 +1295,7 @@ Event OnPageReset(String page)
 		SetCursorPosition(21)
 		oidOnlyHostilesRape = AddToggleOption("$mrt_MarkofArkay_OnlyHostilesRape", bOnlyHostilesRape, flags)		
 		SetCursorPosition(25)
-		AddHeaderOption("$mrt_MarkofArkay_Simple_Slavery")
+		_AddHeaderOption("$mrt_MarkofArkay_Simple_Slavery")
 		SetCursorPosition(27)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1)
 			flags =	OPTION_FLAG_NONE
@@ -1318,7 +1318,7 @@ Event OnPageReset(String page)
 		EndIf
 		oidOnlyEnslavedByEnemyFaction = AddToggleOption("$mrt_MarkofArkay_OnlyEnslavedByEnemyFaction", bOnlyEnslavedByEnemyFaction, flags)
 		SetCursorPosition(35)
-		AddHeaderOption("$mrt_MarkofArkay_Boss_Chest")
+		_AddHeaderOption("$mrt_MarkofArkay_Boss_Chest")
 		SetCursorPosition(37)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1)
 			flags =	OPTION_FLAG_NONE
@@ -1337,45 +1337,45 @@ Event OnPageReset(String page)
 		oidBossChestOnlyCurLoc = AddToggleOption("$mrt_MarkofArkay_BossChestOnlyCurLoc",bBossChestOnlyCurLoc,flags)
 	ElseIf (page == "$Debug")
 		SetCursorPosition(0)
-		AddHeaderOption("$Debug")
+		_AddHeaderOption("$Debug")
 		SetCursorPosition(2)
 		If ( moaState.getValue() == 1 )
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
-		oidResetPlayer = addTextOption("$mrt_MarkofArkay_ResetPlayer", "", flags)
+		oidResetPlayer = _AddTextOption("$mrt_MarkofArkay_ResetPlayer", "", flags)
 		SetCursorPosition(4)
 		If moaState.getValue() == 0
-			oidStatus = AddTextOption("$mrt_MarkofArkay_Status_Off", "")
+			oidStatus = _AddTextOption("$mrt_MarkofArkay_Status_Off", "")
 		Else
-			oidStatus = AddTextOption("$mrt_MarkofArkay_Status_On", "")
+			oidStatus = _AddTextOption("$mrt_MarkofArkay_Status_On", "")
 		EndIf
 		SetCursorPosition(6)
-		oidReset = AddTextOption("$mrt_MarkofArkay_Reset", "", flags)
+		oidReset = _AddTextOption("$mrt_MarkofArkay_Reset", "", flags)
 		SetCursorPosition(8)
 		If ( moaState.getValue() == 1 ) && !bCurseLock
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
-		oidRestoreItems = AddTextOption("$mrt_MarkofArkay_RestoreItems", "", flags )		
+		oidRestoreItems = _AddTextOption("$mrt_MarkofArkay_RestoreItems", "", flags )		
 		SetCursorPosition(10)
 		If PlayerRef.GetCurrentLocation() && !ReviveScript.LocationBlackList.HasForm(PlayerRef.GetCurrentLocation())
-			AddHeaderOption(shortenString(PlayerRef.GetCurrentLocation().GetName(),59))
+			_AddHeaderOption(shortenString(PlayerRef.GetCurrentLocation().GetName(),59))
 			SetCursorPosition(12)
 			If (ReviveScript.LocationBlackList2.Find(PlayerRef.GetCurrentLocation()) > -1) || (bPUOK && JsonUtil.FormListHas("/MarkofArkay/MOA_BlackLists", "LocationBlackList", PlayerRef.GetCurrentLocation()))
-				oidRespawnBlackListLocation = AddTextOption("$mrt_MarkofArkay_RespawnBlackListLocation_Remove", "")
+				oidRespawnBlackListLocation = _AddTextOption("$mrt_MarkofArkay_RespawnBlackListLocation_Remove", "")
 			Else
-				oidRespawnBlackListLocation = AddTextOption("$mrt_MarkofArkay_RespawnBlackListLocation_Add", "")
+				oidRespawnBlackListLocation = _AddTextOption("$mrt_MarkofArkay_RespawnBlackListLocation_Add", "")
 			EndIf
 		Else
-			AddHeaderOption("")
+			_AddHeaderOption("")
 			SetCursorPosition(12)
-			oidRespawnBlackListLocation = AddTextOption("$mrt_MarkofArkay_RespawnBlackListLocation_Remove", "", OPTION_FLAG_DISABLED)
+			oidRespawnBlackListLocation = _AddTextOption("$mrt_MarkofArkay_RespawnBlackListLocation_Remove", "", OPTION_FLAG_DISABLED)
 		EndIf		
 		SetCursorPosition(14)
-		AddHeaderOption("")
+		_AddHeaderOption("")
 		SetCursorPosition(16)
 		If ( moaState.getValue() == 1 )
 			flags =	OPTION_FLAG_NONE
@@ -1383,19 +1383,19 @@ Event OnPageReset(String page)
 			flags = OPTION_FLAG_DISABLED
 		EndIf
 		If ( PlayerRef.HasSpell(MoveCustomMarker ) || PlayerRef.HasSpell(RecallMarker ) )
-			oidToggleSpells = AddTextOption("$mrt_MarkofArkay_ToggleSpells1", "", flags) 
+			oidToggleSpells = _AddTextOption("$mrt_MarkofArkay_ToggleSpells1", "", flags) 
 		Else
-			oidToggleSpells = AddTextOption("$mrt_MarkofArkay_ToggleSpells2", "", flags) 
+			oidToggleSpells = _AddTextOption("$mrt_MarkofArkay_ToggleSpells2", "", flags) 
 		EndIf
 		SetCursorPosition(18)
 		If ( PlayerRef.HasSpell(RevivalPower) || PlayerRef.HasSpell(SacrificePower) )
-			oidTogglePowers = AddTextOption("$mrt_MarkofArkay_TogglePowers1", "", flags) 
+			oidTogglePowers = _AddTextOption("$mrt_MarkofArkay_TogglePowers1", "", flags) 
 		Else
-			oidTogglePowers = AddTextOption("$mrt_MarkofArkay_TogglePowers2", "", flags) 
+			oidTogglePowers = _AddTextOption("$mrt_MarkofArkay_TogglePowers2", "", flags) 
 		EndIf
 		SetCursorPosition(20)
 		sResetHistory = ""
-		oidResetHistory = AddTextOption("$mrt_MarkofArkay_ResetHistory", sResetHistory, flags)
+		oidResetHistory = _AddTextOption("$mrt_MarkofArkay_ResetHistory", sResetHistory, flags)
 		SetCursorPosition(22)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled
 			flags =	OPTION_FLAG_NONE
@@ -1450,7 +1450,7 @@ Event OnPageReset(String page)
 		EndIf
 		oidAltEyeFix = AddToggleOption("$mrt_MarkofArkay_AltEyeFix", bAltEyeFix, flags)
 		SetCursorPosition(40)
-		AddHeaderOption("$mrt_MarkofArkay_Locks")
+		_AddHeaderOption("$mrt_MarkofArkay_Locks")
 		SetCursorPosition(42)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && !bTradeLock
 			flags =	OPTION_FLAG_NONE
@@ -1502,9 +1502,9 @@ Event OnPageReset(String page)
 		oidLockPermaDeath = AddToggleOption("$mrt_MarkofArkay_PermaDeathLock",bLockPermaDeath,flags)
 		SetCursorPosition(1)
 		If  ( iNotTradingAftermath == 1 && !ReviveScript.RespawnScript.bCanTeleport() )
-			AddHeaderOption("$mrt_MarkofArkay_HEAD_CanNotRespawn")
+			_AddHeaderOption("$mrt_MarkofArkay_HEAD_CanNotRespawn")
 		Else
-			AddHeaderOption("$mrt_MarkofArkay_HEAD_Curses")
+			_AddHeaderOption("$mrt_MarkofArkay_HEAD_Curses")
 		EndIf
 		SetCursorPosition(3)
 		flags = OPTION_FLAG_DISABLED
@@ -1529,7 +1529,7 @@ Event OnPageReset(String page)
 		Else
 			sText = "$Disabled"
 		EndIf
-		oidLostItemsInfo = AddTextOption("$mrt_MarkofArkay_Cur_Lost_Items", sText, flags)
+		oidLostItemsInfo = _AddTextOption("$mrt_MarkofArkay_Cur_Lost_Items", sText, flags)
 		SetCursorPosition(5)
 		flags = OPTION_FLAG_DISABLED
 		If bIsInfoEnabled
@@ -1541,7 +1541,7 @@ Event OnPageReset(String page)
 		Else
 			sText = "$Disabled"
 		EndIf
-		oidLostSkillsInfo = AddTextOption("$mrt_MarkofArkay_LostSkillsInfo", sText, flags)
+		oidLostSkillsInfo = _AddTextOption("$mrt_MarkofArkay_LostSkillsInfo", sText, flags)
 		SetCursorPosition(7)
 		flags = OPTION_FLAG_DISABLED
 		If bIsInfoEnabled
@@ -1549,9 +1549,9 @@ Event OnPageReset(String page)
 		Else
 			sText = "$Disabled"
 		EndIf
-		AddTextOption("$mrt_MarkofArkay_Lost_Dragon_Souls", sText, flags)		
+		_AddTextOption("$mrt_MarkofArkay_Lost_Dragon_Souls", sText, flags)		
 		SetCursorPosition(9)
-		AddHeaderOption("$mrt_MarkofArkay_HEAD_RespawnPoint")
+		_AddHeaderOption("$mrt_MarkofArkay_HEAD_RespawnPoint")
 		SetCursorPosition(11)
 		flags = OPTION_FLAG_DISABLED
 		If ( moaState.getValue() == 1 ) && bIsInfoEnabled
@@ -1627,114 +1627,114 @@ Event OnPageReset(String page)
 				EndIf
 			EndIf
 		EndIf
-		AddTextOption("$mrt_MarkofArkay_Respawn_Cell_Name", sRPCellName, flags)
+		_AddTextOption("$mrt_MarkofArkay_Respawn_Cell_Name", sRPCellName, flags)
 		SetCursorPosition(13)
-		AddTextOption("$mrt_MarkofArkay_Respawn_Cell_FormID", sRPCellFormID, flags)
+		_AddTextOption("$mrt_MarkofArkay_Respawn_Cell_FormID", sRPCellFormID, flags)
 		SetCursorPosition(15)
 		If fDistance < 0.0
-			AddTextOption("$mrt_MarkofArkay_Dis_From_Respawn", sRPDistance, flags)
+			_AddTextOption("$mrt_MarkofArkay_Dis_From_Respawn", sRPDistance, flags)
 		Else
 			If fDistance <= 999999
-				AddTextOption("$mrt_MarkofArkay_Dis_From_Respawn", fDistance As Int, flags)
+				_AddTextOption("$mrt_MarkofArkay_Dis_From_Respawn", fDistance As Int, flags)
 			Else
-				AddTextOption("$mrt_MarkofArkay_Dis_From_Respawn", "+999999", flags)
+				_AddTextOption("$mrt_MarkofArkay_Dis_From_Respawn", "+999999", flags)
 			EndIf
 		EndIf		
 		SetCursorPosition(17)
-		AddHeaderOption("$mrt_MarkofArkay_HEAD_History")
+		_AddHeaderOption("$mrt_MarkofArkay_HEAD_History")
 		SetCursorPosition(19)
 		If bIsInfoEnabled && ( moaState.getValue() == 1 )
 			If iTotalBleedOut > 99999999
-				AddTextOption("$Bleedouts", "+99999999", flags)
+				_AddTextOption("$Bleedouts", "+99999999", flags)
 			Else
-				AddTextOption("$Bleedouts", iTotalBleedOut, flags)
+				_AddTextOption("$Bleedouts", iTotalBleedOut, flags)
 			EndIf
 		Else
-			AddTextOption("$Bleedouts", "$Disabled", flags)
+			_AddTextOption("$Bleedouts", "$Disabled", flags)
 		EndIf
 		SetCursorPosition(21)
 		If bIsInfoEnabled && ( moaState.getValue() == 1 )
 			If iTotalRevives > 99999999
-				AddTextOption("$Revivals", "+99999999", flags)
+				_AddTextOption("$Revivals", "+99999999", flags)
 			Else
-				AddTextOption("$Revivals", iTotalRevives, flags)
+				_AddTextOption("$Revivals", iTotalRevives, flags)
 			EndIf
 		Else
-			AddTextOption("$Revivals", "$Disabled", flags)
+			_AddTextOption("$Revivals", "$Disabled", flags)
 		EndIf
 		SetCursorPosition(23)
 		If bIsInfoEnabled && ( moaState.getValue() == 1 )
 			If iRevivesByFollower > 99999999
-				AddTextOption("$mrt_MarkofArkay_Revive_By_Follower", "+99999999", flags)
+				_AddTextOption("$mrt_MarkofArkay_Revive_By_Follower", "+99999999", flags)
 			Else
-				AddTextOption("$mrt_MarkofArkay_Revive_By_Follower", iRevivesByFollower, flags)
+				_AddTextOption("$mrt_MarkofArkay_Revive_By_Follower", iRevivesByFollower, flags)
 			EndIf
 		Else
-			AddTextOption("$mrt_MarkofArkay_Revive_By_Follower", "$Disabled", flags)
+			_AddTextOption("$mrt_MarkofArkay_Revive_By_Follower", "$Disabled", flags)
 		EndIf
 		SetCursorPosition(25)
 		If bIsInfoEnabled && ( moaState.getValue() == 1 )
 			If iRevivesByPotion > 99999999
-				AddTextOption("$mrt_MarkofArkay_Revive_With_Potion", "+99999999", flags)
+				_AddTextOption("$mrt_MarkofArkay_Revive_With_Potion", "+99999999", flags)
 			Else
-				AddTextOption("$mrt_MarkofArkay_Revive_With_Potion", iRevivesByPotion, flags)
+				_AddTextOption("$mrt_MarkofArkay_Revive_With_Potion", iRevivesByPotion, flags)
 			EndIf
 		Else
-			AddTextOption("$mrt_MarkofArkay_Revive_With_Potion", "$Disabled", flags)
+			_AddTextOption("$mrt_MarkofArkay_Revive_With_Potion", "$Disabled", flags)
 		EndIf
 		SetCursorPosition(27)
 		If bIsInfoEnabled && ( moaState.getValue() == 1 )
 			If iRevivesByRevivalSpell > 99999999
-				AddTextOption("$mrt_MarkofArkay_Revive_With_Revival_Spell", "+99999999", flags)
+				_AddTextOption("$mrt_MarkofArkay_Revive_With_Revival_Spell", "+99999999", flags)
 			Else
-				AddTextOption("$mrt_MarkofArkay_Revive_With_Revival_Spell", iRevivesByRevivalSpell, flags)
+				_AddTextOption("$mrt_MarkofArkay_Revive_With_Revival_Spell", iRevivesByRevivalSpell, flags)
 			EndIf
 		Else
-			AddTextOption("$mrt_MarkofArkay_Revive_With_Revival_Spell", "$Disabled", flags)
+			_AddTextOption("$mrt_MarkofArkay_Revive_With_Revival_Spell", "$Disabled", flags)
 		EndIf
 		SetCursorPosition(29)
 		If bIsInfoEnabled && ( moaState.getValue() == 1 )
 			If iRevivesBySacrificeSpell > 99999999
-				AddTextOption("$mrt_MarkofArkay_Revive_With_Sacrifice_Spell", "+99999999", flags)
+				_AddTextOption("$mrt_MarkofArkay_Revive_With_Sacrifice_Spell", "+99999999", flags)
 			Else
-				AddTextOption("$mrt_MarkofArkay_Revive_With_Sacrifice_Spell", iRevivesBySacrificeSpell, flags)
+				_AddTextOption("$mrt_MarkofArkay_Revive_With_Sacrifice_Spell", iRevivesBySacrificeSpell, flags)
 			EndIf
 		Else
-			AddTextOption("$mrt_MarkofArkay_Revive_With_Sacrifice_Spell", "$Disabled", flags)
+			_AddTextOption("$mrt_MarkofArkay_Revive_With_Sacrifice_Spell", "$Disabled", flags)
 		EndIf
 		SetCursorPosition(31)
 		If bIsInfoEnabled && ( moaState.getValue() == 1 )
 			If iRevivesByTrade > 99999999
-				AddTextOption("$mrt_MarkofArkay_Revive_By_Trading", "+99999999", flags)
+				_AddTextOption("$mrt_MarkofArkay_Revive_By_Trading", "+99999999", flags)
 			Else
-				AddTextOption("$mrt_MarkofArkay_Revive_By_Trading", iRevivesByTrade, flags)
+				_AddTextOption("$mrt_MarkofArkay_Revive_By_Trading", iRevivesByTrade, flags)
 			EndIf
 		Else
-			AddTextOption("$mrt_MarkofArkay_Revive_By_Trading", "$Disabled", flags)
+			_AddTextOption("$mrt_MarkofArkay_Revive_By_Trading", "$Disabled", flags)
 		EndIf
 		SetCursorPosition(33)
 		If bIsInfoEnabled && ( moaState.getValue() == 1 )
 			If iTotalRespawn > 99999999
-				AddTextOption("$Respawns", "+99999999", flags)
+				_AddTextOption("$Respawns", "+99999999", flags)
 			Else
-				AddTextOption("$Respawns", iTotalRespawn, flags)
+				_AddTextOption("$Respawns", iTotalRespawn, flags)
 			EndIf
 		Else
-			AddTextOption("$Respawns", "$Disabled", flags)
+			_AddTextOption("$Respawns", "$Disabled", flags)
 		EndIf
 		SetCursorPosition(35)
 		If bIsInfoEnabled && ( moaState.getValue() == 1 )
 			If iDestroyedItems > 99999999
-				AddTextOption("$mrt_MarkofArkay_Destroyed_Items", "+99999999", flags)
+				_AddTextOption("$mrt_MarkofArkay_Destroyed_Items", "+99999999", flags)
 			Else
-				AddTextOption("$mrt_MarkofArkay_Destroyed_Items", iDestroyedItems, flags)
+				_AddTextOption("$mrt_MarkofArkay_Destroyed_Items", iDestroyedItems, flags)
 			EndIf
 		Else
-			AddTextOption("$mrt_MarkofArkay_Destroyed_Items", "$Disabled", flags)
+			_AddTextOption("$mrt_MarkofArkay_Destroyed_Items", "$Disabled", flags)
 		EndIf
 	ElseIf (page == "$Presets")
 		SetCursorPosition(0)
-		AddHeaderOption("$Presets")
+		_AddHeaderOption("$Presets")
 		SetCursorPosition(2)
 		If moaState.getValue() == 1 && bFISSOK && !bIsLocked()
 			flags =	OPTION_FLAG_NONE
@@ -1755,21 +1755,21 @@ Event OnPageReset(String page)
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
-		oidLoadPreset1 = AddTextOption("$mrt_MarkofArkay_Load_Preset", "", flags)
+		oidLoadPreset1 = _AddTextOption("$mrt_MarkofArkay_Load_Preset", "", flags)
 		SetCursorPosition(5)
 		If moaState.getValue() == 1 && bFISSOK
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
-		oidSavePreset1 = AddTextOption("$mrt_MarkofArkay_Save_Preset", "", flags)
+		oidSavePreset1 = _AddTextOption("$mrt_MarkofArkay_Save_Preset", "", flags)
 		SetCursorPosition(8)
 		If moaState.getValue() == 1 && !bIsLocked()
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
-		oidLoadDefaultPreset = AddTextOption("$mrt_MarkofArkay_Load_Default_Preset", "", flags)
+		oidLoadDefaultPreset = _AddTextOption("$mrt_MarkofArkay_Load_Default_Preset", "", flags)
 	EndIf
 EndEvent
 
@@ -1777,38 +1777,38 @@ Event OnOptionSelect(Int option)
 	string page = CurrentPage
 	If (option == oidRevivalEnabled)
 		bIsRevivalEnabled = !bIsRevivalEnabled
-		SetToggleOptionValue(oidRevivalEnabled, bIsRevivalEnabled)
+		_SetToggleOptionValue(oidRevivalEnabled, bIsRevivalEnabled)
 		ForcePageReset()
 	ElseIf (option == oidMenuEnabled)
 		bIsMenuEnabled = !bIsMenuEnabled
-		SetToggleOptionValue(oidMenuEnabled, bIsMenuEnabled)
+		_SetToggleOptionValue(oidMenuEnabled, bIsMenuEnabled)
 		If  ( bIsRevivalEnabled ) && ( !bIsMenuEnabled )
 			flags = OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
-		SetOptionFlags(oidMarkPSlider, flags, True)
-		SetOptionFlags(oidDragonSoulPSlider, flags, True)
-		SetOptionFlags(oidBSoulGemPSlider, flags, True)
-		SetOptionFlags(oidGSoulGemPSlider, flags, True)
-		SetOptionFlags(oidGoldPSlider, flags)
+		_SetOptionFlags(oidMarkPSlider, flags, True)
+		_SetOptionFlags(oidDragonSoulPSlider, flags, True)
+		_SetOptionFlags(oidBSoulGemPSlider, flags, True)
+		_SetOptionFlags(oidGSoulGemPSlider, flags, True)
+		_SetOptionFlags(oidGoldPSlider, flags)
 	ElseIf (option == oidMarkOfArkayRevivalEnabled)
 		bIsMarkEnabled = !bIsMarkEnabled
-		SetToggleOptionValue(oidMarkOfArkayRevivalEnabled, bIsMarkEnabled)
+		_SetToggleOptionValue(oidMarkOfArkayRevivalEnabled, bIsMarkEnabled)
 	ElseIf (option == oidDragonSoulRevivalEnabled)
 		bIsDragonSoulEnabled = !bIsDragonSoulEnabled
-		SetToggleOptionValue(oidDragonSoulRevivalEnabled, bIsDragonSoulEnabled)
+		_SetToggleOptionValue(oidDragonSoulRevivalEnabled, bIsDragonSoulEnabled)
 	ElseIf (option == oidBSoulGemRevivalEnabled)
 		bIsBSoulGemEnabled = !bIsBSoulGemEnabled
-		SetToggleOptionValue(oidBSoulGemRevivalEnabled, bIsBSoulGemEnabled)
+		_SetToggleOptionValue(oidBSoulGemRevivalEnabled, bIsBSoulGemEnabled)
 	ElseIf (option == oidGSoulGemRevivalEnabled)
 		bIsGSoulGemEnabled = !bIsGSoulGemEnabled
-		SetToggleOptionValue(oidGSoulGemRevivalEnabled, bIsGSoulGemEnabled)
+		_SetToggleOptionValue(oidGSoulGemRevivalEnabled, bIsGSoulGemEnabled)
 	ElseIf (option == oidTradeEnabled)
 		bIsTradeEnabled = !bIsTradeEnabled
-		SetToggleOptionValue(oidTradeEnabled, bIsTradeEnabled)
+		_SetToggleOptionValue(oidTradeEnabled, bIsTradeEnabled)
 	ElseIf (option == oidTriggerOnBleedout)
-		If !bTriggerOnBleedout && self.ShowMessage("$Are_You_Sure", True, "$Yes", "$No")
+		If !bTriggerOnBleedout && self._ShowMessage("$Are_You_Sure", True, "$Yes", "$No")
 			moaIsBusy.SetValueInt(1)
 			bTriggerOnBleedout = True
 			bTriggerOnHealthPerc = False
@@ -1817,7 +1817,7 @@ Event OnOptionSelect(Int option)
 			moaIsBusy.SetValueInt(0)
 		EndIf
 	ElseIf (option == oidTriggerOnHealthPerc)
-		If !bTriggerOnHealthPerc && self.ShowMessage("$Are_You_Sure", True, "$Yes", "$No")
+		If !bTriggerOnHealthPerc && self._ShowMessage("$Are_You_Sure", True, "$Yes", "$No")
 			moaIsBusy.SetValueInt(1)
 			bTriggerOnBleedout = False
 			bTriggerOnHealthPerc = True
@@ -1826,71 +1826,71 @@ Event OnOptionSelect(Int option)
 			moaIsBusy.SetValueInt(0)
 		EndIf
 	ElseIf (option == oidTradeLock)
-		If !bTradeLock && self.ShowMessage("$Are_You_Sure_Lock_Trade", True, "$Yes", "$No")
+		If !bTradeLock && self._ShowMessage("$Are_You_Sure_Lock_Trade", True, "$Yes", "$No")
 			bTradeLock = True
 			ForcePageReset()
 		EndIf
 	ElseIf (option == oidCurseLock)
-		If !bCurseLock && self.ShowMessage("$Are_You_Sure_Lock_Curse", True, "$Yes", "$No")
+		If !bCurseLock && self._ShowMessage("$Are_You_Sure_Lock_Curse", True, "$Yes", "$No")
 			bCurseLock = True
 			ForcePageReset()
 		EndIf
 	ElseIf (option == oidMarkRecallCostLock)
-		If !bMarkRecallCostLock && self.ShowMessage("$Are_You_Sure_Lock_MarkRecallCost", True, "$Yes", "$No")
+		If !bMarkRecallCostLock && self._ShowMessage("$Are_You_Sure_Lock_MarkRecallCost", True, "$Yes", "$No")
 			bMarkRecallCostLock = True
 			ForcePageReset()
 		EndIf
 	ElseIf (option == oidLootChanceLock)
-		If !bLootChanceLock && self.ShowMessage("$Are_You_Sure_Lock_LootChance", True, "$Yes", "$No")
+		If !bLootChanceLock && self._ShowMessage("$Are_You_Sure_Lock_LootChance", True, "$Yes", "$No")
 			bLootChanceLock = True
 			ForcePageReset()
 		EndIf
 	ElseIf (option == oidLockPermaDeath)
-		If !bLockPermaDeath && self.ShowMessage("$Are_You_Sure_Lock_Death", True, "$Yes", "$No")
+		If !bLockPermaDeath && self._ShowMessage("$Are_You_Sure_Lock_Death", True, "$Yes", "$No")
 			bLockPermaDeath = True
 			bCanbeKilledbyUnarmed = False
 			bKillIfCantRespawn = False
 			ForcePageReset()
 		EndIf
 	ElseIf (option == oidSaveLock)
-		If !bSaveLock && self.ShowMessage("$Are_You_Sure_Lock_SaveLock", True, "$Yes", "$No")
+		If !bSaveLock && self._ShowMessage("$Are_You_Sure_Lock_SaveLock", True, "$Yes", "$No")
 			bSaveLock = True
 			ForcePageReset()
 		EndIf
 	ElseIf (option == oidGoldRevivalEnabled)
 		bIsGoldEnabled = !bIsGoldEnabled
-		SetToggleOptionValue(oidGoldRevivalEnabled, bIsGoldEnabled)
+		_SetToggleOptionValue(oidGoldRevivalEnabled, bIsGoldEnabled)
 	ElseIf (option == oidFollowerProtectPlayer)
 		bFollowerProtectPlayer = !bFollowerProtectPlayer
-		SetToggleOptionValue(oidFollowerProtectPlayer, bFollowerProtectPlayer)
+		_SetToggleOptionValue(oidFollowerProtectPlayer, bFollowerProtectPlayer)
 	ElseIf (option == oidPlayerProtectFollower)
 		bPlayerProtectFollower = !bPlayerProtectFollower
-		SetToggleOptionValue(oidPlayerProtectFollower, bPlayerProtectFollower)
+		_SetToggleOptionValue(oidPlayerProtectFollower, bPlayerProtectFollower)
 	ElseIf (option == oidSpawnByLocation)
 		bSpawnByLocation = !bSpawnByLocation
-		SetToggleOptionValue(oidSpawnByLocation, bSpawnByLocation)
+		_SetToggleOptionValue(oidSpawnByLocation, bSpawnByLocation)
 		ForcePageReset()
 	ElseIf (option == oidRetrySpawnWithoutLocation)
 		bRetrySpawnWithoutLocation = !bRetrySpawnWithoutLocation
-		SetToggleOptionValue(oidRetrySpawnWithoutLocation, bRetrySpawnWithoutLocation)
+		_SetToggleOptionValue(oidRetrySpawnWithoutLocation, bRetrySpawnWithoutLocation)
 	ElseIf (option == oidSpawnCheckRelation)
 		bSpawnCheckRelation = !bSpawnCheckRelation
-		SetToggleOptionValue(oidSpawnCheckRelation, bSpawnCheckRelation)
+		_SetToggleOptionValue(oidSpawnCheckRelation, bSpawnCheckRelation)
 	ElseIf (option == oidSpawnBringAllies)
 		bSpawnBringAllies = !bSpawnBringAllies
-		SetToggleOptionValue(oidSpawnBringAllies, bSpawnBringAllies)
+		_SetToggleOptionValue(oidSpawnBringAllies, bSpawnBringAllies)
 	ElseIf (option == oidNotification)
 		bIsNotificationEnabled = !bIsNotificationEnabled
-		SetToggleOptionValue(oidNotification, bIsNotificationEnabled)
+		_SetToggleOptionValue(oidNotification, bIsNotificationEnabled)
 	ElseIf (option == oidFadeToBlack)
 		bFadeToBlack = !bFadeToBlack
-		SetToggleOptionValue(oidFadeToBlack, bFadeToBlack)
+		_SetToggleOptionValue(oidFadeToBlack, bFadeToBlack)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && !bIsRagdollEnabled && (bFadeToBlack || bInvisibility)
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
-		SetOptionFlags(oidDeathEffect,flags)
+		_SetOptionFlags(oidDeathEffect,flags)
 		If !bFadeToBlack
 			ReviveScript.Fadeout.Remove()
 			ReviveScript.FastFadeOut.Remove()
@@ -1899,31 +1899,31 @@ Event OnOptionSelect(Int option)
 		EndIf
 	ElseIf (option == oidInvisibility)
 		bInvisibility = !bInvisibility
-		SetToggleOptionValue(oidInvisibility, bInvisibility)
+		_SetToggleOptionValue(oidInvisibility, bInvisibility)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && !bIsRagdollEnabled && (bFadeToBlack || bInvisibility)
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
-		SetOptionFlags(oidDeathEffect,flags)
+		_SetOptionFlags(oidDeathEffect,flags)
 		If !bInvisibility && !ReviveScript.moaPlayerGhostQuest.IsRunning()
 			PlayerRef.SetAlpha(1.0)
 		EndIf
 	ElseIf (option == oidDeathEffect)
 		bDeathEffect = !bDeathEffect
-		SetToggleOptionValue(oidDeathEffect, bDeathEffect)
+		_SetToggleOptionValue(oidDeathEffect, bDeathEffect)
 	ElseIf (option == oidRagdollEffect)
 		bIsRagdollEnabled = !bIsRagdollEnabled
-		SetToggleOptionValue(oidRagdollEffect, bIsRagdollEnabled)
+		_SetToggleOptionValue(oidRagdollEffect, bIsRagdollEnabled)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && !bIsRagdollEnabled && (bFadeToBlack || bInvisibility)
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
-		SetOptionFlags(oidDeathEffect,flags)
+		_SetOptionFlags(oidDeathEffect,flags)
 	ElseIf (option == oidAltEyeFix)
 		bAltEyeFix = !bAltEyeFix
-		SetToggleOptionValue(oidAltEyeFix,bAltEyeFix)
+		_SetToggleOptionValue(oidAltEyeFix,bAltEyeFix)
 		If bAltEyeFix
 			ForceCloseMenu()
 			ReviveScript.ExecuteCommand("player.say 0142b5",1,0,1)
@@ -1933,179 +1933,179 @@ Event OnOptionSelect(Int option)
 		If bDisableUnsafe
 			fRespawnTimeSlider = 0.0
 		EndIf
-		SetToggleOptionValue(oidDisableUnsafe,bDisableUnsafe)
+		_SetToggleOptionValue(oidDisableUnsafe,bDisableUnsafe)
 		ForcePageReset()
 	ElseIf (option == oidLogging)
 		bIsLoggingEnabled = !bIsLoggingEnabled
-		SetToggleOptionValue(oidLogging, bIsLoggingEnabled)
+		_SetToggleOptionValue(oidLogging, bIsLoggingEnabled)
 	ElseIf (option == oidPotionRevivalEnabled)
 		bIsPotionEnabled = !bIsPotionEnabled
-		SetToggleOptionValue(oidPotionRevivalEnabled, bIsPotionEnabled)
+		_SetToggleOptionValue(oidPotionRevivalEnabled, bIsPotionEnabled)
 	ElseIf (option == oidAutoDrinkPotion)
 		bAutoDrinkPotion = !bAutoDrinkPotion
-		SetToggleOptionValue(oidAutoDrinkPotion, bAutoDrinkPotion)
+		_SetToggleOptionValue(oidAutoDrinkPotion, bAutoDrinkPotion)
 	ElseIf (option == oidNoFallDamageEnabled)
 		ToggleFallDamage(!bIsNoFallDamageEnabled)
-		SetToggleOptionValue(oidNoFallDamageEnabled, bIsNoFallDamageEnabled)
+		_SetToggleOptionValue(oidNoFallDamageEnabled, bIsNoFallDamageEnabled)
 	ElseIf (option == oidEffect)
 		bIsEffectEnabled = !bIsEffectEnabled
-		SetToggleOptionValue(oidEffect, bIsEffectEnabled)
+		_SetToggleOptionValue(oidEffect, bIsEffectEnabled)
 	ElseIf (option == oidRevivalRequireBlessing)
 		bIsRevivalRequiresBlessing = !bIsRevivalRequiresBlessing
-		SetToggleOptionValue(oidRevivalRequireBlessing, bIsRevivalRequiresBlessing)
+		_SetToggleOptionValue(oidRevivalRequireBlessing, bIsRevivalRequiresBlessing)
 	ElseIf (option == oidRecallRestriction)
 		bIsRecallRestricted = !bIsRecallRestricted
-		SetToggleOptionValue(oidRecallRestriction,bIsRecallRestricted)
+		_SetToggleOptionValue(oidRecallRestriction,bIsRecallRestricted)
 	ElseIf (option == oidShiftBack )
 		bShiftBack = !bShiftBack
-		SetToggleOptionValue(oidShiftBack,bShiftBack)
+		_SetToggleOptionValue(oidShiftBack,bShiftBack)
 	ElseIf (option == oidShiftBackRespawn )
 		bShiftBackRespawn = !bShiftBackRespawn
-		SetToggleOptionValue(oidShiftBackRespawn,bShiftBackRespawn)
+		_SetToggleOptionValue(oidShiftBackRespawn,bShiftBackRespawn)
 	ElseIf (option == oidRespawnPoint0)
 		bRespawnPointsFlags[0] = !bRespawnPointsFlags[0]
-		SetToggleOptionValue(oidRespawnPoint0,bRespawnPointsFlags[0])
+		_SetToggleOptionValue(oidRespawnPoint0,bRespawnPointsFlags[0])
 	ElseIf (option == oidRespawnPoint1)
 		bRespawnPointsFlags[1] = !bRespawnPointsFlags[1]
-		SetToggleOptionValue(oidRespawnPoint1,bRespawnPointsFlags[1])
+		_SetToggleOptionValue(oidRespawnPoint1,bRespawnPointsFlags[1])
 	ElseIf (option == oidRespawnPoint2)
 		bRespawnPointsFlags[2] = !bRespawnPointsFlags[2]
-		SetToggleOptionValue(oidRespawnPoint2,bRespawnPointsFlags[2])
+		_SetToggleOptionValue(oidRespawnPoint2,bRespawnPointsFlags[2])
 	ElseIf (option == oidRespawnPoint3)
 		bRespawnPointsFlags[3] = !bRespawnPointsFlags[3]
-		SetToggleOptionValue(oidRespawnPoint3,bRespawnPointsFlags[3])
+		_SetToggleOptionValue(oidRespawnPoint3,bRespawnPointsFlags[3])
 	ElseIf (option == oidRespawnPoint4)
 		bRespawnPointsFlags[4] = !bRespawnPointsFlags[4]
-		SetToggleOptionValue(oidRespawnPoint4,bRespawnPointsFlags[4])
+		_SetToggleOptionValue(oidRespawnPoint4,bRespawnPointsFlags[4])
 	ElseIf (option == oidRespawnPoint5)
 		bRespawnPointsFlags[5] = !bRespawnPointsFlags[5]
-		SetToggleOptionValue(oidRespawnPoint5,bRespawnPointsFlags[5])
+		_SetToggleOptionValue(oidRespawnPoint5,bRespawnPointsFlags[5])
 	ElseIf (option == oidRespawnPoint6)
 		bRespawnPointsFlags[6] = !bRespawnPointsFlags[6]
-		SetToggleOptionValue(oidRespawnPoint6,bRespawnPointsFlags[6])
+		_SetToggleOptionValue(oidRespawnPoint6,bRespawnPointsFlags[6])
 	ElseIf (option == oidRespawnPoint7)
 		bRespawnPointsFlags[7] = !bRespawnPointsFlags[7]
-		SetToggleOptionValue(oidRespawnPoint7,bRespawnPointsFlags[7])
+		_SetToggleOptionValue(oidRespawnPoint7,bRespawnPointsFlags[7])
 	ElseIf (option == oidRespawnPoint8)
 		bRespawnPointsFlags[8] = !bRespawnPointsFlags[8]
-		SetToggleOptionValue(oidRespawnPoint8,bRespawnPointsFlags[8])
+		_SetToggleOptionValue(oidRespawnPoint8,bRespawnPointsFlags[8])
 	ElseIf (option == oidRespawnPoint9)
 		bRespawnPointsFlags[9] = !bRespawnPointsFlags[9]
-		SetToggleOptionValue(oidRespawnPoint9,bRespawnPointsFlags[9])
+		_SetToggleOptionValue(oidRespawnPoint9,bRespawnPointsFlags[9])
 	ElseIf (option == oidRespawnNaked)
 		bRespawnNaked = !bRespawnNaked
-		SetToggleOptionValue(oidRespawnNaked, bRespawnNaked)
+		_SetToggleOptionValue(oidRespawnNaked, bRespawnNaked)
 	ElseIf (option == oidCorpseAsSoulMark)
 		bCorpseAsSoulMark = !bCorpseAsSoulMark
-		SetToggleOptionValue(oidCorpseAsSoulMark, bCorpseAsSoulMark)
+		_SetToggleOptionValue(oidCorpseAsSoulMark, bCorpseAsSoulMark)
 	ElseIf (option == oidRespawnMenu)
 		bRespawnMenu = !bRespawnMenu
-		SetToggleOptionValue(oidRespawnMenu, bRespawnMenu)
+		_SetToggleOptionValue(oidRespawnMenu, bRespawnMenu)
 	ElseIf (option == oidTeleportMenu)
 		bTeleportMenu = !bTeleportMenu
-		SetToggleOptionValue(oidTeleportMenu, bTeleportMenu)
+		_SetToggleOptionValue(oidTeleportMenu, bTeleportMenu)
 	ElseIf (option == oidMultipleDis)
 		bMultipleDis = !bMultipleDis
-		SetToggleOptionValue(oidMultipleDis, bMultipleDis)
+		_SetToggleOptionValue(oidMultipleDis, bMultipleDis)
 	ElseIf (option == oidDiseaseCurse)
 		bDiseaseCurse = !bDiseaseCurse
-		SetToggleOptionValue(oidDiseaseCurse, bDiseaseCurse)
+		_SetToggleOptionValue(oidDiseaseCurse, bDiseaseCurse)
 		ForcePageReset()
 	ElseIf (option == oidMultipleDisProg)
 		bMultipleDisProg = !bMultipleDisProg
-		SetToggleOptionValue(oidMultipleDisProg, bMultipleDisProg)
+		_SetToggleOptionValue(oidMultipleDisProg, bMultipleDisProg)
 	ElseIf (option == oidOnlyInfectIfHasBaseDis)
 		bOnlyInfectIfHasBaseDis = !bOnlyInfectIfHasBaseDis
-		SetToggleOptionValue(oidOnlyInfectIfHasBaseDis, bOnlyInfectIfHasBaseDis)
+		_SetToggleOptionValue(oidOnlyInfectIfHasBaseDis, bOnlyInfectIfHasBaseDis)
 	ElseIf (option == oidSoulMarkCureDiseases)
 		bSoulMarkCureDiseases = !bSoulMarkCureDiseases
-		SetToggleOptionValue(oidSoulMarkCureDiseases, bSoulMarkCureDiseases)
+		_SetToggleOptionValue(oidSoulMarkCureDiseases, bSoulMarkCureDiseases)
 	ElseIf (option == oidCureDisIfHasBlessing)
 		bCureDisIfHasBlessing = !bCureDisIfHasBlessing
 		moaCureDisIfHasBlessing.SetValue(bCureDisIfHasBlessing As Int)
-		SetToggleOptionValue(oidCureDisIfHasBlessing, bCureDisIfHasBlessing)
+		_SetToggleOptionValue(oidCureDisIfHasBlessing, bCureDisIfHasBlessing)
 	ElseIf (option == oidJail)
 		bSendToJail = !bSendToJail
-		SetToggleOptionValue(oidJail, bSendToJail)
+		_SetToggleOptionValue(oidJail, bSendToJail)
 	ElseIf (option == oidDoNotStopCombat)
 		bDoNotStopCombat = !bDoNotStopCombat
-		SetToggleOptionValue(oidDoNotStopCombat, bDoNotStopCombat)
+		_SetToggleOptionValue(oidDoNotStopCombat, bDoNotStopCombat)
 	ElseIf (option == oidDoNotStopCombatAfterRevival)
 		bDoNotStopCombatAfterRevival = !bDoNotStopCombatAfterRevival
-		SetToggleOptionValue(oidDoNotStopCombatAfterRevival, bDoNotStopCombatAfterRevival)
+		_SetToggleOptionValue(oidDoNotStopCombatAfterRevival, bDoNotStopCombatAfterRevival)
 	ElseIf (option == oidKillIfCantRespawn)
 		bKillIfCantRespawn = !bKillIfCantRespawn
-		SetToggleOptionValue(oidKillIfCantRespawn, bKillIfCantRespawn)
+		_SetToggleOptionValue(oidKillIfCantRespawn, bKillIfCantRespawn)
 	ElseIf (option == oidCanbeKilledbyUnarmed)
 		bCanbeKilledbyUnarmed = !bCanbeKilledbyUnarmed
-		SetToggleOptionValue(oidCanbeKilledbyUnarmed, bCanbeKilledbyUnarmed)
+		_SetToggleOptionValue(oidCanbeKilledbyUnarmed, bCanbeKilledbyUnarmed)
 	;ElseIf (option == oidLoseSkillForever)
 	;	bLoseSkillForever = !bLoseSkillForever
-	;	SetToggleOptionValue(oidLoseSkillForever, bLoseSkillForever)
+	;	_SetToggleOptionValue(oidLoseSkillForever, bLoseSkillForever)
 	ElseIf (option == oidHealActors)
 		bHealActors = !bHealActors
-		SetToggleOptionValue(oidHealActors, bHealActors)
+		_SetToggleOptionValue(oidHealActors, bHealActors)
 	ElseIf (option == oidResurrectActors)
 		bResurrectActors = !bResurrectActors
-		SetToggleOptionValue(oidResurrectActors, bResurrectActors)
+		_SetToggleOptionValue(oidResurrectActors, bResurrectActors)
 	ElseIf (option == oidShowRaceMenu)
 		bShowRaceMenu = !bShowRaceMenu
-		SetToggleOptionValue(oidShowRaceMenu, bShowRaceMenu)
+		_SetToggleOptionValue(oidShowRaceMenu, bShowRaceMenu)
 	ElseIf (option == oidArkayCurse)
 		bArkayCurse = !bArkayCurse
-		SetToggleOptionValue(oidArkayCurse, bArkayCurse)
+		_SetToggleOptionValue(oidArkayCurse, bArkayCurse)
 		If  ( bIsRevivalEnabled ) && ( iNotTradingAftermath == 1) && ( bArkayCurse )
 			flags = OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
-		SetOptionFlags(oidArkayCurses_M,flags,True)
-		SetOptionFlags(oidTempArkayCurse,flags)
+		_SetOptionFlags(oidArkayCurses_M,flags,True)
+		_SetOptionFlags(oidTempArkayCurse,flags)
 	ElseIf (option == oidTempArkayCurse)
 		bIsArkayCurseTemporary = !bIsArkayCurseTemporary
-		SetToggleOptionValue(oidTempArkayCurse, bIsArkayCurseTemporary)
+		_SetToggleOptionValue(oidTempArkayCurse, bIsArkayCurseTemporary)
 	ElseIf (Option == oidSkillReduceRandomVal)
 		bSkillReduceRandomVal = !bSkillReduceRandomVal
-		SetToggleOptionValue(oidSkillReduceRandomVal, bSkillReduceRandomVal)
+		_SetToggleOptionValue(oidSkillReduceRandomVal, bSkillReduceRandomVal)
 		If  ( bIsRevivalEnabled ) && ( iNotTradingAftermath == 1) && (iReducedSkill != 0 && !bSkillReduceRandomVal)
 			flags = OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
-		SetOptionFlags(oidSkillReduceValSlider, flags, True)
+		_SetOptionFlags(oidSkillReduceValSlider, flags, True)
 		If  ( bIsRevivalEnabled ) && ( iNotTradingAftermath == 1) && (iReducedSkill != 0) && bSkillReduceRandomVal
 			flags = OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
-		SetOptionFlags(oidSkillReduceMinValSlider, flags, True)
-		SetOptionFlags(oidSkillReduceMaxValSlider, flags)	
+		_SetOptionFlags(oidSkillReduceMinValSlider, flags, True)
+		_SetOptionFlags(oidSkillReduceMaxValSlider, flags)	
 	ElseIf (option == oidLevelReduce)
 		bLevelReduce = !bLevelReduce
-		SetToggleOptionValue(oidLevelReduce,bLevelReduce)
+		_SetToggleOptionValue(oidLevelReduce,bLevelReduce)
 		;If bLevelReduce
 		;	ReviveScript.SkillScript.RegisterForLevel()
 		;EndIf
 	ElseIf (option == oidOnlyLoseSkillXP)
 		bOnlyLoseSkillXP = !bOnlyLoseSkillXP
-		SetToggleOptionValue(oidOnlyLoseSkillXP,bOnlyLoseSkillXP)
+		_SetToggleOptionValue(oidOnlyLoseSkillXP,bOnlyLoseSkillXP)
 		ForcePageReset()
 	ElseIf (option == oidLoseforever)
 		bLoseForever = !bLoseForever
-		SetToggleOptionValue(oidLoseforever, bLoseForever)
+		_SetToggleOptionValue(oidLoseforever, bLoseForever)
 	ElseIf (option == oidVoicelessCurse)
 		bVoicelessCurse = !bVoicelessCurse
-		SetToggleOptionValue(oidVoicelessCurse, bVoicelessCurse)
+		_SetToggleOptionValue(oidVoicelessCurse, bVoicelessCurse)
 	ElseIf (option == oidGhostCurse)
 		bGhostCurse = !bGhostCurse
-		SetToggleOptionValue(oidGhostCurse, bGhostCurse)
+		_SetToggleOptionValue(oidGhostCurse, bGhostCurse)
 		ForcePageReset()
 	ElseIf (option == oidLiteGhostCurse)
 		bLiteGhostCurse = !bLiteGhostCurse
-		SetToggleOptionValue(oidLiteGhostCurse, bLiteGhostCurse)
+		_SetToggleOptionValue(oidLiteGhostCurse, bLiteGhostCurse)
 	ElseIf (option == oidLostItemQuest)
 		bLostItemQuest = !bLostItemQuest
-		SetToggleOptionValue(oidLostItemQuest, bLostItemQuest)
+		_SetToggleOptionValue(oidLostItemQuest, bLostItemQuest)
 		If bLostItemQuest 
 			If ( ( LostItemsChest.GetNumItems() > 0 ) || ( ReviveScript.ItemScript.fLostSouls > 0.0 ) || \
 			PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt) || ReviveScript.SkillScript.bSkillReduced() )
@@ -2134,168 +2134,168 @@ Event OnOptionSelect(Int option)
 		EndIf
 	ElseIf (option == oidAutoSwitchRP)
 		bAutoSwitchRP = !bAutoSwitchRP
-		SetToggleOptionValue(oidAutoSwitchRP,bAutoSwitchRP)
+		_SetToggleOptionValue(oidAutoSwitchRP,bAutoSwitchRP)
 	ElseIf (option == oidMoreRandomRespawn)
 		bMoreRandomRespawn = !bMoreRandomRespawn
-		SetToggleOptionValue(oidMoreRandomRespawn,bMoreRandomRespawn)
+		_SetToggleOptionValue(oidMoreRandomRespawn,bMoreRandomRespawn)
 	ElseIf (option == oidRandomItemCurse)
 		bRandomItemCurse = !bRandomItemCurse
-		SetToggleOptionValue(oidRandomItemCurse,bRandomItemCurse)
+		_SetToggleOptionValue(oidRandomItemCurse,bRandomItemCurse)
 	ElseIf (option == oidSoulMarkStay)
 		bSoulMarkStay = !bSoulMarkStay
-		SetToggleOptionValue(oidSoulMarkStay,bSoulMarkStay)
+		_SetToggleOptionValue(oidSoulMarkStay,bSoulMarkStay)
 	ElseIf (option == oidCreaturesCanSteal)
 		bCreaturesCanSteal = !bCreaturesCanSteal
 		moaCreaturesCanSteal.SetValue(bCreaturesCanSteal As Int)
-		SetToggleOptionValue(oidCreaturesCanSteal,bCreaturesCanSteal)
+		_SetToggleOptionValue(oidCreaturesCanSteal,bCreaturesCanSteal)
 	ElseIf (option == oidNPCHasLevelRange)
 		bNPCHasLevelRange = !bNPCHasLevelRange
 		moaNPCHasLevelRange.SetValue(bNPCHasLevelRange As Int)
-		SetToggleOptionValue(oidNPCHasLevelRange,bNPCHasLevelRange)
+		_SetToggleOptionValue(oidNPCHasLevelRange,bNPCHasLevelRange)
 		ForcePageReset()
 	ElseIf (option == oidSpawnHostile)
 		bSpawnHostile = !bSpawnHostile
-		SetToggleOptionValue(oidSpawnHostile,bSpawnHostile)
+		_SetToggleOptionValue(oidSpawnHostile,bSpawnHostile)
 		ForcePageReset()
 	ElseIf (option == oidBossChestOnlyCurLoc)
 		bBossChestOnlyCurLoc = !bBossChestOnlyCurLoc
 		moaOnlyInCurLocChest.SetValueInt(bBossChestOnlyCurLoc As Int)
-		SetToggleOptionValue(oidBossChestOnlyCurLoc,bBossChestOnlyCurLoc)
+		_SetToggleOptionValue(oidBossChestOnlyCurLoc,bBossChestOnlyCurLoc)
 	ElseIf (option == oidBossChestNotClearedLoc)
 		bBossChestNotInClearedLoc = !bBossChestNotInClearedLoc
 		moaBossChestNotInclearedLoc.SetValueInt(bBossChestNotInClearedLoc As Int)
-		SetToggleOptionValue(oidBossChestNotClearedLoc,bBossChestNotInClearedLoc)
+		_SetToggleOptionValue(oidBossChestNotClearedLoc,bBossChestNotInClearedLoc)
 	ElseIf (option == oidOnlyEnslavedByEnemyFaction)
 		bOnlyEnslavedByEnemyFaction = !bOnlyEnslavedByEnemyFaction
-		SetToggleOptionValue(oidOnlyEnslavedByEnemyFaction,bOnlyEnslavedByEnemyFaction)
+		_SetToggleOptionValue(oidOnlyEnslavedByEnemyFaction,bOnlyEnslavedByEnemyFaction)
 	ElseIf (option == oidSlaveryOnlyAfterRape)
 		bSlaveryOnlyAfterRape = !bSlaveryOnlyAfterRape
-		SetToggleOptionValue(oidSlaveryOnlyAfterRape,bSlaveryOnlyAfterRape)
+		_SetToggleOptionValue(oidSlaveryOnlyAfterRape,bSlaveryOnlyAfterRape)
 	ElseIf (option == oidOnlyHostilesRape)
 		bOnlyHostilesRape = !bOnlyHostilesRape
-		SetToggleOptionValue(oidOnlyHostilesRape,bOnlyHostilesRape)
+		_SetToggleOptionValue(oidOnlyHostilesRape,bOnlyHostilesRape)
 	ElseIf (option == oidAlwaysSpawn)
 		bAlwaysSpawn = !bAlwaysSpawn
-		SetToggleOptionValue(oidAlwaysSpawn,bAlwaysSpawn)
+		_SetToggleOptionValue(oidAlwaysSpawn,bAlwaysSpawn)
 	ElseIf (option == oidOnlySpawn)
 		bOnlySpawn = !bOnlySpawn
-		SetToggleOptionValue(oidOnlySpawn,bOnlySpawn)
+		_SetToggleOptionValue(oidOnlySpawn,bOnlySpawn)
 	ElseIf (option == oidMoralityMatters)
 		bMoralityMatters = !bMoralityMatters
 		moaMoralityMatters.SetValue(bMoralityMatters As Int)
-		SetToggleOptionValue(oidMoralityMatters,bMoralityMatters)
+		_SetToggleOptionValue(oidMoralityMatters,bMoralityMatters)
 	ElseIf (option == oidLoseItem)
 		bLoseItem = !bLoseItem
-		SetToggleOptionValue(oidLoseItem,bLoseItem)
+		_SetToggleOptionValue(oidLoseItem,bLoseItem)
 		ForcePageReset()
 	ElseIf (option == oidLoseOthers)
 		bLoseOthers = !bLoseOthers
-		SetToggleOptionValue(oidLoseOthers,bLoseOthers)
+		_SetToggleOptionValue(oidLoseOthers,bLoseOthers)
 		ForcePageReset()
 	ElseIf (option == oidLoseAmmo)
 		bLoseAmmo = !bLoseAmmo
 		iValidTypes[6] = iGetType(42,bLoseAmmo)
-		SetToggleOptionValue(oidLoseAmmo,bLoseAmmo)
+		_SetToggleOptionValue(oidLoseAmmo,bLoseAmmo)
 		ForcePageReset()
 	ElseIf (option == oidCheckKeyword)
 		bCheckKeyword = !bCheckKeyword
-		SetToggleOptionValue(oidCheckKeyword,bCheckKeyword)
+		_SetToggleOptionValue(oidCheckKeyword,bCheckKeyword)
 		ForcePageReset()
 	ElseIf (option == oidExcludeQuestItems)
 		bExcludeQuestItems = !bExcludeQuestItems
-		SetToggleOptionValue(oidExcludeQuestItems,bExcludeQuestItems)
+		_SetToggleOptionValue(oidExcludeQuestItems,bExcludeQuestItems)
 	ElseIf (option == oidCheckWeight)
 		bCheckWeight = !bCheckWeight
-		SetToggleOptionValue(oidCheckWeight,bCheckWeight)
+		_SetToggleOptionValue(oidCheckWeight,bCheckWeight)
 		ForcePageReset()
 	ElseIf (option == oidLoseArkayMark)
 		bLoseArkayMark = !bLoseArkayMark
-		SetToggleOptionValue(oidLoseArkayMark,bLoseArkayMark)
+		_SetToggleOptionValue(oidLoseArkayMark,bLoseArkayMark)
 		ForcePageReset()
 	ElseIf (option == oidLoseBlackSoulGem)
 		bLoseBlackSoulGem = !bLoseBlackSoulGem
-		SetToggleOptionValue(oidLoseBlackSoulGem,bLoseBlackSoulGem)
+		_SetToggleOptionValue(oidLoseBlackSoulGem,bLoseBlackSoulGem)
 		ForcePageReset()
 	ElseIf (option == oidLoseGrandSoulGem)
 		bLoseGrandSoulGem = !bLoseGrandSoulGem
-		SetToggleOptionValue(oidLoseGrandSoulGem,bLoseGrandSoulGem)
+		_SetToggleOptionValue(oidLoseGrandSoulGem,bLoseGrandSoulGem)
 		ForcePageReset()
 	ElseIf (option == oidLoseGold)
 		bLoseGold = !bLoseGold
-		SetToggleOptionValue(oidLoseGold,bLoseGold)
+		_SetToggleOptionValue(oidLoseGold,bLoseGold)
 		ForcePageReset()
 	ElseIf (option == oidLoseDragonSoul)
 		bLoseDragonSoul = !bLoseDragonSoul
-		SetToggleOptionValue(oidLoseDragonSoul,bLoseDragonSoul)
+		_SetToggleOptionValue(oidLoseDragonSoul,bLoseDragonSoul)
 		ForcePageReset()
 	ElseIf (option == oidLoseScroll)
 		bLoseScroll = !bLoseScroll
 		iValidTypes[0] = iGetType(23,bLoseScroll)
-		SetToggleOptionValue(oidLoseScroll,bLoseScroll)
+		_SetToggleOptionValue(oidLoseScroll,bLoseScroll)
 		ForcePageReset()
 	ElseIf (option == oidLoseBook)
 		bLoseBook = !bLoseBook
 		iValidTypes[2] = iGetType(27,bLoseBook)
-		SetToggleOptionValue(oidLoseBook,bLoseBook)
+		_SetToggleOptionValue(oidLoseBook,bLoseBook)
 		ForcePageReset()
 	ElseIf (option == oidLoseMisc)
 		bLoseMisc = !bLoseMisc
 		iValidTypes[4] = iGetType(32,bLoseMisc)
-		SetToggleOptionValue(oidLoseMisc,bLoseMisc)
+		_SetToggleOptionValue(oidLoseMisc,bLoseMisc)
 		ForcePageReset()
 	ElseIf (option == oidLoseKey)
 		bLoseKey = !bLoseKey
 		iValidTypes[7] = iGetType(45,bLoseKey)
-		SetToggleOptionValue(oidLoseKey,bLoseKey)
+		_SetToggleOptionValue(oidLoseKey,bLoseKey)
 		ForcePageReset()
 	ElseIf (option == oidLoseIngredient)
 		bLoseIngredient = !bLoseIngredient
 		iValidTypes[3] = iGetType(30,bLoseIngredient)
-		SetToggleOptionValue(oidLoseIngredient,bLoseIngredient)
+		_SetToggleOptionValue(oidLoseIngredient,bLoseIngredient)
 		ForcePageReset()
 	ElseIf (option == oidLosePotion)
 		bLosePotion = !bLosePotion
 		iValidTypes[8] = iGetType(46,bLosePotion)
-		SetToggleOptionValue(oidLosePotion,bLosePotion)
+		_SetToggleOptionValue(oidLosePotion,bLosePotion)
 		ForcePageReset()
 	ElseIf (option == oidLoseSoulgem)
 		bLoseSoulgem = !bLoseSoulgem
 		iValidTypes[9] = iGetType(52,bLoseSoulgem)
-		SetToggleOptionValue(oidLoseSoulgem,bLoseSoulgem)
+		_SetToggleOptionValue(oidLoseSoulgem,bLoseSoulgem)
 		ForcePageReset()
 	ElseIf (option == oidLoseArmor)
 		bLoseArmor = !bLoseArmor
 		iValidTypes[1] = iGetType(26,bLoseArmor)
-		SetToggleOptionValue(oidLoseArmor,bLoseArmor)
+		_SetToggleOptionValue(oidLoseArmor,bLoseArmor)
 		ForcePageReset()
 	ElseIf (option == oidLoseWeapon)
 		bLoseWeapon = !bLoseWeapon
 		iValidTypes[5] = iGetType(41,bLoseWeapon)
-		SetToggleOptionValue(oidLoseWeapon,bLoseWeapon)
+		_SetToggleOptionValue(oidLoseWeapon,bLoseWeapon)
 		ForcePageReset()
 	ElseIf (option == oidLoseGoldAll)
 		bLoseGoldAll = !bLoseGoldAll
-		SetToggleOptionValue(oidLoseGoldAll,bLoseGoldAll)
+		_SetToggleOptionValue(oidLoseGoldAll,bLoseGoldAll)
 		ForcePageReset()
 	ElseIf (option == oidLoseDragonSoulAll)
 		bLoseDragonSoulAll = !bLoseDragonSoulAll
-		SetToggleOptionValue(oidLoseDragonSoulAll,bLoseDragonSoulAll)
+		_SetToggleOptionValue(oidLoseDragonSoulAll,bLoseDragonSoulAll)
 		ForcePageReset()
 	ElseIf (option == oidLoseBlackSoulGemAll)
 		bLoseBlackSoulGemAll = !bLoseBlackSoulGemAll
-		SetToggleOptionValue(oidLoseBlackSoulGemAll,bLoseBlackSoulGemAll)
+		_SetToggleOptionValue(oidLoseBlackSoulGemAll,bLoseBlackSoulGemAll)
 		ForcePageReset()
 	ElseIf (option == oidLoseGrandSoulGemAll)
 		bLoseGrandSoulGemAll = !bLoseGrandSoulGemAll
-		SetToggleOptionValue(oidLoseGrandSoulGemAll,bLoseGrandSoulGemAll)
+		_SetToggleOptionValue(oidLoseGrandSoulGemAll,bLoseGrandSoulGemAll)
 		ForcePageReset()
 	ElseIf (option == oidLoseArkayMarkAll)
 		bLoseArkayMarkAll = !bLoseArkayMarkAll
-		SetToggleOptionValue(oidLoseArkayMarkAll,bLoseArkayMarkAll)
+		_SetToggleOptionValue(oidLoseArkayMarkAll,bLoseArkayMarkAll)
 		ForcePageReset()
 	ElseIf (option == oidInformation)
 		bIsInfoEnabled = !bIsInfoEnabled
-		SetToggleOptionValue(oidInformation,bIsInfoEnabled)
+		_SetToggleOptionValue(oidInformation,bIsInfoEnabled)
 		ForcePageReset()
 	ElseIf (option == oidLostItemsInfo)
 		If !bUIEOK
@@ -2328,10 +2328,10 @@ Event OnOptionSelect(Int option)
 	ElseIf (option == oidResetHistory)
 		If sResetHistory == ""
 			sResetHistory = "$Are_You_Sure"
-			SetTextOptionValue(option, sResetHistory)
+			_SetTextOptionValue(option, sResetHistory)
 		Else
 			sResetHistory = ""
-			SetTextOptionValue(option, sResetHistory)
+			_SetTextOptionValue(option, sResetHistory)
 			iTotalBleedOut = 0
 			iTotalRespawn = 0
 			iTotalRevives = 0
@@ -2344,7 +2344,7 @@ Event OnOptionSelect(Int option)
 			ForcePageReset()
 		EndIf
 	ElseIf (option == oidRestoreItems)
-		If !self.ShowMessage("$Are_You_Sure", True, "$Yes", "$No")
+		If !self._ShowMessage("$Are_You_Sure", True, "$Yes", "$No")
 			Return
 		EndIf
 		moaIsBusy.SetValueInt(1)
@@ -2359,48 +2359,48 @@ Event OnOptionSelect(Int option)
 		moaIsBusy.SetValueInt(0)
 	ElseIf (option == oidLoadPreset1)
 		If !FISSFactory.getFISS()
-			ShowMessage("$mrt_MarkofArkay_MESG_FISS_Error", False, "$Accept")
+			_ShowMessage("$mrt_MarkofArkay_MESG_FISS_Error", False, "$Accept")
 			Return
 		EndIf
 		String fName = "MarkofArkayUserSettings" + (iLoadPreset + 1) + ".xml"
-		If ShowMessage("$mrt_MarkofArkay_MESG_Load_Preset", True, "$Yes", "$No")
+		If _ShowMessage("$mrt_MarkofArkay_MESG_Load_Preset", True, "$Yes", "$No")
 			If bLoadUserSettings(fName)
-				ShowMessage("$mrt_MarkofArkay_MESG_Load_Preset_Success", False, "$Accept")
+				_ShowMessage("$mrt_MarkofArkay_MESG_Load_Preset_Success", False, "$Accept")
 			Else
-				ShowMessage("$mrt_MarkofArkay_MESG_Load_Preset_Failure", False, "$Accept")
+				_ShowMessage("$mrt_MarkofArkay_MESG_Load_Preset_Failure", False, "$Accept")
 			EndIf
 		EndIf
 		ForcePageReset()
 	ElseIf (option == oidSavePreset1)
 		FISSInterface fiss = FISSFactory.getFISS()
 		If !fiss
-			ShowMessage("$mrt_MarkofArkay_MESG_FISS_Error", False, "$Accept")
+			_ShowMessage("$mrt_MarkofArkay_MESG_FISS_Error", False, "$Accept")
 			Return
 		EndIf
 		String fName = "MarkofArkayUserSettings" + (iSavePreset + 1) + ".xml"
 		fiss.beginLoad(fName)
 		If fiss.endLoad() == ""
-			If !ShowMessage("$mrt_MarkofArkay_MESG_Already_Preset", True, "$Yes", "$No")
+			If !_ShowMessage("$mrt_MarkofArkay_MESG_Already_Preset", True, "$Yes", "$No")
 				Return
 			EndIf
 		Else
-			ShowMessage("$mrt_MarkofArkay_MESG_Save_Preset", False, "$Accept")
+			_ShowMessage("$mrt_MarkofArkay_MESG_Save_Preset", False, "$Accept")
 		EndIf
 		If bSaveUserSettings(fName)
-			ShowMessage("$mrt_MarkofArkay_MESG_Save_Preset_Success", False, "$Accept")
+			_ShowMessage("$mrt_MarkofArkay_MESG_Save_Preset_Success", False, "$Accept")
 		Else
-			ShowMessage("$mrt_MarkofArkay_MESG_Save_Preset_Failure", False, "$Accept")
+			_ShowMessage("$mrt_MarkofArkay_MESG_Save_Preset_Failure", False, "$Accept")
 		EndIf
 		ForcePageReset()
 	ElseIf (option == oidLoadDefaultPreset)
-		If ShowMessage("$mrt_MarkofArkay_MESG_Load_Default_Preset", True, "$Yes", "$No")
+		If _ShowMessage("$mrt_MarkofArkay_MESG_Load_Default_Preset", True, "$Yes", "$No")
 			LoadDefaultSettings()
-			ShowMessage("$mrt_MarkofArkay_MESG_Load_Default_Preset_Finish", False, "$Accept")
+			_ShowMessage("$mrt_MarkofArkay_MESG_Load_Default_Preset_Finish", False, "$Accept")
 		EndIf
 		ForcePageReset()
 	ElseIf (option == oidStatus)
 		If moaState.GetValue() == 1
-			If !self.ShowMessage("$Are_You_Sure", True, "$Yes", "$No")
+			If !self._ShowMessage("$Are_You_Sure", True, "$Yes", "$No")
 				Return
 			EndIf
 		EndIf
@@ -2415,7 +2415,7 @@ Event OnOptionSelect(Int option)
 		moaIsBusy.SetValueInt(0)
 	ElseIf (option == oidRespawnBlackListLocation)
 		If PlayerRef.GetCurrentLocation() && !ReviveScript.LocationBlackList.HasForm(PlayerRef.GetCurrentLocation())
-			If !self.ShowMessage("$Are_You_Sure", True, "$Yes", "$No")
+			If !self._ShowMessage("$Are_You_Sure", True, "$Yes", "$No")
 				Return
 			EndIf
 			If ReviveScript.LocationBlackList2.Find(PlayerRef.GetCurrentLocation()) > -1 || (bPUOK && JsonUtil.FormListHas("/MarkofArkay/MOA_BlackLists", "LocationBlackList", PlayerRef.GetCurrentLocation()))
@@ -2435,7 +2435,7 @@ Event OnOptionSelect(Int option)
 			ForcePageReset()
 		EndIf
 	ElseIf (option == oidReset)
-		If !self.ShowMessage("$Are_You_Sure", True, "$Yes", "$No")
+		If !self._ShowMessage("$Are_You_Sure", True, "$Yes", "$No")
 			Return
 		EndIf
 		moaIsBusy.SetValueInt(1)
@@ -2445,7 +2445,7 @@ Event OnOptionSelect(Int option)
 		moaStart()
 		moaIsBusy.SetValueInt(0)
 	ElseIf (option == oidResetPlayer)
-		If !self.ShowMessage("$Are_You_Sure", True, "$Yes", "$No")
+		If !self._ShowMessage("$Are_You_Sure", True, "$Yes", "$No")
 			Return
 		EndIf
 		moaIsBusy.SetValueInt(1)
@@ -2499,28 +2499,28 @@ Event OnOptionSliderAccept(int option, Float value)
 	string page = CurrentPage
 	If (option == oidDragonSoulSlider)
 		fValueSoulSlider = value
-		SetSliderOptionValue(oidDragonSoulSlider, fValueSoulSlider, "$mrt_MarkofArkay_DragonSoulSlider_2")
+		_SetSliderOptionValue(oidDragonSoulSlider, fValueSoulSlider, "$mrt_MarkofArkay_DragonSoulSlider_2")
 	ElseIf (option == oidMarkSlider)
 		fValueMarkSlider = value
-		SetSliderOptionValue(oidMarkSlider, fValueMarkSlider, "$mrt_MarkofArkay_MarkSlider_2")
+		_SetSliderOptionValue(oidMarkSlider, fValueMarkSlider, "$mrt_MarkofArkay_MarkSlider_2")
 	ElseIf (option == oidBSoulGemSlider)
 		fValueBSoulGemSlider = value
-		SetSliderOptionValue(oidBSoulGemSlider, fValueBSoulGemSlider, "$mrt_MarkofArkay_BSoulGemSlider_2")
+		_SetSliderOptionValue(oidBSoulGemSlider, fValueBSoulGemSlider, "$mrt_MarkofArkay_BSoulGemSlider_2")
 	ElseIf (option == oidGSoulGemSlider)
 		fValueGSoulGemSlider = value
-		SetSliderOptionValue(oidGSoulGemSlider, fValueGSoulGemSlider, "$mrt_MarkofArkay_GSoulGemSlider_2")
+		_SetSliderOptionValue(oidGSoulGemSlider, fValueGSoulGemSlider, "$mrt_MarkofArkay_GSoulGemSlider_2")
 	ElseIf (option == oidGoldSlider)
 		fValueGoldSlider = value
-		SetSliderOptionValue(oidGoldSlider, fValueGoldSlider, "$mrt_MarkofArkay_GoldSlider_2")
+		_SetSliderOptionValue(oidGoldSlider, fValueGoldSlider, "$mrt_MarkofArkay_GoldSlider_2")
 	ElseIf (option == oidGoldPSlider)
 		fGoldPSlider = value
-		SetSliderOptionValue(oidGoldPSlider, fGoldPSlider, "{0}")
+		_SetSliderOptionValue(oidGoldPSlider, fGoldPSlider, "{0}")
 	ElseIf (option == oidMarkPSlider)
 		fMarkPSlider = value
-		SetSliderOptionValue(oidMarkPSlider, fMarkPSlider, "{0}")
+		_SetSliderOptionValue(oidMarkPSlider, fMarkPSlider, "{0}")
 	ElseIf (option == oidSnoozeSlider)
 		fValueSnoozeSlider = value
-		SetSliderOptionValue(oidSnoozeSlider, fValueSnoozeSlider, "$mrt_MarkofArkay_RecoveryTime_2")
+		_SetSliderOptionValue(oidSnoozeSlider, fValueSnoozeSlider, "$mrt_MarkofArkay_RecoveryTime_2")
 		If fValueSnoozeSlider > 0
 			moaSnoozeState.SetValue(1.0)
 		Else
@@ -2528,175 +2528,175 @@ Event OnOptionSliderAccept(int option, Float value)
 		EndIf
 	ElseIf (option == oidDragonSoulPSlider)
 		fDragonSoulPSlider = value
-		SetSliderOptionValue(oidDragonSoulPSlider, fDragonSoulPSlider, "{0}")
+		_SetSliderOptionValue(oidDragonSoulPSlider, fDragonSoulPSlider, "{0}")
 	ElseIf (option == oidBSoulGemPSlider)
 		fBSoulgemPSlider = value
-		SetSliderOptionValue(oidBSoulGemPSlider, fBSoulgemPSlider, "{0}")
+		_SetSliderOptionValue(oidBSoulGemPSlider, fBSoulgemPSlider, "{0}")
 	ElseIf (option == oidGSoulGemPSlider)
 		fGSoulgemPSlider = value
-		SetSliderOptionValue(oidGSoulGemPSlider, fGSoulgemPSlider, "{0}")
+		_SetSliderOptionValue(oidGSoulGemPSlider, fGSoulgemPSlider, "{0}")
 	ElseIf (option == oidRecoveryTime)
 		fRecoveryTimeSlider = value
-		SetSliderOptionValue(oidRecoveryTime, fRecoveryTimeSlider, "$mrt_MarkofArkay_RecoveryTime_2")
+		_SetSliderOptionValue(oidRecoveryTime, fRecoveryTimeSlider, "$mrt_MarkofArkay_RecoveryTime_2")
 	ElseIf (option == oidSpawnCountSlider)
 		iSpawnCounts[iSpawn] = value As Int
-		SetSliderOptionValue(oidSpawnCountSlider, iSpawnCounts[iSpawn], "$mrt_MarkofArkay_SpawnCountSlider_2")
+		_SetSliderOptionValue(oidSpawnCountSlider, iSpawnCounts[iSpawn], "$mrt_MarkofArkay_SpawnCountSlider_2")
 		ForcePageReset()
 	ElseIf (option == oidSpawnWeightSlider)
 		iSpawnWeights[iSpawn] = value As Int
-		SetSliderOptionValue(oidSpawnWeightSlider, iSpawnWeights[iSpawn], "$mrt_MarkofArkay_SpawnWeightSlider_2")
+		_SetSliderOptionValue(oidSpawnWeightSlider, iSpawnWeights[iSpawn], "$mrt_MarkofArkay_SpawnWeightSlider_2")
 		ForcePageReset()
 	ElseIf (option == oidRespawnTimeSlider)
 		If value > 0.0 && bShowTimeScaleWarning
-			If !Self.ShowMessage("$mrt_MarkofArkay_MESG_TimeScaleConfirm", True, "$Yes", "$No")
+			If !Self._ShowMessage("$mrt_MarkofArkay_MESG_TimeScaleConfirm", True, "$Yes", "$No")
 				value = 0.0
 			Else
 				bShowTimeScaleWarning = False
 			EndIf
 		EndIf
 		fRespawnTimeSlider = value
-		SetSliderOptionValue(oidRespawnTimeSlider, fRespawnTimeSlider, "$mrt_MarkofArkay_RespawnTimeSlider_2")
+		_SetSliderOptionValue(oidRespawnTimeSlider, fRespawnTimeSlider, "$mrt_MarkofArkay_RespawnTimeSlider_2")
 	ElseIf (option == oidBleedoutTime)
 		fBleedoutTimeSlider = value
-		SetSliderOptionValue(oidBleedoutTime, fBleedoutTimeSlider, "$mrt_MarkofArkay_RecoveryTime_2")	
+		_SetSliderOptionValue(oidBleedoutTime, fBleedoutTimeSlider, "$mrt_MarkofArkay_RecoveryTime_2")	
 	ElseIf (option == oidLootChanceSlider)
 		fLootChanceSlider = value
-		SetSliderOptionValue(oidLootChanceSlider, fLootChanceSlider, "$mrt_MarkofArkay_LootChanceSlider_2")
+		_SetSliderOptionValue(oidLootChanceSlider, fLootChanceSlider, "$mrt_MarkofArkay_LootChanceSlider_2")
 		moaLootChance.SetValue(100.0 -  fLootChanceSlider)
 	ElseIf (option == oidScrollChanceSlider)
 		fScrollChanceSlider = value
-		SetSliderOptionValue(oidScrollChanceSlider, fScrollChanceSlider, "$mrt_MarkofArkay_LootChanceSlider_2")
+		_SetSliderOptionValue(oidScrollChanceSlider, fScrollChanceSlider, "$mrt_MarkofArkay_LootChanceSlider_2")
 		moaScrollChance.SetValue(100.0 -  fScrollChanceSlider)
 	ElseIf (option == oidRecallCost)
 		fRecallCastSlider = value
-		SetSliderOptionValue(oidRecallCost, fRecallCastSlider, "$mrt_MarkofArkay_MarkSlider_2")
+		_SetSliderOptionValue(oidRecallCost, fRecallCastSlider, "$mrt_MarkofArkay_MarkSlider_2")
 	ElseIf (option == oidMarkCost)
 		fMarkCastSlider = value
-		SetSliderOptionValue(oidMarkCost, fMarkCastSlider, "$mrt_MarkofArkay_MarkSlider_2")
+		_SetSliderOptionValue(oidMarkCost, fMarkCastSlider, "$mrt_MarkofArkay_MarkSlider_2")
 	ElseIf (option == oidRPMinDistanceSlider)
 		fRPMinDistanceSlider = value
 		moaRPMinDistance.SetValue(fRPMinDistanceSlider)
-		SetSliderOptionValue(oidRPMinDistanceSlider, fRPMinDistanceSlider, "{0}")
+		_SetSliderOptionValue(oidRPMinDistanceSlider, fRPMinDistanceSlider, "{0}")
 	ElseIf (option == oidDisChanceSlider)
 		fDisChanceSlider = value
-		SetSliderOptionValue(oidDisChanceSlider, fDisChanceSlider, "$mrt_MarkofArkay_DisChanceSlider_2")
+		_SetSliderOptionValue(oidDisChanceSlider, fDisChanceSlider, "$mrt_MarkofArkay_DisChanceSlider_2")
 	ElseIf (option == oidDisProgChanceSlider)
 		fDisProgChanceSlider = value
-		SetSliderOptionValue(oidDisProgChanceSlider, fDisProgChanceSlider, "$mrt_MarkofArkay_DisProgChanceSlider_2")
+		_SetSliderOptionValue(oidDisProgChanceSlider, fDisProgChanceSlider, "$mrt_MarkofArkay_DisProgChanceSlider_2")
 	ElseIf (option == oidDisPriceSlider)
 		fDisPriceSlider = value
 		recalcCursedDisCureCosts()
-		SetSliderOptionValue(oidDisPriceSlider, fDisPriceSlider, "$mrt_MarkofArkay_DisPriceSlider_2")
+		_SetSliderOptionValue(oidDisPriceSlider, fDisPriceSlider, "$mrt_MarkofArkay_DisPriceSlider_2")
 	ElseIf (option == oidDisPriceMultSlider)
 		fDisPriceMultSlider = value
 		recalcCursedDisCureCosts()
-		SetSliderOptionValue(oidDisPriceMultSlider, fDisPriceMultSlider, "$mrt_MarkofArkay_DisPriceMultSlider_2")
+		_SetSliderOptionValue(oidDisPriceMultSlider, fDisPriceMultSlider, "$mrt_MarkofArkay_DisPriceMultSlider_2")
 	ElseIf (option == oidMarkScaleSlider)
 		fValueMarkScaleSlider = value
-		SetSliderOptionValue(oidMarkScaleSlider, fValueMarkScaleSlider, "$mrt_MarkofArkay_MarkScaleSlider_2")
+		_SetSliderOptionValue(oidMarkScaleSlider, fValueMarkScaleSlider, "$mrt_MarkofArkay_MarkScaleSlider_2")
 	ElseIf (option == oidGSoulScaleGemSlider)
 		fValueGSoulGemScaleSlider = value
-		SetSliderOptionValue(oidGSoulScaleGemSlider, fValueGSoulGemScaleSlider, "$mrt_MarkofArkay_GSoulGemScaleSlider_2")
+		_SetSliderOptionValue(oidGSoulScaleGemSlider, fValueGSoulGemScaleSlider, "$mrt_MarkofArkay_GSoulGemScaleSlider_2")
 	ElseIf (option == oidBSoulScaleGemSlider)
 		fValueBSoulGemScaleSlider = value
-		SetSliderOptionValue(oidBSoulScaleGemSlider, fValueBSoulGemScaleSlider, "$mrt_MarkofArkay_BSoulGemScaleSlider_2")
+		_SetSliderOptionValue(oidBSoulScaleGemSlider, fValueBSoulGemScaleSlider, "$mrt_MarkofArkay_BSoulGemScaleSlider_2")
 	ElseIf (option == oidDragonScaleSoulSlider)
 		fValueSoulScaleSlider = value
-		SetSliderOptionValue(oidDragonScaleSoulSlider, fValueSoulScaleSlider, "$mrt_MarkofArkay_DragonSoulScaleSlider_2")
+		_SetSliderOptionValue(oidDragonScaleSoulSlider, fValueSoulScaleSlider, "$mrt_MarkofArkay_DragonSoulScaleSlider_2")
 	ElseIf (option == oidGoldScaleSlider)
 		fValueGoldScaleSlider = value
-		SetSliderOptionValue(oidGoldScaleSlider, fValueGoldScaleSlider, "$mrt_MarkofArkay_GoldScaleSlider_2")
+		_SetSliderOptionValue(oidGoldScaleSlider, fValueGoldScaleSlider, "$mrt_MarkofArkay_GoldScaleSlider_2")
 	ElseIf (option == oidSkillReduceValSlider)
 		fSkillReduceValSlider = value
-		SetSliderOptionValue(oidSkillReduceValSlider, fSkillReduceValSlider, "$mrt_MarkofArkay_SkillReduceValSlider_2")
+		_SetSliderOptionValue(oidSkillReduceValSlider, fSkillReduceValSlider, "$mrt_MarkofArkay_SkillReduceValSlider_2")
 	ElseIf (option == oidSkillReduceMaxValSlider)
 		fSkillReduceMaxValSlider = value
-		SetSliderOptionValue(oidSkillReduceMaxValSlider, fSkillReduceMaxValSlider, "{0}")
+		_SetSliderOptionValue(oidSkillReduceMaxValSlider, fSkillReduceMaxValSlider, "{0}")
 	ElseIf (option == oidSkillReduceMinValSlider)
 		fSkillReduceMinValSlider = value
-		SetSliderOptionValue(oidSkillReduceMinValSlider, fSkillReduceMinValSlider, "{0}")
+		_SetSliderOptionValue(oidSkillReduceMinValSlider, fSkillReduceMinValSlider, "{0}")
 	ElseIf (option == oidMinLoseGoldSlider)
 		fMinLoseGoldSlider = value
-		SetSliderOptionValue(oidMinLoseGoldSlider, fMinLoseGoldSlider, "{0}")
+		_SetSliderOptionValue(oidMinLoseGoldSlider, fMinLoseGoldSlider, "{0}")
 	ElseIf (option == oidMaxLoseGoldSlider)
 		fMaxLoseGoldSlider = value
-		SetSliderOptionValue(oidMaxLoseGoldSlider, fMaxLoseGoldSlider, "{0}")
+		_SetSliderOptionValue(oidMaxLoseGoldSlider, fMaxLoseGoldSlider, "{0}")
 	ElseIf (option == oidMinLoseDragonSoulSlider)
 		fMinLoseDragonSoulSlider = value
-		SetSliderOptionValue(oidMinLoseDragonSoulSlider, fMinLoseDragonSoulSlider, "{0}")
+		_SetSliderOptionValue(oidMinLoseDragonSoulSlider, fMinLoseDragonSoulSlider, "{0}")
 	ElseIf (option == oidMaxLoseDragonSoulSlider)
 		fMaxLoseDragonSoulSlider = value
-		SetSliderOptionValue(oidMaxLoseDragonSoulSlider, fMaxLoseDragonSoulSlider, "{0}")
+		_SetSliderOptionValue(oidMaxLoseDragonSoulSlider, fMaxLoseDragonSoulSlider, "{0}")
 	ElseIf (option == oidMinLoseBlackSoulGemSlider)
 		fMinLoseBlackSoulGemSlider = value
-		SetSliderOptionValue(oidMinLoseBlackSoulGemSlider, fMinLoseBlackSoulGemSlider, "{0}")
+		_SetSliderOptionValue(oidMinLoseBlackSoulGemSlider, fMinLoseBlackSoulGemSlider, "{0}")
 	ElseIf (option == oidMaxLoseBlackSoulGemSlider)
 		fMaxLoseBlackSoulGemSlider = value
-		SetSliderOptionValue(oidMaxLoseBlackSoulGemSlider, fMaxLoseBlackSoulGemSlider, "{0}")
+		_SetSliderOptionValue(oidMaxLoseBlackSoulGemSlider, fMaxLoseBlackSoulGemSlider, "{0}")
 	ElseIf (option == oidMinLoseGrandSoulGemSlider)
 		fMinLoseGrandSoulGemSlider = value
-		SetSliderOptionValue(oidMinLoseGrandSoulGemSlider, fMinLoseGrandSoulGemSlider, "{0}")
+		_SetSliderOptionValue(oidMinLoseGrandSoulGemSlider, fMinLoseGrandSoulGemSlider, "{0}")
 	ElseIf (option == oidMaxLoseGrandSoulGemSlider)
 		fMaxLoseGrandSoulGemSlider = value
-		SetSliderOptionValue(oidMaxLoseGrandSoulGemSlider, fMaxLoseGrandSoulGemSlider, "{0}")
+		_SetSliderOptionValue(oidMaxLoseGrandSoulGemSlider, fMaxLoseGrandSoulGemSlider, "{0}")
 	ElseIf (option == oidMinLoseArkayMarkSlider)
 		fMinLoseArkayMarkSlider = value
-		SetSliderOptionValue(oidMinLoseArkayMarkSlider, fMinLoseArkayMarkSlider, "{0}")
+		_SetSliderOptionValue(oidMinLoseArkayMarkSlider, fMinLoseArkayMarkSlider, "{0}")
 	ElseIf (option == oidMaxLoseArkayMarkSlider)
 		fMaxLoseArkayMarkSlider = value
-		SetSliderOptionValue(oidMaxLoseArkayMarkSlider, fMaxLoseArkayMarkSlider, "{0}")
+		_SetSliderOptionValue(oidMaxLoseArkayMarkSlider, fMaxLoseArkayMarkSlider, "{0}")
 	ElseIf (option == oidLoseOtherMinValueSlider)
 		fLoseOtherMinValueSlider = value
-		SetSliderOptionValue(oidLoseOtherMinValueSlider, fLoseOtherMinValueSlider, "{0}")
+		_SetSliderOptionValue(oidLoseOtherMinValueSlider, fLoseOtherMinValueSlider, "{0}")
 	ElseIf (option == oidLoseOtherTotalValueSlider)
 		fLoseOtherTotalValueSlider = value
-		SetSliderOptionValue(oidLoseOtherTotalValueSlider, fLoseOtherTotalValueSlider, "{0}")
+		_SetSliderOptionValue(oidLoseOtherTotalValueSlider, fLoseOtherTotalValueSlider, "{0}")
 	ElseIf (option == oidMaxItemsToCheckSlider)
 		fMaxItemsToCheckSlider = value
-		SetSliderOptionValue(oidMaxItemsToCheckSlider, fMaxItemsToCheckSlider, "{0}")
+		_SetSliderOptionValue(oidMaxItemsToCheckSlider, fMaxItemsToCheckSlider, "{0}")
 	ElseIf (option == oidLowerNPCMaxLvlDiff)
 		fLowerNPCMaxLvlDiff = value
-		SetSliderOptionValue(oidLowerNPCMaxLvlDiff, fLowerNPCMaxLvlDiff, "{0}")
+		_SetSliderOptionValue(oidLowerNPCMaxLvlDiff, fLowerNPCMaxLvlDiff, "{0}")
 	ElseIf (option == oidHigherNPCMaxLvlDiff)
 		fHigherNPCMaxLvlDiff = value
-		SetSliderOptionValue(oidHigherNPCMaxLvlDiff, fHigherNPCMaxLvlDiff, "{0}")
+		_SetSliderOptionValue(oidHigherNPCMaxLvlDiff, fHigherNPCMaxLvlDiff, "{0}")
 	ElseIf (option == oidRespawnCounter)
-		If !Self.ShowMessage("$mrt_MarkofArkay_MESG_RespawnCounterConfirm", True, "$Yes", "$No")
+		If !Self._ShowMessage("$mrt_MarkofArkay_MESG_RespawnCounterConfirm", True, "$Yes", "$No")
 			Return
 		EndIf
 		fRespawnCounterSlider = value
-		SetSliderOptionValue(oidRespawnCounter, fRespawnCounterSlider, "$mrt_MarkofArkay_RespawnCounter2")
+		_SetSliderOptionValue(oidRespawnCounter, fRespawnCounterSlider, "$mrt_MarkofArkay_RespawnCounter2")
 		bRespawnCounter = True
 		bCanbeKilledbyUnarmed = False
 		bKillIfCantRespawn = False
 		ForcePageReset()
 	ElseIf (option == oidBossChestChanceSlider)
 		fBossChestChanceSlider = value
-		SetSliderOptionValue(oidBossChestChanceSlider, fBossChestChanceSlider, "$mrt_MarkofArkay_BossChestChanceSlider_2")
+		_SetSliderOptionValue(oidBossChestChanceSlider, fBossChestChanceSlider, "$mrt_MarkofArkay_BossChestChanceSlider_2")
 		ForcePageReset()
 	ElseIf (option == oidSimpleSlaveryChanceSlider)
 		fSimpleSlaveryChanceSlider = value
-		SetSliderOptionValue(oidSimpleSlaveryChanceSlider, fSimpleSlaveryChanceSlider, "$mrt_MarkofArkay_SimpleSlaveryChanceSlider_2")
+		_SetSliderOptionValue(oidSimpleSlaveryChanceSlider, fSimpleSlaveryChanceSlider, "$mrt_MarkofArkay_SimpleSlaveryChanceSlider_2")
 		ForcePageReset()
 	ElseIf (option == oidRapeChanceSlider)
 		fRapeChanceSlider = value
-		SetSliderOptionValue(oidRapeChanceSlider, fRapeChanceSlider, "$mrt_MarkofArkay_RapeChanceSlider_2")
+		_SetSliderOptionValue(oidRapeChanceSlider, fRapeChanceSlider, "$mrt_MarkofArkay_RapeChanceSlider_2")
 		ForcePageReset()
 	ElseIf (option == oidRapesMaxSlider)
 		fMaxRapes = value
-		SetSliderOptionValue(oidRapesMaxSlider, fMaxRapes, "$mrt_MarkofArkay_RapesMaxSlider_2")
+		_SetSliderOptionValue(oidRapesMaxSlider, fMaxRapes, "$mrt_MarkofArkay_RapesMaxSlider_2")
 		ForcePageReset()
 	ElseIf (option == oidRapistsMaxSlider)
 		fMaxRapists = value
-		SetSliderOptionValue(oidRapistsMaxSlider, fMaxRapists, "$mrt_MarkofArkay_RapistsMaxSlider_2")
+		_SetSliderOptionValue(oidRapistsMaxSlider, fMaxRapists, "$mrt_MarkofArkay_RapistsMaxSlider_2")
 		ForcePageReset()
 	ElseIf (option == oidTotalCustomRPSlotSlider)
 		fTotalCustomRPSlotSlider = value
 		SetCustomRPFlags()
-		SetSliderOptionValue(oidTotalCustomRPSlotSlider, fTotalCustomRPSlotSlider, "{0}")
+		_SetSliderOptionValue(oidTotalCustomRPSlotSlider, fTotalCustomRPSlotSlider, "{0}")
 	ElseIf (option == oidHealthTriggerSlider)
 		fHealthPercTrigger = value / 100.0
-		SetSliderOptionValue(oidHealthTriggerSlider, value, "$mrt_MarkofArkay_HealthPercSlider_2")
+		_SetSliderOptionValue(oidHealthTriggerSlider, value, "$mrt_MarkofArkay_HealthPercSlider_2")
 	EndIf
 EndEvent
 
@@ -2779,104 +2779,104 @@ EndEvent
 Event OnOptionMenuAccept(Int option, Int index)
 	If (option == oidTeleportLocation_M)
 		iTeleportLocation = index
-		SetMenuOptionValue(oidTeleportLocation_M, sRespawnPoints[iTeleportLocation])
+		_SetMenuOptionValue(oidTeleportLocation_M, sRespawnPoints[iTeleportLocation])
 		ForcePageReset()
 	ElseIf (option == oidTavern_M)
 		iTavernIndex = index
-		SetMenuOptionValue(oidTavern_M, sTaverns[iTavernIndex])
+		_SetMenuOptionValue(oidTavern_M, sTaverns[iTavernIndex])
 		ForcePageReset()
 	ElseIf (option == oidNoTradingAftermath_M)
 		iNotTradingAftermath = index
-		SetMenuOptionValue(oidNoTradingAftermath_M, sGetAftermathOptions()[iNotTradingAftermath])
+		_SetMenuOptionValue(oidNoTradingAftermath_M, sGetAftermathOptions()[iNotTradingAftermath])
 		ForcePageReset()
 	ElseIf (option == oidArkayCurses_M)
 	    iArkayCurse = index
-		SetMenuOptionValue(oidArkayCurses_M, sGetArkayCurses()[iArkayCurse])
+		_SetMenuOptionValue(oidArkayCurses_M, sGetArkayCurses()[iArkayCurse])
 	ElseIf (option == oidSelectedCustomRPSlot_M)
 	    iSelectedCustomRPSlot = index
 		SetCustomRPFlags()
-		SetMenuOptionValue(oidSelectedCustomRPSlot_M, shortenString(sCustomRPs[iSelectedCustomRPSlot],19))
+		_SetMenuOptionValue(oidSelectedCustomRPSlot_M, shortenString(sCustomRPs[iSelectedCustomRPSlot],19))
 	ElseIf (option == oidExtraTeleportLocation_M)
 	    iExternalIndex = index
-		SetMenuOptionValue(oidExtraTeleportLocation_M, shortenString(sExtraRPs[iExternalIndex],19))
+		_SetMenuOptionValue(oidExtraTeleportLocation_M, shortenString(sExtraRPs[iExternalIndex],19))
 	ElseIf (option == oidEnableSave_M)
 	    iSaveOption = index
 		SetSavingOption(iSaveOption)
-		SetMenuOptionValue(oidEnableSave_M, sGetSaveOptions()[iSaveOption])
+		_SetMenuOptionValue(oidEnableSave_M, sGetSaveOptions()[iSaveOption])
 	ElseIf (option == oidLoadPreset_M)
 		iLoadPreset = index
-		SetMenuOptionValue(oidLoadPreset_M, sGetPresets()[iLoadPreset])
+		_SetMenuOptionValue(oidLoadPreset_M, sGetPresets()[iLoadPreset])
 	ElseIf (option == oidSavePreset_M)
 		iSavePreset = index
-		SetMenuOptionValue(oidSavePreset_M, sGetPresets()[iSavePreset])
+		_SetMenuOptionValue(oidSavePreset_M, sGetPresets()[iSavePreset])
 	ElseIf (option == oidGhostShader)
 		iGhostShader = index
 		moaGhostShader.SetValueInt(iGhostShader)
-		SetMenuOptionValue(oidGhostShader, sGetGhostShader()[iGhostShader])
+		_SetMenuOptionValue(oidGhostShader, sGetGhostShader()[iGhostShader])
 	ElseIf (option == oidEquipInclude_M)
 		iLoseInclusion = index
-		SetMenuOptionValue(oidEquipInclude_M, sGetLoseInclusions()[iLoseInclusion])
+		_SetMenuOptionValue(oidEquipInclude_M, sGetLoseInclusions()[iLoseInclusion])
 		ForcePageReset()
 	ElseIf (option == oidRapistGender_M)
 		iRapistGender = index
-		SetMenuOptionValue(oidRapistGender_M, sGetGenders()[iRapistGender])
+		_SetMenuOptionValue(oidRapistGender_M, sGetGenders()[iRapistGender])
 		ForcePageReset()
 	ElseIf (option == oidSexInterface_M)
 		iSexInterface = index
-		SetMenuOptionValue(oidSexInterface_M, sGetSexInterface()[iSexInterface])
+		_SetMenuOptionValue(oidSexInterface_M, sGetSexInterface()[iSexInterface])
 		ForcePageReset()
 	ElseIf (option == oidHostileOptions_M)
 		iHostileOption = index
-		SetMenuOptionValue(oidHostileOptions_M, sGetHostileOptions()[iHostileOption])
+		_SetMenuOptionValue(oidHostileOptions_M, sGetHostileOptions()[iHostileOption])
 		ForcePageReset()
 	ElseIf (option == oidSpawns_M)
 		iSpawn = index
-		SetMenuOptionValue(oidSpawns_M, sGetSpawns()[iSpawn])
+		_SetMenuOptionValue(oidSpawns_M, sGetSpawns()[iSpawn])
 		ForcePageReset()
 	ElseIf (option == oidSpawnMinLevel_M)
 		iSpawnMinLevel = index
-		SetMenuOptionValue(oidSpawnMinLevel_M, sGetSpawnLevels()[iSpawnMinLevel])
+		_SetMenuOptionValue(oidSpawnMinLevel_M, sGetSpawnLevels()[iSpawnMinLevel])
 	ElseIf (option == oidSpawnMaxLevel_M)
 		iSpawnMaxLevel = index
-		SetMenuOptionValue(oidSpawnMaxLevel_M, sGetSpawnLevels()[iSpawnMaxLevel])
+		_SetMenuOptionValue(oidSpawnMaxLevel_M, sGetSpawnLevels()[iSpawnMaxLevel])
 	ElseIf (option == oidSkillReduce_M)
 		iReducedSkill = index
-		SetMenuOptionValue(oidSkillReduce_M, sGetSkills()[iReducedSkill])
+		_SetMenuOptionValue(oidSkillReduce_M, sGetSkills()[iReducedSkill])
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1 ) && (iReducedSkill != 0)
 			flags = OPTION_FLAG_NONE
-			SetOptionFlags(oidOnlyLoseSkillXP,flags,True)
+			_SetOptionFlags(oidOnlyLoseSkillXP,flags,True)
 			If bOnlyLoseSkillXP
-				SetOptionFlags(oidLevelReduce,flags,True)
-				SetOptionFlags(oidSkillReduceRandomVal,flags,True)
+				_SetOptionFlags(oidLevelReduce,flags,True)
+				_SetOptionFlags(oidSkillReduceRandomVal,flags,True)
 				;If bDLIEOK
 				;	flags =	OPTION_FLAG_NONE
 				;Else
 				;	flags =	OPTION_FLAG_DISABLED
 				;EndIf
-				;SetOptionFlags(oidLoseSkillForever,flags,True)
+				;_SetOptionFlags(oidLoseSkillForever,flags,True)
 				If !bSkillReduceRandomVal
 					flags =	OPTION_FLAG_NONE
 				Else
 					flags =	OPTION_FLAG_DISABLED
 				EndIf
-				SetOptionFlags(oidSkillReduceValSlider,flags,True)
+				_SetOptionFlags(oidSkillReduceValSlider,flags,True)
 				If bSkillReduceRandomVal
 					flags =	OPTION_FLAG_NONE
 				Else
 					flags = OPTION_FLAG_DISABLED
 				EndIf
-				SetOptionFlags(oidSkillReduceMinValSlider,flags,True)
-				SetOptionFlags(oidSkillReduceMaxValSlider,flags)
+				_SetOptionFlags(oidSkillReduceMinValSlider,flags,True)
+				_SetOptionFlags(oidSkillReduceMaxValSlider,flags)
 			EndIf
 		Else
 			flags = OPTION_FLAG_DISABLED
-			SetOptionFlags(oidLevelReduce,flags,True)
-			SetOptionFlags(oidOnlyLoseSkillXP,flags,True)
-			;SetOptionFlags(oidLoseSkillForever,flags,True)
-			SetOptionFlags(oidSkillReduceRandomVal,flags,True)
-			SetOptionFlags(oidSkillReduceValSlider,flags,True)
-			SetOptionFlags(oidSkillReduceMinValSlider,flags,True)
-			SetOptionFlags(oidSkillReduceMaxValSlider,flags)
+			_SetOptionFlags(oidLevelReduce,flags,True)
+			_SetOptionFlags(oidOnlyLoseSkillXP,flags,True)
+			;_SetOptionFlags(oidLoseSkillForever,flags,True)
+			_SetOptionFlags(oidSkillReduceRandomVal,flags,True)
+			_SetOptionFlags(oidSkillReduceValSlider,flags,True)
+			_SetOptionFlags(oidSkillReduceMinValSlider,flags,True)
+			_SetOptionFlags(oidSkillReduceMaxValSlider,flags)
 		EndIf
 		ForcePageReset()
 	EndIf
@@ -2886,594 +2886,594 @@ Event OnOptionDefault(Int option)
 	string page = CurrentPage
 	If (option == oidRevivalEnabled)
 		bIsRevivalEnabled = True
-		SetToggleOptionValue(oidRevivalEnabled, bIsRevivalEnabled)
+		_SetToggleOptionValue(oidRevivalEnabled, bIsRevivalEnabled)
 		ForcePageReset()
 	ElseIf (option == oidMarkOfArkayRevivalEnabled)
 		bIsMarkEnabled = True
 	ElseIf (option == oidMenuEnabled)
 		bIsMenuEnabled = True
-		SetToggleOptionValue(oidMenuEnabled, bIsMenuEnabled)
+		_SetToggleOptionValue(oidMenuEnabled, bIsMenuEnabled)
 		flags = OPTION_FLAG_DISABLED
-		SetOptionFlags(oidMarkPSlider, flags, True)
-		SetOptionFlags(oidDragonSoulPSlider, flags, True)
-		SetOptionFlags(oidBSoulGemPSlider, flags, True)
-		SetOptionFlags(oidGSoulGemPSlider, flags, True)
-		SetOptionFlags(oidGoldPSlider, flags)
+		_SetOptionFlags(oidMarkPSlider, flags, True)
+		_SetOptionFlags(oidDragonSoulPSlider, flags, True)
+		_SetOptionFlags(oidBSoulGemPSlider, flags, True)
+		_SetOptionFlags(oidGSoulGemPSlider, flags, True)
+		_SetOptionFlags(oidGoldPSlider, flags)
 	ElseIf (option == oidBSoulGemRevivalEnabled)
 		bIsBSoulGemEnabled = True
-		SetToggleOptionValue(oidBSoulGemRevivalEnabled, bIsBSoulGemEnabled)
+		_SetToggleOptionValue(oidBSoulGemRevivalEnabled, bIsBSoulGemEnabled)
 	ElseIf (option == oidGSoulGemRevivalEnabled)
 		bIsGSoulGemEnabled = True
-		SetToggleOptionValue(oidGSoulGemRevivalEnabled, bIsGSoulGemEnabled)
+		_SetToggleOptionValue(oidGSoulGemRevivalEnabled, bIsGSoulGemEnabled)
 	ElseIf (option == oidTradeEnabled)
 		bIsTradeEnabled = True
-		SetToggleOptionValue(oidTradeEnabled, bIsTradeEnabled)
+		_SetToggleOptionValue(oidTradeEnabled, bIsTradeEnabled)
 	ElseIf (option == oidGoldRevivalEnabled)
 		bIsGoldEnabled = True
-		SetToggleOptionValue(oidGoldRevivalEnabled, bIsGoldEnabled)
+		_SetToggleOptionValue(oidGoldRevivalEnabled, bIsGoldEnabled)
 	ElseIf (option == oidFollowerProtectPlayer)
 		bFollowerProtectPlayer = False
-		SetToggleOptionValue(oidFollowerProtectPlayer, bFollowerProtectPlayer)
+		_SetToggleOptionValue(oidFollowerProtectPlayer, bFollowerProtectPlayer)
 	ElseIf (option == oidPlayerProtectFollower)
 		bPlayerProtectFollower = False
-		SetToggleOptionValue(oidPlayerProtectFollower, bPlayerProtectFollower)
+		_SetToggleOptionValue(oidPlayerProtectFollower, bPlayerProtectFollower)
 	ElseIf (option == oidRetrySpawnWithoutLocation)
 		bRetrySpawnWithoutLocation = True
-		SetToggleOptionValue(oidRetrySpawnWithoutLocation, bRetrySpawnWithoutLocation)
+		_SetToggleOptionValue(oidRetrySpawnWithoutLocation, bRetrySpawnWithoutLocation)
 	ElseIf (option == oidSpawnByLocation)
 		bSpawnByLocation = True
-		SetToggleOptionValue(oidSpawnByLocation, bSpawnByLocation)
+		_SetToggleOptionValue(oidSpawnByLocation, bSpawnByLocation)
 		ForcePageReset()
 	ElseIf (option == oidSpawnCheckRelation)
 		bSpawnCheckRelation = True
-		SetToggleOptionValue(oidSpawnCheckRelation, bSpawnCheckRelation)
+		_SetToggleOptionValue(oidSpawnCheckRelation, bSpawnCheckRelation)
 	ElseIf (option == oidSpawnBringAllies)
 		bSpawnBringAllies = True
-		SetToggleOptionValue(oidSpawnBringAllies, bSpawnBringAllies)
+		_SetToggleOptionValue(oidSpawnBringAllies, bSpawnBringAllies)
 	ElseIf (option == oidNoFallDamageEnabled)
 		ToggleFallDamage(False)
-		SetToggleOptionValue(oidNoFallDamageEnabled, bIsNoFallDamageEnabled)
+		_SetToggleOptionValue(oidNoFallDamageEnabled, bIsNoFallDamageEnabled)
 	ElseIf (option == oidNotification)
 		bIsNotificationEnabled = False
-		SetToggleOptionValue(oidNotification, bIsNotificationEnabled)
+		_SetToggleOptionValue(oidNotification, bIsNotificationEnabled)
 	ElseIf (option == oidRespawnTimeSlider)
 		fRespawnTimeSlider = 0.0
-		SetSliderOptionValue(oidRespawnTimeSlider, fRespawnTimeSlider, "$mrt_MarkofArkay_RespawnTimeSlider_2")
+		_SetSliderOptionValue(oidRespawnTimeSlider, fRespawnTimeSlider, "$mrt_MarkofArkay_RespawnTimeSlider_2")
 	ElseIf (option == oidSpawnCountSlider)
 		iSpawnCounts[iSpawn] = 1
-		SetSliderOptionValue(oidSpawnCountSlider, iSpawnCounts[iSpawn], "$mrt_MarkofArkay_SpawnCountSlider_2")
+		_SetSliderOptionValue(oidSpawnCountSlider, iSpawnCounts[iSpawn], "$mrt_MarkofArkay_SpawnCountSlider_2")
 	ElseIf (option == oidSpawnWeightSlider)
 		iSpawnWeights[iSpawn] = 50
-		SetSliderOptionValue(oidSpawnWeightSlider, iSpawnWeights[iSpawn], "$mrt_MarkofArkay_SpawnWeightSlider_2")
+		_SetSliderOptionValue(oidSpawnWeightSlider, iSpawnWeights[iSpawn], "$mrt_MarkofArkay_SpawnWeightSlider_2")
 	ElseIf (option == oidFadeToBlack)
 		bFadeToBlack = True
-		SetToggleOptionValue(oidFadeToBlack, bFadeToBlack)
+		_SetToggleOptionValue(oidFadeToBlack, bFadeToBlack)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
-		SetOptionFlags(oidDeathEffect,flags)
+		_SetOptionFlags(oidDeathEffect,flags)
 	ElseIf (option == oidRagdollEffect)
 		bIsRagdollEnabled = False
-		SetToggleOptionValue(oidRagdollEffect, bIsRagdollEnabled)
+		_SetToggleOptionValue(oidRagdollEffect, bIsRagdollEnabled)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && (bFadeToBlack || bInvisibility)
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
-		SetOptionFlags(oidDeathEffect,flags)
+		_SetOptionFlags(oidDeathEffect,flags)
 	ElseIf (option == oidDisableUnsafe)
 		bDisableUnsafe = True
 		fRespawnTimeSlider = 0.0
-		SetToggleOptionValue(oidDisableUnsafe, bDisableUnsafe)
+		_SetToggleOptionValue(oidDisableUnsafe, bDisableUnsafe)
 		ForcePageReset()
 	ElseIf (option == oidInvisibility)
 		bInvisibility = False
-		SetToggleOptionValue(oidInvisibility, bInvisibility)
+		_SetToggleOptionValue(oidInvisibility, bInvisibility)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && !bIsRagdollEnabled && bFadeToBlack
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
-		SetOptionFlags(oidDeathEffect,flags)
+		_SetOptionFlags(oidDeathEffect,flags)
 		If !ReviveScript.moaPlayerGhostQuest.IsRunning()
 			PlayerRef.SetAlpha(1.0)
 		EndIf
 	ElseIf (option == oidDeathEffect)
 		bDeathEffect = True
-		SetToggleOptionValue(oidDeathEffect, bDeathEffect)
+		_SetToggleOptionValue(oidDeathEffect, bDeathEffect)
 	ElseIf (option == oidAltEyeFix)
 		bAltEyeFix = False
-		SetToggleOptionValue(oidAltEyeFix,bAltEyeFix)
+		_SetToggleOptionValue(oidAltEyeFix,bAltEyeFix)
 	ElseIf (option == oidLogging)
 		bIsLoggingEnabled = False
-		SetToggleOptionValue(oidLogging, bIsLoggingEnabled)
+		_SetToggleOptionValue(oidLogging, bIsLoggingEnabled)
 	ElseIf (option == oidSkillReduceValSlider)
 		fSkillReduceValSlider = 10.0
-		SetSliderOptionValue(oidSkillReduceValSlider, fSkillReduceValSlider, "$mrt_MarkofArkay_SkillReduceValSlider_2")	
+		_SetSliderOptionValue(oidSkillReduceValSlider, fSkillReduceValSlider, "$mrt_MarkofArkay_SkillReduceValSlider_2")	
 	ElseIf (option == oidPotionRevivalEnabled)
 		bIsPotionEnabled = False
-		SetToggleOptionValue(oidPotionRevivalEnabled, bIsPotionEnabled)
+		_SetToggleOptionValue(oidPotionRevivalEnabled, bIsPotionEnabled)
 	ElseIf (option == oidAutoDrinkPotion)
 		bAutoDrinkPotion = False
-		SetToggleOptionValue(oidAutoDrinkPotion, bAutoDrinkPotion) 
+		_SetToggleOptionValue(oidAutoDrinkPotion, bAutoDrinkPotion) 
 	ElseIf (option == oidDragonSoulSlider)
 		fValueSoulSlider = 1.0
-		SetSliderOptionValue(oidDragonSoulSlider, fValueSoulSlider, "$mrt_MarkofArkay_DragonSoulSlider_2")
+		_SetSliderOptionValue(oidDragonSoulSlider, fValueSoulSlider, "$mrt_MarkofArkay_DragonSoulSlider_2")
     ElseIf (option == oidMarkSlider)
 		fValueMarkSlider = 1.0
-		SetSliderOptionValue(oidMarkSlider, fValueMarkSlider, "$mrt_MarkofArkay_MarkSlider_2")
+		_SetSliderOptionValue(oidMarkSlider, fValueMarkSlider, "$mrt_MarkofArkay_MarkSlider_2")
     ElseIf (option == oidBSoulGemSlider)
 		fValueBSoulGemSlider = 1.0
-		SetSliderOptionValue(oidBSoulGemSlider, fValueBSoulGemSlider, "$mrt_MarkofArkay_BSoulGemSlider_2")
+		_SetSliderOptionValue(oidBSoulGemSlider, fValueBSoulGemSlider, "$mrt_MarkofArkay_BSoulGemSlider_2")
 	ElseIf (option == oidGSoulGemSlider)
 		fValueGSoulGemSlider = 1.0
-		SetSliderOptionValue(oidBSoulGemSlider, fValueGSoulGemSlider, "$mrt_MarkofArkay_GSoulGemSlider_2")
+		_SetSliderOptionValue(oidBSoulGemSlider, fValueGSoulGemSlider, "$mrt_MarkofArkay_GSoulGemSlider_2")
 	ElseIf (option == oidGoldSlider)
 		fValueGoldSlider = 1000.0
-		SetSliderOptionValue(oidGoldSlider, fValueGoldSlider, "$mrt_MarkofArkay_GoldSlider_2")
+		_SetSliderOptionValue(oidGoldSlider, fValueGoldSlider, "$mrt_MarkofArkay_GoldSlider_2")
 	ElseIf (option == oidGoldPSlider)
 		fGoldPSlider = 4.0
-		SetSliderOptionValue(oidGoldPSlider, fGoldPSlider, "{0}")
+		_SetSliderOptionValue(oidGoldPSlider, fGoldPSlider, "{0}")
 	ElseIf (option == oidDragonSoulPSlider)
 		fDragonSoulPSlider = 3.0
-		SetSliderOptionValue(oidDragonSoulPSlider, fDragonSoulPSlider, "{0}")
+		_SetSliderOptionValue(oidDragonSoulPSlider, fDragonSoulPSlider, "{0}")
 	ElseIf (option == oidBSoulGemPSlider)
 		fBSoulgemPSlider = 1.0
-		SetSliderOptionValue(oidBSoulGemPSlider, fBSoulgemPSlider, "{0}")
+		_SetSliderOptionValue(oidBSoulGemPSlider, fBSoulgemPSlider, "{0}")
 	ElseIf (option == oidGSoulGemPSlider)
 		fGSoulgemPSlider = 2.0
-		SetSliderOptionValue(oidGSoulGemPSlider, fGSoulgemPSlider, "{0}")
+		_SetSliderOptionValue(oidGSoulGemPSlider, fGSoulgemPSlider, "{0}")
 	ElseIf (option == oidMarkPSlider)
 		fMarkPSlider = 5.0
-		SetSliderOptionValue(oidMarkPSlider, fMarkPSlider, "{0}")
+		_SetSliderOptionValue(oidMarkPSlider, fMarkPSlider, "{0}")
 	ElseIf (option == oidSnoozeSlider)
 		fValueSnoozeSlider = 0.0
 		moaSnoozeState.SetValue(0.0)
-		SetSliderOptionValue(oidSnoozeSlider, fValueSnoozeSlider, "$mrt_MarkofArkay_RecoveryTime_2")
+		_SetSliderOptionValue(oidSnoozeSlider, fValueSnoozeSlider, "$mrt_MarkofArkay_RecoveryTime_2")
 	ElseIf (option == oidRecoveryTime)
 		fRecoveryTimeSlider = 1.0
-		SetSliderOptionValue(oidRecoveryTime, fRecoveryTimeSlider, "$mrt_MarkofArkay_RecoveryTime_2")
+		_SetSliderOptionValue(oidRecoveryTime, fRecoveryTimeSlider, "$mrt_MarkofArkay_RecoveryTime_2")
 	ElseIf (option == oidRPMinDistanceSlider)
 		fRPMinDistanceSlider = 500.0
 		moaRPMinDistance.SetValue(fRPMinDistanceSlider)
-		SetSliderOptionValue(oidRPMinDistanceSlider, fRPMinDistanceSlider, "{0}")
+		_SetSliderOptionValue(oidRPMinDistanceSlider, fRPMinDistanceSlider, "{0}")
 	ElseIf (option == oidDisChanceSlider)
 		fDisChanceSlider = 25.0
-		SetSliderOptionValue(oidDisChanceSlider, fDisChanceSlider, "$mrt_MarkofArkay_DisChanceSlider_2")
+		_SetSliderOptionValue(oidDisChanceSlider, fDisChanceSlider, "$mrt_MarkofArkay_DisChanceSlider_2")
 	ElseIf (option == oidDisProgChanceSlider)
 		fDisProgChanceSlider = 50.0
-		SetSliderOptionValue(oidDisProgChanceSlider, fDisProgChanceSlider, "$mrt_MarkofArkay_DisProgChanceSlider_2")
+		_SetSliderOptionValue(oidDisProgChanceSlider, fDisProgChanceSlider, "$mrt_MarkofArkay_DisProgChanceSlider_2")
 	ElseIf (option == oidDisPriceSlider)
 		fDisPriceSlider = 100.0
 		recalcCursedDisCureCosts()
-		SetSliderOptionValue(oidDisPriceSlider, fDisPriceSlider, "$mrt_MarkofArkay_DisPriceSlider_2")
+		_SetSliderOptionValue(oidDisPriceSlider, fDisPriceSlider, "$mrt_MarkofArkay_DisPriceSlider_2")
 	ElseIf (option == oidDisPriceMultSlider)
 		fDisPriceMultSlider = 0.5
 		recalcCursedDisCureCosts()
-		SetSliderOptionValue(oidDisPriceMultSlider, fDisPriceMultSlider, "$mrt_MarkofArkay_DisPriceMultSlider_2")
+		_SetSliderOptionValue(oidDisPriceMultSlider, fDisPriceMultSlider, "$mrt_MarkofArkay_DisPriceMultSlider_2")
 	ElseIf (option == oidMarkScaleSlider)
 		fValueMarkScaleSlider = 0.0
-		SetSliderOptionValue(oidMarkScaleSlider, fValueMarkScaleSlider, "$mrt_MarkofArkay_MarkScaleSlider_2")
+		_SetSliderOptionValue(oidMarkScaleSlider, fValueMarkScaleSlider, "$mrt_MarkofArkay_MarkScaleSlider_2")
 	ElseIf (option == oidGSoulScaleGemSlider)
 		fValueGSoulGemScaleSlider = 0.0
-		SetSliderOptionValue(oidGSoulScaleGemSlider, fValueGSoulGemScaleSlider, "$mrt_MarkofArkay_GSoulGemScaleSlider_2")
+		_SetSliderOptionValue(oidGSoulScaleGemSlider, fValueGSoulGemScaleSlider, "$mrt_MarkofArkay_GSoulGemScaleSlider_2")
 	ElseIf (option == oidBSoulScaleGemSlider)
 		fValueBSoulGemScaleSlider = 0.0
-		SetSliderOptionValue(oidBSoulScaleGemSlider, fValueBSoulGemScaleSlider, "$mrt_MarkofArkay_BSoulGemScaleSlider_2")
+		_SetSliderOptionValue(oidBSoulScaleGemSlider, fValueBSoulGemScaleSlider, "$mrt_MarkofArkay_BSoulGemScaleSlider_2")
 	ElseIf (option == oidDragonScaleSoulSlider)
 		fValueSoulScaleSlider = 0.0
-		SetSliderOptionValue(oidDragonScaleSoulSlider, fValueSoulScaleSlider, "$mrt_MarkofArkay_DragonSoulScaleSlider_2")
+		_SetSliderOptionValue(oidDragonScaleSoulSlider, fValueSoulScaleSlider, "$mrt_MarkofArkay_DragonSoulScaleSlider_2")
 	ElseIf (option == oidGoldScaleSlider)
 		fValueGoldScaleSlider = 0.0
-		SetSliderOptionValue(oidGoldScaleSlider, fValueGoldScaleSlider, "$mrt_MarkofArkay_GoldScaleSlider_2")
+		_SetSliderOptionValue(oidGoldScaleSlider, fValueGoldScaleSlider, "$mrt_MarkofArkay_GoldScaleSlider_2")
 	ElseIf (option == oidBleedoutTime)
 		fBleedoutTimeSlider = 6.0
-		SetSliderOptionValue(oidBleedoutTime, fBleedoutTimeSlider, "$mrt_MarkofArkay_RecoveryTime_2")	
+		_SetSliderOptionValue(oidBleedoutTime, fBleedoutTimeSlider, "$mrt_MarkofArkay_RecoveryTime_2")	
 	ElseIf (option == oidRecallCost)
 		fRecallCastSlider = 0.0
-		SetSliderOptionValue(oidRecallCost, fRecallCastSlider, "$mrt_MarkofArkay_MarkSlider_2")
+		_SetSliderOptionValue(oidRecallCost, fRecallCastSlider, "$mrt_MarkofArkay_MarkSlider_2")
 	ElseIf (option == oidMarkCost)
 		fMarkCastSlider = 0.0
-		SetSliderOptionValue(oidMarkCost, fMarkCastSlider, "$mrt_MarkofArkay_MarkSlider_2")
+		_SetSliderOptionValue(oidMarkCost, fMarkCastSlider, "$mrt_MarkofArkay_MarkSlider_2")
 	ElseIf (option == oidLootChanceSlider)
 		fLootChanceSlider = 50.0
-		SetSliderOptionValue(oidLootChanceSlider,fLootChanceSlider,"$mrt_MarkofArkay_LootChanceSlider_2")
+		_SetSliderOptionValue(oidLootChanceSlider,fLootChanceSlider,"$mrt_MarkofArkay_LootChanceSlider_2")
 		moaLootChance.SetValue(100.0 - fLootChanceSlider)
 	ElseIf (option == oidScrollChanceSlider)
 		fScrollChanceSlider = 25.0
-		SetSliderOptionValue(oidScrollChanceSlider,fScrollChanceSlider,"$mrt_MarkofArkay_LootChanceSlider_2")
+		_SetSliderOptionValue(oidScrollChanceSlider,fScrollChanceSlider,"$mrt_MarkofArkay_LootChanceSlider_2")
 		moaScrollChance.SetValue(100.0 - fScrollChanceSlider)
 	ElseIf (option == oidEffect)
 		bIsEffectEnabled = False
-		SetToggleOptionValue(oidEffect, bIsEffectEnabled)
+		_SetToggleOptionValue(oidEffect, bIsEffectEnabled)
 	ElseIf (option == oidRespawnPoint0)
 		bRespawnPointsFlags[0] = True
-		SetToggleOptionValue(oidRespawnPoint0,bRespawnPointsFlags[0])
+		_SetToggleOptionValue(oidRespawnPoint0,bRespawnPointsFlags[0])
 	ElseIf (option == oidRespawnPoint1)
 		bRespawnPointsFlags[1] = True
-		SetToggleOptionValue(oidRespawnPoint1,bRespawnPointsFlags[1])
+		_SetToggleOptionValue(oidRespawnPoint1,bRespawnPointsFlags[1])
 	ElseIf (option == oidRespawnPoint2)
 		bRespawnPointsFlags[2] = True
-		SetToggleOptionValue(oidRespawnPoint2,bRespawnPointsFlags[2])
+		_SetToggleOptionValue(oidRespawnPoint2,bRespawnPointsFlags[2])
 	ElseIf (option == oidRespawnPoint3)
 		bRespawnPointsFlags[3] = True
-		SetToggleOptionValue(oidRespawnPoint3,bRespawnPointsFlags[3])
+		_SetToggleOptionValue(oidRespawnPoint3,bRespawnPointsFlags[3])
 	ElseIf (option == oidRespawnPoint4)
 		bRespawnPointsFlags[4] = True
-		SetToggleOptionValue(oidRespawnPoint4,bRespawnPointsFlags[4])
+		_SetToggleOptionValue(oidRespawnPoint4,bRespawnPointsFlags[4])
 	ElseIf (option == oidRespawnPoint5)
 		bRespawnPointsFlags[5] = True
-		SetToggleOptionValue(oidRespawnPoint5,bRespawnPointsFlags[5])
+		_SetToggleOptionValue(oidRespawnPoint5,bRespawnPointsFlags[5])
 	ElseIf (option == oidRespawnPoint6)
 		bRespawnPointsFlags[6] = True
-		SetToggleOptionValue(oidRespawnPoint6,bRespawnPointsFlags[6])
+		_SetToggleOptionValue(oidRespawnPoint6,bRespawnPointsFlags[6])
 	ElseIf (option == oidRespawnPoint7)
 		bRespawnPointsFlags[7] = False
-		SetToggleOptionValue(oidRespawnPoint7,bRespawnPointsFlags[7])
+		_SetToggleOptionValue(oidRespawnPoint7,bRespawnPointsFlags[7])
 	ElseIf (option == oidRespawnPoint8)
 		bRespawnPointsFlags[8] = True
-		SetToggleOptionValue(oidRespawnPoint8,bRespawnPointsFlags[8])
+		_SetToggleOptionValue(oidRespawnPoint8,bRespawnPointsFlags[8])
 	ElseIf (option == oidRespawnPoint9)
 		bRespawnPointsFlags[9] = True
-		SetToggleOptionValue(oidRespawnPoint9,bRespawnPointsFlags[9])
+		_SetToggleOptionValue(oidRespawnPoint9,bRespawnPointsFlags[9])
 	ElseIf (option == oidRevivalRequireBlessing)
 		bIsRevivalRequiresBlessing = False
-		SetToggleOptionValue(oidRevivalRequireBlessing, bIsRevivalRequiresBlessing)	
+		_SetToggleOptionValue(oidRevivalRequireBlessing, bIsRevivalRequiresBlessing)	
 	ElseIf (option == oidRecallRestriction)
 		bIsRecallRestricted = True
-		SetToggleOptionValue(oidRecallRestriction, bIsRecallRestricted)	
+		_SetToggleOptionValue(oidRecallRestriction, bIsRecallRestricted)	
 	ElseIf (option == oidShiftBack)
 		bShiftBack = False
-		SetToggleOptionValue(oidShiftBack,bShiftBack)
+		_SetToggleOptionValue(oidShiftBack,bShiftBack)
 	ElseIf (option == oidShiftBackRespawn)
 		bShiftBackRespawn = False
-		SetToggleOptionValue(oidShiftBackRespawn,bShiftBackRespawn)
+		_SetToggleOptionValue(oidShiftBackRespawn,bShiftBackRespawn)
 	ElseIf (option == oidRespawnNaked)
 		bRespawnNaked = False
-		SetToggleOptionValue(oidRespawnNaked,bRespawnNaked)
+		_SetToggleOptionValue(oidRespawnNaked,bRespawnNaked)
 	ElseIf (option == oidCorpseAsSoulMark)
 		bCorpseAsSoulMark = False
-		SetToggleOptionValue(oidCorpseAsSoulMark,bCorpseAsSoulMark)
+		_SetToggleOptionValue(oidCorpseAsSoulMark,bCorpseAsSoulMark)
 	ElseIf (option == oidRespawnMenu)
 		bRespawnMenu = False
-		SetToggleOptionValue(oidRespawnMenu,bRespawnMenu)
+		_SetToggleOptionValue(oidRespawnMenu,bRespawnMenu)
 		flags = OPTION_FLAG_NONE
 	ElseIf (option == oidTeleportMenu)
 		bTeleportMenu = True
-		SetToggleOptionValue(oidTeleportMenu,bTeleportMenu)
+		_SetToggleOptionValue(oidTeleportMenu,bTeleportMenu)
 	ElseIf (option == oidMultipleDis)
 		bMultipleDis = True
-		SetToggleOptionValue(oidMultipleDis,bMultipleDis)
+		_SetToggleOptionValue(oidMultipleDis,bMultipleDis)
 	ElseIf (option == oidDiseaseCurse)
 		bDiseaseCurse = False
-		SetToggleOptionValue(oidDiseaseCurse,bDiseaseCurse)
+		_SetToggleOptionValue(oidDiseaseCurse,bDiseaseCurse)
 		ForcePageReset()
 	ElseIf (option == oidMultipleDisProg)
 		bMultipleDisProg = True
-		SetToggleOptionValue(oidMultipleDisProg,bMultipleDisProg)
+		_SetToggleOptionValue(oidMultipleDisProg,bMultipleDisProg)
 	ElseIf (option == oidOnlyInfectIfHasBaseDis)
 		bOnlyInfectIfHasBaseDis = True
-		SetToggleOptionValue(oidOnlyInfectIfHasBaseDis,bOnlyInfectIfHasBaseDis)
+		_SetToggleOptionValue(oidOnlyInfectIfHasBaseDis,bOnlyInfectIfHasBaseDis)
 	ElseIf (option == oidSoulMarkCureDiseases)
 		bSoulMarkCureDiseases = False
-		SetToggleOptionValue(oidSoulMarkCureDiseases,bSoulMarkCureDiseases)
+		_SetToggleOptionValue(oidSoulMarkCureDiseases,bSoulMarkCureDiseases)
 	ElseIf (option == oidCureDisIfHasBlessing)
 		bCureDisIfHasBlessing = False
 		moaCureDisIfHasBlessing.SetValueInt(0)
-		SetToggleOptionValue(oidCureDisIfHasBlessing,bCureDisIfHasBlessing)
+		_SetToggleOptionValue(oidCureDisIfHasBlessing,bCureDisIfHasBlessing)
 	ElseIf (option == oidTotalCustomRPSlotSlider)
 		fTotalCustomRPSlotSlider = 1.0
 		SetCustomRPFlags()
-		SetSliderOptionValue(oidTotalCustomRPSlotSlider,fTotalCustomRPSlotSlider,"$mrt_MarkofArkay_TotalCustomRPSlotSlider_1")
+		_SetSliderOptionValue(oidTotalCustomRPSlotSlider,fTotalCustomRPSlotSlider,"$mrt_MarkofArkay_TotalCustomRPSlotSlider_1")
 	ElseIf (option == oidSelectedCustomRPSlot_M)
 		iSelectedCustomRPSlot = 0
 		SetCustomRPFlags()
-		SetMenuOptionValue(oidSelectedCustomRPSlot_M, shortenString(sCustomRPs[iSelectedCustomRPSlot],19))
+		_SetMenuOptionValue(oidSelectedCustomRPSlot_M, shortenString(sCustomRPs[iSelectedCustomRPSlot],19), False)
 	ElseIf (option == oidExtraTeleportLocation_M)
 		iExternalIndex = moaERPCount.GetValueInt()
-		SetMenuOptionValue(oidExtraTeleportLocation_M, shortenString(sExtraRPs[iExternalIndex],19))
+		_SetMenuOptionValue(oidExtraTeleportLocation_M, shortenString(sExtraRPs[iExternalIndex],19), False)
 	ElseIf (option == oidJail)
 		bSendToJail = False
-		SetToggleOptionValue(oidJail,bSendToJail)
+		_SetToggleOptionValue(oidJail,bSendToJail)
 	ElseIf (option == oidDoNotStopCombat)
 		bDoNotStopCombat = False
-		SetToggleOptionValue(oidDoNotStopCombat,bDoNotStopCombat)
+		_SetToggleOptionValue(oidDoNotStopCombat,bDoNotStopCombat)
 	ElseIf (option == oidDoNotStopCombatAfterRevival)
 		bDoNotStopCombatAfterRevival = True
-		SetToggleOptionValue(oidDoNotStopCombatAfterRevival,bDoNotStopCombatAfterRevival)
+		_SetToggleOptionValue(oidDoNotStopCombatAfterRevival,bDoNotStopCombatAfterRevival)
 	ElseIf (option == oidKillIfCantRespawn)
 		bKillIfCantRespawn = False
-		SetToggleOptionValue(oidKillIfCantRespawn,bKillIfCantRespawn)
+		_SetToggleOptionValue(oidKillIfCantRespawn,bKillIfCantRespawn)
 	ElseIf (option == oidCanbeKilledbyUnarmed)
 		bCanbeKilledbyUnarmed = True
-		SetToggleOptionValue(oidCanbeKilledbyUnarmed,bCanbeKilledbyUnarmed)
+		_SetToggleOptionValue(oidCanbeKilledbyUnarmed,bCanbeKilledbyUnarmed)
 	;ElseIf (option == oidLoseSkillForever)
 	;	bLoseSkillForever = False
-	;	SetToggleOptionValue(oidLoseSkillForever,bLoseSkillForever)
+	;	_SetToggleOptionValue(oidLoseSkillForever,bLoseSkillForever)
 	ElseIf (option == oidHealActors)
 		bHealActors = False
-		SetToggleOptionValue(oidHealActors,bHealActors)
+		_SetToggleOptionValue(oidHealActors,bHealActors)
 	ElseIf (option == oidResurrectActors)
 		bResurrectActors = False
-		SetToggleOptionValue(oidResurrectActors,bResurrectActors)
+		_SetToggleOptionValue(oidResurrectActors,bResurrectActors)
 	ElseIf (option == oidShowRaceMenu)
 		bShowRaceMenu = False
-		SetToggleOptionValue(oidShowRaceMenu,bShowRaceMenu)
+		_SetToggleOptionValue(oidShowRaceMenu,bShowRaceMenu)
 	ElseIf (option == oidArkayCurse)
 		bArkayCurse = False
-		SetToggleOptionValue(oidArkayCurse,bArkayCurse)
+		_SetToggleOptionValue(oidArkayCurse,bArkayCurse)
 		flags = OPTION_FLAG_DISABLED
-		SetOptionFlags(oidArkayCurses_M, flags,True)
-		SetOptionFlags(oidTempArkayCurse, flags,True)
+		_SetOptionFlags(oidArkayCurses_M, flags,True)
+		_SetOptionFlags(oidTempArkayCurse, flags,True)
 		If  (( bIsRevivalEnabled ) && ( iNotTradingAftermath == 1 ))
 			flags = OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
-		SetOptionFlags(oidSoulMarkStay, flags)
+		_SetOptionFlags(oidSoulMarkStay, flags)
 	ElseIf (option == oidTempArkayCurse)
 		bIsArkayCurseTemporary = False
-		SetToggleOptionValue(oidTempArkayCurse,bIsArkayCurseTemporary)
+		_SetToggleOptionValue(oidTempArkayCurse,bIsArkayCurseTemporary)
 	ElseIf (option == oidSkillReduce_M)
 		iReducedSkill = 0
-		SetMenuOptionValue(oidSkillReduce_M, sGetSkills()[iReducedSkill])
+		_SetMenuOptionValue(oidSkillReduce_M, sGetSkills()[iReducedSkill], False)
 		flags = OPTION_FLAG_DISABLED
-		SetOptionFlags(oidLevelReduce,flags,True)
-		SetOptionFlags(oidOnlyLoseSkillXP,flags,True)
-		;SetOptionFlags(oidLoseSkillForever,flags,True)
-		SetOptionFlags(oidSkillReduceRandomVal,flags,True)
-		SetOptionFlags(oidSkillReduceValSlider,flags,True)
-		SetOptionFlags(oidSkillReduceMinValSlider,flags,True)
-		SetOptionFlags(oidSkillReduceMaxValSlider,flags)
+		_SetOptionFlags(oidLevelReduce,flags,True)
+		_SetOptionFlags(oidOnlyLoseSkillXP,flags,True)
+		;_SetOptionFlags(oidLoseSkillForever,flags,True)
+		_SetOptionFlags(oidSkillReduceRandomVal,flags,True)
+		_SetOptionFlags(oidSkillReduceValSlider,flags,True)
+		_SetOptionFlags(oidSkillReduceMinValSlider,flags,True)
+		_SetOptionFlags(oidSkillReduceMaxValSlider,flags)
 		ForcePageReset()
 	ElseIf (option == oidEquipInclude_M)
 		iLoseInclusion = 0
-		SetMenuOptionValue(oidEquipInclude_M, sGetLoseInclusions()[iLoseInclusion])
+		_SetMenuOptionValue(oidEquipInclude_M, sGetLoseInclusions()[iLoseInclusion], False)
 		ForcePageReset()
 	ElseIf (option == oidRapistGender_M)
 		iRapistGender = 0
-		SetMenuOptionValue(oidRapistGender_M, sGetGenders()[iRapistGender])
+		_SetMenuOptionValue(oidRapistGender_M, sGetGenders()[iRapistGender], False)
 		ForcePageReset()
 	ElseIf (option == oidSexInterface_M)
 		iSexInterface = 0
-		SetMenuOptionValue(oidSexInterface_M, sGetSexInterface()[iSexInterface])
+		_SetMenuOptionValue(oidSexInterface_M, sGetSexInterface()[iSexInterface], False)
 		ForcePageReset()
 	ElseIf (option == oidSkillReduceRandomVal)
 		bSkillReduceRandomVal = False
-		SetToggleOptionValue(oidSkillReduceRandomVal,bSkillReduceRandomVal)
-		SetOptionFlags(oidSkillReduceMinValSlider,OPTION_FLAG_DISABLED,True)
-		SetOptionFlags(oidSkillReduceMaxValSlider,OPTION_FLAG_DISABLED,True)
+		_SetToggleOptionValue(oidSkillReduceRandomVal,bSkillReduceRandomVal)
+		_SetOptionFlags(oidSkillReduceMinValSlider,OPTION_FLAG_DISABLED,True)
+		_SetOptionFlags(oidSkillReduceMaxValSlider,OPTION_FLAG_DISABLED,True)
 		If ( moaState.getValue() == 1 ) && bIsRevivalEnabled && ( iNotTradingAftermath == 1 ) && (iReducedSkill != 0)
 			flags =	OPTION_FLAG_NONE
 		Else
 			flags = OPTION_FLAG_DISABLED
 		EndIf
-		SetOptionFlags(oidSkillReduceValSlider,Flags)
+		_SetOptionFlags(oidSkillReduceValSlider,Flags)
 	ElseIf (option == oidCreaturesCanSteal )
 		bCreaturesCanSteal = False
 		moaCreaturesCanSteal.SetValue(bCreaturesCanSteal As Int)
-		SetToggleOptionValue(oidCreaturesCanSteal ,bCreaturesCanSteal)
+		_SetToggleOptionValue(oidCreaturesCanSteal ,bCreaturesCanSteal)
 	ElseIf (option == oidNPCHasLevelRange)
 		bNPCHasLevelRange = False
 		moaNPCHasLevelRange.SetValue(bNPCHasLevelRange As Int)
-		SetToggleOptionValue(oidNPCHasLevelRange ,bNPCHasLevelRange)
+		_SetToggleOptionValue(oidNPCHasLevelRange ,bNPCHasLevelRange)
 		ForcePageReset()
 	ElseIf (option == oidSpawnHostile )
 		bSpawnHostile = False
-		SetToggleOptionValue(oidSpawnHostile ,bSpawnHostile)
+		_SetToggleOptionValue(oidSpawnHostile ,bSpawnHostile)
 		ForcePageReset()
 	ElseIf (option == oidBossChestOnlyCurLoc )
 		bBossChestOnlyCurLoc = False
 		moaOnlyInCurLocChest.SetValueInt(0)
-		SetToggleOptionValue(oidBossChestOnlyCurLoc ,bBossChestOnlyCurLoc)
+		_SetToggleOptionValue(oidBossChestOnlyCurLoc ,bBossChestOnlyCurLoc)
 	ElseIf (option == oidBossChestNotClearedLoc )
 		bBossChestNotInClearedLoc = True
 		moaBossChestNotInclearedLoc.SetValueInt(0)
-		SetToggleOptionValue(oidBossChestNotClearedLoc ,bBossChestNotInClearedLoc)
+		_SetToggleOptionValue(oidBossChestNotClearedLoc ,bBossChestNotInClearedLoc)
 	ElseIf (option == oidOnlyEnslavedByEnemyFaction )
 		bOnlyEnslavedByEnemyFaction = False
-		SetToggleOptionValue(oidOnlyEnslavedByEnemyFaction ,bOnlyEnslavedByEnemyFaction)
+		_SetToggleOptionValue(oidOnlyEnslavedByEnemyFaction ,bOnlyEnslavedByEnemyFaction)
 	ElseIf (option == oidSlaveryOnlyAfterRape )
 		bSlaveryOnlyAfterRape = False
-		SetToggleOptionValue(oidSlaveryOnlyAfterRape ,bSlaveryOnlyAfterRape)
+		_SetToggleOptionValue(oidSlaveryOnlyAfterRape ,bSlaveryOnlyAfterRape)
 	ElseIf (option == oidOnlyHostilesRape )
 		bOnlyHostilesRape = True
-		SetToggleOptionValue(oidOnlyHostilesRape ,bOnlyHostilesRape)
+		_SetToggleOptionValue(oidOnlyHostilesRape ,bOnlyHostilesRape)
 	ElseIf (option == oidAlwaysSpawn )
 		bAlwaysSpawn = False
-		SetToggleOptionValue(oidAlwaysSpawn ,bAlwaysSpawn)
+		_SetToggleOptionValue(oidAlwaysSpawn ,bAlwaysSpawn)
 	ElseIf (option == oidOnlySpawn )
 		bOnlySpawn = False
-		SetToggleOptionValue(oidOnlySpawn ,bOnlySpawn)
+		_SetToggleOptionValue(oidOnlySpawn ,bOnlySpawn)
 	ElseIf (option == oidMoralityMatters )
 		bMoralityMatters = True
 		moaMoralityMatters.SetValue(bMoralityMatters As Int)
-		SetToggleOptionValue(oidMoralityMatters ,bMoralityMatters)
+		_SetToggleOptionValue(oidMoralityMatters ,bMoralityMatters)
 	ElseIf (option == oidLoseforever)
 		bLoseForever = False
-		SetToggleOptionValue(oidLoseforever,bLoseForever)
+		_SetToggleOptionValue(oidLoseforever,bLoseForever)
 	ElseIf (option == oidRandomItemCurse)
 		bRandomItemCurse = False
-		SetToggleOptionValue(oidRandomItemCurse,bRandomItemCurse)
+		_SetToggleOptionValue(oidRandomItemCurse,bRandomItemCurse)
 	ElseIf (option == oidMoreRandomRespawn)
 		bMoreRandomRespawn = False
-		SetToggleOptionValue(oidMoreRandomRespawn,bMoreRandomRespawn)
+		_SetToggleOptionValue(oidMoreRandomRespawn,bMoreRandomRespawn)
 	ElseIf (option == oidMinLoseGoldSlider)
 		fMinLoseGoldSlider = 50.0
-		SetSliderOptionValue(oidMinLoseGoldSlider, fMinLoseGoldSlider, "{0}")
+		_SetSliderOptionValue(oidMinLoseGoldSlider, fMinLoseGoldSlider, "{0}")
 	ElseIf (option == oidMaxLoseGoldSlider)
 		fMaxLoseGoldSlider = 250.0
-		SetSliderOptionValue(oidMaxLoseGoldSlider, fMaxLoseGoldSlider, "{0}")
+		_SetSliderOptionValue(oidMaxLoseGoldSlider, fMaxLoseGoldSlider, "{0}")
 	ElseIf (option == oidLoseGoldAll)
 		bLoseGoldAll = False
-		SetToggleOptionValue(oidLoseGoldAll,bLoseGoldAll)
+		_SetToggleOptionValue(oidLoseGoldAll,bLoseGoldAll)
 	ElseIf (option == oidLoseItem)
 		bLoseItem = False
-		SetToggleOptionValue(oidLoseItem,bLoseItem)
+		_SetToggleOptionValue(oidLoseItem,bLoseItem)
 		forcePageReset()
 	ElseIf (option == oidLoseArkayMarkAll)
 		bLoseArkayMarkAll = False
-		SetToggleOptionValue(oidLoseArkayMarkAll,bLoseArkayMarkAll)
+		_SetToggleOptionValue(oidLoseArkayMarkAll,bLoseArkayMarkAll)
 		forcePageReset()
 	ElseIf (option == oidMinLoseArkayMarkSlider)
 		fMinLoseArkayMarkSlider = 0.0
-		SetSliderOptionValue(oidMinLoseArkayMarkSlider, fMinLoseArkayMarkSlider, "{0}")
+		_SetSliderOptionValue(oidMinLoseArkayMarkSlider, fMinLoseArkayMarkSlider, "{0}")
 	ElseIf (option == oidMaxLoseArkayMarkSlider)
 		fMaxLoseArkayMarkSlider = 1.0
-		SetSliderOptionValue(oidMaxLoseArkayMarkSlider, fMaxLoseArkayMarkSlider, "{0}")
+		_SetSliderOptionValue(oidMaxLoseArkayMarkSlider, fMaxLoseArkayMarkSlider, "{0}")
 	ElseIf (option == oidLoseDragonSoulAll)
 		bLoseDragonSoulAll = False
-		SetToggleOptionValue(oidLoseDragonSoulAll,bLoseDragonSoulAll)
+		_SetToggleOptionValue(oidLoseDragonSoulAll,bLoseDragonSoulAll)
 		forcePageReset()
 	ElseIf (option == oidMinLoseDragonSoulSlider)
 		fMinLoseDragonSoulSlider = 0.0
-		SetSliderOptionValue(oidMinLoseDragonSoulSlider, fMinLoseDragonSoulSlider, "{0}")
+		_SetSliderOptionValue(oidMinLoseDragonSoulSlider, fMinLoseDragonSoulSlider, "{0}")
 	ElseIf (option == oidMaxLoseDragonSoulSlider)
 		fMaxLoseDragonSoulSlider = 1.0
-		SetSliderOptionValue(oidMaxLoseDragonSoulSlider, fMaxLoseDragonSoulSlider, "{0}")
+		_SetSliderOptionValue(oidMaxLoseDragonSoulSlider, fMaxLoseDragonSoulSlider, "{0}")
 	ElseIf (option == oidLoseBlackSoulGemAll)
 		bLoseBlackSoulGemAll = False
-		SetToggleOptionValue(oidLoseBlackSoulGemAll,bLoseBlackSoulGemAll)
+		_SetToggleOptionValue(oidLoseBlackSoulGemAll,bLoseBlackSoulGemAll)
 		forcePageReset()
 	ElseIf (option == oidMinLoseBlackSoulGemSlider)
 		fMinLoseBlackSoulGemSlider = 0.0
-		SetSliderOptionValue(oidMinLoseBlackSoulGemSlider, fMinLoseBlackSoulGemSlider, "{0}")
+		_SetSliderOptionValue(oidMinLoseBlackSoulGemSlider, fMinLoseBlackSoulGemSlider, "{0}")
 	ElseIf (option == oidMaxLoseBlackSoulGemSlider)
 		fMaxLoseBlackSoulGemSlider = 1.0
-		SetSliderOptionValue(oidMaxLoseBlackSoulGemSlider, fMaxLoseBlackSoulGemSlider, "{0}")
+		_SetSliderOptionValue(oidMaxLoseBlackSoulGemSlider, fMaxLoseBlackSoulGemSlider, "{0}")
 	ElseIf (option == oidLoseGrandSoulGemAll)
 		bLoseGrandSoulGemAll = False
-		SetToggleOptionValue(oidLoseGrandSoulGemAll,bLoseGrandSoulGemAll)
+		_SetToggleOptionValue(oidLoseGrandSoulGemAll,bLoseGrandSoulGemAll)
 		forcePageReset()
 	ElseIf (option == oidMinLoseGrandSoulGemSlider)
 		fMinLoseGrandSoulGemSlider = 0.0
-		SetSliderOptionValue(oidMinLoseGrandSoulGemSlider, fMinLoseGrandSoulGemSlider, "{0}")
+		_SetSliderOptionValue(oidMinLoseGrandSoulGemSlider, fMinLoseGrandSoulGemSlider, "{0}")
 	ElseIf (option == oidMaxLoseGrandSoulGemSlider)
 		fMaxLoseGrandSoulGemSlider = 1.0
-		SetSliderOptionValue(oidMaxLoseGrandSoulGemSlider, fMaxLoseGrandSoulGemSlider, "{0}")
+		_SetSliderOptionValue(oidMaxLoseGrandSoulGemSlider, fMaxLoseGrandSoulGemSlider, "{0}")
 	ElseIf (option == oidLoseOtherMinValueSlider)
 		fLoseOtherMinValueSlider = 0.0
-		SetSliderOptionValue(oidLoseOtherMinValueSlider, fLoseOtherMinValueSlider, "{0}")
+		_SetSliderOptionValue(oidLoseOtherMinValueSlider, fLoseOtherMinValueSlider, "{0}")
 	ElseIf (option == oidLoseOtherTotalValueSlider)
 		fLoseOtherTotalValueSlider = 0.0
-		SetSliderOptionValue(oidLoseOtherTotalValueSlider, fLoseOtherTotalValueSlider, "{0}")
+		_SetSliderOptionValue(oidLoseOtherTotalValueSlider, fLoseOtherTotalValueSlider, "{0}")
 	ElseIf (option == oidMaxItemsToCheckSlider)
 		fMaxItemsToCheckSlider = 100.0
-		SetSliderOptionValue(oidMaxItemsToCheckSlider, fMaxItemsToCheckSlider, "{0}")
+		_SetSliderOptionValue(oidMaxItemsToCheckSlider, fMaxItemsToCheckSlider, "{0}")
 	ElseIf (option == oidLowerNPCMaxLvlDiff)
 		fLowerNPCMaxLvlDiff = 10.0
-		SetSliderOptionValue(oidLowerNPCMaxLvlDiff, fLowerNPCMaxLvlDiff, "{0}")
+		_SetSliderOptionValue(oidLowerNPCMaxLvlDiff, fLowerNPCMaxLvlDiff, "{0}")
 	ElseIf (option == oidHigherNPCMaxLvlDiff)
 		fHigherNPCMaxLvlDiff = 10.0
-		SetSliderOptionValue(oidHigherNPCMaxLvlDiff, fHigherNPCMaxLvlDiff, "{0}")
+		_SetSliderOptionValue(oidHigherNPCMaxLvlDiff, fHigherNPCMaxLvlDiff, "{0}")
 	ElseIf (option == oidBossChestChanceSlider)
 		fBossChestChanceSlider = 0.0
-		SetSliderOptionValue(oidBossChestChanceSlider, fBossChestChanceSlider, "$mrt_MarkofArkay_BossChestChanceSlider_2")
+		_SetSliderOptionValue(oidBossChestChanceSlider, fBossChestChanceSlider, "$mrt_MarkofArkay_BossChestChanceSlider_2")
 		ForcePageReset()
 	ElseIf (option == oidSimpleSlaveryChanceSlider)
 		fSimpleSlaveryChanceSlider = 0.0
-		SetSliderOptionValue(oidSimpleSlaveryChanceSlider, fSimpleSlaveryChanceSlider, "$mrt_MarkofArkay_SimpleSlaveryChanceSlider_2")
+		_SetSliderOptionValue(oidSimpleSlaveryChanceSlider, fSimpleSlaveryChanceSlider, "$mrt_MarkofArkay_SimpleSlaveryChanceSlider_2")
 		ForcePageReset()
 	ElseIf (option == oidRapeChanceSlider)
 		fRapeChanceSlider = 0.0
-		SetSliderOptionValue(oidRapeChanceSlider, fRapeChanceSlider, "$mrt_MarkofArkay_RapeChanceSlider_2")
+		_SetSliderOptionValue(oidRapeChanceSlider, fRapeChanceSlider, "$mrt_MarkofArkay_RapeChanceSlider_2")
 		ForcePageReset()
 	ElseIf (option == oidRapesMaxSlider)
 		fMaxRapes = 1.0
-		SetSliderOptionValue(oidRapesMaxSlider, fMaxRapes, "$mrt_MarkofArkay_RapesMaxSlider_2")
+		_SetSliderOptionValue(oidRapesMaxSlider, fMaxRapes, "$mrt_MarkofArkay_RapesMaxSlider_2")
 		ForcePageReset()
 	ElseIf (option == oidRapistsMaxSlider)
 		fMaxRapists = 1.0
-		SetSliderOptionValue(oidRapistsMaxSlider, fMaxRapists, "$mrt_MarkofArkay_RapistsMaxSlider_2")
+		_SetSliderOptionValue(oidRapistsMaxSlider, fMaxRapists, "$mrt_MarkofArkay_RapistsMaxSlider_2")
 		ForcePageReset()
 	ElseIf (option == oidHealthTriggerSlider)
 		fHealthPercTrigger = 0.00
-		SetSliderOptionValue(oidHealthTriggerSlider, fHealthPercTrigger * 100, "mrt_MarkofArkay_HealthPercSlider_2")
+		_SetSliderOptionValue(oidHealthTriggerSlider, fHealthPercTrigger * 100, "mrt_MarkofArkay_HealthPercSlider_2")
 	ElseIf (option == oidExcludeQuestItems)		
 		bExcludeQuestItems = True
-		SetToggleOptionValue(oidExcludeQuestItems,bExcludeQuestItems)
+		_SetToggleOptionValue(oidExcludeQuestItems,bExcludeQuestItems, False)
 	ElseIf (option == oidLoseGold)
 		bLoseGold = True
-		SetToggleOptionValue(oidLoseGold,bLoseGold)
+		_SetToggleOptionValue(oidLoseGold,bLoseGold, False)
 		forcePageReset()
 	ElseIf (option == oidLoseArkayMark)
 		bLoseArkayMark = False
-		SetToggleOptionValue(oidLoseArkayMark,bLoseArkayMark)
+		_SetToggleOptionValue(oidLoseArkayMark,bLoseArkayMark, False)
 		forcePageReset()
 	ElseIf (option == oidLoseBlackSoulGem)
 		bLoseBlackSoulGem = False
-		SetToggleOptionValue(oidLoseBlackSoulGem,bLoseBlackSoulGem)
+		_SetToggleOptionValue(oidLoseBlackSoulGem,bLoseBlackSoulGem, False)
 		forcePageReset()
 	ElseIf (option == oidLoseGrandSoulGem)
 		bLoseGrandSoulGem = False
-		SetToggleOptionValue(oidLoseGrandSoulGem,bLoseGrandSoulGem)
+		_SetToggleOptionValue(oidLoseGrandSoulGem,bLoseGrandSoulGem, False)
 		forcePageReset()
 	ElseIf (option == oidLoseDragonSoul)
 		bLoseDragonSoul = False
-		SetToggleOptionValue(oidLoseDragonSoul,bLoseDragonSoul)
+		_SetToggleOptionValue(oidLoseDragonSoul,bLoseDragonSoul, False)
 		forcePageReset()
 	ElseIf (option == oidLoseOthers)
 		bLoseOthers = False
-		SetToggleOptionValue(oidLoseOthers,bLoseOthers)
+		_SetToggleOptionValue(oidLoseOthers,bLoseOthers, False)
 		forcePageReset()
 	ElseIf (option == oidLoseAmmo)
 		bLoseAmmo = False
-		SetToggleOptionValue(oidLoseAmmo,bLoseAmmo)
+		_SetToggleOptionValue(oidLoseAmmo,bLoseAmmo, False)
 	ElseIf (option == oidLoseBook)
 		bLoseBook = False
-		SetToggleOptionValue(oidLoseBook,bLoseBook)
+		_SetToggleOptionValue(oidLoseBook,bLoseBook, False)
 	ElseIf (option == oidLoseArmor)
 		bLoseArmor = True
-		SetToggleOptionValue(oidLoseArmor,bLoseArmor)
+		_SetToggleOptionValue(oidLoseArmor,bLoseArmor, False)
 	ElseIf (option == oidLoseWeapon)
 		bLoseWeapon = True
-		SetToggleOptionValue(oidLoseWeapon,bLoseWeapon)
+		_SetToggleOptionValue(oidLoseWeapon,bLoseWeapon, False)
 	ElseIf (option == oidLoseMisc)
 		bLoseMisc = False
-		SetToggleOptionValue(oidLoseMisc,bLoseMisc)
+		_SetToggleOptionValue(oidLoseMisc,bLoseMisc, False)
 	ElseIf (option == oidLoseKey)
 		bLoseKey = False
-		SetToggleOptionValue(oidLoseKey,bLoseKey)
+		_SetToggleOptionValue(oidLoseKey,bLoseKey, False)
 	ElseIf (option == oidLoseSoulgem)
 		bLoseSoulgem = False
-		SetToggleOptionValue(oidLoseSoulgem,bLoseSoulgem)
+		_SetToggleOptionValue(oidLoseSoulgem,bLoseSoulgem, False)
 	ElseIf (option == oidLosePotion)
 		bLosePotion = False
-		SetToggleOptionValue(oidLosePotion,bLosePotion)
+		_SetToggleOptionValue(oidLosePotion,bLosePotion, False)
 	ElseIf (option == oidLoseScroll)
 		bLoseScroll = False
-		SetToggleOptionValue(oidLoseScroll,bLoseScroll)
+		_SetToggleOptionValue(oidLoseScroll,bLoseScroll, False)
 	ElseIf (option == oidLoseIngredient)
 		bLoseIngredient = False
-		SetToggleOptionValue(oidLoseIngredient,bLoseIngredient)
+		_SetToggleOptionValue(oidLoseIngredient,bLoseIngredient, False)
 	ElseIf (option == oidCheckKeyword)
 		bCheckKeyword = True
-		SetToggleOptionValue(oidCheckKeyword,bCheckKeyword)
+		_SetToggleOptionValue(oidCheckKeyword,bCheckKeyword, False)
 	ElseIf (option == oidCheckWeight)
 		bCheckWeight = True
-		SetToggleOptionValue(oidCheckWeight,bCheckWeight)
+		_SetToggleOptionValue(oidCheckWeight,bCheckWeight, False)
 	ElseIf (option == oidLevelReduce)
 		bLevelReduce = False
-		SetToggleOptionValue(oidLevelReduce,bLevelReduce)
+		_SetToggleOptionValue(oidLevelReduce,bLevelReduce, False)
 	ElseIf (option == oidOnlyLoseSkillXP)
 		bOnlyLoseSkillXP = False
-		SetToggleOptionValue(oidOnlyLoseSkillXP,bOnlyLoseSkillXP)
+		_SetToggleOptionValue(oidOnlyLoseSkillXP,bOnlyLoseSkillXP, False)
 		ForcePageReset()
 	ElseIf (option == oidVoicelessCurse)
 		bVoicelessCurse = False
-		SetToggleOptionValue(oidVoicelessCurse, bVoicelessCurse)
+		_SetToggleOptionValue(oidVoicelessCurse, bVoicelessCurse, False)
 	ElseIf (option == oidGhostCurse)
 		bGhostCurse = False
-		SetToggleOptionValue(oidGhostCurse, bGhostCurse)
+		_SetToggleOptionValue(oidGhostCurse, bGhostCurse, False)
 		ForcePageReset()
 	ElseIf (option == oidLiteGhostCurse)
 		bLiteGhostCurse = False
-		SetToggleOptionValue(oidLiteGhostCurse, bLiteGhostCurse)
+		_SetToggleOptionValue(oidLiteGhostCurse, bLiteGhostCurse, False)
 	ElseIf (option == oidLostItemQuest)
 		bLostItemQuest = True
-		SetToggleOptionValue(oidLostItemQuest,bLostItemQuest)
+		_SetToggleOptionValue(oidLostItemQuest,bLostItemQuest, False)
 		If ( ( LostItemsChest.GetNumItems() > 0 ) || ( ReviveScript.ItemScript.fLostSouls > 0.0 ) || \
 		PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt) || ReviveScript.SkillScript.bSkillReduced())
 			If ( ReviveScript.bSoulMark() )
@@ -3500,40 +3500,40 @@ Event OnOptionDefault(Int option)
 		EndIf
 	ElseIf (option == oidSoulMarkStay)
 		bSoulMarkStay = False
-		SetToggleOptionValue(oidSoulMarkStay,bSoulMarkStay)
+		_SetToggleOptionValue(oidSoulMarkStay,bSoulMarkStay, False)
 	ElseIf (option == oidTeleportLocation_M)
 		iTeleportLocation = 0
-		SetMenuOptionValue(oidTeleportLocation_M, sRespawnPoints[iTeleportLocation])
+		_SetMenuOptionValue(oidTeleportLocation_M, sRespawnPoints[iTeleportLocation], False)
 		ForcePageReset()
 	ElseIf (option == oidNoTradingAftermath_M)
 		iNotTradingAftermath = 0
-		SetMenuOptionValue(oidNoTradingAftermath_M, sGetAftermathOptions()[iNotTradingAftermath])
+		_SetMenuOptionValue(oidNoTradingAftermath_M, sGetAftermathOptions()[iNotTradingAftermath], False)
 		ForcePageReset()
 	ElseIf (option == oidInformation)
 		bIsInfoEnabled = True
-		SetToggleOptionValue(oidInformation,bIsInfoEnabled)
+		_SetToggleOptionValue(oidInformation,bIsInfoEnabled, False)
 		ForcePageReset()
 	ElseIf (option == oidAutoSwitchRP)
 		bAutoSwitchRP = False
-		SetToggleOptionValue(oidAutoSwitchRP,bAutoSwitchRP)
+		_SetToggleOptionValue(oidAutoSwitchRP,bAutoSwitchRP, False)
 	ElseIf (option == oidArkayCurses_M)
 		iArkayCurse = 0
-		SetMenuOptionValue(oidArkayCurses_M, sGetArkayCurses()[iArkayCurse])
+		_SetMenuOptionValue(oidArkayCurses_M, sGetArkayCurses()[iArkayCurse], False)
 	ElseIf (option == oidEnableSave_M)
 		iSaveOption = 1
-		SetMenuOptionValue(oidEnableSave_M, sGetSaveOptions()[iSaveOption])
+		_SetMenuOptionValue(oidEnableSave_M, sGetSaveOptions()[iSaveOption], False)
 		moaPraytoSave.SetValue(0.0)
 		SetInChargen(False,False,False)
 	ElseIf (option == oidHostileOptions_M)
 		iHostileOption = 0
-		SetMenuOptionValue(oidHostileOptions_M, sGetHostileOptions()[iHostileOption])
+		_SetMenuOptionValue(oidHostileOptions_M, sGetHostileOptions()[iHostileOption], False)
 		ForcePageReset()
 	ElseIf option == oidSpawnMinLevel_M
 		iSpawnMinLevel = 4
-		SetMenuOptionValue(oidSpawnMinLevel_M, sGetSpawnLevels()[iSpawnMinLevel])
+		_SetMenuOptionValue(oidSpawnMinLevel_M, sGetSpawnLevels()[iSpawnMinLevel], False)
 	ElseIf option == oidSpawnMaxLevel_M
 		iSpawnMaxLevel = 4
-		SetMenuOptionValue(oidSpawnMaxLevel_M, sGetSpawnLevels()[iSpawnMaxLevel])
+		_SetMenuOptionValue(oidSpawnMaxLevel_M, sGetSpawnLevels()[iSpawnMaxLevel], False)
 	EndIf
 EndEvent
 
@@ -6213,3 +6213,39 @@ String[] Function getRefPlaceInfo(ObjectReference akRef)
 	EndIf
 	Return sInfos	
 EndFunction
+
+; -----------------because papyrus compiler nags about default values ----------------
+
+Function _SetToggleOptionValue(Int option, bool checked, Bool noupdate = False)
+	SetToggleOptionValue(option, checked, noupdate)
+EndFunction
+
+Function _SetSliderOptionValue(int a_option, float a_value, string a_formatString = "{0}", bool a_noUpdate = false)
+	SetSliderOptionValue(a_option, a_value, a_formatString, a_noUpdate)
+EndFunction
+
+Function _SetOptionFlags(int a_option, int a_flags, bool a_noUpdate = false)
+	SetOptionFlags(a_option, a_flags, a_noUpdate)
+EndFunction
+
+Function _SetMenuOptionValue(int a_option, string a_value, bool a_noUpdate = false)
+	SetMenuOptionValue(a_option, a_value, a_noUpdate)
+EndFunction
+
+bool function _ShowMessage(string a_message, bool a_withCancel = true, string a_acceptLabel = "$Accept", string a_cancelLabel = "$Cancel")
+	Return ShowMessage(a_message, a_withCancel, a_acceptLabel, a_cancelLabel)
+EndFunction
+
+function _SetTextOptionValue(int a_option, string a_value, bool a_noUpdate = false)
+	SetTextOptionValue(a_option, a_value, a_noUpdate)
+EndFunction
+
+int function _AddHeaderOption(string a_text, int a_flags = 0)
+	Return AddHeaderOption(a_text, a_flags)
+EndFunction
+
+int function _AddTextOption(string a_text, string a_value, int a_flags = 0)
+	Return AddTextOption(a_text, a_value, a_flags)
+EndFunction
+
+; -----------------because papyrus compiler nags about default values ----------------

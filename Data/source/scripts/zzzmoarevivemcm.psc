@@ -4481,8 +4481,8 @@ Function setCustomRPS(Bool bFast = False)
 	Debug.TraceConditional("MarkOfArkay: Setting custom markers finished.",bIsLoggingEnabled)
 EndFunction
 
-Function SetTypes()
-	If bIsUpdating || iValidTypes.Length != 10
+Function SetTypes(Bool bForce = False)
+	If bIsUpdating || iValidTypes.Length != 10 || bForce
 		iValidTypes = New Int[10]
 		iValidTypes[0] = iGetType(23,bLoseScroll)
 		iValidTypes[1] = iGetType(26,bLoseArmor)
@@ -5231,6 +5231,7 @@ Bool function bLoadUserSettings(String sFileName)
 	fTotalCustomRPSlotSlider = checkFloat(fiss.loadFloat("fTotalCustomRPSlotSlider"),1,4,1)
 	bDoNotStopCombat = fiss.loadBool("bDoNotStopCombat")
 	bDoNotStopCombatAfterRevival = fiss.loadBool("bDoNotStopCombatAfterRevival")
+	setTypes(True)
 	SetCustomRPFlags()
 	recalcCursedDisCureCosts()
 	If bDisableUnsafe
@@ -5699,9 +5700,6 @@ function LoadDefaultSettings()
 	fValueGoldScaleSlider = 0.0
 	fLowerNPCMaxLvlDiff = 10.0
 	fHigherNPCMaxLvlDiff = 10.0
-	setRPFlags(True)
-	setSpawnCounts(True)
-	setSpawnWeights(True)
 	iSpawnMinLevel = 4
 	iSpawnMaxLevel = 4
 	bIsLoggingEnabled = False
@@ -5783,6 +5781,10 @@ function LoadDefaultSettings()
 	bOnlySpawn = False
 	fTotalCustomRPSlotSlider = 1.0
 	iSelectedCustomRPSlot = 0
+	setTypes(True)
+	setRPFlags(True)
+	setSpawnCounts(True)
+	setSpawnWeights(True)
 	SetCustomRPFlags()
 	recalcCursedDisCureCosts()
 EndFunction

@@ -1,80 +1,83 @@
-Scriptname zzzmoacalmdowneffectscript extends activemagiceffect  
+Scriptname zzzmoacalmdowneffectscript extends activemagiceffect
 
-Faction Property CalmFaction auto
-ReferenceAlias Property Rapist1 Auto
-ReferenceAlias Property Rapist2 Auto
-ReferenceAlias Property Rapist3 Auto
-ReferenceAlias Property Rapist4 Auto
-ReferenceAlias Property Rapist5 Auto
-ReferenceAlias Property Rapist6 Auto
-ReferenceAlias Property Rapist7 Auto
-ReferenceAlias Property Rapist8 Auto
-ReferenceAlias Property Rapist9 Auto
-ReferenceAlias Property Rapist10 Auto
-Formlist Property PacifiedHostiles Auto
-Formlist Property PacifiedTeamMates Auto
-Package Property RapistCheerPackage Auto
-Package Property RapistStayPackage Auto
-Package Property RapistWaitPackage Auto
-Package Property RapistApproachPackage Auto
-zzzmoaReviveMCM Property ConfigMenu Auto
+Faction property CalmFaction auto
+zzzmoaReviveMCM property ConfigMenu auto
+Formlist property PacifiedHostiles auto
+Formlist property PacifiedTeamMates auto
+ReferenceAlias property Rapist1 auto
+ReferenceAlias property Rapist10 auto
+ReferenceAlias property Rapist2 auto
+ReferenceAlias property Rapist3 auto
+ReferenceAlias property Rapist4 auto
+ReferenceAlias property Rapist5 auto
+ReferenceAlias property Rapist6 auto
+ReferenceAlias property Rapist7 auto
+ReferenceAlias property Rapist8 auto
+ReferenceAlias property Rapist9 auto
+Package property RapistApproachPackage auto
+Package property RapistCheerPackage auto
+Package property RapistStayPackage auto
+Package property RapistWaitPackage auto
+
 Actor mySelf
 
-Event OnEffectStart(Actor akTarget, Actor akCaster)
-	If akTarget
-		mySelf = akTarget
-		;Debug.trace(self + " effect finished for " +mySelf )
-		If !mySelf.IsInFaction(CalmFaction)
-			mySelf.addToFaction(CalmFaction)
-			mySelf.StopCombatAlarm()
-			mySelf.StopCombat()
-		EndIf
-		If PacifiedHostiles.Find(mySelf) > -1
-			If !Rapist5.GetActorRef()
-				Rapist5.ForceRefTo(mySelf)
-			ElseIf !Rapist6.GetActorRef()
-				Rapist6.ForceRefTo(mySelf)
-			ElseIf !Rapist7.GetActorRef()
-				Rapist7.ForceRefTo(mySelf)
-			ElseIf !Rapist8.GetActorRef()
-				Rapist8.ForceRefTo(mySelf)
-			ElseIf !Rapist9.GetActorRef()
-				Rapist9.ForceRefTo(mySelf)
-			ElseIf !Rapist10.GetActorRef()
-				Rapist10.ForceRefTo(mySelf)
-			EndIf
-			If ConfigMenu.bPUOK
-				Package curPackage = mySelf.GetCurrentPackage()
-				If (curPackage != RapistCheerPackage) && (curPackage != RapistStayPackage) && (curPackage != RapistWaitPackage) && (curPackage != RapistApproachPackage)
-					ActorUtil.AddPackageOverride(mySelf, RapistStayPackage,99)
-					If (mySelf == Rapist1.GetActorRef()) || (mySelf == Rapist2.GetActorRef()) || (mySelf == Rapist3.GetActorRef()) || (mySelf == Rapist4.GetActorRef())
-						ActorUtil.AddPackageOverride(mySelf,RapistWaitPackage,99)
-					Else
-						ActorUtil.AddPackageOverride(mySelf,RapistCheerPackage,99)
-					EndIf
-					ActorUtil.AddPackageOverride(mySelf,RapistApproachPackage,99)
-					mySelf.EvaluatePackage()
-				EndIf
-			EndIf
-		EndIf
-	EndIf
-EndEvent
+event OnEffectFinish(Actor akTarget, Actor akCaster)
+  if !mySelf
+    if akTarget
+      mySelf = akTarget
+    elseif akCaster
+      mySelf = akCaster
+    endif
+  endif
+  if mySelf && ConfigMenu.bPUOK
+    ActorUtil.RemovePackageOverride(mySelf, RapistCheerPackage)
+    ActorUtil.RemovePackageOverride(mySelf, RapistStayPackage)
+    ActorUtil.RemovePackageOverride(mySelf, RapistWaitPackage)
+    ActorUtil.RemovePackageOverride(mySelf, RapistApproachPackage)
+  endif
 
-Event OnEffectFinish(Actor akTarget, Actor akCaster)
-	If !mySelf
-		If akTarget
-			mySelf = akTarget
-		ElseIf akCaster
-			mySelf = akCaster
-		EndIf		
-	EndIf
-	If mySelf && ConfigMenu.bPUOK
-		ActorUtil.RemovePackageOverride(mySelf, RapistCheerPackage)
-		ActorUtil.RemovePackageOverride(mySelf, RapistStayPackage)
-		ActorUtil.RemovePackageOverride(mySelf, RapistWaitPackage)
-		ActorUtil.RemovePackageOverride(mySelf, RapistApproachPackage)
-	EndIf
-	;mySelf && Debug.trace(self + " effect finished for " +mySelf )
-	mySelf && mySelf.removeFromFaction(CalmFaction)
-	mySelf && mySelf.EvaluatePackage()
-EndEvent
+  ;mySelf && Debug.trace(self + " effect finished for " +mySelf )
+  mySelf && mySelf.removeFromFaction(CalmFaction)
+  mySelf && mySelf.EvaluatePackage()
+endevent
+
+event OnEffectStart(Actor akTarget, Actor akCaster)
+  if akTarget
+    mySelf = akTarget
+
+    ;Debug.trace(self + " effect finished for " +mySelf )
+    if !mySelf.IsInFaction(CalmFaction)
+      mySelf.addToFaction(CalmFaction)
+      mySelf.StopCombatAlarm()
+      mySelf.StopCombat()
+    endif
+    if PacifiedHostiles.Find(mySelf) > -1
+      if !Rapist5.GetActorRef()
+        Rapist5.ForceRefTo(mySelf)
+      elseif !Rapist6.GetActorRef()
+        Rapist6.ForceRefTo(mySelf)
+      elseif !Rapist7.GetActorRef()
+        Rapist7.ForceRefTo(mySelf)
+      elseif !Rapist8.GetActorRef()
+        Rapist8.ForceRefTo(mySelf)
+      elseif !Rapist9.GetActorRef()
+        Rapist9.ForceRefTo(mySelf)
+      elseif !Rapist10.GetActorRef()
+        Rapist10.ForceRefTo(mySelf)
+      endif
+      if ConfigMenu.bPUOK
+        Package curPackage = mySelf.GetCurrentPackage()
+        if (curPackage != RapistCheerPackage) && (curPackage != RapistStayPackage) && (curPackage != RapistWaitPackage) && (curPackage != RapistApproachPackage)
+          ActorUtil.AddPackageOverride(mySelf, RapistStayPackage, 99)
+          if (mySelf == Rapist1.GetActorRef()) || (mySelf == Rapist2.GetActorRef()) || (mySelf == Rapist3.GetActorRef()) || (mySelf == Rapist4.GetActorRef())
+            ActorUtil.AddPackageOverride(mySelf, RapistWaitPackage, 99)
+          else
+            ActorUtil.AddPackageOverride(mySelf, RapistCheerPackage, 99)
+          endif
+          ActorUtil.AddPackageOverride(mySelf, RapistApproachPackage, 99)
+          mySelf.EvaluatePackage()
+        endif
+      endif
+    endif
+  endif
+endevent

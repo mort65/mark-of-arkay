@@ -1,1861 +1,1859 @@
 Scriptname zzzmoarespawnscript extends Quest
 
-Import zzzmoautilscript
-zzzmoaReviveMCM Property ConfigMenu Auto
-zzzmoaReviverScript Property ReviveScript Auto
+import zzzmoautilscript
+
+Objectreference property CellLoadMarker auto
+Objectreference property CellLoadMarker2 auto
+Formlist property CityMarkersList auto
+zzzmoaReviveMCM property ConfigMenu auto
+Faction property CrimeFactionEastmarch auto
+Faction property CrimeFactionFalkreath auto
+Faction property CrimeFactionHaafingar auto
+Faction property CrimeFactionHjaalmarch auto
+Faction property CrimeFactionPale auto
+Faction property CrimeFactionReach auto
+Faction property CrimeFactionRift auto
+Faction property CrimeFactionWhiterun auto
+Faction property CrimeFactionWinterhold auto
+FormList property CustomRespawnPoints auto
+Location property DLC1HunterHQLocation auto
+Location property DLC1VampireCastleLocation auto
+Faction property DLC2CrimeRavenRockFaction auto
+Objectreference property DLC2RavenRockJailMarker auto
+Objectreference property DawnstarJailMarker auto
+Float property DefaultTimeScale=20.0 auto Hidden
+ReferenceAlias property DestinationCenter auto
+Quest property DestinationCenterDetector auto
+LocationAlias property DestinationLocation auto
+ReferenceAlias property DestinationMarkerAlias auto
+Formlist property Destinations auto
+ObjectReference property DetachMarker1 auto
+ObjectReference property DetachMarker2 auto
+ObjectReference property DetachMarker3 auto
+Formlist property DisabledLocations auto
+ObjectReference[] property DynamicMarkerList auto Hidden
+ObjectReference[] property ExcludedMarkerList auto Hidden
+FormList property ExtInnMarkers auto
+FormList property ExteriorMarkers auto
+Formlist property ExternalLocationList auto
+Formlist property ExternalLocationMarkerList auto
+Formlist property ExternalMarkerList auto
+Formlist property ExtraCustomMarkerList auto
+Formlist property FailedDestinations auto
+Objectreference property FalkreathJailMarker auto
+Location property HjaalmarchHoldLocation auto
+Keyword property HoldKeyword auto
+FormList property InnHoldLocations auto
+FormList property InnLocations auto
+FormList property InnLocationsCapital auto
+FormList property InnParentLocations auto
+FormList property InteriorMarkers auto
+Quest property LocMarkerDetector auto
+FormList property LocationBlackList auto
+ObjectReference property LocationMarker auto
+ObjectReference property LocationMarker2 auto
+FormList property LocationsList auto
+Objectreference property MarkarthJailMarker auto
+FormList property MarkerList auto
+Formlist property MergedExternalMarkerList auto
+Formlist property MergedExternalMarkerSubList auto
+Objectreference property MorthalJailMarker auto
+Location property PaleHoldLocation auto
+ObjectReference property PlayerMarker auto
+Actor property PlayerRef auto
+ReferenceAlias property PlayerRefMarker auto
+FormList property QuestBlackList auto
+ReferenceAlias property RandomCityTeleportRef auto
+ReferenceAlias property RandomTeleportRef auto
+zzzmoaReviverScript property ReviveScript auto
+Objectreference property RiftenJailMarker auto
+ObjectReference property SleepMarker auto
+Objectreference property SolitudeJailMarker auto
+ObjectReference property TOWMarker auto
+Location property TamrielLocation auto
+Form[] property TavernCapitalMarkers auto Hidden
+Form[] property TavernMarkers auto Hidden
+Formlist property TeleportDestination auto
+ReferenceAlias property TeleportRef auto
+GlobalVariable property TimeScale auto
+Objectreference property WhiterunJailMarker auto
+Objectreference property WindhelmJailMarker auto
+Objectreference property WinterholdJailMarker auto
 FormList property WorldspacesInterior auto
-Formlist property ExternalMarkerList Auto
-Formlist property ExternalLocationList Auto
-Formlist property ExternalLocationMarkerList Auto
-Formlist property MergedExternalMarkerSubList Auto
-Formlist property ExtraCustomMarkerList Auto
-Formlist property MergedExternalMarkerList Auto
-Formlist Property Destinations Auto
-Formlist Property DisabledLocations Auto
-Formlist Property TeleportDestination Auto
-Formlist Property FailedDestinations Auto
-FormList property MarkerList Auto
-FormList Property QuestBlackList Auto
-FormList Property LocationBlackList Auto
-FormList Property LocationsList Auto
-Formlist Property CityMarkersList Auto
-Location Property PaleHoldLocation  Auto
-Location Property HjaalmarchHoldLocation  Auto
-Location Property DLC1VampireCastleLocation Auto
-Location Property DLC1HunterHQLocation Auto
-Location Property TamrielLocation Auto
-Keyword property HoldKeyword Auto
-ObjectReference Property PlayerMarker Auto
-ObjectReference Property SleepMarker Auto
-ObjectReference Property DetachMarker1 Auto
-ObjectReference Property DetachMarker2 Auto
-ObjectReference Property DetachMarker3 Auto
-Objectreference Property CellLoadMarker Auto
-ObjectReference Property LocationMarker Auto
-Objectreference Property CellLoadMarker2 Auto
-ObjectReference Property LocationMarker2 Auto
-Objectreference Property RiftenJailMarker Auto
-Objectreference Property WhiterunJailMarker Auto
-Objectreference Property FalkreathJailMarker Auto
-Objectreference Property WindhelmJailMarker Auto
-Objectreference Property MarkarthJailMarker Auto
-Objectreference Property WinterholdJailMarker Auto
-Objectreference Property DawnstarJailMarker Auto
-Objectreference Property MorthalJailMarker Auto
-Objectreference Property SolitudeJailMarker Auto
-Objectreference Property DLC2RavenRockJailMarker Auto
-Faction Property CrimeFactionPale  Auto
-Faction Property CrimeFactionFalkreath  Auto
-Faction Property CrimeFactionReach  Auto
-Faction Property CrimeFactionHjaalmarch  Auto
-Faction Property CrimeFactionHaafingar  Auto
-Faction Property CrimeFactionRift  Auto
-Faction Property CrimeFactionWhiterun  Auto
-Faction Property CrimeFactionEastmarch  Auto
-Faction Property CrimeFactionWinterhold  Auto
-Faction Property DLC2CrimeRavenRockFaction Auto
-Message Property moaRespawnMenu0 Auto
-Message Property moaRespawnMenu1 Auto
-Message Property moaRespawnMenu13 Auto
-Message Property moaRespawnMenu13_Alt Auto
-Message Property moaCustomRespawnMenu Auto
-Message Property moaRespawnMenu10 Auto
-Message Property moaRespawnMenu11 Auto
-Message Property moaRespawnMenu110 Auto
-Message Property moaRespawnMenu111 Auto
-Message Property moaRespawnMenu112 Auto
-Message Property moaRespawnMenu113 Auto
-Message Property moaRespawnMenu114 Auto
-Message Property moaRespawnMenu115 Auto
-Message Property moaRespawnMenu116 Auto
-Message Property moaRespawnMenu117 Auto
-Message Property moaRespawnMenu118 Auto
-Message Property moaRespawnMenu1180 Auto
-Message Property moaRespawnMenu1181 Auto
-GlobalVariable Property moaERPCount Auto
-Int Property iTeleportLocation Auto Hidden
-Int Property iTavernIndex Auto Hidden
-Int Property iCustomRPSlot Auto Hidden
-Int Property iExternalIndex Auto Hidden
-Actor Property PlayerRef Auto
-Float Property fRPMinDistance = 2500.0 Auto Hidden
-ObjectReference[] Property DynamicMarkerList Auto Hidden
-ObjectReference[] Property ExcludedMarkerList Auto Hidden
-Quest Property moaNearbyDetector Auto
-Quest Property moaRandomCityDetector Auto
-Quest Property moaRandomMarkerDetector Auto
-ReferenceAlias Property TeleportRef Auto
-ReferenceAlias Property RandomTeleportRef Auto
-ReferenceAlias Property RandomCityTeleportRef Auto
-GlobalVariable Property TimeScale Auto
-GlobalVariable Property moaRandomDestination Auto
-Float Property DefaultTimeScale = 20.0 Auto Hidden
-FormList Property InteriorMarkers Auto
-FormList Property ExteriorMarkers Auto
-ObjectReference Property TOWMarker Auto
-FormList property CustomRespawnPoints Auto
-ReferenceAlias Property PlayerRefMarker Auto
-FormList Property InnLocations Auto
-FormList Property InnLocationsCapital Auto
-FormList Property ExtInnMarkers Auto
-FormList Property InnHoldLocations Auto
-FormList Property InnParentLocations Auto
-Quest Property DestinationCenterDetector Auto
-Quest Property LocMarkerDetector Auto
-ReferenceAlias Property DestinationMarkerAlias Auto
-LocationAlias Property DestinationLocation Auto
-ReferenceAlias Property DestinationCenter Auto
-Form[] Property TavernMarkers Auto Hidden
-Form[] Property TavernCapitalMarkers Auto Hidden
+Float property fRPMinDistance=2500.0 auto Hidden
+Int property iCustomRPSlot auto Hidden
+Int property iExternalIndex auto Hidden
+Int property iTavernIndex auto Hidden
+Int property iTeleportLocation auto Hidden
+GlobalVariable property moaCheckingMarkers auto
+Message property moaCustomRespawnMenu auto
+GlobalVariable property moaERPCount auto
+Quest property moaNearbyDetector auto
+Quest property moaRandomCityDetector auto
+GlobalVariable property moaRandomDestination auto
+Quest property moaRandomMarkerDetector auto
+Message property moaRespawnMenu0 auto
+Message property moaRespawnMenu1 auto
+Message property moaRespawnMenu10 auto
+Message property moaRespawnMenu11 auto
+Message property moaRespawnMenu110 auto
+Message property moaRespawnMenu111 auto
+Message property moaRespawnMenu112 auto
+Message property moaRespawnMenu113 auto
+Message property moaRespawnMenu114 auto
+Message property moaRespawnMenu115 auto
+Message property moaRespawnMenu116 auto
+Message property moaRespawnMenu117 auto
+Message property moaRespawnMenu118 auto
+Message property moaRespawnMenu1180 auto
+Message property moaRespawnMenu1181 auto
+Message property moaRespawnMenu13 auto
+Message property moaRespawnMenu13_Alt auto
+
 Bool bFirstTry = False
 Bool bFirstTryFailed = False
-GlobalVariable Property moaCheckingMarkers Auto
 
-Function SetVars()
-	fRPMinDistance = ConfigMenu.fRPMinDistanceSlider
-	iTeleportLocation = ConfigMenu.iTeleportLocation
-	iExternalIndex = ConfigMenu.iExternalIndex
-	iTavernIndex = ConfigMenu.iTavernIndex
-	iCustomRPSlot = ConfigMenu.iSelectedCustomRPSlot
-Endfunction
+event OnCheckingMarkers(Form sender, Bool bTavern, Bool bExtra, Bool bCustom, Bool bFast)
+  if sender == (self As Quest) As Form
+    checkMarkers(bTavern, bExtra, bCustom, bFast)
+    checkJsonBlackListedLocations()
+  endif
+endevent
 
-Bool Function bCheckTavernMarkers()
-	If TavernMarkers.Length != InnLocations.GetSize()
-		Return False
-	EndIf
-	If TavernCapitalMarkers.Length != InnLocationsCapital.GetSize()
-		Return False
-	EndIf
-	Int i = TavernMarkers.Length
-	Int j = TavernCapitalMarkers.Length
-	While (i > 0) || (j > 0)
-		If i > 0
-			i -= 1
-			If !TavernMarkers[i] As ObjectReference
-				Return False
-			EndIf
-		EndIf
-		If j > 0
-			j -= 1
-			If !TavernCapitalMarkers[j] As ObjectReference
-				Return False
-			EndIf
-		EndIf
-	EndWhile
-	Return True
-Endfunction
+event OnRespawn(Form akSender)
+  if akSender == (self As Quest) As Form
+    Respawn()
+    ReviveScript.bReadyForRespawn = False
+  endif
+endevent
 
-Event OnCheckingMarkers(Form sender,Bool bTavern, Bool bExtra, Bool bCustom, Bool bFast)
-	If sender == (self As Quest) As Form
-		checkMarkers(bTavern, bExtra, bCustom, bFast)
-		checkJsonBlackListedLocations()
-	EndIf
-EndEvent
+function AddExternalMarkers(Bool bFast=False)
+  Debug.TraceConditional("MarkOfArkay: Adding extra markers...", ConfigMenu.bIsLoggingEnabled)
+  Int i = 0
+  if !bFast
+    ObjectReference LocMarker
+    ExternalLocationMarkerList.Revert()
+    while i < ExternalLocationList.GetSize()
+      if ExternalLocationList.GetAt(i) As Location
+        LocMarker = getLocationMarker(ExternalLocationList.GetAt(i) As Location)
+        if LocMarker As ObjectReference
+          ExternalLocationMarkerList.AddForm(LocMarker)
+        endif
+      endif
+      i += 1
+    endwhile
+    MergedExternalMarkerList.Revert()
+    MergedExternalMarkerSubList.Revert()
+    MergedExternalMarkerList.AddForm(checkAndFixFormList(ExternalMarkerList, True, True, True, akOtherList=MergedExternalMarkerSubList))
+    MergedExternalMarkerList.AddForm(checkAndFixFormList(ExternalLocationMarkerList, True, True, True))
+    MergedExternalMarkerList.AddForm(checkAndFixFormList(ExtraCustomMarkerList, True, True, True, 34))
+    i = MergedExternalMarkerSubList.GetSize() + ExternalLocationMarkerList.GetSize() + ExtraCustomMarkerList.GetSize()
+  endif
+  moaERPCount.SetValue(i)
+  ConfigMenu.setExtraRPs(i, bFast)
+  Debug.TraceConditional("MarkOfArkay: Adding extra markers finished.", ConfigMenu.bIsLoggingEnabled)
+endfunction
 
-Event OnRespawn(Form akSender)
-	If akSender == (self As Quest) As Form
-		Respawn()
-		ReviveScript.bReadyForRespawn = False
-	EndIf
-EndEvent
+Bool function BIsRefInCurrentCell(ObjectReference MarkerRef)
+  return ((MarkerRef).GetParentCell() == PlayerRef.GetParentCell())
+endfunction
 
-Function checkMarkers(Bool bCheckInn, Bool bCheckExtra, Bool bCheckCustom, Bool bFast = False)
-	If !bCheckInn && !bCheckExtra && !bCheckCustom
-		Return
-	EndIf
-	If moaCheckingMarkers.GetValue() != 1.0
-		moaCheckingMarkers.SetValue(1.0)
-	Else
-		Return
-	EndIf
-	Debug.Notification("$mrt_MarkofArkay_Notification_Checking_Markers_Started")
-	If bCheckInn
-		setTavernMarkers(ConfigMenu.moaIsBusy.GetValue() As Bool)
-	EndIf
-	If bCheckExtra
-		AddExternalMarkers(bFast)
-	EndIf
-	If bCheckCustom
-		ConfigMenu.setCustomRPS(bFast)
-	EndIf
-	moaCheckingMarkers.SetValue(0.0)
-	Debug.Notification("$mrt_MarkofArkay_Notification_Checking_Markers_Finished")
-EndFunction
+ObjectReference function FindCityMarkerByDistance(float fMaxDistance=100000.0)
+  float fDistance
+  ObjectReference Marker
+  Int iIndex
+  Int iLast
+  if moaERPCount.GetValueInt() > 0
+    iLast = iMin(128, moaERPCount.GetValueInt())
+    iIndex = 0
+    ObjectReference tempMarker
+    while iIndex < iLast
+      tempMarker = getFromMergedFormList(MergedExternalMarkerList, iIndex) As ObjectReference
+      if (ExcludedMarkerList.find(tempMarker) < 0)
+        if (!fDistance || (fDistance > PlayerMarker.GetDistance(tempMarker))) && (PlayerMarker.GetDistance(tempMarker) >= fRPMinDistance)
+          fDistance = PlayerMarker.GetDistance(tempMarker)
+          Marker = tempMarker
+        endif
+      endif
+      iIndex += 1
+    endwhile
+  endif
+  if PlayerMarker.IsInInterior()
+    iIndex = MarkerList.GetSize()
+    while iIndex > 0
+      iIndex -= 1
 
-Function checkJsonBlackListedLocations()
-	If !ConfigMenu.bLocBlackListJsonChecked
-		If ConfigMenu.bPUOK
-			If JsonUtil.JsonExists("/MarkofArkay/MOA_BlackLists")
-				Form[] LocArr = JsonUtil.FormListToArray("/MarkofArkay/MOA_BlackLists", "LocationBlackList")
-				Int i = LocArr.Length
-				While i > 0
-					i -= 1
-					If !ReviveScript.LocationBlackList2.HasForm(LocArr[i])
-						ReviveScript.LocationBlackList2.AddForm(LocArr[i])
-					EndIf
-				Endwhile
-				ConfigMenu.bLocBlackListJsonChecked = True
-			EndIf
-		EndIf
-	EndIf
-EndFunction
+      ;If ConfigMenu.bRespawnPointsFlags[iIndex]
+      if (PlayerMarker.GetParentCell() == (MarkerList.GetAt(iIndex) As ObjectReference).GetParentCell())
+        if (ExcludedMarkerList.find(MarkerList.GetAt(iIndex) As ObjectReference) < 0)
+          if (!fDistance || (fDistance > PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference))) && (PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference) >= fRPMinDistance)
+            fDistance = PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference)
+            Marker = MarkerList.GetAt(iIndex) As ObjectReference
+          endif
+        endif
+      endif
 
-Function AddExternalMarkers(Bool bFast = False)
-	Debug.TraceConditional("MarkOfArkay: Adding extra markers...",ConfigMenu.bIsLoggingEnabled)
-	Int i = 0
-	If !bFast
-		ObjectReference LocMarker
-		ExternalLocationMarkerList.Revert()
-		While i < ExternalLocationList.GetSize()
-			If ExternalLocationList.GetAt(i) As Location
-				LocMarker = getLocationMarker(ExternalLocationList.GetAt(i) As Location)
-				If LocMarker As ObjectReference
-					ExternalLocationMarkerList.AddForm(LocMarker)
-				EndIf
-			EndIf
-			i += 1
-		Endwhile
-		MergedExternalMarkerList.Revert()
-		MergedExternalMarkerSubList.Revert()
-		MergedExternalMarkerList.AddForm(checkAndFixFormList(ExternalMarkerList,True,True,True,akOtherList = MergedExternalMarkerSubList))
-		MergedExternalMarkerList.AddForm(checkAndFixFormList(ExternalLocationMarkerList,True,True,True))
-		MergedExternalMarkerList.AddForm(checkAndFixFormList(ExtraCustomMarkerList,True,True,True,34))
-		i = MergedExternalMarkerSubList.GetSize() + ExternalLocationMarkerList.GetSize() + ExtraCustomMarkerList.GetSize()
-	EndIf
-	moaERPCount.SetValue(i)	
-	ConfigMenu.setExtraRPs(i,bFast)
-	Debug.TraceConditional("MarkOfArkay: Adding extra markers finished.",ConfigMenu.bIsLoggingEnabled)
-EndFunction
+      ;EndIf
+    endwhile
+  else
+    iIndex = CityMarkersList.GetSize()
+    while iIndex > 0
+      iIndex -= 1
 
-Function setTavernMarkers(Bool bReset = False)
-	Debug.TraceConditional("MarkOfArkay: Adding inn markers ...",ConfigMenu.bIsLoggingEnabled)
-	If !bReset && bCheckTavernMarkers()
-		Debug.TraceConditional("MarkOfArkay: All inn markers are already added.",ConfigMenu.bIsLoggingEnabled)
-		Return
-	EndIf
-	TavernMarkers = Utility.CreateFormArray(InnLocations.GetSize())
-	TavernCapitalMarkers = Utility.CreateFormArray(InnLocationsCapital.GetSize())
-	Int i = InnLocations.GetSize()
-	Int j = InnLocationsCapital.GetSize()
-	While i > 0
-		i -= 1
-		TavernMarkers[i] = getCenterMarker(InnLocations.GetAt(i) As Location)
-		If j > 0
-			j -= 1
-			TavernCapitalMarkers[j] = getCenterMarker(InnLocationsCapital.GetAt(j) As Location)
-		EndIf
-	Endwhile
-	Debug.TraceConditional("MarkOfArkay: Adding inn markers finished.",ConfigMenu.bIsLoggingEnabled)
-Endfunction
+      ;If ConfigMenu.bRespawnPointsFlags[iIndex]
+      if (!fDistance || (fDistance > PlayerMarker.GetDistance(CityMarkersList.GetAt(iIndex) As ObjectReference)))
+        fDistance = PlayerMarker.GetDistance(CityMarkersList.GetAt(iIndex) As ObjectReference)
+        Marker = MarkerList.GetAt(iIndex) As ObjectReference
+      endif
 
-Function RandomTeleport()
-	If ConfigMenu.bMoreRandomRespawn
-		DisabledLocations.Revert()
-		Int i = LocationsList.GetSize()
-		While i > 0
-			i -= 1
-			If !ConfigMenu.bRespawnPointsFlags[i]
-				DisabledLocations.AddForm(LocationsList.GetAt(i) As Location)
-			EndIf
-		Endwhile
-		If !ConfigMenu.bRespawnPointsFlags[8]
-			DisabledLocations.AddForm(InnHoldLocations.GetAt(8) As Location)
-		EndIf
-		If !ConfigMenu.bRespawnPointsFlags[9]
-			DisabledLocations.AddForm(InnHoldLocations.GetAt(9) As Location)
-		EndIf
-		If bTryToMoveByQuest(moaRandomMarkerDetector,RandomTeleportRef, 7, FailedDestinations)
-			Return
-		EndIf
-	EndIf
-	Destinations.Revert()
-	int iIndex = 0
-	Int iRandom = 0
-	While iIndex < MarkerList.GetSize()
-		If ConfigMenu.bRespawnPointsFlags[iIndex] && PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As Objectreference) >= fRPMinDistance
-			Destinations.AddForm(MarkerList.GetAt(iIndex) As Objectreference)
-		EndIf
-		iIndex += 1
-	Endwhile
-	Bool[] bInnFlags = bGetTavernFlags()
-	iIndex = InnLocations.GetSize()
-	While iIndex > 0
-		iIndex -= 1
-		If bInnFlags[iIndex]
-			Destinations.AddForm(TavernMarkers[iIndex] As ObjectReference)
-		EndIf
-	Endwhile
-	If bCanTeleportToDynMarker(SleepMarker) && PlayerMarker.GetDistance(SleepMarker) >= fRPMinDistance
-		Destinations.AddForm(SleepMarker)
-	EndIf
-	iIndex = 0
-	While iIndex < CustomRespawnPoints.GetSize()
-		If bCanTeleportToDynMarker(CustomRespawnPoints.GetAt(iIndex) As ObjectReference)
-			If PlayerMarker.GetDistance(CustomRespawnPoints.GetAt(iIndex) As ObjectReference) >= fRPMinDistance
-				Destinations.AddForm(CustomRespawnPoints.GetAt(iIndex) As ObjectReference)
-			EndIf
-		EndIf
-		iIndex += 1
-	Endwhile
-	If moaERPCount.GetValueInt() > 0
-		Int iLast = iMin(128,moaERPCount.GetValueInt())
-		iIndex = 0
-		ObjectReference Marker
-		While iIndex < iLast
-			Marker = getFromMergedFormList(MergedExternalMarkerList,iIndex) As ObjectReference
-			If !(( Marker.GetType() != 61 ) || \
-			!bCanTeleportToExtMarker(Marker) || \
-			( PlayerMarker.GetDistance(Marker) < fRPMinDistance ))
-				Destinations.AddForm(Marker)
-			EndIf
-			iIndex += 1
-		EndWhile
-	EndIf
-	If bCanTeleportToDynMarker(CellLoadMarker2) && PlayerMarker.GetDistance(CellLoadMarker2) >= fRPMinDistance
-		Destinations.AddForm(CellLoadMarker2)
-	EndIf
-	If bCanTeleportToDynMarker(DetachMarker3) && PlayerMarker.GetDistance(DetachMarker3) >= fRPMinDistance
-		Destinations.AddForm(DetachMarker3)
-	EndIf
-	If bCanTeleportToDynMarker(LocationMarker2) && PlayerMarker.GetDistance(LocationMarker2) >= fRPMinDistance
-		Destinations.AddForm(LocationMarker2)
-	EndIf
-	If bCanTeleportToDynMarker(CellLoadMarker) && PlayerMarker.GetDistance(CellLoadMarker) >= fRPMinDistance
-		Destinations.AddForm(CellLoadMarker)
-	EndIf
-	If bCanTeleportToDynMarker(LocationMarker) && PlayerMarker.GetDistance(LocationMarker) >= fRPMinDistance
-		Destinations.AddForm(LocationMarker)
-	EndIf
-	If bCanTeleportToDynMarker(DetachMarker1) && PlayerMarker.GetDistance(DetachMarker1) >= fRPMinDistance
-		Destinations.AddForm(DetachMarker1)
-	EndIf
-	If bCanTeleportToDynMarker(DetachMarker2) && PlayerMarker.GetDistance(DetachMarker2) >= fRPMinDistance
-		Destinations.AddForm(DetachMarker2)
-	EndIf
-	iIndex = Destinations.GetSize()
-	While iIndex > 0
-		iRandom = Utility.RandomInt(0, Destinations.GetSize() - 1)
-		If bIsArrived(Destinations.GetAt(iRandom) As ObjectReference)
-			Return
-		Else
-			Destinations.RemoveAddedForm(Destinations.GetAt(iRandom))
-		EndIf
-		iIndex -= 1
-	EndWhile
-	If !bSendToTOW()
-		SendToDefaultMarker()
-	EndIf
-EndFunction
+      ;EndIf
+    endwhile
+  endif
+  if (Marker && fDistance && fDistance <= fMaxDistance)
+    return Marker
+  endif
+  return None
+endfunction
 
-Bool Function bTryToMoveByQuest(Quest aTargetDetector, ReferenceAlias akTarget, Int aiTry = 1, FormList akFailedTargets = None)
-	Int i = aiTry
-	Int j
-	ObjectReference Marker
-	If akFailedTargets
-		akFailedTargets.Revert()
-	EndIf
-	While i > 0
-		i -= 1
-		If !aTargetDetector.IsRunning()
-			aTargetDetector.Start()
-		Else
-			j = 0
-			aTargetDetector.Stop()
-			While !aTargetDetector.IsStopped() && j < 30
-				Utility.Wait(0.1)
-				j += 1
-			EndWhile
-			aTargetDetector.Start()
-		EndIf
-		If aTargetDetector.IsRunning()
-			If (!Marker || (Marker != (akTarget.GetReference() As ObjectReference)))
-				Marker = akTarget.GetReference() As ObjectReference
-				If Marker
-					If bIsArrived(Marker)
-						If akFailedTargets
-							akFailedTargets.Revert()
-						EndIf
-						aTargetDetector.Stop()
-						Return True
-					ElseIf akFailedTargets && !akFailedTargets.HasForm(Marker)
-						akFailedTargets.AddForm(Marker)
-					EndIf
-				EndIf
-			EndIf
-		EndIf
-	EndWhile
-	If akFailedTargets
-		akFailedTargets.Revert()
-	EndIf
-	aTargetDetector.Stop()
-	Return False
-Endfunction
+ObjectReference function FindCityMarkerByLocation()
+  Int iIndex = LocationsList.GetSize()
+  while (iIndex > 0)
+    iIndex -= 1
+    if (iIndex == 3)
+      if bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(DLC1HunterHQLocation) ;Riften or Dayspring Canyon
+        ;If ConfigMenu.bRespawnPointsFlags[iIndex]
+        if (PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference) >= fRPMinDistance)
+          return MarkerList.GetAt(iIndex) As ObjectReference
+        endif
 
-Bool Function bIsTeleportSafe(ObjectReference akMarker)
-	If bFirstTryFailed
-		bFirstTryFailed = False
-		Return False
-	EndIf
-	Return !(PlayerRef.GetAnimationVariableBool("bIsSynced") || PlayerRef.GetActorValue("paralysis") || ReviveScript.SexLabInterface.IsActorActive(PlayerRef))
-EndFunction
+        ;EndIf
+      endif
+    elseif (iIndex == 4)
+      if bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(HjaalmarchHoldLocation) || bInSameLocation(DLC1VampireCastleLocation) ;Solitude or Morthal or Castle Volkihar
+        ;If ConfigMenu.bRespawnPointsFlags[iIndex]
+        if (PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference) >= fRPMinDistance)
+          return MarkerList.GetAt(iIndex) As ObjectReference
+        endif
 
-Bool Function bIsArrived(ObjectReference akMarker)
-	While !ReviveScript.bReadyForRespawn
-		Utility.WaitMenuMode(0.2)
-	EndWhile
-	Float fMinDistance = 1000.0
-	If ConfigMenu.bIsRagdollEnabled
-		fMinDistance = 4000.0
-	EndIf
-	PlayerRef.DispelAllSpells()
-	If PlayerRef.IsBleedingOut() || (PlayerRef.GetActorValue("Health") < PlayerRef.GetBaseActorValue("Health"))
-		PlayerRef.DispelSpell(ReviveScript.Bleed)
-		PlayerRef.ResetHealthAndLimbs()
-		PlayerRef.RestoreActorValue("health",10000)
-	EndIf
-	If !ReviveScript.bIsCameraStateSafe()
-		Game.ForceThirdPerson()
-	EndIf
-	If !bIsTeleportSafe(akMarker)
-		If PlayerRef.GetActorValue("paralysis")
-			PlayerRef.SetActorValue("paralysis",0)
-			If PlayerRef.GetActorValue("paralysis")
-				PlayerRef.ForceActorValue("paralysis",0)
-			EndIf
-			Utility.Wait(6.5)
-		EndIf
-		Float i = 10.0
-		While ( !bIsTeleportSafe(akMarker) && ( i > 0.0 ))
-			Utility.Wait(0.2)
-			i -= 0.2
-		Endwhile
-		If ReviveScript.SexLabInterface.IsActorActive(PlayerRef)
-			Debug.Trace("MarkOfArkay: The player is in a Sexlab animation and cannot teleport.")
-			Return True
-		EndIf
-	EndIf
-	playerRef.SetDontMove(False)
-	Float fTravel = PlayerMarker.GetDistance(akMarker)
-	PlayerRef.MoveTo(akMarker,afZOffset = 15.0)
-	Utility.Wait(0.5)
-	Float fFrom = PlayerRef.GetDistance(PlayerMarker)
-	Float fTo = PlayerRef.GetDistance(akMarker)
-	
-	ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Distance between two Points: "+ fTravel)
-	ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Distance Traveled: "+ fFrom)
-	ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Distance from Destination: "+ fTo)
-	
-	If fTo < fMinDistance
-		If fTravel < 1500.0 || fFrom > fTo
-			If bFirstTry
-				bFirstTry = False
-			EndIf
-			Return True
-		EndIf
-	EndIf
-	If bFirstTry
-		bFirstTryFailed = True
-		bFirstTry = False
-	EndIf
-	Return False
-EndFunction
+        ;EndIf
+      endif
+    elseif (iIndex == 6)
+      if (bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(PaleHoldLocation)) ;Winterhold or Dawnstar
+        ;If ConfigMenu.bRespawnPointsFlags[iIndex]
+        if (PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference) >= fRPMinDistance)
+          return MarkerList.GetAt(iIndex) As ObjectReference
+        endif
 
-Bool Function bSendToSleepMarker()
-	If bCanTeleportToDynMarker(SleepMarker)
-		If PlayerMarker.GetDistance(SleepMarker) >= fRPMinDistance
-			Return bIsArrived(SleepMarker)
-		EndIf
-	EndIf
-	Return False
-Endfunction
+        ;EndIf
+      endif
+    elseif bInSameLocation(LocationsList.GetAt(iIndex) As Location)
+      ;If ConfigMenu.bRespawnPointsFlags[iIndex]
+      if (PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference) >= fRPMinDistance)
+        return MarkerList.GetAt(iIndex) As ObjectReference
+      endif
 
-Bool Function bSendToCustomMarker(Int iSlot)
-	Int iSelectedSlot = iSlot
-	Int i = iSelectedSlot
-	If bCanTeleportToDynMarker(CustomRespawnPoints.GetAt(i) As ObjectReference)
-		If PlayerRef.GetDistance(CustomRespawnPoints.GetAt(i) As ObjectReference) >= fRPMinDistance
-			If bIsArrived(CustomRespawnPoints.GetAt(i) As ObjectReference)
-				Return True
-			EndIf
-		EndIf
-	EndIf
-	i = 0
-	While i < CustomRespawnPoints.getSize()
-		If i != iSelectedSlot
-			If bCanTeleportToDynMarker(CustomRespawnPoints.GetAt(i) As ObjectReference)
-				If PlayerRef.GetDistance(CustomRespawnPoints.GetAt(i) As ObjectReference) >= fRPMinDistance
-					If bIsArrived(CustomRespawnPoints.GetAt(i) As ObjectReference)
-						Return True
-					EndIf
-				EndIf
-			EndIf
-		EndIf
-		i += 1
-	EndWhile
-	Return False
-EndFunction
+      ;EndIf
+    endif
+  endwhile
+  return None
+endfunction
 
-Function SendToDefaultMarker()
-	While !ReviveScript.bReadyForRespawn
-		Utility.Wait(0.1)
-	EndWhile
-	If ConfigMenu.bKillIfCantRespawn
-		ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Player is dying because respawn is not possible.")
-		PlayerRef.EndDeferredKill()
-		Utility.Wait(0.1)
-		If !PlayerRef.IsDead()
-			killPlayer()
-		EndIf
-	Else
-		If PlayerMarker.GetParentCell() != ReviveScript.DefaultCell
-			bIsArrived(PlayerMarker)
-		Else
-			bIsArrived(PlayerRef As ObjectReference)
-		EndIf
-	EndIf
-Endfunction
+ObjectReference function FindInnMarkerByDistance(float fMaxDistance=100000.0)
+  float fDistance
+  Int MarkerIndex
+  Int iIndex
+  ObjectReference Marker
+  if !PlayerMarker.IsInInterior()
+    iIndex = ExtInnMarkers.GetSize()
+    while iIndex > 0
+      iIndex -= 1
+      if (!fDistance || (fDistance > PlayerMarker.GetDistance(ExtInnMarkers.GetAt(iIndex) As ObjectReference)))
+        fDistance = PlayerMarker.GetDistance(ExtInnMarkers.GetAt(iIndex) As ObjectReference)
+        MarkerIndex = iIndex
+      endif
+    endwhile
+  endif
+  if (fDistance && fDistance <= fMaxDistance)
+    return TavernMarkers[MarkerIndex] As ObjectReference
+  endif
+  return None
+endfunction
 
-Bool Function bSendToTOW()
-	Return (PlayerRef.GetDistance(TOWMarker) >= fRPMinDistance) && bIsArrived(TOWMarker)
-Endfunction
+ObjectReference function FindInnMarkerByLocation()
+  ObjectReference akMarker
+  Int iIndex = InnLocations.GetSize()
+  while iIndex > 0
+    iIndex -= 1
+    if PlayerMarker.IsInLocation(InnLocations.GetAt(iIndex) As Location) || PlayerMarker.IsInLocation(InnParentLocations.GetAt(iIndex) As Location)
+      akMarker = TavernMarkers[iIndex] As ObjectReference
+      if (PlayerMarker.GetDistance(akMarker) >= fRPMinDistance)
+        return akMarker
+      endif
+    endif
+  endwhile
+  iIndex = InnHoldLocations.GetSize()
+  while iIndex > 0
+    iIndex -= 1
+    akMarker = TavernCapitalMarkers[iIndex] As ObjectReference
+    if (iIndex == 3)
+      if bInSameLocation(InnHoldLocations.GetAt(iIndex) As Location) || bInSameLocation(DLC1HunterHQLocation) ;Riften or Dayspring Canyon
+        if (PlayerMarker.GetDistance(akMarker) >= fRPMinDistance)
+          return akMarker
+        endif
+      endif
+    elseif (iIndex == 4)
+      if bInSameLocation(InnHoldLocations.GetAt(iIndex) As Location) || bInSameLocation(DLC1VampireCastleLocation) ;Solitude or Castle Volkihar
+        if (PlayerMarker.GetDistance(akMarker) >= fRPMinDistance)
+          return akMarker
+        endif
+      endif
+    elseif bInSameLocation(InnHoldLocations.GetAt(iIndex) As Location)
+      if (PlayerMarker.GetDistance(akMarker) >= fRPMinDistance)
+        return akMarker
+      endif
+    endif
+  endwhile
+  return None
+endfunction
 
-Bool Function bSendToExternalMarker(Int iExternalIndex)
-	ObjectReference akMarker
-	Int iIndex = -1
-	If moaERPCount.GetValueInt() > 0
-		If iExternalIndex > -1 && iExternalIndex < moaERPCount.GetValueInt()
-			akMarker = getFromMergedFormList(MergedExternalMarkerList,iExternalIndex) As ObjectReference
-			If akMarker && (akMarker.GetParentCell() != PlayerRef.GetParentCell()) && \
-			bCanTeleportToExtMarker(akMarker) && (PlayerRef.GetDistance(akMarker) >= fRPMinDistance)
-				If bIsArrived(akMarker)
-					Return True
-				EndIf
-			EndIf
-			iIndex = iExternalIndex
-		EndIf
-		Int i = iMin(3,moaERPCount.GetValueInt() - 1)
-		Bool[] bExcludes = Utility.CreateBoolArray(moaERPCount.GetValueInt(),True)
-		If iIndex > -1 && iIndex < moaERPCount.GetValueInt()
-			bExcludes[iIndex] = False
-		EndIf
-		While i > 0
-			i -= 1
-			iIndex = RandomIntWithExclusionArray(0,moaERPCount.GetValueInt() - 1,bExcludes)
-			akMarker = getFromMergedFormList(MergedExternalMarkerList,iIndex) As ObjectReference
-			If akMarker && (akMarker.GetParentCell() != PlayerRef.GetParentCell()) && \
-			bCanTeleportToExtMarker(akMarker) && (PlayerRef.GetDistance(akMarker) >= fRPMinDistance)
-				If bIsArrived(akMarker)
-					Return True
-				EndIf
-			EndIf
-			bExcludes[iIndex] = False
-		EndWhile
-	EndIf
-	Return False
-EndFunction
+ObjectReference function FindMarkerByDistance()
+  Float fDistance
+  ObjectReference Marker
+  Int iIndex = DynamicMarkerList.Length
+  while iIndex > 0
+    iIndex -= 1
+    if (ExcludedMarkerList.find(DynamicMarkerList[iIndex]) < 0)
+      if (!PlayerMarker.IsInInterior() || (PlayerMarker.GetParentCell() == DynamicMarkerList[iIndex].GetParentCell()))
+        if (!fDistance || (fDistance > PlayerMarker.GetDistance(DynamicMarkerList[iIndex])))
+          fDistance = PlayerMarker.GetDistance(DynamicMarkerList[iIndex])
+          Marker = DynamicMarkerList[iIndex]
+        endif
+      endif
+    endif
+  endwhile
+  if (Marker && fDistance && fDistance <= 50000.0)
+    return Marker
+  endif
+  return None
+endfunction
 
-Function Teleport()
-	PlayerMarker.Enable()
-	PlayerMarker.MoveTo(playerRef)
-	PlayerMarker.SetPosition(PlayerRef.GetPositionx(), PlayerRef.GetPositiony(), PlayerRef.GetPositionz())
-	PlayerMarker.SetAngle(0.0, 0.0, PlayerRef.GetAnglez())
-	moaERPCount.SetValue(MergedExternalMarkerSubList.GetSize() + ExternalLocationMarkerList.GetSize() + ExtraCustomMarkerList.GetSize())
-	If iTeleportLocation < (ConfigMenu.getNearbyCityRPIndex())
-		If ConfigMenu.bMoreRandomRespawn
-			moaRandomDestination.SetValueInt(0)
-			TeleportDestination.Revert()
-			TeleportDestination.AddForm(LocationsList.GetAt(iTeleportLocation) As Location)
-			DisabledLocations.Revert()
-			Int i = LocationsList.GetSize()
-			While i > 0
-				i -= 1
-				If !ConfigMenu.bRespawnPointsFlags[i] && (i != iTeleportLocation)
-					DisabledLocations.AddForm(LocationsList.GetAt(i) As Location)
-				EndIf
-			Endwhile
-			If !ConfigMenu.bRespawnPointsFlags[8]
-				DisabledLocations.AddForm(InnHoldLocations.GetAt(8) As Location)
-			EndIf
-			If !ConfigMenu.bRespawnPointsFlags[9]
-				DisabledLocations.AddForm(InnHoldLocations.GetAt(9) As Location)
-			EndIf
-			If bTryToMoveByQuest(moaRandomCityDetector, RandomCityTeleportRef, 7, FailedDestinations)
-				Return
-			EndIf
-		EndIf
-		If (PlayerRef.GetDistance(MarkerList.GetAt(iTeleportLocation) As Objectreference) >= fRPMinDistance)
-			If !bIsArrived(MarkerList.GetAt(iTeleportLocation) As Objectreference)
-				SendToAnotherLocation()
-			EndIf 
-		Else
-			 SendToAnotherLocation()
-		EndIf
-	ElseIf iTeleportLocation == (ConfigMenu.getNearbyCityRPIndex())
-		sendToNearbyCity()
-	ElseIf iTeleportLocation == (ConfigMenu.getRandCityRPIndex())
-		sendToRandomCity()
-	ElseIf iTeleportLocation == (ConfigMenu.getTavernRPIndex())
-		If iTavernIndex == ConfigMenu.getNearbyInnRPIndex()
-			sendToNearbyInn()
-		ElseIf iTavernIndex == ConfigMenu.getRandInnRPIndex()
-			sendToRandomInn()
-		Else
-			ObjectReference Marker = TavernMarkers[iTavernIndex] As ObjectReference
-			If (PlayerMarker.GetDistance(Marker) >= fRPMinDistance) && bIsArrived(Marker)
-				Return
-			Else
-				SendToAnotherLocation()	
-			EndIf
-		EndIf
-	ElseIf iTeleportLocation == (ConfigMenu.getSleepRPIndex())
-		If !bSendToSleepMarker()
-			If !bSendToCustomMarker(iCustomRPSlot)
-				SendToAnotherLocation()	
-			EndIf
-		EndIf
-	ElseIf iTeleportLocation == (ConfigMenu.getCustomRPIndex())
-		If !bSendToCustomMarker(iCustomRPSlot)
-			If !bSendToSleepMarker()
-				SendToAnotherLocation()	
-			EndIf
-		EndIf
-	ElseIf iTeleportLocation == (ConfigMenu.getExternalRPIndex())
-		If !bSendToExternalMarker(iExternalIndex)
-			If !bSendToSleepMarker()
-				If !bSendToCustomMarker(iCustomRPSlot)
-					SendToAnotherLocation()	
-				EndIf
-			EndIf
-		EndIf
-	ElseIf iTeleportLocation == (ConfigMenu.getCheckpointRPIndex())
-		SendToCheckPoint()
-	ElseIf iTeleportLocation == (ConfigMenu.getNearbyRPIndex())
-		SendToNearbyLocation()	
-	ElseIf iTeleportLocation == (ConfigMenu.getRandomRPIndex())
-		RandomTeleport()
-	ElseIf iTeleportLocation == (ConfigMenu.getThroatRPIndex())
-		If !bSendToTOW()
-			SendToAnotherLocation()	
-		EndIf
-	EndIf
-	PlayerMarker.MoveToMyEditorLocation()
-	PlayerMarker.Disable()
-EndFunction
+ObjectReference function FindMarkerByLocation()
+  Int iIndex = DynamicMarkerList.Length
+  while iIndex > 0
+    iIndex -= 1
+    if (ExcludedMarkerList.find(DynamicMarkerList[iIndex]) < 0)
+      if (iIndex >= (DynamicMarkerList.Length - 2)) ;DetachMarker2 or DetachMarker1
+        if (bInSameLocation(DynamicMarkerList[iIndex].GetCurrentLocation()) || (IsInInteriorActual(PlayerMarker) != IsInInteriorActual(DynamicMarkerList[iIndex])))
+          return DynamicMarkerList[iIndex]
+        endif
+      else
+        if bInSameLocation(DynamicMarkerList[iIndex].GetCurrentLocation())
+          return DynamicMarkerList[iIndex]
+        endif
+      endif
+    endif
+  endwhile
+  iIndex = LocationsList.GetSize()
+  while (iIndex > 0)
+    iIndex -= 1
+    if (ExcludedMarkerList.find(MarkerList.GetAt(iIndex) As ObjectReference) < 0)
+      if (iIndex == 3)
+        if bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(DLC1HunterHQLocation) ;Riften or Dayspring Canyon
+          if ConfigMenu.bRespawnPointsFlags[iIndex]
+            return (MarkerList.GetAt(iIndex) As ObjectReference)
+          endif
+        endif
+      elseif (iIndex == 4)
+        if bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(HjaalmarchHoldLocation) || bInSameLocation(DLC1VampireCastleLocation) ;Solitude or Morthal or Castle Volkihar
+          if ConfigMenu.bRespawnPointsFlags[iIndex]
+            return (MarkerList.GetAt(iIndex) As ObjectReference)
+          endif
+        endif
+      elseif (iIndex == 6)
+        if (bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(PaleHoldLocation)) ;Winterhold or Dawnstar
+          if ConfigMenu.bRespawnPointsFlags[iIndex]
+            return (MarkerList.GetAt(iIndex) As ObjectReference)
+          endif
+        endif
+      elseif bInSameLocation(LocationsList.GetAt(iIndex) As Location)
+        if ConfigMenu.bRespawnPointsFlags[iIndex]
+          return (MarkerList.GetAt(iIndex) As ObjectReference)
+        endif
+      endif
+    endif
+  endwhile
+  if moaERPCount.GetValueInt() > 0
+    Int iLast = iMin(128, moaERPCount.GetValueInt())
+    Int jIndex = 0
+    ObjectReference Marker
+    while jIndex < iLast
+      Marker = getFromMergedFormList(MergedExternalMarkerList, jIndex) As ObjectReference
+      if (ExcludedMarkerList.find(Marker) < 0)
+        if bInSameLocation((Marker).GetCurrentLocation())
+          return Marker
+        endif
+      endif
+      jIndex += 1
+    endwhile
+  endif
+endfunction
 
-Bool Function bIsCurrentCell(int iIndex, Bool bTavernMarker = False)
-	If bTavernMarker
-		Return ((TavernMarkers[iIndex]  As Objectreference).GetParentCell() == PlayerMarker.GetParentCell())
-	EndIf
-	Return ((( MarkerList.GetAt(iIndex))  As Objectreference ).GetParentCell() == PlayerMarker.GetParentCell() )
-EndFunction
+ObjectReference function FindMarkerByOrder()
+  if (ExcludedMarkerList.find(DetachMarker2) < 0)
+    return DetachMarker2
+  endif
+  if (ExcludedMarkerList.find(DetachMarker1) < 0)
+    return DetachMarker1
+  endif
+  if (ExcludedMarkerList.find(LocationMarker) < 0)
+    return LocationMarker
+  endif
+  if (ExcludedMarkerList.find(CellLoadMarker) < 0)
+    return CellLoadMarker
+  endif
+  if (ExcludedMarkerList.find(LocationMarker2) < 0)
+    return LocationMarker2
+  endif
+  if (ExcludedMarkerList.find(DetachMarker3) < 0)
+    return DetachMarker3
+  endif
+  if (ExcludedMarkerList.find(CellLoadMarker2) < 0)
+    return CellLoadMarker2
+  endif
+  return None
+endfunction
 
-Bool Function bCanTeleport()
-	Int iIndex = QuestBlackList.GetSize()
-	While iIndex > 0
-		iIndex -= 1
-		Quest ForbidenQuest = QuestBlackList.GetAt(iIndex) As Quest
-		If ForbidenQuest
-			If ForbidenQuest.IsRunning()
-				ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: You can't Respawn while " + ForbidenQuest + " is running.")
-				Return False
-			EndIf
-		EndIf
-	EndWhile
-	If isJsonBlacklistedQuestsRunning()
-		ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: You can't Respawn while a blacklisted quest is running.")
-		Return False
-	EndIf
-	Location CurrLoc = PlayerRef.GetCurrentLocation()
-	If CurrLoc
-		If CurrLoc.HasKeywordString("loctypejail")
-			ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Respawn from jail is disabled.")
-			Return False
-		EndIf
-		If bIsLocForbidden(CurrLoc) || bIsRespawnForbidden(CurrLoc)
-			ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Respawn from " + CurrLoc + " is disabled.")
-			Return False
-		EndIf
-	EndIf
-	Return True
-EndFunction
+function InitializeDynamicMarkers()
+  DynamicMarkerList = new ObjectReference[12]
+  DynamicMarkerList[0] = CellLoadMarker2
+  DynamicMarkerList[1] = DetachMarker3
+  DynamicMarkerList[2] = LocationMarker2
+  DynamicMarkerList[3] = SleepMarker
+  DynamicMarkerList[4] = CellLoadMarker
+  DynamicMarkerList[5] = LocationMarker
+  DynamicMarkerList[6] = DetachMarker1
+  DynamicMarkerList[7] = DetachMarker2
+  DynamicMarkerList[8] = CustomRespawnPoints.GetAt(0) As ObjectReference
+  DynamicMarkerList[9] = CustomRespawnPoints.GetAt(1) As ObjectReference
+  DynamicMarkerList[10] = CustomRespawnPoints.GetAt(2) As ObjectReference
+  DynamicMarkerList[11] = CustomRespawnPoints.GetAt(3) As ObjectReference
+endfunction
 
-Bool Function isJsonBlacklistedQuestsRunning()
-	If ConfigMenu.bPUOK
-		If JsonUtil.JsonExists("/MarkofArkay/MOA_BlackLists")
-			Form[] QuestArr = JsonUtil.FormListToArray("/MarkofArkay/MOA_BlackLists", "QuestBlackList")
-			Int i = QuestArr.Length
-			While i > 0
-				i -= 1
-				If (QuestArr[i] As Quest) && (QuestArr[i] As Quest).IsRunning()
-					Return True
-				EndIf
-			Endwhile
-		EndIf
-	EndIf
-	Return False
-EndFunction
+function InitializeExcludedMarkers()
+  ExcludedMarkerList = new ObjectReference[128]
+  Int i
+  int j = DynamicMarkerList.Length
+  while j > 0
+    j -= 1
+    if (!bCanTeleportToDynMarker(DynamicMarkerList[j]) || (PlayerMarker.GetDistance(DynamicMarkerList[j]) < fRPMinDistance))
+      i = ExcludedMarkerList.Find(None)
+      if i > -1
+        ExcludedMarkerList[i] = DynamicMarkerList[j]
+      endif
+    endif
+  endwhile
+  j = MarkerList.GetSize()
+  while j > 0
+    j -= 1
+    if (PlayerMarker.GetDistance(MarkerList.GetAt(j) As ObjectReference) < fRPMinDistance)
+      i = ExcludedMarkerList.Find(None)
+      if i > -1
+        ExcludedMarkerList[i] = (MarkerList.GetAt(j) As ObjectReference)
+      endif
+    endif
+  endwhile
+  if moaERPCount.GetValueInt() > 0
+    Int iLast = iMin(90, moaERPCount.GetValueInt())
+    ObjectReference marker
+    j = 0
+    while j < iLast
+      marker = getFromMergedFormList(MergedExternalMarkerList, j) As ObjectReference
+      if ((marker.GetType() != 61) || !bCanTeleportToExtMarker(marker) || (PlayerMarker.GetDistance(marker) < fRPMinDistance))
+        i = ExcludedMarkerList.Find(None)
+        if i > -1
+          ExcludedMarkerList[i] = marker
+        endif
+      endif
+      j += 1
+    endwhile
+  endif
+endfunction
 
+Bool function IsInInteriorActual(ObjectReference akObjectReference)
+  if akObjectReference.IsInInterior()
+    return True
+  endif
+  if WorldspacesInterior.HasForm(akObjectReference.GetWorldSpace())
+    return True
+  endif
+  return False
+endfunction
 
-Bool Function bCanTeleportToExtMarker( Objectreference ExternalMarker )
-	If ExternalMarker
-		Int iIndex = LocationBlackList.GetSize()
-		While iIndex > 0
-			iIndex -= 1
-			If ExternalMarker.IsInLocation(LocationBlackList.GetAt(iIndex) As Location)
-				Return False
-			EndIf
-		EndWhile
-		If ( !ExternalMarker.IsDisabled() && ( ExternalMarker.GetParentCell() != ReviveScript.DefaultCell ) )
-			Return True
-		EndIf
-	EndIf
-	Return False
-EndFunction
+function PassTime(Float fGameHours, Float fRealSecs)
+  if !ConfigMenu.bDisableUnsafe && fGameHours > 0.0 && fRealSecs > 0.0
+    DefaultTimeScale = TimeScale.GetValue()
+    TimeScale.SetValue((3600.0 / fRealSecs) * fGameHours)
+    Utility.Wait(fRealSecs)
+    TimeScale.SetValue(DefaultTimeScale)
+    PlayerRef.StopCombatalarm()
+  else
+    Utility.Wait(fRealSecs)
+  endif
+endfunction
 
-Bool Function bIsLocForbidden(Location akLoc)
-	Int iIndex = LocationBlackList.GetSize()
-	While iIndex > 0
-		iIndex -= 1
-		Location ForbiddenLocation = LocationBlackList.GetAt(iIndex) As Location
-		If ForbiddenLocation
-			If akLoc == ForbiddenLocation || ForbiddenLocation.IsChild(akLoc)
-				Return True
-			EndIf
-		EndIf
-	EndWhile
-	Return False
-Endfunction
+function RandomTeleport()
+  if ConfigMenu.bMoreRandomRespawn
+    DisabledLocations.Revert()
+    Int i = LocationsList.GetSize()
+    while i > 0
+      i -= 1
+      if !ConfigMenu.bRespawnPointsFlags[i]
+        DisabledLocations.AddForm(LocationsList.GetAt(i) As Location)
+      endif
+    endwhile
+    if !ConfigMenu.bRespawnPointsFlags[8]
+      DisabledLocations.AddForm(InnHoldLocations.GetAt(8) As Location)
+    endif
+    if !ConfigMenu.bRespawnPointsFlags[9]
+      DisabledLocations.AddForm(InnHoldLocations.GetAt(9) As Location)
+    endif
+    if bTryToMoveByQuest(moaRandomMarkerDetector, RandomTeleportRef, 7, FailedDestinations)
+      return
+    endif
+  endif
+  Destinations.Revert()
+  int iIndex = 0
+  Int iRandom = 0
+  while iIndex < MarkerList.GetSize()
+    if ConfigMenu.bRespawnPointsFlags[iIndex] && PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As Objectreference) >= fRPMinDistance
+      Destinations.AddForm(MarkerList.GetAt(iIndex) As Objectreference)
+    endif
+    iIndex += 1
+  endwhile
+  Bool[] bInnFlags = bGetTavernFlags()
+  iIndex = InnLocations.GetSize()
+  while iIndex > 0
+    iIndex -= 1
+    if bInnFlags[iIndex]
+      Destinations.AddForm(TavernMarkers[iIndex] As ObjectReference)
+    endif
+  endwhile
+  if bCanTeleportToDynMarker(SleepMarker) && PlayerMarker.GetDistance(SleepMarker) >= fRPMinDistance
+    Destinations.AddForm(SleepMarker)
+  endif
+  iIndex = 0
+  while iIndex < CustomRespawnPoints.GetSize()
+    if bCanTeleportToDynMarker(CustomRespawnPoints.GetAt(iIndex) As ObjectReference)
+      if PlayerMarker.GetDistance(CustomRespawnPoints.GetAt(iIndex) As ObjectReference) >= fRPMinDistance
+        Destinations.AddForm(CustomRespawnPoints.GetAt(iIndex) As ObjectReference)
+      endif
+    endif
+    iIndex += 1
+  endwhile
+  if moaERPCount.GetValueInt() > 0
+    Int iLast = iMin(128, moaERPCount.GetValueInt())
+    iIndex = 0
+    ObjectReference Marker
+    while iIndex < iLast
+      Marker = getFromMergedFormList(MergedExternalMarkerList, iIndex) As ObjectReference
+      if !((Marker.GetType() != 61) || !bCanTeleportToExtMarker(Marker) || (PlayerMarker.GetDistance(Marker) < fRPMinDistance))
+        Destinations.AddForm(Marker)
+      endif
+      iIndex += 1
+    endwhile
+  endif
+  if bCanTeleportToDynMarker(CellLoadMarker2) && PlayerMarker.GetDistance(CellLoadMarker2) >= fRPMinDistance
+    Destinations.AddForm(CellLoadMarker2)
+  endif
+  if bCanTeleportToDynMarker(DetachMarker3) && PlayerMarker.GetDistance(DetachMarker3) >= fRPMinDistance
+    Destinations.AddForm(DetachMarker3)
+  endif
+  if bCanTeleportToDynMarker(LocationMarker2) && PlayerMarker.GetDistance(LocationMarker2) >= fRPMinDistance
+    Destinations.AddForm(LocationMarker2)
+  endif
+  if bCanTeleportToDynMarker(CellLoadMarker) && PlayerMarker.GetDistance(CellLoadMarker) >= fRPMinDistance
+    Destinations.AddForm(CellLoadMarker)
+  endif
+  if bCanTeleportToDynMarker(LocationMarker) && PlayerMarker.GetDistance(LocationMarker) >= fRPMinDistance
+    Destinations.AddForm(LocationMarker)
+  endif
+  if bCanTeleportToDynMarker(DetachMarker1) && PlayerMarker.GetDistance(DetachMarker1) >= fRPMinDistance
+    Destinations.AddForm(DetachMarker1)
+  endif
+  if bCanTeleportToDynMarker(DetachMarker2) && PlayerMarker.GetDistance(DetachMarker2) >= fRPMinDistance
+    Destinations.AddForm(DetachMarker2)
+  endif
+  iIndex = Destinations.GetSize()
+  while iIndex > 0
+    iRandom = Utility.RandomInt(0, Destinations.GetSize() - 1)
+    if bIsArrived(Destinations.GetAt(iRandom) As ObjectReference)
+      return
+    else
+      Destinations.RemoveAddedForm(Destinations.GetAt(iRandom))
+    endif
+    iIndex -= 1
+  endwhile
+  if !bSendToTOW()
+    SendToDefaultMarker()
+  endif
+endfunction
 
-Bool Function bIsRespawnForbidden(Location akLoc)
-	Int iIndex = ReviveScript.LocationBlackList2.GetSize()
-	While iIndex > 0
-		iIndex -= 1
-		Location ForbiddenLocation = ReviveScript.LocationBlackList2.GetAt(iIndex) As Location
-		If ForbiddenLocation
-			If akLoc == ForbiddenLocation || ForbiddenLocation.IsChild(akLoc)
-				Return True
-			EndIf
-		EndIf
-	EndWhile
-	Return False
-Endfunction
+function Respawn()
+  bFirstTry = True
+  bFirstTryFailed = False
+  if (ConfigMenu.bSendToJail && !ReviveScript.NPCScript.bInBeastForm() && ReviveScript.NPCScript.bGuardCanSendToJail())
+    ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Sending Player to jail...")
+    Faction CrimeFaction = ReviveScript.Guard.GetCrimeFaction()
+    if (CrimeFaction)
+      if (CrimeFaction == CrimeFactionPale)
+        bIsArrived(DawnstarJailMarker)
+      elseif (CrimeFaction == CrimeFactionFalkreath)
+        bIsArrived(FalkreathJailMarker)
+      elseif (CrimeFaction == CrimeFactionHjaalmarch)
+        bIsArrived(MorthalJailMarker)
+      elseif (CrimeFaction == CrimeFactionHaafingar)
+        bIsArrived(SolitudeJailMarker)
+      elseif (CrimeFaction == CrimeFactionRift)
+        bIsArrived(RiftenJailMarker)
+      elseif (CrimeFaction == CrimeFactionWhiterun)
+        bIsArrived(WhiterunJailMarker)
+      elseif (CrimeFaction == CrimeFactionEastmarch)
+        bIsArrived(WindhelmJailMarker)
+      elseif (CrimeFaction == CrimeFactionWinterhold)
+        bIsArrived(WinterholdJailMarker)
+      elseif (CrimeFaction == CrimeFactionReach)
+        bIsArrived(MarkarthJailMarker)
+        ReviveScript.bCidhnaJail = True
+      elseif (CrimeFaction == DLC2CrimeRavenRockFaction)
+        bIsArrived(DLC2RavenRockJailMarker)
+      endif
+      ReviveScript.NPCScript.ReleaseFollowers()
+      Utility.Wait(0.5)
+      CrimeFaction.SendPlayerToJail(abRemoveInventory=True, abRealJail=True)
+      ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Player is jailed")
+    else
+      ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Teleporting...")
+      Teleport()
+      ReviveScript.NPCScript.RespawnFollowers()
+      ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Teleportion finished.")
+    endif
+  else
+    ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Teleporting...")
+    Teleport()
+    ReviveScript.NPCScript.RespawnFollowers()
+    ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Teleportion finished.")
+  endif
+endfunction
 
-Bool Function bCanTeleportToDynMarker(Objectreference Marker)
-	If Marker 
-		Location CurrLoc = Marker.GetCurrentLocation()
-		If CurrLoc && (CurrLoc.HasKeywordString("loctypejail") || bIsLocForbidden(CurrLoc))
-			Return False
-		EndIf	
-		If !Marker.IsDisabled()
-			If ( Marker.GetParentCell() != ReviveScript.DefaultCell )
-				Return True
-			EndIf
-		EndIf
-	EndIf
-	Return False
-EndFunction
+Int function RespawnMenu(Int aiMessage=0, Int aiButton=0)
+  Int iIndex = 1
+  while True
+    if aiButton == -1 ; Can prevent problems if recycling aiButton
+    elseif aiMessage == 0
+      aiButton = moaRespawnMenu0.Show()
+      if aiButton == -1
+      elseif aiButton < ConfigMenu.getNearbyCityRPIndex() ;Whiterun,...,Raven Rock
+        return aiButton
+      elseif aiButton == ConfigMenu.getNearbyCityRPIndex() ;More
+        aiMessage = 1
+      endif
+    elseif aiMessage == 1
+      aiButton = moaRespawnMenu1.Show()
+      if aiButton == -1
+      elseif aiButton == 0 ;City
+        aiMessage = 4
+      elseif aiButton == 1 ;Inn
+        aiMessage = 5
+      elseif aiButton == 3 ;Custom
+        aiMessage = 2
+      elseif aiButton == 4
+        aiMessage = 3 ;External
+      elseif aiButton < 9 ;Nearby City,...,TOW
+        return (aiButton + ConfigMenu.getRandCityRPIndex()) ;aibutton+9
+      elseif aiButton == 9 ;Less
+        aiMessage = 0
+      endif
+    elseif aiMessage == 2 ;Custom
+      aiButton = moaCustomRespawnMenu.Show(ConfigMenu.iSelectedCustomRPSlot + 1)
+      if aiButton == -1
+      elseif aiButton == 4 ;Details
+        ConfigMenu.ShowCustomSlotsInfo()
+      elseif aiButton == 5 ;Back
+        aiMessage = 1
+      else
+        return -3 - aiButton ;0-> -3, 1-> -4, 2-> -5
+      endif
+    elseif aiMessage == 3
+      if moaERPCount.GetValueInt() > 7
+        aiButton = moaRespawnMenu13_Alt.Show(iIndex)
+        if aiButton == -1
+        elseif aiButton == 0 ;Prev
+          iIndex = ichangeVar(iIndex, 1, moaERPCount.GetValueInt(), -1)
+        elseif aiButton == 1 ;Next
+          iIndex = ichangeVar(iIndex, 1, moaERPCount.GetValueInt(), 1)
+        elseif aiButton == 2 ;Input
+          if ConfigMenu.bUIEOK
+            UITextEntryMenu TextMenu = uiextensions.GetMenu("UITextEntryMenu", True) as UITextEntryMenu
+            TextMenu.SetPropertyString("text", (iIndex) As String)
+            TextMenu.OpenMenu(none, none)
+            String sResult = TextMenu.GetResultString()
+            TextMenu.ResetMenu()
+            if sResult && bIsInteger(sResult) && ((sResult As Int) - 1) > -1 && ((sResult As Int) - 1) < moaERPCount.GetValueInt()
+              iIndex = (sResult As Int)
+            endif
+          endif
+        elseif aiButton == 3 ;Check
+          ConfigMenu.ShowExtraRPInfo(iIndex - 1, 1)
+        elseif aiButton == 4 ;OK
+          return (iIndex + (ConfigMenu.sRespawnPoints.Length - 1))
+        elseif aiButton == 5 ;External(Random)
+          return -1
+        elseif aiButton == 6 ;Back
+          aiMessage = 1
+        endif
+      else
+        aiButton = moaRespawnMenu13.Show()
+        if aiButton == -1
+        elseif aiButton < 7 ;External(1,...,7)
+          return (aiButton + (ConfigMenu.sRespawnPoints.Length))
+        elseif aiButton == 7 ;External(Random)
+          return -1
+        elseif aiButton == 8 ;Details
+          ConfigMenu.ShowExtraRPInfo(0, 7)
+        elseif aiButton == 9 ;Back
+          aiMessage = 1
+        endif
+      endif
+    elseif aiMessage == 4
+      aiButton = moaRespawnMenu10.Show()
+      if aiButton == -1
+      elseif aiButton == 0
+        return ConfigMenu.getNearbyCityRPIndex()
+      elseif aiButton == 1
+        return ConfigMenu.getRandCityRPIndex()
+      elseif aiButton == 2
+        aiMessage = 1
+      endif
+    elseif aiMessage == 5
+      aiButton = moaRespawnMenu11.Show()
+      if aiButton == -1
+      elseif aiButton == 0
+        aiMessage = 6
+      elseif aiButton == 1
+        aiMessage = 7
+      elseif aiButton == 2
+        aiMessage = 8
+      elseif aiButton == 3
+        aiMessage = 9
+      elseif aiButton == 4
+        aiMessage = 10
+      elseif aiButton == 5
+        aiMessage = 11
+      elseif aiButton == 6
+        aiMessage = 12
+      elseif aiButton == 7
+        aiMessage = 13
+      elseif aiButton == 8 ;more
+        aiMessage = 14
+      elseif aiButton == 9 ;back
+        aiMessage = 1
+      endif
+    elseif aiMessage == 6 ;Whiterun Inns (3)
+      aiButton = moaRespawnMenu110.Show()
+      if aiButton == -1
+      elseif aiButton < 3
+        iTavernIndex = aiButton
+        return ConfigMenu.getTavernRPIndex()
+      elseif aiButton == 3
+        aiMessage = 5
+      endif
+    elseif aiMessage == 7 ;Falkreath Inn (1)
+      aiButton = moaRespawnMenu111.Show()
+      if aiButton == -1
+      elseif aiButton < 1
+        iTavernIndex = aiButton + 3
+        return ConfigMenu.getTavernRPIndex()
+      elseif aiButton == 1
+        aiMessage = 5
+      endif
+    elseif aiMessage == 8 ;Markarth Inn (2)
+      aiButton = moaRespawnMenu112.Show()
+      if aiButton == -1
+      elseif aiButton < 2
+        iTavernIndex = aiButton + 4
+        return ConfigMenu.getTavernRPIndex()
+      elseif aiButton == 2
+        aiMessage = 5
+      endif
+    elseif aiMessage == 9 ;Riften Inn (1)
+      aiButton = moaRespawnMenu113.Show()
+      if aiButton == -1
+      elseif aiButton == 0 ;The Bee and Barb
+        iTavernIndex = 6
+        return ConfigMenu.getTavernRPIndex()
+      elseif aiButton == 1 ;Vilemyr Inn
+        iTavernIndex = 16
+        return ConfigMenu.getTavernRPIndex()
+      elseif aiButton == 2
+        aiMessage = 5
+      endif
+    elseif aiMessage == 10 ;Solitude Inn (2)
+      aiButton = moaRespawnMenu114.Show()
+      if aiButton == -1
+      elseif aiButton < 2
+        iTavernIndex = aiButton + 7
+        return ConfigMenu.getTavernRPIndex()
+      elseif aiButton == 2
+        aiMessage = 5
+      endif
+    elseif aiMessage == 11 ;Windhelm Inn (2)
+      aiButton = moaRespawnMenu115.Show()
+      if aiButton == -1
+      elseif aiButton < 2
+        iTavernIndex = aiButton + 9
+        return ConfigMenu.getTavernRPIndex()
+      elseif aiButton == 2
+        aiMessage = 5
+      endif
+    elseif aiMessage == 12 ;Winterhold Inn (1)
+      aiButton = moaRespawnMenu116.Show()
+      if aiButton == -1
+      elseif aiButton < 1
+        iTavernIndex = aiButton + 11
+        return ConfigMenu.getTavernRPIndex()
+      elseif aiButton == 1
+        aiMessage = 5
+      endif
+    elseif aiMessage == 13 ;Raven Rock Inn (1)
+      aiButton = moaRespawnMenu117.Show()
+      if aiButton == -1
+      elseif aiButton < 1
+        iTavernIndex = aiButton + 12
+        return ConfigMenu.getTavernRPIndex()
+      elseif aiButton == 1
+        aiMessage = 5
+      endif
+    elseif aiMessage == 14
+      aiButton = moaRespawnMenu118.Show()
+      if aiButton == -1
+      elseif aiButton == 0 ;morthal inn
+        aiMessage = 15
+      elseif aiButton == 1 ;dawnstar inn
+        aiMessage = 16
+      elseif aiButton == 2
+        iTavernIndex = ConfigMenu.getNearbyInnRPIndex()
+        return ConfigMenu.getTavernRPIndex()
+      elseif aiButton == 3
+        iTavernIndex = ConfigMenu.getRandInnRPIndex()
+        return ConfigMenu.getTavernRPIndex()
+      elseif aiButton == 4 ;Less
+        aiMessage = 5
+      elseif aiButton == 5 ;Back
+        aiMessage = 1
+      endif
+    elseif aiMessage == 15
+      aiButton = moaRespawnMenu1180.Show() ;Morthal Inn (1)
+      if aiButton == -1
+      elseif aiButton < 1
+        iTavernIndex = aiButton + 13
+        return ConfigMenu.getTavernRPIndex()
+      elseif aiButton == 1
+        aiMessage = 5
+      endif
+    elseif aiMessage == 16
+      aiButton = moaRespawnMenu1181.Show() ;Dawnstar Inn (2)
+      if aiButton == -1
+      elseif aiButton < 2
+        iTavernIndex = aiButton + 14
+        return ConfigMenu.getTavernRPIndex()
+      elseif aiButton == 2
+        aiMessage = 5
+      endif
+    endif
+  endwhile
+endfunction
 
-Int Function iGetRandomRefFromListWithExclusions( Int iFrom, Int iTo, Formlist RefList) 
-	Int ExcludeCount = 0
-	int iIndex = 0
-	Int iRandom = 0
-	ObjectReference MarkerRef
-	While iIndex < RefList.GetSize()
-		If RefList.GetAt(iIndex).GetType() != 61
-			ExcludeCount += 1
-		Else
-			MarkerRef = ( RefList.GetAt(iIndex) As ObjectReference )
-			If ( !bCanTeleportToExtMarker( MarkerRef ) || bIsRefInCurrentCell( MarkerRef ) )
-				ExcludeCount += 1
-			EndIf
-		EndIf
-		iIndex += 1
-	Endwhile
-	If ( ExcludeCount == RefList.GetSize() )
-		Return -1
-	EndIf
-	iRandom = Utility.RandomInt(iFrom, iTo - ExcludeCount)
-	 iIndex = 0 
-	 While ( iIndex < RefList.GetSize() )
-		MarkerRef = ( RefList.GetAt(iIndex) As ObjectReference )
-		If ( iRandom < iIndex )
-			Return iRandom
-		ElseIf (( iRandom >= iIndex ) && (( RefList.GetAt(iIndex).GetType() != 61 ) || !bCanTeleportToExtMarker( MarkerRef ) || BIsRefInCurrentCell( MarkerRef ) ))
-			iRandom += 1
-		EndIf
-		iIndex += 1
-	EndWhile
-	Return iRandom
-EndFunction
+function SelectRespawnPointbyMenu()
+  moaERPCount.SetValue(MergedExternalMarkerSubList.GetSize() + ExternalLocationMarkerList.GetSize() + ExtraCustomMarkerList.GetSize())
+  iTeleportLocation = RespawnMenu()
+  if ((iTeleportLocation == -1) || (iTeleportLocation > (ConfigMenu.sRespawnPoints.Length - 1)))
+    if (iTeleportLocation == -1)
+      iExternalIndex = iTeleportLocation
+    else
+      iExternalIndex = (iTeleportLocation - (ConfigMenu.sRespawnPoints.Length))
+    endif
+    iTeleportLocation = ConfigMenu.getExternalRPIndex()
+  elseif iTeleportLocation < -2
+    iCustomRPSlot = (iTeleportLocation * -1) - 3 ; -3-> 0, -4-> 1, -5-> 2, -6->3
+    iTeleportLocation = ConfigMenu.getCustomRPIndex() ;Custom
+  endif
+endfunction
 
-Bool Function BIsRefInCurrentCell ( ObjectReference MarkerRef)
-	Return (( MarkerRef ).GetParentCell() == PlayerRef.GetParentCell() )
-EndFunction
+function SendToAnotherLocation()
+  ObjectReference Marker = FindInnMarkerByLocation()
+  if Marker && bIsArrived(Marker)
+    return
+  endif
+  Marker = FindCityMarkerByLocation()
+  if Marker && bIsArrived(Marker)
+    return
+  endif
+  sendToRandomInn()
+endfunction
 
-Function sendToRandomCity()
-	Int i
-	If ConfigMenu.bMoreRandomRespawn
-		moaRandomDestination.SetValueInt(1)
-		DisabledLocations.Revert()
-		i = LocationsList.GetSize()
-		While i > 0
-			i -= 1
-			If !ConfigMenu.bRespawnPointsFlags[i]
-				DisabledLocations.AddForm(LocationsList.GetAt(i) As Location)
-			EndIf
-		Endwhile
-		If bTryToMoveByQuest(moaRandomCityDetector, RandomCityTeleportRef, 7, FailedDestinations)
-			Return
-		EndIf
-	EndIf
-	i = iGetRandomWithExclusionArray(0, ( MarkerList.GetSize() - 1 ), ConfigMenu.bRespawnPointsFlags)
-	If i > -1
-		bIsArrived( MarkerList.GetAt(i) As Objectreference )
-	Else
-		SendToDefaultMarker()
-	EndIf
-EndFunction
+function SendToCheckPoint()
+  InitializeDynamicMarkers()
+  InitializeExcludedMarkers()
+  if !TryToMoveByDistanceNear()
+    if !TryToMoveByLocation()
+      if !TryToMoveByDistanceCity()
+        if !TryToMoveByOrder()
+          if !TryToMoveByDistanceFar()
+            if (ExcludedMarkerList.find(SleepMarker) < 0)
+              if bIsArrived(SleepMarker)
+                return
+              endif
+            endif
+            Int i = 0
+            while i < CustomRespawnPoints.getSize()
+              if ExcludedMarkerList.find(CustomRespawnPoints.GetAt(i) As ObjectReference) < 0
+                if bSendToCustomMarker(iCustomRPSlot)
+                  return
+                endif
+              endif
+              i += 1
+            endwhile
+            sendToRandomCity()
+          endif
+        endif
+      endif
+    endif
+  endif
+endfunction
 
-ObjectReference Function FindCityMarkerByLocation()
-	Int iIndex = LocationsList.GetSize()
-	While ( iIndex > 0 )
-		iIndex -= 1
-		If (iIndex == 3)
-			If bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(DLC1HunterHQLocation) ;Riften or Dayspring Canyon
-				;If ConfigMenu.bRespawnPointsFlags[iIndex]
-					If ( PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference) >= fRPMinDistance )
-						Return MarkerList.GetAt(iIndex) As ObjectReference
-					EndIf
-				;EndIf
-			EndIf
-		ElseIf ( iIndex == 4 )
-			If bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(HjaalmarchHoldLocation) || bInSameLocation(DLC1VampireCastleLocation) ;Solitude or Morthal or Castle Volkihar
-				;If ConfigMenu.bRespawnPointsFlags[iIndex]
-					If ( PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference) >= fRPMinDistance )
-						Return MarkerList.GetAt(iIndex) As ObjectReference
-					EndIf
-				;EndIf
-			EndIf
-		ElseIf ( iIndex == 6 )
-			If ( bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(PaleHoldLocation) ) ;Winterhold or Dawnstar
-				;If ConfigMenu.bRespawnPointsFlags[iIndex]
-					If ( PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference) >= fRPMinDistance )
-						Return MarkerList.GetAt(iIndex) As ObjectReference
-					EndIf
-				;EndIf
-			EndIf
-		ElseIf bInSameLocation(LocationsList.GetAt(iIndex) As Location)
-			;If ConfigMenu.bRespawnPointsFlags[iIndex]
-				If ( PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference) >= fRPMinDistance )
-					Return MarkerList.GetAt(iIndex) As ObjectReference
-				EndIf
-			;EndIf
-		EndIf
-	EndWhile
-	Return None
-Endfunction
+function SendToDefaultMarker()
+  while !ReviveScript.bReadyForRespawn
+    Utility.Wait(0.1)
+  endwhile
+  if ConfigMenu.bKillIfCantRespawn
+    ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Player is dying because respawn is not possible.")
+    PlayerRef.EndDeferredKill()
+    Utility.Wait(0.1)
+    if !PlayerRef.IsDead()
+      killPlayer()
+    endif
+  else
+    if PlayerMarker.GetParentCell() != ReviveScript.DefaultCell
+      bIsArrived(PlayerMarker)
+    else
+      bIsArrived(PlayerRef As ObjectReference)
+    endif
+  endif
+endfunction
 
-Function SendToNearbyCity()
-	ObjectReference Marker
-	If !IsInInteriorActual(PlayerMarker)
-		Marker = FindCityMarkerByDistance(500000.0)
-		If Marker && bIsArrived(Marker)
-			Return 
-		EndIf
-	EndIf
-	Marker = FindCityMarkerByLocation()
-	If Marker && bIsArrived(Marker)
-		Return 
-	EndIf
-	sendToRandomCity()
-Endfunction
+function SendToNearbyCity()
+  ObjectReference Marker
+  if !IsInInteriorActual(PlayerMarker)
+    Marker = FindCityMarkerByDistance(500000.0)
+    if Marker && bIsArrived(Marker)
+      return
+    endif
+  endif
+  Marker = FindCityMarkerByLocation()
+  if Marker && bIsArrived(Marker)
+    return
+  endif
+  sendToRandomCity()
+endfunction
 
-Bool[] Function bGetTavernFlags()
-	Bool[] flagArr = Utility.CreateBoolArray(InnLocations.GetSize(),True)
-	Int i = InnLocations.GetSize()
-	While i > 0
-		i -= 1
-		If PlayerRef.IsInLocation(InnLocations.GetAt(i) As Location)
-			flagArr[i] = False
-		EndIf
-	Endwhile
-	If !ConfigMenu.bRespawnPointsFlags[0] ;Whiterun
-		flagArr[0] = False ;Sleeping Giant Inn
-		flagArr[1] = False ;The Bannered Mare
-		flagArr[2] = False ;Frostfruit Inn
-	EndIf
-	If !ConfigMenu.bRespawnPointsFlags[1] ;Falkreath
-		flagArr[3] = False ;Dead Man's Drink
-	EndIf
-	If !ConfigMenu.bRespawnPointsFlags[2] ;Markarth
-		flagArr[4] = False ;Silver-Blood Inn
-		flagArr[5] = False ;Old Hroldan Inn
-	EndIf
-	If !ConfigMenu.bRespawnPointsFlags[3] ;Riften
-		flagArr[6] = False ;The Bee and Barb
-		flagArr[16] = False ;Vilemyr Inn
-	EndIf
-	If !ConfigMenu.bRespawnPointsFlags[4] ;Solitude
-		flagArr[7] = False ;The Winking Skeever
-		flagArr[8] = False ;Four Shields Tavern
-	EndIf
-	If !ConfigMenu.bRespawnPointsFlags[5] ;Windhelm
-		flagArr[9] = False ;Candlehearth Hall
-		flagArr[10] = False ;Braidwood Inn
-	EndIf
-	If !ConfigMenu.bRespawnPointsFlags[6] ;Winterhold
-		flagArr[11] = False ;The Frozen Hearth
-	EndIf
-	If !ConfigMenu.bRespawnPointsFlags[7] ;RavenRock
-		flagArr[12] = False ;The Retching Netch
-	EndIf
-	If !ConfigMenu.bRespawnPointsFlags[8] ;Morthal
-		flagArr[13] = False ;Moorside Inn
-	EndIf
-	If !ConfigMenu.bRespawnPointsFlags[9] ;Dawnstar
-		flagArr[14] = False ;Windpeak Inn
-		flagArr[15] = False ;Nightgate Inn
-	EndIf
-	Return flagArr
-Endfunction
+function SendToNearbyInn()
+  ObjectReference Marker
+  if !IsInInteriorActual(PlayerMarker)
+    Marker = FindInnMarkerByDistance(500000.0)
+    if Marker && bIsArrived(Marker)
+      return
+    endif
+  endif
+  Marker = FindInnMarkerByLocation()
+  if Marker && bIsArrived(Marker)
+    return
+  endif
+  sendToRandomInn()
+endfunction
 
-Function sendToRandomInn()
-	Int i = iGetRandomWithExclusionArray(0,InnLocations.GetSize() - 1,bGetTavernFlags(),True)
-	If (i > -1) && bIsArrived( TavernMarkers[i] As ObjectReference )
-		Return
-	Else
-		sendToRandomCity()
-	EndIf
-EndFunction
+function SendToNearbyLocation()
+  findNearbyMarker()
+  if !bTryToMoveByQuest(moaNearbyDetector, TeleportRef, 5, FailedDestinations)
+    SendToCheckPoint()
+  endif
+endfunction
 
-ObjectReference Function getCenterMarker(Location Loc)
-	stopAndConfirm(DestinationCenterDetector)
-	DestinationLocation.ForceLocationTo(Loc)
-	DestinationCenterDetector.Start()
-	Return DestinationCenter.GetReference() As ObjectReference
-Endfunction
+function SetVars()
+  fRPMinDistance = ConfigMenu.fRPMinDistanceSlider
+  iTeleportLocation = ConfigMenu.iTeleportLocation
+  iExternalIndex = ConfigMenu.iExternalIndex
+  iTavernIndex = ConfigMenu.iTavernIndex
+  iCustomRPSlot = ConfigMenu.iSelectedCustomRPSlot
+endfunction
 
-ObjectReference Function getLocationMarker(Location Loc)
-	stopAndConfirm(LocMarkerDetector)
-	DestinationLocation.ForceLocationTo(Loc)
-	LocMarkerDetector.Start()
-	Return DestinationMarkerAlias.GetReference() As ObjectReference
-Endfunction
+function Teleport()
+  PlayerMarker.Enable()
+  PlayerMarker.MoveTo(playerRef)
+  PlayerMarker.SetPosition(PlayerRef.GetPositionx(), PlayerRef.GetPositiony(), PlayerRef.GetPositionz())
+  PlayerMarker.SetAngle(0.0, 0.0, PlayerRef.GetAnglez())
+  moaERPCount.SetValue(MergedExternalMarkerSubList.GetSize() + ExternalLocationMarkerList.GetSize() + ExtraCustomMarkerList.GetSize())
+  if iTeleportLocation < (ConfigMenu.getNearbyCityRPIndex())
+    if ConfigMenu.bMoreRandomRespawn
+      moaRandomDestination.SetValueInt(0)
+      TeleportDestination.Revert()
+      TeleportDestination.AddForm(LocationsList.GetAt(iTeleportLocation) As Location)
+      DisabledLocations.Revert()
+      Int i = LocationsList.GetSize()
+      while i > 0
+        i -= 1
+        if !ConfigMenu.bRespawnPointsFlags[i] && (i != iTeleportLocation)
+          DisabledLocations.AddForm(LocationsList.GetAt(i) As Location)
+        endif
+      endwhile
+      if !ConfigMenu.bRespawnPointsFlags[8]
+        DisabledLocations.AddForm(InnHoldLocations.GetAt(8) As Location)
+      endif
+      if !ConfigMenu.bRespawnPointsFlags[9]
+        DisabledLocations.AddForm(InnHoldLocations.GetAt(9) As Location)
+      endif
+      if bTryToMoveByQuest(moaRandomCityDetector, RandomCityTeleportRef, 7, FailedDestinations)
+        return
+      endif
+    endif
+    if (PlayerRef.GetDistance(MarkerList.GetAt(iTeleportLocation) As Objectreference) >= fRPMinDistance)
+      if !bIsArrived(MarkerList.GetAt(iTeleportLocation) As Objectreference)
+        SendToAnotherLocation()
+      endif
+    else
+      SendToAnotherLocation()
+    endif
+  elseif iTeleportLocation == (ConfigMenu.getNearbyCityRPIndex())
+    sendToNearbyCity()
+  elseif iTeleportLocation == (ConfigMenu.getRandCityRPIndex())
+    sendToRandomCity()
+  elseif iTeleportLocation == (ConfigMenu.getTavernRPIndex())
+    if iTavernIndex == ConfigMenu.getNearbyInnRPIndex()
+      sendToNearbyInn()
+    elseif iTavernIndex == ConfigMenu.getRandInnRPIndex()
+      sendToRandomInn()
+    else
+      ObjectReference Marker = TavernMarkers[iTavernIndex] As ObjectReference
+      if (PlayerMarker.GetDistance(Marker) >= fRPMinDistance) && bIsArrived(Marker)
+        return
+      else
+        SendToAnotherLocation()
+      endif
+    endif
+  elseif iTeleportLocation == (ConfigMenu.getSleepRPIndex())
+    if !bSendToSleepMarker()
+      if !bSendToCustomMarker(iCustomRPSlot)
+        SendToAnotherLocation()
+      endif
+    endif
+  elseif iTeleportLocation == (ConfigMenu.getCustomRPIndex())
+    if !bSendToCustomMarker(iCustomRPSlot)
+      if !bSendToSleepMarker()
+        SendToAnotherLocation()
+      endif
+    endif
+  elseif iTeleportLocation == (ConfigMenu.getExternalRPIndex())
+    if !bSendToExternalMarker(iExternalIndex)
+      if !bSendToSleepMarker()
+        if !bSendToCustomMarker(iCustomRPSlot)
+          SendToAnotherLocation()
+        endif
+      endif
+    endif
+  elseif iTeleportLocation == (ConfigMenu.getCheckpointRPIndex())
+    SendToCheckPoint()
+  elseif iTeleportLocation == (ConfigMenu.getNearbyRPIndex())
+    SendToNearbyLocation()
+  elseif iTeleportLocation == (ConfigMenu.getRandomRPIndex())
+    RandomTeleport()
+  elseif iTeleportLocation == (ConfigMenu.getThroatRPIndex())
+    if !bSendToTOW()
+      SendToAnotherLocation()
+    endif
+  endif
+  PlayerMarker.MoveToMyEditorLocation()
+  PlayerMarker.Disable()
+endfunction
 
+Bool function TryToMoveByDistanceCity()
+  ObjectReference Marker
+  Marker = FindCityMarkerByDistance()
+  if Marker
+    if bIsArrived(Marker)
+      return True
+    endif
+    Int i = ExcludedMarkerList.Find(None)
+    if i > -1
+      ExcludedMarkerList[i] = Marker
+    endif
+  endif
+  return False
+endfunction
 
-ObjectReference Function FindInnMarkerByLocation()
-	ObjectReference akMarker
-	Int iIndex = InnLocations.GetSize()
-	While iIndex > 0
-		iIndex -= 1
-		If PlayerMarker.IsInLocation(InnLocations.GetAt(iIndex) As Location) || PlayerMarker.IsInLocation(InnParentLocations.GetAt(iIndex) As Location)
-			akMarker = TavernMarkers[iIndex] As ObjectReference
-			If ( PlayerMarker.GetDistance(akMarker) >= fRPMinDistance )
-				Return akMarker
-			EndIf
-		EndIf
-	Endwhile
-	iIndex = InnHoldLocations.GetSize()
-	While iIndex > 0
-		iIndex -= 1
-		akMarker = TavernCapitalMarkers[iIndex] As ObjectReference
-		If (iIndex == 3)
-			If bInSameLocation(InnHoldLocations.GetAt(iIndex) As Location) || bInSameLocation(DLC1HunterHQLocation) ;Riften or Dayspring Canyon
-				If ( PlayerMarker.GetDistance(akMarker) >= fRPMinDistance )
-					Return akMarker
-				EndIf
-			EndIf
-		ElseIf ( iIndex == 4 )
-			If bInSameLocation(InnHoldLocations.GetAt(iIndex) As Location) || bInSameLocation(DLC1VampireCastleLocation) ;Solitude or Castle Volkihar
-				If ( PlayerMarker.GetDistance(akMarker) >= fRPMinDistance )
-					Return akMarker
-				EndIf
-			EndIf
-		ElseIf bInSameLocation(InnHoldLocations.GetAt(iIndex) As Location)
-			If ( PlayerMarker.GetDistance(akMarker) >= fRPMinDistance )
-				Return akMarker
-			EndIf
-		EndIf
-	Endwhile
-	Return None
-Endfunction
+Bool function TryToMoveByDistanceFar()
+  float fDistance
+  ObjectReference Marker
+  ObjectReference tempMarker
+  Int iIndex
+  if moaERPCount.GetValueInt() > 0
+    Int iLast = iMin(128, moaERPCount.GetValueInt())
+    iIndex = 0
+    while iIndex < iLast
+      tempMarker = getFromMergedFormList(MergedExternalMarkerList, iIndex) As ObjectReference
+      if (ExcludedMarkerList.find(tempMarker) < 0)
+        if (!fDistance || (fDistance > PlayerMarker.GetDistance(tempMarker)))
+          fDistance = PlayerMarker.GetDistance(tempMarker)
+          Marker = tempMarker
+        endif
+      endif
+      iIndex += 1
+    endwhile
+  endif
+  if PlayerMarker.IsInInterior()
+    iIndex = MarkerList.GetSize()
+    while iIndex > 0
+      iIndex -= 1
+      if ConfigMenu.bRespawnPointsFlags[iIndex]
+        if (PlayerMarker.GetParentCell() == (MarkerList.GetAt(iIndex) As ObjectReference).GetParentCell())
+          if (ExcludedMarkerList.find(MarkerList.GetAt(iIndex) As ObjectReference) < 0)
+            if (!fDistance || (fDistance > PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference)))
+              fDistance = PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference)
+              Marker = MarkerList.GetAt(iIndex) As ObjectReference
+            endif
+          endif
+        endif
+      endif
+    endwhile
+  else
+    iIndex = CityMarkersList.GetSize()
+    while iIndex > 0
+      iIndex -= 1
+      if ConfigMenu.bRespawnPointsFlags[iIndex]
+        if (ExcludedMarkerList.find(MarkerList.GetAt(iIndex) As ObjectReference) < 0)
+          if (!fDistance || (fDistance > PlayerMarker.GetDistance(CityMarkersList.GetAt(iIndex) As ObjectReference)))
+            fDistance = PlayerMarker.GetDistance(CityMarkersList.GetAt(iIndex) As ObjectReference)
+            Marker = MarkerList.GetAt(iIndex) As ObjectReference
+          endif
+        endif
+      endif
+    endwhile
+  endif
+  iIndex = 0
+  while iIndex < CustomRespawnPoints.getSize()
+    if (ExcludedMarkerList.find(CustomRespawnPoints.GetAt(iIndex) As ObjectReference) < 0)
+      if (!PlayerMarker.IsInInterior() || (PlayerMarker.GetParentCell() == (CustomRespawnPoints.GetAt(iIndex) As ObjectReference).GetParentCell()))
+        if (!fDistance || (fDistance > PlayerMarker.GetDistance(CustomRespawnPoints.GetAt(iIndex) As ObjectReference)))
+          fDistance = PlayerMarker.GetDistance(CustomRespawnPoints.GetAt(iIndex) As ObjectReference)
+          Marker = CustomRespawnPoints.GetAt(iIndex) As ObjectReference
+        endif
+      endif
+    endif
+    iIndex += 1
+  endwhile
+  if (ExcludedMarkerList.find(SleepMarker) < 0)
+    if (!PlayerMarker.IsInInterior() || (PlayerMarker.GetParentCell() == SleepMarker.GetParentCell()))
+      if (!fDistance || (fDistance > PlayerMarker.GetDistance(SleepMarker)))
+        fDistance = PlayerMarker.GetDistance(SleepMarker)
+        Marker = SleepMarker
+      endif
+    endif
+  endif
+  if (Marker && fDistance && fDistance <= 500000.0)
+    if bIsArrived(Marker)
+      return True
+    endif
+    Int i = ExcludedMarkerList.Find(None)
+    if i > -1
+      ExcludedMarkerList[i] = Marker
+    endif
+  endif
+  return False
+endfunction
 
-ObjectReference Function FindInnMarkerByDistance(float fMaxDistance = 100000.0)
-	float fDistance
-	Int MarkerIndex
-	Int iIndex
-	ObjectReference Marker
-	If !PlayerMarker.IsInInterior()
-		iIndex = ExtInnMarkers.GetSize()
-		While iIndex > 0
-			iIndex -= 1
-			If ( !fDistance || ( fDistance > PlayerMarker.GetDistance(ExtInnMarkers.GetAt(iIndex) As ObjectReference) ) )
-				fDistance = PlayerMarker.GetDistance(ExtInnMarkers.GetAt(iIndex) As ObjectReference)
-				MarkerIndex = iIndex
-			EndIf
-		EndWhile
-	EndIf
-	If ( fDistance && fDistance <= fMaxDistance )
-		Return TavernMarkers[MarkerIndex] As ObjectReference
-	EndIf
-	Return None
-Endfunction
+Bool function TryToMoveByDistanceNear()
+  Int i = 0
+  Int j = 0
+  ObjectReference Marker
+  while (i < 9)
+    i += 1
+    Marker = FindMarkerByDistance()
+    if Marker
+      if bIsArrived(Marker)
+        return True
+      endif
+      j = ExcludedMarkerList.Find(None)
+      if j > -1
+        ExcludedMarkerList[j] = Marker
+      endif
+    else
+      return False
+    endif
+  endwhile
+  return False
+endfunction
 
-Function SendToNearbyInn()
-	ObjectReference Marker
-	If !IsInInteriorActual(PlayerMarker)
-		Marker = FindInnMarkerByDistance(500000.0)
-		If Marker && bIsArrived(Marker)
-			Return 
-		EndIf
-	EndIf
-	Marker = FindInnMarkerByLocation()
-	If Marker && bIsArrived(Marker)
-		Return 
-	EndIf
-	sendToRandomInn()
-Endfunction
+Bool function TryToMoveByLocation()
+  Int i = 0
+  Int j = 0
+  ObjectReference Marker
+  while (i < 12)
+    i += 1
+    Marker = FindMarkerByLocation()
+    if Marker
+      if bIsArrived(Marker)
+        return True
+      endif
+      j = ExcludedMarkerList.Find(None)
+      if j > -1
+        ExcludedMarkerList[j] = Marker
+      endif
+    else
+      return False
+    endif
+  endwhile
+  return False
+endfunction
 
-Function SendToAnotherLocation()
-	ObjectReference Marker = FindInnMarkerByLocation()
-	If Marker && bIsArrived(Marker)
-		Return 
-	EndIf
-	Marker = FindCityMarkerByLocation()
-	If Marker && bIsArrived(Marker)
-		Return 
-	EndIf
-	sendToRandomInn()
-EndFunction
+Bool function TryToMoveByOrder()
+  Int i = 0
+  Int j = 0
+  ObjectReference Marker
+  while (i < 7)
+    i += 1
+    Marker = FindMarkerByOrder()
+    if Marker
+      if bIsArrived(Marker)
+        return True
+      endif
+      j = ExcludedMarkerList.Find(None)
+      if j > -1
+        ExcludedMarkerList[j] = Marker
+      endif
+    else
+      return False
+    endif
+  endwhile
+  return False
+endfunction
 
-Bool Function IsInInteriorActual(ObjectReference akObjectReference)
-    If akObjectReference.IsInInterior()
-	    Return True
-	EndIf
-    If WorldspacesInterior.HasForm(akObjectReference.GetWorldSpace())
-		Return True
-	EndIf
-	Return False
-EndFunction
+Bool function bCanTeleport()
+  Int iIndex = QuestBlackList.GetSize()
+  while iIndex > 0
+    iIndex -= 1
+    Quest ForbidenQuest = QuestBlackList.GetAt(iIndex) As Quest
+    if ForbidenQuest
+      if ForbidenQuest.IsRunning()
+        ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: You can't Respawn while " + ForbidenQuest + " is running.")
+        return False
+      endif
+    endif
+  endwhile
+  if isJsonBlacklistedQuestsRunning()
+    ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: You can't Respawn while a blacklisted quest is running.")
+    return False
+  endif
+  Location CurrLoc = PlayerRef.GetCurrentLocation()
+  if CurrLoc
+    if CurrLoc.HasKeywordString("loctypejail")
+      ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Respawn from jail is disabled.")
+      return False
+    endif
+    if bIsLocForbidden(CurrLoc) || bIsRespawnForbidden(CurrLoc)
+      ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Respawn from " + CurrLoc + " is disabled.")
+      return False
+    endif
+  endif
+  return True
+endfunction
 
-Bool Function bInSameLocation(Location akLoc, ObjectReference akMarker = None)
-    If akLoc
-		If !akMarker
-			akMarker = PlayerMarker
-		EndIf
-		If akMarker.IsInLocation(akLoc)
-			Return True
-		EndIf
-		If akMarker.GetCurrentLocation()
-			If akMarker.GetCurrentLocation().IsSameLocation(akLoc,HoldKeyword)
-				Return True
-			EndIf
-		EndIf
-	EndIf
-	Return False
-EndFunction
+Bool function bCanTeleportToDynMarker(Objectreference Marker)
+  if Marker
+    Location CurrLoc = Marker.GetCurrentLocation()
+    if CurrLoc && (CurrLoc.HasKeywordString("loctypejail") || bIsLocForbidden(CurrLoc))
+      return False
+    endif
+    if !Marker.IsDisabled()
+      if (Marker.GetParentCell() != ReviveScript.DefaultCell)
+        return True
+      endif
+    endif
+  endif
+  return False
+endfunction
 
-ObjectReference Function FindMarkerByDistance()
-	Float fDistance
-	ObjectReference Marker
-	Int iIndex = DynamicMarkerList.Length
-	While iIndex > 0
-		iIndex -= 1
-		If ( ExcludedMarkerList.find(DynamicMarkerList[iIndex]) < 0 )
-			If ( !PlayerMarker.IsInInterior() || ( PlayerMarker.GetParentCell() == DynamicMarkerList[iIndex].GetParentCell() ) )
-				If ( !fDistance || ( fDistance > PlayerMarker.GetDistance(DynamicMarkerList[iIndex]) ) ) 
-					fDistance = PlayerMarker.GetDistance(DynamicMarkerList[iIndex])
-					Marker = DynamicMarkerList[iIndex]
-				EndIf
-			EndIf
-		EndIf			
-	Endwhile
-	If ( Marker && fDistance && fDistance <= 50000.0 )
-		Return Marker
-	EndIf
-	Return None
-EndFunction
+Bool function bCanTeleportToExtMarker(Objectreference ExternalMarker)
+  if ExternalMarker
+    Int iIndex = LocationBlackList.GetSize()
+    while iIndex > 0
+      iIndex -= 1
+      if ExternalMarker.IsInLocation(LocationBlackList.GetAt(iIndex) As Location)
+        return False
+      endif
+    endwhile
+    if (!ExternalMarker.IsDisabled() && (ExternalMarker.GetParentCell() != ReviveScript.DefaultCell))
+      return True
+    endif
+  endif
+  return False
+endfunction
 
-ObjectReference Function FindCityMarkerByDistance(float fMaxDistance = 100000.0)
-	float fDistance
-	ObjectReference Marker
-	Int iIndex
-	Int iLast
-	If moaERPCount.GetValueInt() > 0
-		iLast = iMin(128,moaERPCount.GetValueInt())
-		iIndex = 0
-		ObjectReference tempMarker
-		While iIndex < iLast
-			tempMarker = getFromMergedFormList(MergedExternalMarkerList,iIndex) As ObjectReference
-			If( ExcludedMarkerList.find(tempMarker) < 0 )
-				If ( !fDistance || ( fDistance > PlayerMarker.GetDistance(tempMarker) ) ) && (PlayerMarker.GetDistance(tempMarker) >= fRPMinDistance)
-					fDistance = PlayerMarker.GetDistance(tempMarker)
-					Marker = tempMarker
-				EndIf
-			EndIf
-			iIndex += 1
-		EndWhile
-	EndIf
-	If PlayerMarker.IsInInterior()
-		iIndex = MarkerList.GetSize()
-		While iIndex > 0
-			iIndex -= 1
-			;If ConfigMenu.bRespawnPointsFlags[iIndex]
-				If ( PlayerMarker.GetParentCell() == ( MarkerList.GetAt(iIndex) As ObjectReference ).GetParentCell() )
-					If( ExcludedMarkerList.find( MarkerList.GetAt(iIndex) As ObjectReference ) < 0 )
-						If ( !fDistance || ( fDistance > PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference) ) ) && (PlayerMarker.GetDistance( MarkerList.GetAt( iIndex ) As ObjectReference ) >= fRPMinDistance)
-							fDistance = PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference)
-							Marker = MarkerList.GetAt(iIndex) As ObjectReference
-						EndIf
-					EndIf
-				EndIf
-			;EndIf
-		EndWhile
-	Else
-		iIndex = CityMarkersList.GetSize()
-		While iIndex > 0
-			iIndex -= 1
-			;If ConfigMenu.bRespawnPointsFlags[iIndex]
-				If ( !fDistance || ( fDistance > PlayerMarker.GetDistance(CityMarkersList.GetAt(iIndex) As ObjectReference) ) )
-					fDistance = PlayerMarker.GetDistance(CityMarkersList.GetAt(iIndex) As ObjectReference)
-					Marker = MarkerList.GetAt(iIndex) As ObjectReference
-				EndIf
-			;EndIf
-		EndWhile
-	EndIf
-	If ( Marker && fDistance && fDistance <= fMaxDistance )
-		Return Marker
-	EndIf
-	Return None
-Endfunction
+Bool function bCheckTavernMarkers()
+  if TavernMarkers.Length != InnLocations.GetSize()
+    return False
+  endif
+  if TavernCapitalMarkers.Length != InnLocationsCapital.GetSize()
+    return False
+  endif
+  Int i = TavernMarkers.Length
+  Int j = TavernCapitalMarkers.Length
+  while (i > 0) || (j > 0)
+    if i > 0
+      i -= 1
+      if !TavernMarkers[i] As ObjectReference
+        return False
+      endif
+    endif
+    if j > 0
+      j -= 1
+      if !TavernCapitalMarkers[j] As ObjectReference
+        return False
+      endif
+    endif
+  endwhile
+  return True
+endfunction
 
-ObjectReference Function FindMarkerByLocation()
-	Int iIndex = DynamicMarkerList.Length
-	While iIndex > 0
-		iIndex -= 1
-		If ( ExcludedMarkerList.find(DynamicMarkerList[iIndex]) < 0 )
-			If ( iIndex >= ( DynamicMarkerList.Length - 2 )) ;DetachMarker2 or DetachMarker1
-				If ( bInSameLocation( DynamicMarkerList[iIndex].GetCurrentLocation() ) ||\
-				( IsInInteriorActual(PlayerMarker) != IsInInteriorActual(DynamicMarkerList[iIndex]) ) ) 
-					Return DynamicMarkerList[iIndex]
-				EndIf
-			Else
-				If bInSameLocation( DynamicMarkerList[iIndex].GetCurrentLocation() )
-					Return DynamicMarkerList[iIndex]
-				EndIf
-			EndIf
-		EndIf
-	Endwhile
-	iIndex = LocationsList.GetSize()
-	While ( iIndex > 0 )
-		iIndex -= 1
-		If ( ExcludedMarkerList.find(MarkerList.GetAt(iIndex) As ObjectReference) < 0 )
-			If (iIndex == 3)
-				If bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(DLC1HunterHQLocation) ;Riften or Dayspring Canyon
-					If ConfigMenu.bRespawnPointsFlags[iIndex]
-						Return ( MarkerList.GetAt(iIndex) As ObjectReference )
-					EndIf
-				EndIf
-			ElseIf ( iIndex == 4 )
-				If bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(HjaalmarchHoldLocation) || bInSameLocation(DLC1VampireCastleLocation) ;Solitude or Morthal or Castle Volkihar
-					If ConfigMenu.bRespawnPointsFlags[iIndex]
-						Return ( MarkerList.GetAt(iIndex) As ObjectReference )
-					EndIf
-				EndIf
-			ElseIf ( iIndex == 6 )
-				If ( bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(PaleHoldLocation) ) ;Winterhold or Dawnstar
-					If ConfigMenu.bRespawnPointsFlags[iIndex]
-						Return ( MarkerList.GetAt(iIndex) As ObjectReference )
-					EndIf
-				EndIf
-			ElseIf bInSameLocation(LocationsList.GetAt(iIndex) As Location)
-				If ConfigMenu.bRespawnPointsFlags[iIndex]
-					Return ( MarkerList.GetAt(iIndex) As ObjectReference )
-				EndIf
-			EndIf
-		EndIf
-	EndWhile
-	If moaERPCount.GetValueInt() > 0
-		Int iLast = iMin(128, moaERPCount.GetValueInt())
-		Int jIndex = 0
-		ObjectReference Marker
-		While jIndex < iLast
-			Marker = getFromMergedFormList(MergedExternalMarkerList,jIndex) As ObjectReference
-			If ( ExcludedMarkerList.find(Marker) < 0 )
-				If bInSameLocation((Marker).GetCurrentLocation())
-					Return Marker
-				EndIf
-			EndIf
-			jIndex += 1
-		EndWhile	
-	EndIf
-EndFunction
+Bool[] function bGetTavernFlags()
+  Bool[] flagArr = Utility.CreateBoolArray(InnLocations.GetSize(), True)
+  Int i = InnLocations.GetSize()
+  while i > 0
+    i -= 1
+    if PlayerRef.IsInLocation(InnLocations.GetAt(i) As Location)
+      flagArr[i] = False
+    endif
+  endwhile
+  if !ConfigMenu.bRespawnPointsFlags[0] ;Whiterun
+    flagArr[0] = False ;Sleeping Giant Inn
+    flagArr[1] = False ;The Bannered Mare
+    flagArr[2] = False ;Frostfruit Inn
+  endif
+  if !ConfigMenu.bRespawnPointsFlags[1] ;Falkreath
+    flagArr[3] = False ;Dead Man's Drink
+  endif
+  if !ConfigMenu.bRespawnPointsFlags[2] ;Markarth
+    flagArr[4] = False ;Silver-Blood Inn
+    flagArr[5] = False ;Old Hroldan Inn
+  endif
+  if !ConfigMenu.bRespawnPointsFlags[3] ;Riften
+    flagArr[6] = False ;The Bee and Barb
+    flagArr[16] = False ;Vilemyr Inn
+  endif
+  if !ConfigMenu.bRespawnPointsFlags[4] ;Solitude
+    flagArr[7] = False ;The Winking Skeever
+    flagArr[8] = False ;Four Shields Tavern
+  endif
+  if !ConfigMenu.bRespawnPointsFlags[5] ;Windhelm
+    flagArr[9] = False ;Candlehearth Hall
+    flagArr[10] = False ;Braidwood Inn
+  endif
+  if !ConfigMenu.bRespawnPointsFlags[6] ;Winterhold
+    flagArr[11] = False ;The Frozen Hearth
+  endif
+  if !ConfigMenu.bRespawnPointsFlags[7] ;RavenRock
+    flagArr[12] = False ;The Retching Netch
+  endif
+  if !ConfigMenu.bRespawnPointsFlags[8] ;Morthal
+    flagArr[13] = False ;Moorside Inn
+  endif
+  if !ConfigMenu.bRespawnPointsFlags[9] ;Dawnstar
+    flagArr[14] = False ;Windpeak Inn
+    flagArr[15] = False ;Nightgate Inn
+  endif
+  return flagArr
+endfunction
 
-ObjectReference Function FindMarkerByOrder()
-	If ( ExcludedMarkerList.find(DetachMarker2) < 0 )
-		Return DetachMarker2
-	EndIf
-	If ( ExcludedMarkerList.find(DetachMarker1) < 0 )
-		Return DetachMarker1
-	EndIf
-	If ( ExcludedMarkerList.find(LocationMarker) < 0 )
-		Return LocationMarker
-	EndIf
-	If ( ExcludedMarkerList.find(CellLoadMarker) < 0 )
-		Return CellLoadMarker
-	EndIf
-	If ( ExcludedMarkerList.find(LocationMarker2) < 0 )
-		Return LocationMarker2
-	EndIf
-	If ( ExcludedMarkerList.find(DetachMarker3) < 0 )
-			Return DetachMarker3
-	EndIf
-	If ( ExcludedMarkerList.find(CellLoadMarker2) < 0 )
-			Return CellLoadMarker2
-	EndIf
-	Return None
-EndFunction
+Bool function bHasEditorLocation(ObjectReference akMarker, Location akLocation)
+  return akMarker.GetEditorLocation() && akMarker.GetEditorLocation() == akLocation
+endfunction
 
-Bool Function TryToMoveByDistanceFar()
-	float fDistance
-	ObjectReference Marker
-	ObjectReference tempMarker
-	Int iIndex
-	If moaERPCount.GetValueInt() > 0
-		Int iLast = iMin(128, moaERPCount.GetValueInt())
-		iIndex = 0
-		While iIndex < iLast
-			tempMarker = getFromMergedFormList(MergedExternalMarkerList,iIndex) As ObjectReference
-			If( ExcludedMarkerList.find(tempMarker) < 0 )
-				If ( !fDistance || ( fDistance > PlayerMarker.GetDistance( tempMarker ) ) )
-					fDistance = PlayerMarker.GetDistance( tempMarker )
-					Marker = tempMarker
-				EndIf
-			EndIf
-			iIndex += 1
-		EndWhile
-	EndIf
-	If PlayerMarker.IsInInterior()
-		iIndex = MarkerList.GetSize()
-		While iIndex > 0
-			iIndex -= 1
-			If ConfigMenu.bRespawnPointsFlags[iIndex]
-				If ( PlayerMarker.GetParentCell() == ( MarkerList.GetAt(iIndex) As ObjectReference ).GetParentCell() )
-					If( ExcludedMarkerList.find( MarkerList.GetAt(iIndex) As ObjectReference ) < 0 )
-						If ( !fDistance || ( fDistance > PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference) ) )
-							fDistance = PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference)
-							Marker = MarkerList.GetAt(iIndex) As ObjectReference
-						EndIf
-					EndIf
-				EndIf
-			EndIf
-		EndWhile
-	Else
-		iIndex = CityMarkersList.GetSize()
-		While iIndex > 0
-			iIndex -= 1
-			If ConfigMenu.bRespawnPointsFlags[iIndex]
-				If( ExcludedMarkerList.find( MarkerList.GetAt(iIndex) As ObjectReference ) < 0 )
-					If ( !fDistance || ( fDistance > PlayerMarker.GetDistance(CityMarkersList.GetAt(iIndex) As ObjectReference) ) ) 
-						fDistance = PlayerMarker.GetDistance(CityMarkersList.GetAt(iIndex) As ObjectReference)
-						Marker = MarkerList.GetAt(iIndex) As ObjectReference
-					EndIf
-				EndIf
-			EndIf
-		EndWhile
-	EndIf
-	iIndex = 0
-	While iIndex < CustomRespawnPoints.getSize()
-		If ( ExcludedMarkerList.find(CustomRespawnPoints.GetAt(iIndex) As ObjectReference) < 0 )
-			If ( !PlayerMarker.IsInInterior() || ( PlayerMarker.GetParentCell() == (CustomRespawnPoints.GetAt(iIndex) As ObjectReference).GetParentCell() ) )
-				If ( !fDistance || ( fDistance > PlayerMarker.GetDistance(CustomRespawnPoints.GetAt(iIndex) As ObjectReference) ) )
-					fDistance = PlayerMarker.GetDistance(CustomRespawnPoints.GetAt(iIndex) As ObjectReference)
-					Marker = CustomRespawnPoints.GetAt(iIndex) As ObjectReference
-				EndIf
-			EndIf
-		EndIf
-		iIndex += 1
-	EndWhile
-	If ( ExcludedMarkerList.find(SleepMarker) < 0 )
-		If ( !PlayerMarker.IsInInterior() || ( PlayerMarker.GetParentCell() == SleepMarker.GetParentCell() ) )
-			If ( !fDistance || ( fDistance > PlayerMarker.GetDistance(SleepMarker) ) ) 
-				fDistance = PlayerMarker.GetDistance(SleepMarker)
-				Marker = SleepMarker
-			EndIf
-		EndIf
-	EndIf
-	If ( Marker && fDistance && fDistance <= 500000.0 )
-		If bIsArrived(Marker)
-			Return True
-		EndIf
-		Int i = ExcludedMarkerList.Find(None)
-		If i > -1
-			ExcludedMarkerList[i] = Marker
-		EndIf
-	EndIf
-	Return False
-EndFunction
+Bool function bInSameLocation(Location akLoc, ObjectReference akMarker=None)
+  if akLoc
+    if !akMarker
+      akMarker = PlayerMarker
+    endif
+    if akMarker.IsInLocation(akLoc)
+      return True
+    endif
+    if akMarker.GetCurrentLocation()
+      if akMarker.GetCurrentLocation().IsSameLocation(akLoc, HoldKeyword)
+        return True
+      endif
+    endif
+  endif
+  return False
+endfunction
 
-Bool Function TryToMoveByDistanceNear()
-	Int i = 0
-	Int j = 0
-	ObjectReference Marker
-	While ( i < 9 )
-		i += 1
-		Marker = FindMarkerByDistance()
-		If Marker
-			If bIsArrived(Marker)
-				Return True
-			EndIf
-			j = ExcludedMarkerList.Find(None)
-			If j > -1
-				ExcludedMarkerList[j] = Marker
-			EndIf
-		Else
-			Return False
-		EndIf
-	EndWhile
-	Return False
-EndFunction
+Bool function bIsArrived(ObjectReference akMarker)
+  while !ReviveScript.bReadyForRespawn
+    Utility.WaitMenuMode(0.2)
+  endwhile
+  Float fMinDistance = 1000.0
+  if ConfigMenu.bIsRagdollEnabled
+    fMinDistance = 4000.0
+  endif
+  PlayerRef.DispelAllSpells()
+  if PlayerRef.IsBleedingOut() || (PlayerRef.GetActorValue("Health") < PlayerRef.GetBaseActorValue("Health"))
+    PlayerRef.DispelSpell(ReviveScript.Bleed)
+    PlayerRef.ResetHealthAndLimbs()
+    PlayerRef.RestoreActorValue("health", 10000)
+  endif
+  if !ReviveScript.bIsCameraStateSafe()
+    Game.ForceThirdPerson()
+  endif
+  if !bIsTeleportSafe(akMarker)
+    if PlayerRef.GetActorValue("paralysis")
+      PlayerRef.SetActorValue("paralysis", 0)
+      if PlayerRef.GetActorValue("paralysis")
+        PlayerRef.ForceActorValue("paralysis", 0)
+      endif
+      Utility.Wait(6.5)
+    endif
+    Float i = 10.0
+    while (!bIsTeleportSafe(akMarker) && (i > 0.0))
+      Utility.Wait(0.2)
+      i -= 0.2
+    endwhile
+    if ReviveScript.SexLabInterface.IsActorActive(PlayerRef)
+      Debug.Trace("MarkOfArkay: The player is in a Sexlab animation and cannot teleport.")
+      return True
+    endif
+  endif
+  playerRef.SetDontMove(False)
+  Float fTravel = PlayerMarker.GetDistance(akMarker)
+  PlayerRef.MoveTo(akMarker, afZOffset=15.0)
+  Utility.Wait(0.5)
+  Float fFrom = PlayerRef.GetDistance(PlayerMarker)
+  Float fTo = PlayerRef.GetDistance(akMarker)
+  ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Distance between two Points: " + fTravel)
+  ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Distance Traveled: " + fFrom)
+  ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Distance from Destination: " + fTo)
+  if fTo < fMinDistance
+    if fTravel < 1500.0 || fFrom > fTo
+      if bFirstTry
+        bFirstTry = False
+      endif
+      return True
+    endif
+  endif
+  if bFirstTry
+    bFirstTryFailed = True
+    bFirstTry = False
+  endif
+  return False
+endfunction
 
-Bool Function TryToMoveByLocation()
-	Int i = 0
-	Int j = 0
-	ObjectReference Marker
-	While ( i < 12 )
-		i += 1
-		Marker = FindMarkerByLocation()
-		If Marker
-			If bIsArrived(Marker)
-				Return True
-			EndIf
-			j = ExcludedMarkerList.Find(None)
-			If j > -1
-				ExcludedMarkerList[j] = Marker
-			EndIf
-		Else
-			Return False
-		EndIf
-	EndWhile
-	Return False
-EndFunction
+Bool function bIsCurrentCell(int iIndex, Bool bTavernMarker=False)
+  if bTavernMarker
+    return ((TavernMarkers[iIndex] As Objectreference).GetParentCell() == PlayerMarker.GetParentCell())
+  endif
+  return (((MarkerList.GetAt(iIndex)) As Objectreference).GetParentCell() == PlayerMarker.GetParentCell())
+endfunction
 
-Bool Function TryToMoveByOrder()
-	Int i = 0
-	Int j = 0
-	ObjectReference Marker
-	While ( i < 7 )
-		i += 1
-		Marker = FindMarkerByOrder()
-		If Marker
-			If bIsArrived(Marker)
-				Return True
-			EndIf
-			j = ExcludedMarkerList.Find(None)
-			If j > -1
-				ExcludedMarkerList[j] = Marker
-			EndIf
-		Else
-			Return False
-		EndIf
-	EndWhile
-	Return False
-EndFunction
+Bool function bIsLocForbidden(Location akLoc)
+  Int iIndex = LocationBlackList.GetSize()
+  while iIndex > 0
+    iIndex -= 1
+    Location ForbiddenLocation = LocationBlackList.GetAt(iIndex) As Location
+    if ForbiddenLocation
+      if akLoc == ForbiddenLocation || ForbiddenLocation.IsChild(akLoc)
+        return True
+      endif
+    endif
+  endwhile
+  return False
+endfunction
 
-Bool Function TryToMoveByDistanceCity()
-	ObjectReference Marker
-	Marker = FindCityMarkerByDistance()
-	If Marker
-		If bIsArrived(Marker)
-			Return True
-		EndIf
-		Int i = ExcludedMarkerList.Find(None)
-		If i > -1
-			ExcludedMarkerList[i] = Marker
-		EndIf
-	EndIf
-	Return False
-EndFunction
+Bool function bIsRespawnForbidden(Location akLoc)
+  Int iIndex = ReviveScript.LocationBlackList2.GetSize()
+  while iIndex > 0
+    iIndex -= 1
+    Location ForbiddenLocation = ReviveScript.LocationBlackList2.GetAt(iIndex) As Location
+    if ForbiddenLocation
+      if akLoc == ForbiddenLocation || ForbiddenLocation.IsChild(akLoc)
+        return True
+      endif
+    endif
+  endwhile
+  return False
+endfunction
 
-Function InitializeExcludedMarkers()
-	 ExcludedMarkerList = New ObjectReference[128]
-	Int i
-	int j = DynamicMarkerList.Length
-	While j > 0
-		j -= 1
-		If ( !bCanTeleportToDynMarker(DynamicMarkerList[j]) ||\
-		( PlayerMarker.GetDistance(DynamicMarkerList[j]) < fRPMinDistance ))
-			i = ExcludedMarkerList.Find(None)
-			If i > -1
-				ExcludedMarkerList[i] = DynamicMarkerList[j]
-			EndIf
-		EndIf
-	Endwhile
-	j = MarkerList.GetSize()
-	While j > 0
-		j -= 1
-		If ( PlayerMarker.GetDistance( MarkerList.GetAt( j ) As ObjectReference ) < fRPMinDistance )
-			i = ExcludedMarkerList.Find(None)
-			If i > -1
-				ExcludedMarkerList[i] = ( MarkerList.GetAt( j ) As ObjectReference )
-			EndIf
-		EndIf
-	Endwhile
-	If moaERPCount.GetValueInt() > 0
-		Int iLast = iMin(90, moaERPCount.GetValueInt())
-		ObjectReference marker
-		j = 0
-		While j < iLast
-			marker = getFromMergedFormList(MergedExternalMarkerList,j) As ObjectReference
-			If ( ( marker.GetType() != 61 ) ||\
-			!bCanTeleportToExtMarker( marker ) ||\
-			( PlayerMarker.GetDistance( marker ) < fRPMinDistance ))
-				i = ExcludedMarkerList.Find(None)
-				If i > -1
-					ExcludedMarkerList[i] = marker
-				EndIf
-			EndIf
-			j += 1
-		EndWhile
-	EndIf		
-Endfunction
+Bool function bIsTeleportSafe(ObjectReference akMarker)
+  if bFirstTryFailed
+    bFirstTryFailed = False
+    return False
+  endif
+  return !(PlayerRef.GetAnimationVariableBool("bIsSynced") || PlayerRef.GetActorValue("paralysis") || ReviveScript.SexLabInterface.IsActorActive(PlayerRef))
+endfunction
 
-Function InitializeDynamicMarkers()
-	DynamicMarkerList = New ObjectReference[12]
-	DynamicMarkerList[0] = CellLoadMarker2
-	DynamicMarkerList[1] = DetachMarker3
-	DynamicMarkerList[2] = LocationMarker2
-	DynamicMarkerList[3] = SleepMarker
-	DynamicMarkerList[4] = CellLoadMarker
-	DynamicMarkerList[5] = LocationMarker
-	DynamicMarkerList[6] = DetachMarker1
-	DynamicMarkerList[7] = DetachMarker2
-	DynamicMarkerList[8] = CustomRespawnPoints.GetAt(0) As ObjectReference
-	DynamicMarkerList[9] = CustomRespawnPoints.GetAt(1) As ObjectReference
-	DynamicMarkerList[10] = CustomRespawnPoints.GetAt(2) As ObjectReference
-	DynamicMarkerList[11] = CustomRespawnPoints.GetAt(3) As ObjectReference
-EndFunction
+Bool function bSendToCustomMarker(Int iSlot)
+  Int iSelectedSlot = iSlot
+  Int i = iSelectedSlot
+  if bCanTeleportToDynMarker(CustomRespawnPoints.GetAt(i) As ObjectReference)
+    if PlayerRef.GetDistance(CustomRespawnPoints.GetAt(i) As ObjectReference) >= fRPMinDistance
+      if bIsArrived(CustomRespawnPoints.GetAt(i) As ObjectReference)
+        return True
+      endif
+    endif
+  endif
+  i = 0
+  while i < CustomRespawnPoints.getSize()
+    if i != iSelectedSlot
+      if bCanTeleportToDynMarker(CustomRespawnPoints.GetAt(i) As ObjectReference)
+        if PlayerRef.GetDistance(CustomRespawnPoints.GetAt(i) As ObjectReference) >= fRPMinDistance
+          if bIsArrived(CustomRespawnPoints.GetAt(i) As ObjectReference)
+            return True
+          endif
+        endif
+      endif
+    endif
+    i += 1
+  endwhile
+  return False
+endfunction
 
-Function SendToCheckPoint()
-	InitializeDynamicMarkers()
-	InitializeExcludedMarkers()
-	If !TryToMoveByDistanceNear()
-		If !TryToMoveByLocation()
-			If !TryToMoveByDistanceCity()
-				If !TryToMoveByOrder()
-					If !TryToMoveByDistanceFar()
-						If ( ExcludedMarkerList.find(SleepMarker) < 0 )
-							If bIsArrived(SleepMarker)
-								Return
-							EndIf
-						EndIf
-						Int i = 0
-						While i < CustomRespawnPoints.getSize()
-							If ExcludedMarkerList.find(CustomRespawnPoints.GetAt(i) As ObjectReference) < 0
-								If bSendToCustomMarker(iCustomRPSlot)
-									Return
-								EndIf
-							EndIf
-							i += 1
-						EndWhile
-						sendToRandomCity()
-					EndIf
-				EndIf
-			EndIf
-		EndIf
-	EndIf
-EndFunction
+Bool function bSendToExternalMarker(Int iExternalIndex)
+  ObjectReference akMarker
+  Int iIndex = -1
+  if moaERPCount.GetValueInt() > 0
+    if iExternalIndex > -1 && iExternalIndex < moaERPCount.GetValueInt()
+      akMarker = getFromMergedFormList(MergedExternalMarkerList, iExternalIndex) As ObjectReference
+      if akMarker && (akMarker.GetParentCell() != PlayerRef.GetParentCell()) && bCanTeleportToExtMarker(akMarker) && (PlayerRef.GetDistance(akMarker) >= fRPMinDistance)
+        if bIsArrived(akMarker)
+          return True
+        endif
+      endif
+      iIndex = iExternalIndex
+    endif
+    Int i = iMin(3, moaERPCount.GetValueInt() - 1)
+    Bool[] bExcludes = Utility.CreateBoolArray(moaERPCount.GetValueInt(), True)
+    if iIndex > -1 && iIndex < moaERPCount.GetValueInt()
+      bExcludes[iIndex] = False
+    endif
+    while i > 0
+      i -= 1
+      iIndex = RandomIntWithExclusionArray(0, moaERPCount.GetValueInt() - 1, bExcludes)
+      akMarker = getFromMergedFormList(MergedExternalMarkerList, iIndex) As ObjectReference
+      if akMarker && (akMarker.GetParentCell() != PlayerRef.GetParentCell()) && bCanTeleportToExtMarker(akMarker) && (PlayerRef.GetDistance(akMarker) >= fRPMinDistance)
+        if bIsArrived(akMarker)
+          return True
+        endif
+      endif
+      bExcludes[iIndex] = False
+    endwhile
+  endif
+  return False
+endfunction
 
-Bool Function bHasEditorLocation(ObjectReference akMarker,Location akLocation)
-	Return akMarker.GetEditorLocation() && akMarker.GetEditorLocation() == akLocation
-Endfunction
+Bool function bSendToSleepMarker()
+  if bCanTeleportToDynMarker(SleepMarker)
+    if PlayerMarker.GetDistance(SleepMarker) >= fRPMinDistance
+      return bIsArrived(SleepMarker)
+    endif
+  endif
+  return False
+endfunction
 
-Function findNearbyMarker()
-	Location Curlocation
-	If PlayerMarker.GetCurrentLocation()
-		Curlocation = PlayerMarker.GetCurrentLocation()
-	Else
-		PlayerRefMarker.ForceRefTo(PlayerMarker)
-		Return
-	EndIf
-	FormList Markers
-	If PlayerRef.IsInInterior()
-		Markers = InteriorMarkers
-	Else
-		Markers = ExteriorMarkers
-	EndIf
-	ObjectReference Marker
-	Marker = Game.FindClosestReferenceOfAnyTypeInListFromRef(Markers, PlayerMarker, 50000.0)
-	If !Marker || !bHasEditorLocation(Marker, Curlocation)
-		Int i
-		If Marker
-			ObjectReference[] PrevMarkers = New ObjectReference[5]
-			i = 5
-			While i > 0 && Marker && !bHasEditorLocation(Marker, Curlocation)
-				i -= 1
-				PrevMarkers[i] = Marker
-				Marker = Game.FindRandomReferenceOfAnyTypeInListFromRef(Markers, PrevMarkers[i], 50000.0)
-				If PrevMarkers.Find(Marker) > -1 || (PlayerMarker.GetDistance(Marker) > 50000.0)
-					Marker = None
-				EndIf
-			EndWhile
-		EndIf
-		If !Marker || !bHasEditorLocation(Marker, Curlocation)
-			i = 5
-			While i > 0 && (!Marker || !bHasEditorLocation(Marker, Curlocation))
-				i -= 1
-				Marker = Game.FindRandomReferenceOfAnyTypeInListFromRef(Markers, PlayerMarker, 50000.0)
-			EndWhile
-		EndIf
-	EndIf
-	If Marker && bHasEditorLocation(Marker, Curlocation)
-		PlayerRefMarker.ForceRefTo(Marker)
-	Else
-		PlayerRefMarker.ForceRefTo(PlayerMarker)
-	EndIf
-Endfunction
+Bool function bSendToTOW()
+  return (PlayerRef.GetDistance(TOWMarker) >= fRPMinDistance) && bIsArrived(TOWMarker)
+endfunction
 
-Function SendToNearbyLocation()
-	findNearbyMarker()
-	If !bTryToMoveByQuest(moaNearbyDetector, TeleportRef, 5, FailedDestinations)
-		SendToCheckPoint()
-	EndIf
-Endfunction
+Bool function bTryToMoveByQuest(Quest aTargetDetector, ReferenceAlias akTarget, Int aiTry=1, FormList akFailedTargets=None)
+  Int i = aiTry
+  Int j
+  ObjectReference Marker
+  if akFailedTargets
+    akFailedTargets.Revert()
+  endif
+  while i > 0
+    i -= 1
+    if !aTargetDetector.IsRunning()
+      aTargetDetector.Start()
+    else
+      j = 0
+      aTargetDetector.Stop()
+      while !aTargetDetector.IsStopped() && j < 30
+        Utility.Wait(0.1)
+        j += 1
+      endwhile
+      aTargetDetector.Start()
+    endif
+    if aTargetDetector.IsRunning()
+      if (!Marker || (Marker != (akTarget.GetReference() As ObjectReference)))
+        Marker = akTarget.GetReference() As ObjectReference
+        if Marker
+          if bIsArrived(Marker)
+            if akFailedTargets
+              akFailedTargets.Revert()
+            endif
+            aTargetDetector.Stop()
+            return True
+          elseif akFailedTargets && !akFailedTargets.HasForm(Marker)
+            akFailedTargets.AddForm(Marker)
+          endif
+        endif
+      endif
+    endif
+  endwhile
+  if akFailedTargets
+    akFailedTargets.Revert()
+  endif
+  aTargetDetector.Stop()
+  return False
+endfunction
 
-Int Function RespawnMenu(Int aiMessage = 0, Int aiButton = 0)
-	Int iIndex = 1
-	While True
-		If aiButton == -1 ; Can prevent problems if recycling aiButton
-		ElseIf aiMessage == 0
-			aiButton = moaRespawnMenu0.Show()
-			If aiButton == -1
-			ElseIf aiButton < ConfigMenu.getNearbyCityRPIndex() ;Whiterun,...,Raven Rock
-				Return aiButton
-			ElseIf aiButton == ConfigMenu.getNearbyCityRPIndex() ;More
-				aiMessage = 1
-			EndIf
-		ElseIf aiMessage == 1
-			aiButton = moaRespawnMenu1.Show()
-			If aiButton == -1
-			ElseIf aiButton == 0 ;City
-				aiMessage = 4
-			ElseIf aiButton == 1 ;Inn
-				aiMessage = 5
-			ElseIf aiButton == 3 ;Custom
-				aiMessage = 2
-			ElseIf aiButton == 4
-				aiMessage = 3 ;External
-			ElseIf aiButton < 9 ;Nearby City,...,TOW
-				Return ( aiButton + ConfigMenu.getRandCityRPIndex()) ;aibutton+9
-			ElseIf aiButton == 9 ;Less
-				aiMessage = 0
-			EndIf
-		ElseIf aiMessage == 2 ;Custom
-			aiButton = moaCustomRespawnMenu.Show(ConfigMenu.iSelectedCustomRPSlot + 1)
-			If aiButton == -1
-			ElseIf aiButton == 4 ;Details
-				ConfigMenu.ShowCustomSlotsInfo()
-			ElseIf aiButton == 5 ;Back
-				aiMessage = 1
-			Else
-				Return -3 - aiButton ;0-> -3, 1-> -4, 2-> -5
-			EndIf
-		ElseIf aiMessage == 3
-			If moaERPCount.GetValueInt() > 7
-				aiButton = moaRespawnMenu13_Alt.Show(iIndex)
-				If aiButton == -1
-				ElseIf aiButton == 0 ;Prev
-					iIndex = ichangeVar(iIndex,1,moaERPCount.GetValueInt(),-1)
-				ElseIf aiButton == 1 ;Next
-					iIndex = ichangeVar(iIndex,1,moaERPCount.GetValueInt(),1)
-				ElseIf aiButton == 2 ;Input
-					If ConfigMenu.bUIEOK
-						UITextEntryMenu TextMenu = uiextensions.GetMenu("UITextEntryMenu", True) as UITextEntryMenu
-						TextMenu.SetPropertyString("text", (iIndex) As String)
-						TextMenu.OpenMenu(none, none)
-						String sResult = TextMenu.GetResultString()
-						TextMenu.ResetMenu()
-						If sResult && bIsInteger(sResult) && ((sResult As Int) - 1) > - 1 && ((sResult As Int) - 1) < moaERPCount.GetValueInt()
-							iIndex = (sResult As Int)
-						EndIf
-					EndIf
-				ElseIf aiButton == 3 ;Check
-					ConfigMenu.ShowExtraRPInfo(iIndex - 1,1)
-				ElseIf aiButton == 4 ;OK
-					Return ( iIndex + ( ConfigMenu.sRespawnPoints.Length - 1 ))
-				ElseIf aiButton == 5 ;External(Random)
-					Return -1
-				ElseIf aiButton == 6 ;Back
-					aiMessage = 1
-				EndIf
-			Else
-				aiButton = moaRespawnMenu13.Show()
-				If aiButton == -1
-				ElseIf aiButton < 7 ;External(1,...,7)
-					Return ( aiButton + ( ConfigMenu.sRespawnPoints.Length ))
-				ElseIf aiButton == 7 ;External(Random)
-					Return -1
-				ElseIf aiButton == 8 ;Details
-					ConfigMenu.ShowExtraRPInfo(0,7)
-				ElseIf aiButton == 9 ;Back
-					aiMessage = 1
-				EndIf
-			EndIf
-		ElseIf aiMessage == 4
-			aiButton = moaRespawnMenu10.Show()
-			If aiButton == -1
-			ElseIf aiButton == 0
-				Return ConfigMenu.getNearbyCityRPIndex()
-			ElseIf aiButton == 1
-				Return ConfigMenu.getRandCityRPIndex()
-			ElseIf aiButton == 2
-				aiMessage = 1
-			EndIf
-		ElseIf aiMessage == 5
-			aiButton = moaRespawnMenu11.Show()
-			If aiButton == -1
-			ElseIf aiButton == 0
-				aiMessage = 6
-			ElseIf aiButton == 1
-				aiMessage = 7				
-			ElseIf aiButton == 2
-				aiMessage = 8				
-			ElseIf aiButton == 3
-				aiMessage = 9					
-			ElseIf aiButton == 4
-				aiMessage = 10		
-			ElseIf aiButton == 5
-				aiMessage = 11
-			ElseIf aiButton == 6
-				aiMessage = 12
-			ElseIf aiButton == 7
-				aiMessage = 13
-			ElseIf aiButton == 8 ;more
-				aiMessage = 14
-			ElseIf aiButton == 9 ;back
-				aiMessage = 1
-			EndIf
-		ElseIf aiMessage == 6 ;Whiterun Inns (3)
-			aiButton = moaRespawnMenu110.Show()
-			If aiButton == -1
-			ElseIf aiButton < 3
-				iTavernIndex = aiButton
-				Return ConfigMenu.getTavernRPIndex()
-			ElseIf aiButton == 3
-				aiMessage = 5
-			EndIf
-		ElseIf aiMessage == 7 ;Falkreath Inn (1)
-			aiButton = moaRespawnMenu111.Show()
-			If aiButton == -1
-			ElseIf aiButton < 1
-				iTavernIndex = aiButton + 3
-				Return ConfigMenu.getTavernRPIndex()
-			ElseIf aiButton == 1
-				aiMessage = 5
-			EndIf	
-		ElseIf aiMessage == 8 ;Markarth Inn (2)
-			aiButton = moaRespawnMenu112.Show()
-			If aiButton == -1
-			ElseIf aiButton < 2
-				iTavernIndex = aiButton + 4
-				Return ConfigMenu.getTavernRPIndex()
-			ElseIf aiButton == 2
-				aiMessage = 5
-			EndIf				
-		ElseIf aiMessage == 9 ;Riften Inn (1)
-			aiButton = moaRespawnMenu113.Show()
-			If aiButton == -1
-			ElseIf aiButton == 0 ;The Bee and Barb
-				iTavernIndex = 6
-				Return ConfigMenu.getTavernRPIndex()
-			ElseIf aiButton == 1 ;Vilemyr Inn
-				iTavernIndex = 16
-				Return ConfigMenu.getTavernRPIndex()
-			ElseIf aiButton == 2
-				aiMessage = 5
-			EndIf	
-		ElseIf aiMessage == 10 ;Solitude Inn (2)
-			aiButton = moaRespawnMenu114.Show()
-			If aiButton == -1
-			ElseIf aiButton < 2
-				iTavernIndex = aiButton + 7
-				Return ConfigMenu.getTavernRPIndex()
-			ElseIf aiButton == 2
-				aiMessage = 5
-			EndIf
-		ElseIf aiMessage == 11 ;Windhelm Inn (2)
-			aiButton = moaRespawnMenu115.Show()
-			If aiButton == -1
-			ElseIf aiButton < 2
-				iTavernIndex = aiButton + 9
-				Return ConfigMenu.getTavernRPIndex()
-			ElseIf aiButton == 2
-				aiMessage = 5
-			EndIf
-		ElseIf aiMessage == 12 ;Winterhold Inn (1)
-			aiButton = moaRespawnMenu116.Show()
-			If aiButton == -1
-			ElseIf aiButton < 1
-				iTavernIndex = aiButton + 11
-				Return ConfigMenu.getTavernRPIndex()
-			ElseIf aiButton == 1
-				aiMessage = 5
-			EndIf
-		ElseIf aiMessage == 13 ;Raven Rock Inn (1)
-			aiButton = moaRespawnMenu117.Show()
-			If aiButton == -1
-			ElseIf aiButton < 1
-				iTavernIndex = aiButton + 12
-				Return ConfigMenu.getTavernRPIndex()
-			ElseIf aiButton == 1
-				aiMessage = 5
-			EndIf
-		ElseIf aiMessage == 14
-			aiButton = moaRespawnMenu118.Show()
-			If aiButton == -1
-			ElseIf aiButton == 0 ;morthal inn
-				aiMessage = 15
-			ElseIf aiButton == 1 ;dawnstar inn
-				aiMessage = 16
-			ElseIf aiButton == 2
-				iTavernIndex = ConfigMenu.getNearbyInnRPIndex()
-				Return ConfigMenu.getTavernRPIndex()		
-			ElseIf aiButton == 3
-				iTavernIndex = ConfigMenu.getRandInnRPIndex()
-				Return ConfigMenu.getTavernRPIndex()
-			ElseIf aiButton == 4 ;Less
-				aiMessage = 5
-			ElseIf aiButton == 5 ;Back
-				aiMessage = 1
-			EndIf
-		ElseIf aiMessage == 15
-			aiButton = moaRespawnMenu1180.Show() ;Morthal Inn (1)
-			If aiButton == -1
-			ElseIf aiButton < 1
-				iTavernIndex = aiButton + 13
-				Return ConfigMenu.getTavernRPIndex()
-			ElseIf aiButton == 1
-				aiMessage = 5
-			EndIf	
-		ElseIf aiMessage == 16
-			aiButton = moaRespawnMenu1181.Show() ;Dawnstar Inn (2)
-			If aiButton == -1
-			ElseIf aiButton < 2
-				iTavernIndex = aiButton + 14
-				Return ConfigMenu.getTavernRPIndex()
-			ElseIf aiButton == 2
-				aiMessage = 5
-			EndIf
-		EndIf
-	EndWhile
-EndFunction
+function checkJsonBlackListedLocations()
+  if !ConfigMenu.bLocBlackListJsonChecked
+    if ConfigMenu.bPUOK
+      if JsonUtil.JsonExists("/MarkofArkay/MOA_BlackLists")
+        Form[] LocArr = JsonUtil.FormListToArray("/MarkofArkay/MOA_BlackLists", "LocationBlackList")
+        Int i = LocArr.Length
+        while i > 0
+          i -= 1
+          if !ReviveScript.LocationBlackList2.HasForm(LocArr[i])
+            ReviveScript.LocationBlackList2.AddForm(LocArr[i])
+          endif
+        endwhile
+        ConfigMenu.bLocBlackListJsonChecked = True
+      endif
+    endif
+  endif
+endfunction
 
-Int Function iGetRandomWithExclusionArray( Int iFrom, Int iTo, Bool[] iFlagArray, Bool bTavern = False) 
-	If iFrom == iTo
-		If iFlagArray[iFrom]
-			Return iFrom
-		EndIf
-		Return -1
-	ElseIf iFrom > iTo
-		Int iTemp = iFrom
-		iFrom = iTo
-		iTo = iTemp
-	EndIf
-	Int ExcludeCount = 0
-	int iIndex = iFrom
-	While iIndex <= iTo
-		If (!iFlagArray[iIndex] || bIsCurrentCell(iIndex,bTavern))
-			ExcludeCount += 1
-		EndIf
-		iIndex += 1
-	Endwhile
-	If ExcludeCount > (iTo - iFrom)
-		Return -1
-	EndIf
-	Int iRandom = Utility.RandomInt(iFrom, iTo - ExcludeCount)
-	iIndex = iFrom 
-	 While (iIndex <= iTo)
-		If ( iRandom < iIndex )
-			Return iRandom
-		ElseIf (( iRandom >= iIndex ) && (!iFlagArray[iIndex] || bIsCurrentCell(iIndex,bTavern) ))
-			iRandom += 1
-		EndIf
-		iIndex += 1
-	EndWhile
-	Return iRandom
-EndFunction
+function checkMarkers(Bool bCheckInn, Bool bCheckExtra, Bool bCheckCustom, Bool bFast=False)
+  if !bCheckInn && !bCheckExtra && !bCheckCustom
+    return
+  endif
+  if moaCheckingMarkers.GetValue() != 1.0
+    moaCheckingMarkers.SetValue(1.0)
+  else
+    return
+  endif
+  Debug.Notification("$mrt_MarkofArkay_Notification_Checking_Markers_Started")
+  if bCheckInn
+    setTavernMarkers(ConfigMenu.moaIsBusy.GetValue() As Bool)
+  endif
+  if bCheckExtra
+    AddExternalMarkers(bFast)
+  endif
+  if bCheckCustom
+    ConfigMenu.setCustomRPS(bFast)
+  endif
+  moaCheckingMarkers.SetValue(0.0)
+  Debug.Notification("$mrt_MarkofArkay_Notification_Checking_Markers_Finished")
+endfunction
 
-Function SelectRespawnPointbyMenu()
-	moaERPCount.SetValue(MergedExternalMarkerSubList.GetSize() + ExternalLocationMarkerList.GetSize() + ExtraCustomMarkerList.GetSize())
-	iTeleportLocation = RespawnMenu()
-	If (( iTeleportLocation == -1 ) || ( iTeleportLocation > ( ConfigMenu.sRespawnPoints.Length - 1 )))
-		If ( iTeleportLocation == -1 )
-			iExternalIndex = iTeleportLocation
-		Else
-			iExternalIndex = ( iTeleportLocation - ( ConfigMenu.sRespawnPoints.Length ))
-		EndIf
-		iTeleportLocation = ConfigMenu.getExternalRPIndex()
-	ElseIf iTeleportLocation < -2
-		iCustomRPSlot = (iTeleportLocation * -1) - 3   ; -3-> 0, -4-> 1, -5-> 2, -6->3
-		iTeleportLocation = ConfigMenu.getCustomRPIndex() ;Custom
-	EndIf
-Endfunction
+function findNearbyMarker()
+  Location Curlocation
+  if PlayerMarker.GetCurrentLocation()
+    Curlocation = PlayerMarker.GetCurrentLocation()
+  else
+    PlayerRefMarker.ForceRefTo(PlayerMarker)
+    return
+  endif
+  FormList Markers
+  if PlayerRef.IsInInterior()
+    Markers = InteriorMarkers
+  else
+    Markers = ExteriorMarkers
+  endif
+  ObjectReference Marker
+  Marker = Game.FindClosestReferenceOfAnyTypeInListFromRef(Markers, PlayerMarker, 50000.0)
+  if !Marker || !bHasEditorLocation(Marker, Curlocation)
+    Int i
+    if Marker
+      ObjectReference[] PrevMarkers = new ObjectReference[5]
+      i = 5
+      while i > 0 && Marker && !bHasEditorLocation(Marker, Curlocation)
+        i -= 1
+        PrevMarkers[i] = Marker
+        Marker = Game.FindRandomReferenceOfAnyTypeInListFromRef(Markers, PrevMarkers[i], 50000.0)
+        if PrevMarkers.Find(Marker) > -1 || (PlayerMarker.GetDistance(Marker) > 50000.0)
+          Marker = None
+        endif
+      endwhile
+    endif
+    if !Marker || !bHasEditorLocation(Marker, Curlocation)
+      i = 5
+      while i > 0 && (!Marker || !bHasEditorLocation(Marker, Curlocation))
+        i -= 1
+        Marker = Game.FindRandomReferenceOfAnyTypeInListFromRef(Markers, PlayerMarker, 50000.0)
+      endwhile
+    endif
+  endif
+  if Marker && bHasEditorLocation(Marker, Curlocation)
+    PlayerRefMarker.ForceRefTo(Marker)
+  else
+    PlayerRefMarker.ForceRefTo(PlayerMarker)
+  endif
+endfunction
 
-Function Respawn()
-	bFirstTry = True
-	bFirstTryFailed = False
-	If ( ConfigMenu.bSendToJail && !ReviveScript.NPCScript.bInBeastForm() && ReviveScript.NPCScript.bGuardCanSendToJail() )
-		ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Sending Player to jail...")
-		Faction CrimeFaction = ReviveScript.Guard.GetCrimeFaction()
-		If ( CrimeFaction )
-			If ( CrimeFaction == CrimeFactionPale )
-				bIsArrived(DawnstarJailMarker)
-			ElseIf ( CrimeFaction == CrimeFactionFalkreath )
-				bIsArrived(FalkreathJailMarker)
-			ElseIf ( CrimeFaction == CrimeFactionHjaalmarch )
-				bIsArrived(MorthalJailMarker)
-			ElseIf ( CrimeFaction == CrimeFactionHaafingar )
-				bIsArrived(SolitudeJailMarker)
-			ElseIf ( CrimeFaction == CrimeFactionRift )
-				bIsArrived(RiftenJailMarker)
-			ElseIf ( CrimeFaction == CrimeFactionWhiterun )
-				bIsArrived(WhiterunJailMarker)
-			ElseIf ( CrimeFaction == CrimeFactionEastmarch )
-				bIsArrived(WindhelmJailMarker)
-			ElseIf ( CrimeFaction == CrimeFactionWinterhold )
-				bIsArrived(WinterholdJailMarker)
-			ElseIf ( CrimeFaction == CrimeFactionReach )
-				bIsArrived(MarkarthJailMarker)
-				ReviveScript.bCidhnaJail = True
-			ElseIf ( CrimeFaction == DLC2CrimeRavenRockFaction )
-				bIsArrived(DLC2RavenRockJailMarker)
-			EndIf
-			ReviveScript.NPCScript.ReleaseFollowers()
-			Utility.Wait(0.5)
-			CrimeFaction.SendPlayerToJail( abRemoveInventory = True, abRealJail = True )
-			ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Player is jailed")
-		Else
-			ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Teleporting...")
-			Teleport()
-			ReviveScript.NPCScript.RespawnFollowers()
-			ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Teleportion finished.")
-		EndIf
-	Else
-		ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Teleporting...")
-		Teleport()
-		ReviveScript.NPCScript.RespawnFollowers()
-		ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Teleportion finished.")
-	EndIf
-Endfunction
+ObjectReference function getCenterMarker(Location Loc)
+  stopAndConfirm(DestinationCenterDetector)
+  DestinationLocation.ForceLocationTo(Loc)
+  DestinationCenterDetector.Start()
+  return DestinationCenter.GetReference() As ObjectReference
+endfunction
 
-Function PassTime(Float fGameHours,Float fRealSecs)
-      If !ConfigMenu.bDisableUnsafe && fGameHours > 0.0 && fRealSecs > 0.0
-            DefaultTimeScale = TimeScale.GetValue()
-            TimeScale.SetValue( (3600.0 / fRealSecs) * fGameHours )
-            Utility.Wait(fRealSecs)
-            TimeScale.SetValue(DefaultTimeScale)
-            PlayerRef.StopCombatalarm()
-      Else
-            Utility.Wait(fRealSecs)
-      EndIf
-EndFunction
+ObjectReference function getLocationMarker(Location Loc)
+  stopAndConfirm(LocMarkerDetector)
+  DestinationLocation.ForceLocationTo(Loc)
+  LocMarkerDetector.Start()
+  return DestinationMarkerAlias.GetReference() As ObjectReference
+endfunction
+
+Int function iGetRandomRefFromListWithExclusions(Int iFrom, Int iTo, Formlist RefList)
+  Int ExcludeCount = 0
+  int iIndex = 0
+  Int iRandom = 0
+  ObjectReference MarkerRef
+  while iIndex < RefList.GetSize()
+    if RefList.GetAt(iIndex).GetType() != 61
+      ExcludeCount += 1
+    else
+      MarkerRef = (RefList.GetAt(iIndex) As ObjectReference)
+      if (!bCanTeleportToExtMarker(MarkerRef) || bIsRefInCurrentCell(MarkerRef))
+        ExcludeCount += 1
+      endif
+    endif
+    iIndex += 1
+  endwhile
+  if (ExcludeCount == RefList.GetSize())
+    return -1
+  endif
+  iRandom = Utility.RandomInt(iFrom, iTo - ExcludeCount)
+  iIndex = 0
+  while (iIndex < RefList.GetSize())
+    MarkerRef = (RefList.GetAt(iIndex) As ObjectReference)
+    if (iRandom < iIndex)
+      return iRandom
+    elseif ((iRandom >= iIndex) && ((RefList.GetAt(iIndex).GetType() != 61) || !bCanTeleportToExtMarker(MarkerRef) || BIsRefInCurrentCell(MarkerRef)))
+      iRandom += 1
+    endif
+    iIndex += 1
+  endwhile
+  return iRandom
+endfunction
+
+Int function iGetRandomWithExclusionArray(Int iFrom, Int iTo, Bool[] iFlagArray, Bool bTavern=False)
+  if iFrom == iTo
+    if iFlagArray[iFrom]
+      return iFrom
+    endif
+    return -1
+  elseif iFrom > iTo
+    Int iTemp = iFrom
+    iFrom = iTo
+    iTo = iTemp
+  endif
+  Int ExcludeCount = 0
+  int iIndex = iFrom
+  while iIndex <= iTo
+    if (!iFlagArray[iIndex] || bIsCurrentCell(iIndex, bTavern))
+      ExcludeCount += 1
+    endif
+    iIndex += 1
+  endwhile
+  if ExcludeCount > (iTo - iFrom)
+    return -1
+  endif
+  Int iRandom = Utility.RandomInt(iFrom, iTo - ExcludeCount)
+  iIndex = iFrom
+  while (iIndex <= iTo)
+    if (iRandom < iIndex)
+      return iRandom
+    elseif ((iRandom >= iIndex) && (!iFlagArray[iIndex] || bIsCurrentCell(iIndex, bTavern)))
+      iRandom += 1
+    endif
+    iIndex += 1
+  endwhile
+  return iRandom
+endfunction
+
+Bool function isJsonBlacklistedQuestsRunning()
+  if ConfigMenu.bPUOK
+    if JsonUtil.JsonExists("/MarkofArkay/MOA_BlackLists")
+      Form[] QuestArr = JsonUtil.FormListToArray("/MarkofArkay/MOA_BlackLists", "QuestBlackList")
+      Int i = QuestArr.Length
+      while i > 0
+        i -= 1
+        if (QuestArr[i] As Quest) && (QuestArr[i] As Quest).IsRunning()
+          return True
+        endif
+      endwhile
+    endif
+  endif
+  return False
+endfunction
+
+function sendToRandomCity()
+  Int i
+  if ConfigMenu.bMoreRandomRespawn
+    moaRandomDestination.SetValueInt(1)
+    DisabledLocations.Revert()
+    i = LocationsList.GetSize()
+    while i > 0
+      i -= 1
+      if !ConfigMenu.bRespawnPointsFlags[i]
+        DisabledLocations.AddForm(LocationsList.GetAt(i) As Location)
+      endif
+    endwhile
+    if bTryToMoveByQuest(moaRandomCityDetector, RandomCityTeleportRef, 7, FailedDestinations)
+      return
+    endif
+  endif
+  i = iGetRandomWithExclusionArray(0, (MarkerList.GetSize() - 1), ConfigMenu.bRespawnPointsFlags)
+  if i > -1
+    bIsArrived(MarkerList.GetAt(i) As Objectreference)
+  else
+    SendToDefaultMarker()
+  endif
+endfunction
+
+function sendToRandomInn()
+  Int i = iGetRandomWithExclusionArray(0, InnLocations.GetSize() - 1, bGetTavernFlags(), True)
+  if (i > -1) && bIsArrived(TavernMarkers[i] As ObjectReference)
+    return
+  else
+    sendToRandomCity()
+  endif
+endfunction
+
+function setTavernMarkers(Bool bReset=False)
+  Debug.TraceConditional("MarkOfArkay: Adding inn markers ...", ConfigMenu.bIsLoggingEnabled)
+  if !bReset && bCheckTavernMarkers()
+    Debug.TraceConditional("MarkOfArkay: All inn markers are already added.", ConfigMenu.bIsLoggingEnabled)
+    return
+  endif
+  TavernMarkers = Utility.CreateFormArray(InnLocations.GetSize())
+  TavernCapitalMarkers = Utility.CreateFormArray(InnLocationsCapital.GetSize())
+  Int i = InnLocations.GetSize()
+  Int j = InnLocationsCapital.GetSize()
+  while i > 0
+    i -= 1
+    TavernMarkers[i] = getCenterMarker(InnLocations.GetAt(i) As Location)
+    if j > 0
+      j -= 1
+      TavernCapitalMarkers[j] = getCenterMarker(InnLocationsCapital.GetAt(j) As Location)
+    endif
+  endwhile
+  Debug.TraceConditional("MarkOfArkay: Adding inn markers finished.", ConfigMenu.bIsLoggingEnabled)
+endfunction

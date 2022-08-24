@@ -1,952 +1,957 @@
 Scriptname zzzmoa_RecallScript extends activemagiceffect
 
-Import zzzmoautilscript
-zzzmoaReviveMCM Property ConfigMenu Auto
-zzzmoaReviverScript Property ReviveScript Auto
-FormList property MarkerList Auto
-Formlist property ExternalMarkerList Auto
-Formlist property MergedExternalMarkerList Auto
-Formlist Property CityMarkersList Auto
-FormList Property LocationsList Auto
-FormList Property DisabledLocations Auto
-Formlist Property Destinations Auto
-Formlist Property TeleportDestination Auto
-FormList property CustomRespawnPoints Auto
-ObjectReference Property SleepMarker Auto
-ObjectReference Property LocationMarker Auto
-MiscObject Property MarkOfArkay Auto
-Location Property PaleHoldLocation  Auto
-Location Property HjaalmarchHoldLocation  Auto
-Location Property DLC1VampireCastleLocation Auto
-Location Property DLC1HunterHQLocation Auto
-ObjectReference Property DetachMarker1 Auto
-ObjectReference Property DetachMarker2 Auto
-ObjectReference Property DetachMarker3 Auto
-Objectreference Property CellLoadMarker Auto
-Objectreference Property CellLoadMarker2 Auto
-ObjectReference Property LocationMarker2 Auto
-ObjectReference[] Property DynamicMarkerList Auto Hidden
-ObjectReference Property TOWMarker Auto
-Message Property moaTeleportMenu0 Auto
-Message Property moaTeleportMenu1 Auto
-Message Property moaTeleportMenu13 Auto
-Message Property moaCustomRecallMenu Auto
-Keyword property HoldKeyword Auto
-Quest Property moaNearbyDetector Auto
-Quest Property moaRandomCityDetector Auto
-Quest Property moaRandomMarkerDetector Auto
-ReferenceAlias Property TeleportRef Auto
-ReferenceAlias Property RandomTeleportRef Auto
-ReferenceAlias Property RandomCityTeleportRef Auto
-ObjectReference Property PlayerMarker Auto
-GlobalVariable Property moaRandomDestination Auto
-GlobalVariable Property moaERPCount Auto
-Int iTavernIndex
+import zzzmoautilscript
+
+Objectreference property CellLoadMarker auto
+Objectreference property CellLoadMarker2 auto
+Formlist property CityMarkersList auto
+zzzmoaReviveMCM property ConfigMenu auto
+FormList property CustomRespawnPoints auto
+Location property DLC1HunterHQLocation auto
+Location property DLC1VampireCastleLocation auto
+Formlist property Destinations auto
+ObjectReference property DetachMarker1 auto
+ObjectReference property DetachMarker2 auto
+ObjectReference property DetachMarker3 auto
+FormList property DisabledLocations auto
+ObjectReference[] property DynamicMarkerList auto Hidden
+Formlist property ExternalMarkerList auto
+Location property HjaalmarchHoldLocation auto
+Keyword property HoldKeyword auto
+ObjectReference property LocationMarker auto
+ObjectReference property LocationMarker2 auto
+FormList property LocationsList auto
+MiscObject property MarkOfArkay auto
+FormList property MarkerList auto
+Formlist property MergedExternalMarkerList auto
+Location property PaleHoldLocation auto
+ObjectReference property PlayerMarker auto
+ReferenceAlias property RandomCityTeleportRef auto
+ReferenceAlias property RandomTeleportRef auto
+zzzmoaReviverScript property ReviveScript auto
+ObjectReference property SleepMarker auto
+ObjectReference property TOWMarker auto
+Formlist property TeleportDestination auto
+ReferenceAlias property TeleportRef auto
+Message property moaCustomRecallMenu auto
+GlobalVariable property moaERPCount auto
+Quest property moaNearbyDetector auto
+Quest property moaRandomCityDetector auto
+GlobalVariable property moaRandomDestination auto
+Quest property moaRandomMarkerDetector auto
+Message property moaTeleportMenu0 auto
+Message property moaTeleportMenu1 auto
+Message property moaTeleportMenu13 auto
+
 Actor Caster
 Int iMarkerIndex
+Int iTavernIndex
 
-Event OnEffectStart(Actor akTarget, Actor akCaster)
-	If akCaster == Game.GetPlayer()
-		Caster = Game.GetPlayer()
-	Else
-		Return
-	EndIf
-	If ( !ConfigMenu.bIsRecallRestricted || Game.IsFastTravelEnabled() ) 
-		If ( Caster.GetItemCount(MarkOfArkay) >= ConfigMenu.fRecallCastSlider )
-			Int iTeleportLocation = ConfigMenu.iTeleportLocation
-			Int iExternalIndex = ConfigMenu.iExternalIndex
-			Int iCustomRPSlot = ConfigMenu.iSelectedCustomRPSlot
-			iTavernIndex = ConfigMenu.iTavernIndex
-			If ( ConfigMenu.bTeleportMenu )
-				moaERPCount.SetValue(ReviveScript.RespawnScript.MergedExternalMarkerSubList.GetSize() + ReviveScript.RespawnScript.ExternalLocationMarkerList.GetSize() + ReviveScript.RespawnScript.ExtraCustomMarkerList.GetSize())
-				Utility.Wait(0.5)
-				iTeleportLocation = TeleportMenu()
-				If (( iTeleportLocation == -1 ) || ( iTeleportLocation > ( ConfigMenu.sRespawnPoints.Length - 1 )))
-					If ( iTeleportLocation == -1 )
-						iExternalIndex = iTeleportLocation
-					Else
-						iExternalIndex = ( iTeleportLocation - ( ConfigMenu.sRespawnPoints.Length ))
-					EndIf
-					iTeleportLocation = ConfigMenu.getExternalRPIndex() ;External
-				ElseIf iTeleportLocation < -2
-					iCustomRPSlot = (iTeleportLocation * -1) - 3   ; -3-> 0, -4-> 1, -5-> 2
-					iTeleportLocation = ConfigMenu.getCustomRPIndex() ;Custom
-				EndIf
-			EndIf
-			
-			If iTeleportLocation > -1
-				PlayerMarker.Enable()
-				PlayerMarker.MoveTo(Caster)
-				ReviveScript.bReadyForRespawn = True
-				If iTeleportLocation < ConfigMenu.getNearbyCityRPIndex()
-					If ConfigMenu.bMoreRandomRespawn
-						moaRandomDestination.SetValueInt(0)
-						TeleportDestination.Revert()
-						TeleportDestination.AddForm(LocationsList.GetAt(iTeleportLocation) As Location)
-						DisabledLocations.Revert()
-						Int i = LocationsList.GetSize()
-						While i > 0
-							i -= 1
-							If !ConfigMenu.bRespawnPointsFlags[i] && (i != iTeleportLocation)
-								DisabledLocations.AddForm(LocationsList.GetAt(i) As Location)
-							EndIf
-						Endwhile
-						Bool bResult = bMoveByQuest(moaRandomCityDetector, RandomCityTeleportRef, 5)
-						If bResult
-							If ConfigMenu.fRecallCastSlider > 0.0 && \
-							(Caster.GetParentCell() != PlayerMarker.GetParentCell() || (Caster.GetDistance(PlayerMarker) > 499.0))
-								Caster.RemoveItem(MarkOfArkay,ConfigMenu.fRecallCastSlider As Int,False)
-							EndIf
-							PlayerMarker.MoveToMyEditorLocation()
-							PlayerMarker.Disable()
-							Return
-						EndIf
-					EndIf
-					Caster.MoveTo( MarkerList.GetAt( iTeleportLocation ) As Objectreference, abMatchRotation = true)
-				ElseIf iTeleportLocation == ConfigMenu.getNearbyCityRPIndex()
-					SendToNearbyCity()
-				ElseIf iTeleportLocation == ConfigMenu.getRandCityRPIndex()
-					SendToRandomCity()
-				ElseIf iTeleportLocation == (ConfigMenu.getTavernRPIndex())
-					If iTavernIndex == ConfigMenu.getNearbyInnRPIndex()
-						ReviveScript.RespawnScript.sendToNearbyInn()
-					ElseIf iTavernIndex == ConfigMenu.getRandInnRPIndex()
-						ReviveScript.RespawnScript.sendToRandomInn()
-					Else
-						ObjectReference Marker = ReviveScript.RespawnScript.getCenterMarker(ReviveScript.RespawnScript.InnLocations.GetAt(iTavernIndex) As Location)
-						If Marker
-							Caster.MoveTo(Marker)
-							Return
-						Else
-							SendToAnotherLocation()	
-						EndIf
-					EndIf
-				ElseIf iTeleportLocation == ConfigMenu.getSleepRPIndex()
-					If !bSendToSleepMarker()
-						If !bSendToCustomMarker(iCustomRPSlot)
-							SendToAnotherLocation()
-						EndIf
-					EndIf
-				ElseIf iTeleportLocation == ConfigMenu.getCustomRPIndex()
-					If !bSendToCustomMarker(iCustomRPSlot)
-						If !bSendToSleepMarker()
-							SendToAnotherLocation()
-						EndIf
-					EndIf
-				ElseIf iTeleportLocation == ConfigMenu.getExternalRPIndex()
-					If !bSendToExternalMarker(iExternalIndex)
-						If !bSendToSleepMarker()
-							If !bSendToCustomMarker(iCustomRPSlot)
-								SendToAnotherLocation()
-							EndIf
-						EndIf
-					EndIf
-				ElseIf iTeleportLocation == ConfigMenu.getCheckpointRPIndex()
-					SendToCheckPoint()
-				ElseIf iTeleportLocation == ConfigMenu.getNearbyRPIndex()
-					SendToNearbyLocation()
-				ElseIf iTeleportLocation == ConfigMenu.getRandomRPIndex()
-					RandomTeleport()
-				ElseIf iTeleportLocation == ConfigMenu.getThroatRPIndex()
-					sendToTOW()	
-				EndIf
-				If ConfigMenu.fRecallCastSlider > 0.0 && \
-				(Caster.GetParentCell() != PlayerMarker.GetParentCell() || (Caster.GetDistance(PlayerMarker) > 499.0))	
-					Caster.RemoveItem(MarkOfArkay,ConfigMenu.fRecallCastSlider As Int,False)
-				EndIf
-				PlayerMarker.MoveToMyEditorLocation()
-				PlayerMarker.Disable()
-			EndIf
-		Else
-			Debug.notification("$mrt_MarkofArkay_Notification_Teleportation_NoArkayMark")
-		EndIf
-	Else
-		Debug.notification("$mrt_MarkofArkay_Notification_Teleportation_Off")
-	EndIf
-EndEvent
+event OnEffectStart(Actor akTarget, Actor akCaster)
+  if akCaster == Game.GetPlayer()
+    Caster = Game.GetPlayer()
+  else
+    return
+  endif
+  if (!ConfigMenu.bIsRecallRestricted || Game.IsFastTravelEnabled())
+    if (Caster.GetItemCount(MarkOfArkay) >= ConfigMenu.fRecallCastSlider)
+      Int iTeleportLocation = ConfigMenu.iTeleportLocation
+      Int iExternalIndex = ConfigMenu.iExternalIndex
+      Int iCustomRPSlot = ConfigMenu.iSelectedCustomRPSlot
+      iTavernIndex = ConfigMenu.iTavernIndex
+      if (ConfigMenu.bTeleportMenu)
+        moaERPCount.SetValue(ReviveScript.RespawnScript.MergedExternalMarkerSubList.GetSize() + ReviveScript.RespawnScript.ExternalLocationMarkerList.GetSize() + ReviveScript.RespawnScript.ExtraCustomMarkerList.GetSize())
+        Utility.Wait(0.5)
+        iTeleportLocation = TeleportMenu()
+        if ((iTeleportLocation == -1) || (iTeleportLocation > (ConfigMenu.sRespawnPoints.Length - 1)))
+          if (iTeleportLocation == -1)
+            iExternalIndex = iTeleportLocation
+          else
+            iExternalIndex = (iTeleportLocation - (ConfigMenu.sRespawnPoints.Length))
+          endif
+          iTeleportLocation = ConfigMenu.getExternalRPIndex() ;External
+        elseif iTeleportLocation < -2
+          iCustomRPSlot = (iTeleportLocation * -1) - 3 ; -3-> 0, -4-> 1, -5-> 2
+          iTeleportLocation = ConfigMenu.getCustomRPIndex() ;Custom
+        endif
+      endif
+      if iTeleportLocation > -1
+        PlayerMarker.Enable()
+        PlayerMarker.MoveTo(Caster)
+        ReviveScript.bReadyForRespawn = True
+        if iTeleportLocation < ConfigMenu.getNearbyCityRPIndex()
+          if ConfigMenu.bMoreRandomRespawn
+            moaRandomDestination.SetValueInt(0)
+            TeleportDestination.Revert()
+            TeleportDestination.AddForm(LocationsList.GetAt(iTeleportLocation) As Location)
+            DisabledLocations.Revert()
+            Int i = LocationsList.GetSize()
+            while i > 0
+              i -= 1
+              if !ConfigMenu.bRespawnPointsFlags[i] && (i != iTeleportLocation)
+                DisabledLocations.AddForm(LocationsList.GetAt(i) As Location)
+              endif
+            endwhile
+            Bool bResult = bMoveByQuest(moaRandomCityDetector, RandomCityTeleportRef, 5)
+            if bResult
+              if ConfigMenu.fRecallCastSlider > 0.0 && (Caster.GetParentCell() != PlayerMarker.GetParentCell() || (Caster.GetDistance(PlayerMarker) > 499.0))
+                Caster.RemoveItem(MarkOfArkay, ConfigMenu.fRecallCastSlider As Int, False)
+              endif
+              PlayerMarker.MoveToMyEditorLocation()
+              PlayerMarker.Disable()
+              return
+            endif
+          endif
+          Caster.MoveTo(MarkerList.GetAt(iTeleportLocation) As Objectreference, abMatchRotation=true)
+        elseif iTeleportLocation == ConfigMenu.getNearbyCityRPIndex()
+          SendToNearbyCity()
+        elseif iTeleportLocation == ConfigMenu.getRandCityRPIndex()
+          SendToRandomCity()
+        elseif iTeleportLocation == (ConfigMenu.getTavernRPIndex())
+          if iTavernIndex == ConfigMenu.getNearbyInnRPIndex()
+            ReviveScript.RespawnScript.sendToNearbyInn()
+          elseif iTavernIndex == ConfigMenu.getRandInnRPIndex()
+            ReviveScript.RespawnScript.sendToRandomInn()
+          else
+            ObjectReference Marker = ReviveScript.RespawnScript.getCenterMarker(ReviveScript.RespawnScript.InnLocations.GetAt(iTavernIndex) As Location)
+            if Marker
+              Caster.MoveTo(Marker)
+              return
+            else
+              SendToAnotherLocation()
+            endif
+          endif
+        elseif iTeleportLocation == ConfigMenu.getSleepRPIndex()
+          if !bSendToSleepMarker()
+            if !bSendToCustomMarker(iCustomRPSlot)
+              SendToAnotherLocation()
+            endif
+          endif
+        elseif iTeleportLocation == ConfigMenu.getCustomRPIndex()
+          if !bSendToCustomMarker(iCustomRPSlot)
+            if !bSendToSleepMarker()
+              SendToAnotherLocation()
+            endif
+          endif
+        elseif iTeleportLocation == ConfigMenu.getExternalRPIndex()
+          if !bSendToExternalMarker(iExternalIndex)
+            if !bSendToSleepMarker()
+              if !bSendToCustomMarker(iCustomRPSlot)
+                SendToAnotherLocation()
+              endif
+            endif
+          endif
+        elseif iTeleportLocation == ConfigMenu.getCheckpointRPIndex()
+          SendToCheckPoint()
+        elseif iTeleportLocation == ConfigMenu.getNearbyRPIndex()
+          SendToNearbyLocation()
+        elseif iTeleportLocation == ConfigMenu.getRandomRPIndex()
+          RandomTeleport()
+        elseif iTeleportLocation == ConfigMenu.getThroatRPIndex()
+          sendToTOW()
+        endif
+        if ConfigMenu.fRecallCastSlider > 0.0 && (Caster.GetParentCell() != PlayerMarker.GetParentCell() || (Caster.GetDistance(PlayerMarker) > 499.0))
+          Caster.RemoveItem(MarkOfArkay, ConfigMenu.fRecallCastSlider As Int, False)
+        endif
+        PlayerMarker.MoveToMyEditorLocation()
+        PlayerMarker.Disable()
+      endif
+    else
+      Debug.notification("$mrt_MarkofArkay_Notification_Teleportation_NoArkayMark")
+    endif
+  else
+    Debug.notification("$mrt_MarkofArkay_Notification_Teleportation_Off")
+  endif
+endevent
 
-Bool Function bIsCurrentCell(int iIndex)
-	Return ((( MarkerList.GetAt(iIndex))  As Objectreference ).GetParentCell() == Caster.GetParentCell() )
-EndFunction
+function RandomTeleport()
+  if ConfigMenu.bMoreRandomRespawn
+    PlayerMarker.Enable()
+    PlayerMarker.MoveTo(Caster)
+    DisabledLocations.Revert()
+    Int i = LocationsList.GetSize()
+    while i > 0
+      i -= 1
+      if !ConfigMenu.bRespawnPointsFlags[i]
+        DisabledLocations.AddForm(LocationsList.GetAt(i) As Location)
+      endif
+    endwhile
+    if !ConfigMenu.bRespawnPointsFlags[8]
+      DisabledLocations.AddForm(ReviveScript.RespawnScript.InnHoldLocations.GetAt(8) As Location)
+    endif
+    if !ConfigMenu.bRespawnPointsFlags[9]
+      DisabledLocations.AddForm(ReviveScript.RespawnScript.InnHoldLocations.GetAt(9) As Location)
+    endif
+    Bool bResult = bMoveByQuest(moaRandomMarkerDetector, RandomTeleportRef, 5)
+    PlayerMarker.MoveToMyEditorLocation()
+    PlayerMarker.Disable()
+    if bResult
+      return
+    endif
+  endif
+  Destinations.Revert()
+  int iIndex = 0
+  Int iRandom = 0
+  while iIndex < MarkerList.GetSize()
+    if ConfigMenu.bRespawnPointsFlags[iIndex] && Caster.GetDistance(MarkerList.GetAt(iIndex) As Objectreference) >= ConfigMenu.fRPMinDistanceSlider
+      Destinations.AddForm(MarkerList.GetAt(iIndex) As Objectreference)
+    endif
+    iIndex += 1
+  endwhile
+  Bool[] bInnFlags = ReviveScript.RespawnScript.bGetTavernFlags()
+  iIndex = ReviveScript.RespawnScript.InnLocations.GetSize()
+  while iIndex > 0
+    iIndex -= 1
+    if bInnFlags[iIndex]
+      Destinations.AddForm(ReviveScript.RespawnScript.TavernMarkers[iIndex] As ObjectReference)
+    endif
+  endwhile
+  if !SleepMarker.Isdisabled() && (SleepMarker.GetParentCell() != ReviveScript.DefaultCell) && Caster.GetDistance(SleepMarker) >= ConfigMenu.fRPMinDistanceSlider
+    Destinations.AddForm(SleepMarker)
+  endif
+  iIndex = 0
+  while iIndex < CustomRespawnPoints.GetSize()
+    if ConfigMenu.isCustomSlotAvailable(iIndex) && !ConfigMenu.isCustomSlotEmpty(iIndex)
+      if Caster.GetDistance((CustomRespawnPoints.GetAt(iIndex) As ObjectReference)) >= ConfigMenu.fRPMinDistanceSlider
+        Destinations.AddForm(CustomRespawnPoints.GetAt(iIndex) As ObjectReference)
+      endif
+    endif
+    iIndex += 1
+  endwhile
+  if moaERPCount.GetValueInt() > 0
+    iIndex = 0
+    Int iLast = iMin(128, moaERPCount.GetValueInt())
+    ObjectReference Marker
+    while iIndex < iLast
+      if !((Marker.GetType() != 61) || !ReviveScript.RespawnScript.bCanTeleportToExtMarker(Marker) || (Caster.GetDistance(Marker) < ConfigMenu.fRPMinDistanceSlider))
+        Destinations.AddForm(Marker)
+      endif
+      iIndex += 1
+    endwhile
+  endif
+  if !CellLoadMarker2.Isdisabled() && (CellLoadMarker2.GetParentCell() != ReviveScript.DefaultCell) && Caster.GetDistance(CellLoadMarker2) >= ConfigMenu.fRPMinDistanceSlider
+    Destinations.AddForm(CellLoadMarker2)
+  endif
+  if !DetachMarker3.Isdisabled() && (DetachMarker3.GetParentCell() != ReviveScript.DefaultCell) && Caster.GetDistance(DetachMarker3) >= ConfigMenu.fRPMinDistanceSlider
+    Destinations.AddForm(DetachMarker3)
+  endif
+  if !LocationMarker2.Isdisabled() && (LocationMarker2.GetParentCell() != ReviveScript.DefaultCell) && Caster.GetDistance(LocationMarker2) >= ConfigMenu.fRPMinDistanceSlider
+    Destinations.AddForm(LocationMarker2)
+  endif
+  if CellLoadMarker.Isdisabled() && (CellLoadMarker.GetParentCell() != ReviveScript.DefaultCell) && Caster.GetDistance(CellLoadMarker) >= ConfigMenu.fRPMinDistanceSlider
+    Destinations.AddForm(CellLoadMarker)
+  endif
+  if LocationMarker.Isdisabled() && (LocationMarker.GetParentCell() != ReviveScript.DefaultCell) && Caster.GetDistance(LocationMarker) >= ConfigMenu.fRPMinDistanceSlider
+    Destinations.AddForm(LocationMarker)
+  endif
+  if DetachMarker1.Isdisabled() && (DetachMarker1.GetParentCell() != ReviveScript.DefaultCell) && Caster.GetDistance(DetachMarker1) >= ConfigMenu.fRPMinDistanceSlider
+    Destinations.AddForm(DetachMarker1)
+  endif
+  if DetachMarker2.Isdisabled() && (DetachMarker2.GetParentCell() != ReviveScript.DefaultCell) && Caster.GetDistance(DetachMarker2) >= ConfigMenu.fRPMinDistanceSlider
+    Destinations.AddForm(DetachMarker2)
+  endif
+  if Destinations.GetSize() > 0
+    iRandom = Utility.RandomInt(0, Destinations.GetSize() - 1)
+    Caster.MoveTo(Destinations.GetAt(iRandom) As ObjectReference)
+  else
+    sendToTOW()
+  endif
+endfunction
 
-Int Function iGetRandomWithExclusionArray( Int iFrom, Int iTo, Bool[] iFlagArray)
-	If iFrom == iTo
-		If iFlagArray[iFrom]
-			Return iFrom
-		EndIf
-		Return -1
-	ElseIf iFrom > iTo
-		Int iTemp = iFrom
-		iFrom = iTo
-		iTo = iTemp
-	EndIf
-	Int ExcludeCount = 0
-	int iIndex = iFrom
-	While iIndex <= iTo
-		If (!iFlagArray[iIndex] || bIsCurrentCell(iIndex))
-			ExcludeCount += 1
-		EndIf
-		iIndex += 1
-	Endwhile
-	If ExcludeCount > (iTo - iFrom)
-		Return -1
-	EndIf
-	Int iRandom = Utility.RandomInt(iFrom, iTo - ExcludeCount)
-	 iIndex = iFrom 
-	 While ( iIndex <= iTo )
-		If ( iRandom < iIndex )
-			Return iRandom
-		ElseIf (( iRandom >= iIndex ) && (!iFlagArray[iIndex] || bIsCurrentCell(iIndex) ))
-			iRandom += 1
-		EndIf
-		iIndex += 1
-	EndWhile
-	Return iRandom
-EndFunction
+function SendToAnotherLocation()
+  ObjectReference Marker = ReviveScript.RespawnScript.FindInnMarkerByLocation()
+  if Marker
+    Caster.MoveTo(Marker)
+    return
+  endif
+  Marker = FindCityMarkerByLocation()
+  if Marker
+    Caster.MoveTo(Marker)
+    return
+  endif
+  ReviveScript.RespawnScript.sendToRandomInn()
+endfunction
 
-Function SendToRandomCity()
-	Int i
-	If ConfigMenu.bMoreRandomRespawn
-		PlayerMarker.Enable()
-		PlayerMarker.MoveTo(Caster)
-		moaRandomDestination.SetValueInt(1)
-		DisabledLocations.Revert()
-		i = LocationsList.GetSize()
-		While i > 0
-			i -= 1
-			If !ConfigMenu.bRespawnPointsFlags[i]
-				DisabledLocations.AddForm(LocationsList.GetAt(i) As Location)
-			EndIf
-		Endwhile
-		If !ConfigMenu.bRespawnPointsFlags[8]
-			DisabledLocations.AddForm(ReviveScript.RespawnScript.InnHoldLocations.GetAt(8) As Location)
-		EndIf
-		If !ConfigMenu.bRespawnPointsFlags[9]
-			DisabledLocations.AddForm(ReviveScript.RespawnScript.InnHoldLocations.GetAt(9) As Location)
-		EndIf
-		Bool bResult = bMoveByQuest(moaRandomCityDetector,RandomCityTeleportRef, 5)
-		PlayerMarker.MoveToMyEditorLocation()
-		PlayerMarker.Disable()
-		If bResult
-			Return
-		EndIf
-	EndIf
-	i = iGetRandomWithExclusionArray(0, (MarkerList.GetSize() - 1), ConfigMenu.bRespawnPointsFlags)
-	If i > -1
-		Caster.MoveTo( MarkerList.GetAt(i) As Objectreference, abMatchRotation = true )
-	;Else
-	;	sendToTOW()
-	EndIf
-EndFunction
+function SendToCheckPoint()
+  Float fDistance
+  ObjectReference Marker
+  DynamicMarkerList = new ObjectReference[12]
+  DynamicMarkerList[0] = CellLoadMarker2
+  DynamicMarkerList[1] = DetachMarker3
+  DynamicMarkerList[2] = LocationMarker2
+  DynamicMarkerList[3] = SleepMarker
+  DynamicMarkerList[4] = CellLoadMarker
+  DynamicMarkerList[5] = LocationMarker
+  DynamicMarkerList[6] = DetachMarker1
+  DynamicMarkerList[7] = DetachMarker2
+  DynamicMarkerList[8] = CustomRespawnPoints.GetAt(0) As ObjectReference
+  DynamicMarkerList[9] = CustomRespawnPoints.GetAt(1) As ObjectReference
+  DynamicMarkerList[10] = CustomRespawnPoints.GetAt(2) As ObjectReference
+  DynamicMarkerList[11] = CustomRespawnPoints.GetAt(3) As ObjectReference
+  Int iIndex = DynamicMarkerList.Length
+  while iIndex > 0
+    iIndex -= 1
+    if (!DynamicMarkerList[iIndex].IsDisabled() && (DynamicMarkerList[iIndex].GetParentCell() != ReviveScript.DefaultCell))
+      if (Caster.GetDistance(DynamicMarkerList[iIndex]) >= ConfigMenu.fRPMinDistanceSlider)
+        if (!Caster.IsInInterior() || (Caster.GetParentCell() == DynamicMarkerList[iIndex].GetParentCell()))
+          if (!fDistance || (fDistance > Caster.GetDistance(DynamicMarkerList[iIndex])))
+            fDistance = Caster.GetDistance(DynamicMarkerList[iIndex])
+            Marker = DynamicMarkerList[iIndex]
+          endif
+        endif
+      endif
+    endif
+  endwhile
+  if (Marker && fDistance < 999999999.0)
+    Caster.MoveTo(Marker)
+    return
+  endif
+  if moaERPCount.GetValueInt() > 0
+    Int iLast = iMin(128, moaERPCount.GetValueInt())
+    ObjectReference tempMarker
+    iIndex = 0
+    while iIndex < iLast
+      tempMarker = getFromMergedFormList(MergedExternalMarkerList, iIndex) As ObjectReference
+      if (tempMarker.GetType() == 61)
+        if ReviveScript.RespawnScript.bCanTeleportToExtMarker(tempMarker)
+          if (Caster.GetParentCell() == tempMarker.GetParentCell())
+            if (!fDistance || (fDistance > Caster.GetDistance(tempMarker)))
+              if (Caster.GetDistance(tempMarker) >= ConfigMenu.fRPMinDistanceSlider)
+                fDistance = Caster.GetDistance(tempMarker)
+                Marker = tempMarker
+              endif
+            endif
+          endif
+        endif
+      endif
+      iIndex += 1
+    endwhile
+  endif
+  if !Caster.IsInInterior()
+    iIndex = CityMarkersList.GetSize()
+    while (iIndex > 0)
+      iIndex -= 1
+      if ConfigMenu.bRespawnPointsFlags[iIndex]
+        if (!fDistance || (fDistance > Caster.GetDistance(CityMarkersList.GetAt(iIndex) As ObjectReference)))
+          fDistance = Caster.GetDistance(CityMarkersList.GetAt(iIndex) As ObjectReference)
+          Marker = MarkerList.GetAt(iIndex) As ObjectReference
+        endif
+      endif
+    endwhile
+  endif
+  if (Marker && fDistance < 999999999.0)
+    Caster.MoveTo(Marker)
+    return
+  endif
+  iIndex = DynamicMarkerList.Length
+  while iIndex > 0
+    iIndex -= 1
+    if (Caster.GetDistance(DynamicMarkerList[iIndex]) >= ConfigMenu.fRPMinDistanceSlider)
+      if (!DynamicMarkerList[iIndex].IsDisabled() && (DynamicMarkerList[iIndex].GetParentCell() != ReviveScript.DefaultCell))
+        if (bInSameLocation(DynamicMarkerList[iIndex].GetCurrentLocation()) || (ReviveScript.RespawnScript.IsInInteriorActual(Caster) && !ReviveScript.RespawnScript.IsInInteriorActual(DynamicMarkerList[iIndex])))
+          Caster.MoveTo(DynamicMarkerList[iIndex])
+          return
+        endif
+      endif
+    endif
+  endwhile
+  if moaERPCount.GetValueInt() > 0
+    Int iLast = iMin(128, moaERPCount.GetValueInt())
+    iIndex = 0
+    while iIndex < iLast
+      Marker = getFromMergedFormList(MergedExternalMarkerList, iIndex) As ObjectReference
+      if (Marker.GetType() == 61)
+        if ReviveScript.RespawnScript.bCanTeleportToExtMarker(Marker)
+          if bInSameLocation(Marker.GetCurrentLocation())
+            if (Caster.GetDistance(Marker) >= ConfigMenu.fRPMinDistanceSlider)
+              Caster.MoveTo(Marker)
+              return
+            endif
+          endif
+        endif
+      endif
+      iIndex += 1
+    endwhile
+  endif
+  iIndex = LocationsList.GetSize()
+  while (iIndex > 0)
+    iIndex -= 1
+    if (iIndex == 3)
+      if bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(DLC1HunterHQLocation) ;Riften or Dayspring Canyon
+        if ConfigMenu.bRespawnPointsFlags[iIndex]
+          if (Caster.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference) >= ConfigMenu.fRPMinDistanceSlider)
+            Caster.MoveTo(MarkerList.GetAt(iIndex) As ObjectReference)
+            return
+          endif
+        endif
+      endif
+    elseif (iIndex == 4)
+      if bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(HjaalmarchHoldLocation) || bInSameLocation(DLC1VampireCastleLocation) ;Solitude or Morthal
+        if ConfigMenu.bRespawnPointsFlags[iIndex]
+          if (Caster.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference) >= ConfigMenu.fRPMinDistanceSlider)
+            Caster.MoveTo(MarkerList.GetAt(iIndex) As ObjectReference)
+            return
+          endif
+        endif
+      endif
+    elseif (iIndex == 6)
+      if (bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(PaleHoldLocation)) ;Winterhold or Dawnstar
+        if ConfigMenu.bRespawnPointsFlags[iIndex]
+          if (Caster.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference) >= ConfigMenu.fRPMinDistanceSlider)
+            Caster.MoveTo(MarkerList.GetAt(iIndex) As ObjectReference)
+            return
+          endif
+        endif
+      endif
+    elseif bInSameLocation(LocationsList.GetAt(iIndex) As Location)
+      if ConfigMenu.bRespawnPointsFlags[iIndex]
+        if (Caster.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference) >= ConfigMenu.fRPMinDistanceSlider)
+          Caster.MoveTo(MarkerList.GetAt(iIndex) As ObjectReference)
+          return
+        endif
+      endif
+    endif
+  endwhile
+  iIndex = DynamicMarkerList.Length
+  while iIndex > 0
+    iIndex -= 1
+    if (Caster.GetDistance(DynamicMarkerList[iIndex]) >= ConfigMenu.fRPMinDistanceSlider)
+      if (!DynamicMarkerList[iIndex].IsDisabled() && (DynamicMarkerList[iIndex].GetParentCell() != ReviveScript.DefaultCell))
+        Caster.MoveTo(DynamicMarkerList[iIndex])
+        return
+      endif
+    endif
+  endwhile
+  SendToRandomCity()
+endfunction
 
-Function RandomTeleport()
-	If ConfigMenu.bMoreRandomRespawn
-		PlayerMarker.Enable()
-		PlayerMarker.MoveTo(Caster)
-		DisabledLocations.Revert()
-		Int i = LocationsList.GetSize()
-		While i > 0
-			i -= 1
-			If !ConfigMenu.bRespawnPointsFlags[i]
-				DisabledLocations.AddForm(LocationsList.GetAt(i) As Location)
-			EndIf
-		Endwhile
-		If !ConfigMenu.bRespawnPointsFlags[8]
-			DisabledLocations.AddForm(ReviveScript.RespawnScript.InnHoldLocations.GetAt(8) As Location)
-		EndIf
-		If !ConfigMenu.bRespawnPointsFlags[9]
-			DisabledLocations.AddForm(ReviveScript.RespawnScript.InnHoldLocations.GetAt(9) As Location)
-		EndIf
-		Bool bResult = bMoveByQuest(moaRandomMarkerDetector,RandomTeleportRef, 5)
-		PlayerMarker.MoveToMyEditorLocation()
-		PlayerMarker.Disable()
-		If bResult
-			Return
-		EndIf
-	EndIf
-	Destinations.Revert()
-	int iIndex = 0
-	Int iRandom = 0
-	While iIndex < MarkerList.GetSize()
-		If ConfigMenu.bRespawnPointsFlags[iIndex] && Caster.GetDistance(MarkerList.GetAt(iIndex) As Objectreference) >= ConfigMenu.fRPMinDistanceSlider
-			Destinations.AddForm(MarkerList.GetAt(iIndex) As Objectreference)
-		EndIf
-		iIndex += 1
-	Endwhile
-	Bool[] bInnFlags = ReviveScript.RespawnScript.bGetTavernFlags()
-	iIndex = ReviveScript.RespawnScript.InnLocations.GetSize()
-	While iIndex > 0
-		iIndex -= 1
-		If bInnFlags[iIndex]
-			Destinations.AddForm(ReviveScript.RespawnScript.TavernMarkers[iIndex] As ObjectReference)
-		EndIf
-	Endwhile	
-	If !SleepMarker.Isdisabled() && ( SleepMarker.GetParentCell() != ReviveScript.DefaultCell ) && Caster.GetDistance(SleepMarker) >= ConfigMenu.fRPMinDistanceSlider
-		Destinations.AddForm(SleepMarker)
-	EndIf
-	iIndex = 0
-	While iIndex < CustomRespawnPoints.GetSize()
-		If ConfigMenu.isCustomSlotAvailable(iIndex) && !ConfigMenu.isCustomSlotEmpty(iIndex)
-			If Caster.GetDistance((CustomRespawnPoints.GetAt(iIndex) As ObjectReference)) >= ConfigMenu.fRPMinDistanceSlider
-				Destinations.AddForm(CustomRespawnPoints.GetAt(iIndex) As ObjectReference)
-			EndIf
-		EndIf
-		iIndex += 1
-	EndWhile
-	If moaERPCount.GetValueInt() > 0
-		iIndex = 0
-		Int iLast = iMin(128,moaERPCount.GetValueInt())
-		ObjectReference Marker
-		While iIndex < iLast
-			If !(( Marker.GetType() != 61 ) || \
-			!ReviveScript.RespawnScript.bCanTeleportToExtMarker( Marker ) || \
-			( Caster.GetDistance( Marker ) < ConfigMenu.fRPMinDistanceSlider ))
-				Destinations.AddForm(Marker)
-			EndIf
-			iIndex += 1
-		EndWhile
-	EndIf
-	If !CellLoadMarker2.Isdisabled() && ( CellLoadMarker2.GetParentCell() != ReviveScript.DefaultCell ) && Caster.GetDistance(CellLoadMarker2) >= ConfigMenu.fRPMinDistanceSlider
-		Destinations.AddForm(CellLoadMarker2)
-	EndIf
-	If !DetachMarker3.Isdisabled() && ( DetachMarker3.GetParentCell() != ReviveScript.DefaultCell ) && Caster.GetDistance(DetachMarker3) >= ConfigMenu.fRPMinDistanceSlider
-		Destinations.AddForm(DetachMarker3)
-	EndIf
-	If !LocationMarker2.Isdisabled() && ( LocationMarker2.GetParentCell() != ReviveScript.DefaultCell ) && Caster.GetDistance(LocationMarker2) >= ConfigMenu.fRPMinDistanceSlider
-		Destinations.AddForm(LocationMarker2)
-	EndIf
-	If CellLoadMarker.Isdisabled() && ( CellLoadMarker.GetParentCell() != ReviveScript.DefaultCell ) && Caster.GetDistance(CellLoadMarker) >= ConfigMenu.fRPMinDistanceSlider
-		Destinations.AddForm(CellLoadMarker)
-	EndIf
-	If LocationMarker.Isdisabled() && ( LocationMarker.GetParentCell() != ReviveScript.DefaultCell ) && Caster.GetDistance(LocationMarker) >= ConfigMenu.fRPMinDistanceSlider
-		Destinations.AddForm(LocationMarker)
-	EndIf
-	If DetachMarker1.Isdisabled() && ( DetachMarker1.GetParentCell() != ReviveScript.DefaultCell ) && Caster.GetDistance(DetachMarker1) >= ConfigMenu.fRPMinDistanceSlider
-		Destinations.AddForm(DetachMarker1)
-	EndIf
-	If DetachMarker2.Isdisabled() && ( DetachMarker2.GetParentCell() != ReviveScript.DefaultCell ) && Caster.GetDistance(DetachMarker2) >= ConfigMenu.fRPMinDistanceSlider
-		Destinations.AddForm(DetachMarker2)
-	EndIf
-	If Destinations.GetSize() > 0
-		iRandom = Utility.RandomInt(0, Destinations.GetSize() - 1)
-		Caster.MoveTo(Destinations.GetAt(iRandom) As ObjectReference)
-	Else
-		sendToTOW()
-	EndIf
-EndFunction
+function SendToNearbyCity()
+  ObjectReference Marker = FindCityMarkerByLocation()
+  if Marker
+    Caster.MoveTo(Marker)
+    return
+  endif
+  if !ReviveScript.RespawnScript.IsInInteriorActual(PlayerMarker)
+    float fDistance
+    Int iIndex
+    ObjectReference tempMarker
+    if moaERPCount.GetValueInt() > 0
+      Int iLast = iMin(128, moaERPCount.GetValueInt())
+      while iIndex < iLast
+        tempMarker = getFromMergedFormList(MergedExternalMarkerList, iIndex) As ObjectReference
+        if (!fDistance || (fDistance > PlayerMarker.GetDistance(tempMarker)))
+          fDistance = PlayerMarker.GetDistance(tempMarker)
+          Marker = tempMarker
+        endif
+        iIndex += 1
+      endwhile
+    endif
+    if PlayerMarker.IsInInterior()
+      iIndex = MarkerList.GetSize()
+      while iIndex > 0
+        iIndex -= 1
 
-ObjectReference Function findCityMarkerByLocation()
-	Int iIndex = LocationsList.GetSize()
-	While ( iIndex > 0 )
-		iIndex -= 1
-		If ( iIndex == 3 )
-			If bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(DLC1HunterHQLocation) ;Riften or Dayspring Canyon
-			;	If ConfigMenu.bRespawnPointsFlags[iIndex]
-					If ( Caster.GetDistance( MarkerList.GetAt(iIndex) As ObjectReference ) >= ConfigMenu.fRPMinDistanceSlider )
-						Return MarkerList.GetAt(iIndex) As ObjectReference
-					EndIf
-				EndIf
-			;EndIf
-		ElseIf ( iIndex == 4 )
-			If bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(HjaalmarchHoldLocation) || bInSameLocation(DLC1VampireCastleLocation) ;Solitude or Morthal or Castle Volkihar
-			;	If ConfigMenu.bRespawnPointsFlags[iIndex]
-					If ( Caster.GetDistance( MarkerList.GetAt(iIndex) As ObjectReference ) >= ConfigMenu.fRPMinDistanceSlider )
-						Return MarkerList.GetAt(iIndex) As ObjectReference
-					EndIf
-				EndIf
-			;EndIf
-		ElseIf ( iIndex == 6 )
-			If ( bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(PaleHoldLocation) ) ;Winterhold or Dawnstar
-			;	If ConfigMenu.bRespawnPointsFlags[iIndex]
-					If ( Caster.GetDistance( MarkerList.GetAt(iIndex) As ObjectReference ) >= ConfigMenu.fRPMinDistanceSlider )
-						Return MarkerList.GetAt(iIndex) As ObjectReference
-					EndIf
-				EndIf
-			;EndIf
-		ElseIf bInSameLocation(LocationsList.GetAt(iIndex) As Location)
-			;If ConfigMenu.bRespawnPointsFlags[iIndex]
-				If ( Caster.GetDistance( MarkerList.GetAt(iIndex) As ObjectReference ) >= ConfigMenu.fRPMinDistanceSlider )
-					Return MarkerList.GetAt(iIndex) As ObjectReference
-				EndIf
-			;EndIf
-		EndIf
-	EndWhile
-	Return None
-EndFunction
+        ;If ConfigMenu.bRespawnPointsFlags[iIndex]
+        if (PlayerMarker.GetParentCell() == (MarkerList.GetAt(iIndex) As ObjectReference).GetParentCell())
+          if (!fDistance || (fDistance > PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference)))
+            fDistance = PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference)
+            Marker = MarkerList.GetAt(iIndex) As ObjectReference
+          endif
+        endif
 
-Function SendToNearbyCity()
-	ObjectReference Marker = FindCityMarkerByLocation()
-	If Marker
-		Caster.MoveTo(Marker)
-		Return 
-	EndIf
-	If !ReviveScript.RespawnScript.IsInInteriorActual(PlayerMarker)
-		float fDistance
-		Int iIndex
-		ObjectReference tempMarker
-		If moaERPCount.GetValueInt() > 0
-			Int iLast = iMin(128,moaERPCount.GetValueInt())
-			While iIndex < iLast
-				tempMarker = getFromMergedFormList(MergedExternalMarkerList,iIndex) As ObjectReference
-				If ( !fDistance || ( fDistance > PlayerMarker.GetDistance( tempMarker ) ) )
-					fDistance = PlayerMarker.GetDistance( tempMarker )
-					Marker = tempMarker
-				EndIf
-				iIndex += 1
-			EndWhile
-		EndIf
-		If PlayerMarker.IsInInterior()
-			iIndex = MarkerList.GetSize()
-			While iIndex > 0
-				iIndex -= 1
-				;If ConfigMenu.bRespawnPointsFlags[iIndex]
-					If ( PlayerMarker.GetParentCell() == ( MarkerList.GetAt(iIndex) As ObjectReference ).GetParentCell() )
-						If ( !fDistance || ( fDistance > PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference) ) )
-							fDistance = PlayerMarker.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference)
-							Marker = MarkerList.GetAt(iIndex) As ObjectReference
-						EndIf
-					EndIf
-				;EndIf
-			EndWhile
-		Else
-			iIndex = CityMarkersList.GetSize()
-			While iIndex > 0
-				iIndex -= 1
-				;If ConfigMenu.bRespawnPointsFlags[iIndex]
-					If ( !fDistance || ( fDistance > PlayerMarker.GetDistance(CityMarkersList.GetAt(iIndex) As ObjectReference) ) )
-						fDistance = PlayerMarker.GetDistance(CityMarkersList.GetAt(iIndex) As ObjectReference)
-						Marker = MarkerList.GetAt(iIndex) As ObjectReference
-					EndIf
-				;EndIf
-			EndWhile
-		EndIf
-		If ( Marker && fDistance && fDistance < 500001 )
-			Caster.MoveTo(Marker)
-			Return
-		EndIf
-	EndIf
-	sendToRandomCity()
-Endfunction
+        ;EndIf
+      endwhile
+    else
+      iIndex = CityMarkersList.GetSize()
+      while iIndex > 0
+        iIndex -= 1
 
-Function SendToAnotherLocation()
-	ObjectReference Marker = ReviveScript.RespawnScript.FindInnMarkerByLocation()
-	If Marker
-		Caster.MoveTo(Marker)
-		Return 
-	EndIf
-	Marker = FindCityMarkerByLocation()
-	If Marker
-		Caster.MoveTo(Marker)
-		Return 
-	EndIf	
-	ReviveScript.RespawnScript.sendToRandomInn()
-EndFunction
+        ;If ConfigMenu.bRespawnPointsFlags[iIndex]
+        if (!fDistance || (fDistance > PlayerMarker.GetDistance(CityMarkersList.GetAt(iIndex) As ObjectReference)))
+          fDistance = PlayerMarker.GetDistance(CityMarkersList.GetAt(iIndex) As ObjectReference)
+          Marker = MarkerList.GetAt(iIndex) As ObjectReference
+        endif
 
-Function SendToNearbyLocation()
-		PlayerMarker.Enable()
-		PlayerMarker.MoveTo(Caster)
-		PlayerMarker.SetPosition(Caster.GetPositionx(), Caster.GetPositiony(), Caster.GetPositionz())
-		PlayerMarker.SetAngle(0.0, 0.0, Caster.GetAnglez())
-		Utility.Wait(0.5)
-		ReviveScript.RespawnScript.findNearbyMarker()
-		If !bMoveByQuest(moaNearbyDetector,TeleportRef, 5)
-			SendToCheckPoint()
-		EndIf
-		PlayerMarker.MoveToMyEditorLocation()
-		PlayerMarker.Disable()
-Endfunction
+        ;EndIf
+      endwhile
+    endif
+    if (Marker && fDistance && fDistance < 500001)
+      Caster.MoveTo(Marker)
+      return
+    endif
+  endif
+  sendToRandomCity()
+endfunction
 
-Function SendToCheckPoint()
-	Float fDistance
-	ObjectReference Marker
-	DynamicMarkerList = New ObjectReference[12]
-	DynamicMarkerList[0] = CellLoadMarker2
-	DynamicMarkerList[1] = DetachMarker3
-	DynamicMarkerList[2] = LocationMarker2
-	DynamicMarkerList[3] = SleepMarker
-	DynamicMarkerList[4] = CellLoadMarker
-	DynamicMarkerList[5] = LocationMarker
-	DynamicMarkerList[6] = DetachMarker1
-	DynamicMarkerList[7] = DetachMarker2
-	DynamicMarkerList[8] = CustomRespawnPoints.GetAt(0) As ObjectReference
-	DynamicMarkerList[9] = CustomRespawnPoints.GetAt(1) As ObjectReference
-	DynamicMarkerList[10] = CustomRespawnPoints.GetAt(2) As ObjectReference
-	DynamicMarkerList[11] = CustomRespawnPoints.GetAt(3) As ObjectReference
-	
-	Int iIndex = DynamicMarkerList.Length
-	While iIndex > 0
-		iIndex -= 1
-		If ( !DynamicMarkerList[iIndex].IsDisabled() && ( DynamicMarkerList[iIndex].GetParentCell() != ReviveScript.DefaultCell ))
-			If ( Caster.GetDistance(DynamicMarkerList[iIndex]) >= ConfigMenu.fRPMinDistanceSlider )
-				If ( !Caster.IsInInterior() || ( Caster.GetParentCell() == DynamicMarkerList[iIndex].GetParentCell() ))
-					If ( !fDistance || ( fDistance > Caster.GetDistance(DynamicMarkerList[iIndex]) ))
-						fDistance = Caster.GetDistance(DynamicMarkerList[iIndex])
-						Marker = DynamicMarkerList[iIndex]
-					EndIf
-				EndIf
-			EndIf
-		EndIf
-	EndWhile
-	If ( Marker && fDistance < 999999999.0 )
-		Caster.MoveTo( Marker )
-		return
-	EndIf
-	If moaERPCount.GetValueInt() > 0
-		Int iLast = iMin(128,moaERPCount.GetValueInt())
-		ObjectReference tempMarker
-		iIndex = 0
-		While iIndex < iLast
-			tempMarker = getFromMergedFormList(MergedExternalMarkerList,iIndex) As ObjectReference
-			If ( tempMarker.GetType() == 61 ) 
-				If ReviveScript.RespawnScript.bCanTeleportToExtMarker( tempMarker )
-					If ( Caster.GetParentCell() == tempMarker.GetParentCell() )
-						If ( !fDistance || ( fDistance > Caster.GetDistance( tempMarker ) ) )
-							If ( Caster.GetDistance(tempMarker) >= ConfigMenu.fRPMinDistanceSlider )
-								fDistance = Caster.GetDistance( tempMarker )
-								Marker = tempMarker
-							EndIf
-						EndIf
-					EndIf
-				EndIf
-			EndIf
-			iIndex += 1
-		EndWhile	
-	EndIf
-	If !Caster.IsInInterior()
-		iIndex = CityMarkersList.GetSize()
-		While ( iIndex > 0 )
-			iIndex -= 1
-			If ConfigMenu.bRespawnPointsFlags[iIndex]
-				If ( !fDistance || ( fDistance > Caster.GetDistance(CityMarkersList.GetAt(iIndex) As ObjectReference) ) )
-					fDistance = Caster.GetDistance(CityMarkersList.GetAt(iIndex) As ObjectReference)
-					Marker = MarkerList.GetAt(iIndex) As ObjectReference
-				EndIf
-			EndIf
-		EndWhile
-	EndIf
-	If ( Marker && fDistance < 999999999.0 )
-		Caster.MoveTo( Marker )
-		return
-	EndIf
-	iIndex = DynamicMarkerList.Length
-	While iIndex > 0
-		iIndex -= 1
-		If ( Caster.GetDistance(DynamicMarkerList[iIndex]) >= ConfigMenu.fRPMinDistanceSlider )
-			If ( !DynamicMarkerList[iIndex].IsDisabled() && ( DynamicMarkerList[iIndex].GetParentCell() != ReviveScript.DefaultCell ) )
-				If ( bInSameLocation( DynamicMarkerList[iIndex].GetCurrentLocation() ) || ( ReviveScript.RespawnScript.IsInInteriorActual(Caster) && !ReviveScript.RespawnScript.IsInInteriorActual(DynamicMarkerList[iIndex]) ) )
-					Caster.MoveTo( DynamicMarkerList[iIndex] )
-					Return	
-				EndIf
-			EndIf
-		EndIf
-	EndWhile
-	If moaERPCount.GetValueInt() > 0
-		Int iLast = iMin(128,moaERPCount.GetValueInt())
-		iIndex = 0
-		While iIndex < iLast
-			Marker = getFromMergedFormList(MergedExternalMarkerList,iIndex) As ObjectReference
-			If ( Marker.GetType() == 61 ) 
-				If ReviveScript.RespawnScript.bCanTeleportToExtMarker( Marker )
-					If bInSameLocation( Marker.GetCurrentLocation() )
-						If ( Caster.GetDistance( Marker) >= ConfigMenu.fRPMinDistanceSlider )
-							Caster.MoveTo(Marker)
-							Return
-						EndIf
-					EndIf
-				EndIf
-			EndIf
-			iIndex += 1
-		EndWhile	
-	EndIf
-	iIndex = LocationsList.GetSize()
-	While ( iIndex > 0 )
-		iIndex -= 1
-		If ( iIndex == 3 )
-			If bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(DLC1HunterHQLocation) ;Riften or Dayspring Canyon
-				If ConfigMenu.bRespawnPointsFlags[iIndex]
-					If ( Caster.GetDistance( MarkerList.GetAt(iIndex) As ObjectReference ) >= ConfigMenu.fRPMinDistanceSlider )
-						Caster.MoveTo( MarkerList.GetAt(iIndex) As ObjectReference )
-						Return
-					EndIf
-				EndIf
-			EndIf
-		ElseIf ( iIndex == 4 )
-			If bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(HjaalmarchHoldLocation) || bInSameLocation(DLC1VampireCastleLocation) ;Solitude or Morthal
-				If ConfigMenu.bRespawnPointsFlags[iIndex]
-					If ( Caster.GetDistance( MarkerList.GetAt(iIndex) As ObjectReference ) >= ConfigMenu.fRPMinDistanceSlider )
-						Caster.MoveTo( MarkerList.GetAt(iIndex) As ObjectReference )
-						Return
-					EndIf
-				EndIf
-			EndIf
-		ElseIf ( iIndex == 6 )
-			If ( bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(PaleHoldLocation) ) ;Winterhold or Dawnstar
-				If ConfigMenu.bRespawnPointsFlags[iIndex]
-					If ( Caster.GetDistance( MarkerList.GetAt(iIndex) As ObjectReference ) >= ConfigMenu.fRPMinDistanceSlider )
-						Caster.MoveTo( MarkerList.GetAt(iIndex) As ObjectReference )
-						Return
-					EndIf
-				EndIf
-			EndIf
-		ElseIf bInSameLocation(LocationsList.GetAt(iIndex) As Location)
-			If ConfigMenu.bRespawnPointsFlags[iIndex]
-				If ( Caster.GetDistance( MarkerList.GetAt(iIndex) As ObjectReference ) >= ConfigMenu.fRPMinDistanceSlider )
-					Caster.MoveTo( MarkerList.GetAt(iIndex) As ObjectReference )
-					Return
-				EndIf
-			EndIf
-		EndIf
-	EndWhile
-	iIndex = DynamicMarkerList.Length
-	While iIndex > 0
-		iIndex -= 1
-		If ( Caster.GetDistance(DynamicMarkerList[iIndex]) >= ConfigMenu.fRPMinDistanceSlider )
-			If ( !DynamicMarkerList[iIndex].IsDisabled() && ( DynamicMarkerList[iIndex].GetParentCell() != ReviveScript.DefaultCell ) )
-				Caster.MoveTo(DynamicMarkerList[iIndex])
-				Return
-			EndIf
-		EndIf
-	EndWhile
-	SendToRandomCity()
-EndFunction
+function SendToNearbyLocation()
+  PlayerMarker.Enable()
+  PlayerMarker.MoveTo(Caster)
+  PlayerMarker.SetPosition(Caster.GetPositionx(), Caster.GetPositiony(), Caster.GetPositionz())
+  PlayerMarker.SetAngle(0.0, 0.0, Caster.GetAnglez())
+  Utility.Wait(0.5)
+  ReviveScript.RespawnScript.findNearbyMarker()
+  if !bMoveByQuest(moaNearbyDetector, TeleportRef, 5)
+    SendToCheckPoint()
+  endif
+  PlayerMarker.MoveToMyEditorLocation()
+  PlayerMarker.Disable()
+endfunction
 
-Bool Function bInSameLocation(Location Loc)
-    If Loc
-		If Caster.IsInLocation(Loc)
-			Return True
-		EndIf
-		If Caster.GetCurrentLocation()
-			If Caster.GetCurrentLocation().IsSameLocation(Loc,HoldKeyword)
-				Return True
-			EndIf
-		EndIf
-	EndIf
-	Return False
-EndFunction
+function SendToRandomCity()
+  Int i
+  if ConfigMenu.bMoreRandomRespawn
+    PlayerMarker.Enable()
+    PlayerMarker.MoveTo(Caster)
+    moaRandomDestination.SetValueInt(1)
+    DisabledLocations.Revert()
+    i = LocationsList.GetSize()
+    while i > 0
+      i -= 1
+      if !ConfigMenu.bRespawnPointsFlags[i]
+        DisabledLocations.AddForm(LocationsList.GetAt(i) As Location)
+      endif
+    endwhile
+    if !ConfigMenu.bRespawnPointsFlags[8]
+      DisabledLocations.AddForm(ReviveScript.RespawnScript.InnHoldLocations.GetAt(8) As Location)
+    endif
+    if !ConfigMenu.bRespawnPointsFlags[9]
+      DisabledLocations.AddForm(ReviveScript.RespawnScript.InnHoldLocations.GetAt(9) As Location)
+    endif
+    Bool bResult = bMoveByQuest(moaRandomCityDetector, RandomCityTeleportRef, 5)
+    PlayerMarker.MoveToMyEditorLocation()
+    PlayerMarker.Disable()
+    if bResult
+      return
+    endif
+  endif
+  i = iGetRandomWithExclusionArray(0, (MarkerList.GetSize() - 1), ConfigMenu.bRespawnPointsFlags)
+  if i > -1
+    Caster.MoveTo(MarkerList.GetAt(i) As Objectreference, abMatchRotation=true)
 
-Int Function TeleportMenu(Int aiMessage = 0, Int aiButton = 0)
-	Int iIndex = 1
-	While True
-		If aiButton == -1 ; Can prevent problems if recycling aiButton
-		ElseIf aiMessage == 0
-			aiButton = moaTeleportMenu0.Show()
-			If aiButton == -1
-			ElseIf aiButton < ConfigMenu.getNearbyCityRPIndex() ;Whiterun,...,Raven Rock
-				Return aiButton
-			ElseIf aiButton == ConfigMenu.getNearbyCityRPIndex() ;More
-				aiMessage = 1
-			ElseIf aiButton == (ConfigMenu.getNearbyCityRPIndex() + 1) ;Cancel
-				Return -2
-			EndIf
-		ElseIf aiMessage == 1
-			aiButton = moaTeleportMenu1.Show()
-			If aiButton == -1
-			ElseIf aiButton == 0 ;City
-				aiMessage = 4
-			ElseIf aiButton == 1 ;Inn
-				aiMessage = 5
-			ElseIf aiButton == 3 ;Custom
-				aiMessage = 2
-			ElseIf aiButton == 4 ;External
-				aiMessage = 3
-			ElseIf aiButton < 9 ;City,...,Throat of the World
-				Return aiButton + ConfigMenu.getRandCityRPIndex()
-			ElseIf aiButton == 9 ;Less
-				aiMessage = 0
-			EndIf
-		ElseIf aiMessage == 2 ;Custom
-			aiButton = moaCustomRecallMenu.Show(ConfigMenu.iSelectedCustomRPSlot + 1)
-			If aiButton == -1
-			ElseIf aiButton == 4 ;Details
-				ConfigMenu.ShowCustomSlotsInfo()
-			ElseIf aiButton == 5 ;Back
-				aiMessage = 1
-			ElseIf aiButton == 6 ;Cancel
-				Return -2
-			Else
-				Return -3 - aiButton ;0-> -3, 1-> -4, 2-> -5
-			EndIf			
-		ElseIf aiMessage == 3
-			If moaERPCount.GetValueInt() > 7
-				aiButton = ReviveScript.RespawnScript.moaRespawnMenu13_Alt.Show(iIndex)
-				If aiButton == -1
-				ElseIf aiButton == 0 ;Prev
-					iIndex = ichangeVar(iIndex,1,moaERPCount.GetValueInt(),-1)
-				ElseIf aiButton == 1 ;Next 
-					iIndex = ichangeVar(iIndex,1,moaERPCount.GetValueInt(),1)
-				ElseIf aiButton == 2 ;Input
-					If ConfigMenu.bUIEOK
-						UITextEntryMenu TextMenu = uiextensions.GetMenu("UITextEntryMenu", True) as UITextEntryMenu
-						TextMenu.SetPropertyString("text", (iIndex) As String)
-						TextMenu.OpenMenu(none, none)
-						String sResult = TextMenu.GetResultString()
-						TextMenu.ResetMenu()
-						If sResult && bIsInteger(sResult) && ((sResult As Int) - 1) > - 1 && ((sResult As Int) - 1) < moaERPCount.GetValueInt()
-							iIndex = (sResult As Int)
-						EndIf
-					EndIf
-				ElseIf aiButton == 3 ;Check
-					ConfigMenu.ShowExtraRPInfo(iIndex - 1,1,0)
-				ElseIf aiButton == 4 ;OK
-					Return ( iIndex + ( ConfigMenu.sRespawnPoints.Length - 1 ))
-				ElseIf aiButton == 5 ;External(Random)
-					Return -1
-				ElseIf aiButton == 6 ;Back
-					aiMessage = 1
-				EndIf
-			Else
-				aiButton = moaTeleportMenu13.Show()
-				If aiButton == -1
-				ElseIf aiButton < 7 ;External(1,...,7)
-					Return ( aiButton + ( ConfigMenu.sRespawnPoints.Length ))
-				ElseIf aiButton == 7 ;External(Random)
-					Return -1
-				ElseIf aiButton == 8 ;Details
-					ConfigMenu.ShowExtraRPInfo(0,7,0)
-				ElseIf aiButton == 9 ;Back
-					aiMessage = 1
-				EndIf
-			EndIf
-		ElseIf aiMessage == 4
-			aiButton = ReviveScript.RespawnScript.moaRespawnMenu10.Show()
-			If aiButton == -1
-			ElseIf aiButton == 0
-				Return ConfigMenu.getNearbyCityRPIndex()
-			ElseIf aiButton == 1
-				Return ConfigMenu.getRandCityRPIndex()
-			ElseIf aiButton == 2
-				aiMessage = 1
-			EndIf
-		ElseIf aiMessage == 5
-			aiButton = ReviveScript.RespawnScript.moaRespawnMenu11.Show()
-			If aiButton == -1
-			ElseIf aiButton == 0
-				aiMessage = 6
-			ElseIf aiButton == 1
-				aiMessage = 7				
-			ElseIf aiButton == 2
-				aiMessage = 8				
-			ElseIf aiButton == 3
-				aiMessage = 9					
-			ElseIf aiButton == 4
-				aiMessage = 10		
-			ElseIf aiButton == 5
-				aiMessage = 11
-			ElseIf aiButton == 6
-				aiMessage = 12
-			ElseIf aiButton == 7
-				aiMessage = 13
-			ElseIf aiButton == 8 ;more
-				aiMessage = 14
-			ElseIf aiButton == 9 ;back
-				aiMessage = 1
-			EndIf
-		ElseIf aiMessage == 6 ;Whiterun Inns (3)
-			aiButton = ReviveScript.RespawnScript.moaRespawnMenu110.Show()
-			If aiButton == -1
-			ElseIf aiButton < 3
-				iTavernIndex = aiButton
-				Return ConfigMenu.getTavernRPIndex()
-			ElseIf aiButton == 3
-				aiMessage = 5
-			EndIf
-		ElseIf aiMessage == 7 ;Falkreath Inn (1)
-			aiButton = ReviveScript.RespawnScript.moaRespawnMenu111.Show()
-			If aiButton == -1
-			ElseIf aiButton < 1
-				iTavernIndex = aiButton + 3
-				Return ConfigMenu.getTavernRPIndex()
-			ElseIf aiButton == 1
-				aiMessage = 5
-			EndIf	
-		ElseIf aiMessage == 8 ;Markarth Inn (2)
-			aiButton = ReviveScript.RespawnScript.moaRespawnMenu112.Show()
-			If aiButton == -1
-			ElseIf aiButton < 2
-				iTavernIndex = aiButton + 4
-				Return ConfigMenu.getTavernRPIndex()
-			ElseIf aiButton == 2
-				aiMessage = 5
-			EndIf				
-		ElseIf aiMessage == 9 ;Riften Inn (1)
-			aiButton = ReviveScript.RespawnScript.moaRespawnMenu113.Show()
-			If aiButton == -1
-			ElseIf aiButton == 0 ;The Bee and Barb
-				iTavernIndex = 6 
-				Return ConfigMenu.getTavernRPIndex()
-			ElseIf aiButton == 1 ;Vilemyr Inn
-				iTavernIndex = 16
-				Return ConfigMenu.getTavernRPIndex()
-			ElseIf aiButton == 2
-				aiMessage = 5
-			EndIf	
-		ElseIf aiMessage == 10 ;Solitude Inn (2)
-			aiButton = ReviveScript.RespawnScript.moaRespawnMenu114.Show()
-			If aiButton == -1
-			ElseIf aiButton < 2
-				iTavernIndex = aiButton + 7
-				Return ConfigMenu.getTavernRPIndex()
-			ElseIf aiButton == 2
-				aiMessage = 5
-			EndIf
-		ElseIf aiMessage == 11 ;Windhelm Inn (2)
-			aiButton = ReviveScript.RespawnScript.moaRespawnMenu115.Show()
-			If aiButton == -1
-			ElseIf aiButton < 2
-				iTavernIndex = aiButton + 9
-				Return ConfigMenu.getTavernRPIndex()
-			ElseIf aiButton == 2
-				aiMessage = 5
-			EndIf
-		ElseIf aiMessage == 12 ;Winterhold Inn (1)
-			aiButton = ReviveScript.RespawnScript.moaRespawnMenu116.Show()
-			If aiButton == -1
-			ElseIf aiButton < 1
-				iTavernIndex = aiButton + 11
-				Return ConfigMenu.getTavernRPIndex()
-			ElseIf aiButton == 1
-				aiMessage = 5
-			EndIf
-		ElseIf aiMessage == 13 ;Raven Rock Inn (1)
-			aiButton = ReviveScript.RespawnScript.moaRespawnMenu117.Show()
-			If aiButton == -1
-			ElseIf aiButton < 1
-				iTavernIndex = aiButton + 12
-				Return ConfigMenu.getTavernRPIndex()
-			ElseIf aiButton == 1
-				aiMessage = 5
-			EndIf
-		ElseIf aiMessage == 14
-			aiButton = ReviveScript.RespawnScript.moaRespawnMenu118.Show()
-			If aiButton == -1
-			ElseIf aiButton == 0 ;morthal inn
-				aiMessage = 15
-			ElseIf aiButton == 1 ;dawnstar inn
-				aiMessage = 16
-			ElseIf aiButton == 2
-				iTavernIndex = ConfigMenu.getNearbyInnRPIndex()
-				Return ConfigMenu.getTavernRPIndex()		
-			ElseIf aiButton == 3
-				iTavernIndex = ConfigMenu.getRandInnRPIndex()
-				Return ConfigMenu.getTavernRPIndex()				
-			ElseIf aiButton == 4 ;Less
-				aiMessage = 5
-			ElseIf aiButton == 5 ;Back
-				aiMessage = 1
-			EndIf
-		ElseIf aiMessage == 15
-			aiButton = ReviveScript.RespawnScript.moaRespawnMenu1180.Show() ;Morthal Inn (1)
-			If aiButton == -1
-			ElseIf aiButton < 1
-				iTavernIndex = aiButton + 13
-				Return ConfigMenu.getTavernRPIndex()
-			ElseIf aiButton == 1
-				aiMessage = 5
-			EndIf	
-		ElseIf aiMessage == 16
-			aiButton = ReviveScript.RespawnScript.moaRespawnMenu1181.Show() ;Dawnstar Inn (2)
-			If aiButton == -1
-			ElseIf aiButton < 2
-				iTavernIndex = aiButton + 14
-				Return ConfigMenu.getTavernRPIndex()
-			ElseIf aiButton == 2
-				aiMessage = 5
-			EndIf
-		EndIf
-	EndWhile
-EndFunction
+    ;Else
+    ;	sendToTOW()
+  endif
+endfunction
 
-Bool Function bMoveByQuest(Quest aTargetDetector, ReferenceAlias akTarget, Int aiTry = 1)
-	Int i = aiTry
-	Int j
-	ObjectReference Marker
-	While i > 0
-		i -= 1
-		If !aTargetDetector.IsRunning()
-			aTargetDetector.Start()
-		Else
-			j = 0
-			aTargetDetector.Stop()
-			While !aTargetDetector.IsStopped() && j < 30
-				Utility.Wait(0.1)
-				j += 1
-			EndWhile
-			aTargetDetector.Start()
-		EndIf
-		If aTargetDetector.IsRunning()
-			If (!Marker || (Marker != (akTarget.GetReference() As ObjectReference)))
-				Marker = akTarget.GetReference() As ObjectReference
-				If Marker
-					Caster.MoveTo(Marker)
-					aTargetDetector.Stop()
-					Return True
-				EndIf
-			EndIf
-		EndIf
-	EndWhile
-	aTargetDetector.Stop()
-	Return False
-Endfunction
+Int function TeleportMenu(Int aiMessage=0, Int aiButton=0)
+  Int iIndex = 1
+  while True
+    if aiButton == -1 ; Can prevent problems if recycling aiButton
+    elseif aiMessage == 0
+      aiButton = moaTeleportMenu0.Show()
+      if aiButton == -1
+      elseif aiButton < ConfigMenu.getNearbyCityRPIndex() ;Whiterun,...,Raven Rock
+        return aiButton
+      elseif aiButton == ConfigMenu.getNearbyCityRPIndex() ;More
+        aiMessage = 1
+      elseif aiButton == (ConfigMenu.getNearbyCityRPIndex() + 1) ;Cancel
+        return -2
+      endif
+    elseif aiMessage == 1
+      aiButton = moaTeleportMenu1.Show()
+      if aiButton == -1
+      elseif aiButton == 0 ;City
+        aiMessage = 4
+      elseif aiButton == 1 ;Inn
+        aiMessage = 5
+      elseif aiButton == 3 ;Custom
+        aiMessage = 2
+      elseif aiButton == 4 ;External
+        aiMessage = 3
+      elseif aiButton < 9 ;City,...,Throat of the World
+        return aiButton + ConfigMenu.getRandCityRPIndex()
+      elseif aiButton == 9 ;Less
+        aiMessage = 0
+      endif
+    elseif aiMessage == 2 ;Custom
+      aiButton = moaCustomRecallMenu.Show(ConfigMenu.iSelectedCustomRPSlot + 1)
+      if aiButton == -1
+      elseif aiButton == 4 ;Details
+        ConfigMenu.ShowCustomSlotsInfo()
+      elseif aiButton == 5 ;Back
+        aiMessage = 1
+      elseif aiButton == 6 ;Cancel
+        return -2
+      else
+        return -3 - aiButton ;0-> -3, 1-> -4, 2-> -5
+      endif
+    elseif aiMessage == 3
+      if moaERPCount.GetValueInt() > 7
+        aiButton = ReviveScript.RespawnScript.moaRespawnMenu13_Alt.Show(iIndex)
+        if aiButton == -1
+        elseif aiButton == 0 ;Prev
+          iIndex = ichangeVar(iIndex, 1, moaERPCount.GetValueInt(), -1)
+        elseif aiButton == 1 ;Next
+          iIndex = ichangeVar(iIndex, 1, moaERPCount.GetValueInt(), 1)
+        elseif aiButton == 2 ;Input
+          if ConfigMenu.bUIEOK
+            UITextEntryMenu TextMenu = uiextensions.GetMenu("UITextEntryMenu", True) as UITextEntryMenu
+            TextMenu.SetPropertyString("text", (iIndex) As String)
+            TextMenu.OpenMenu(none, none)
+            String sResult = TextMenu.GetResultString()
+            TextMenu.ResetMenu()
+            if sResult && bIsInteger(sResult) && ((sResult As Int) - 1) > -1 && ((sResult As Int) - 1) < moaERPCount.GetValueInt()
+              iIndex = (sResult As Int)
+            endif
+          endif
+        elseif aiButton == 3 ;Check
+          ConfigMenu.ShowExtraRPInfo(iIndex - 1, 1, 0)
+        elseif aiButton == 4 ;OK
+          return (iIndex + (ConfigMenu.sRespawnPoints.Length - 1))
+        elseif aiButton == 5 ;External(Random)
+          return -1
+        elseif aiButton == 6 ;Back
+          aiMessage = 1
+        endif
+      else
+        aiButton = moaTeleportMenu13.Show()
+        if aiButton == -1
+        elseif aiButton < 7 ;External(1,...,7)
+          return (aiButton + (ConfigMenu.sRespawnPoints.Length))
+        elseif aiButton == 7 ;External(Random)
+          return -1
+        elseif aiButton == 8 ;Details
+          ConfigMenu.ShowExtraRPInfo(0, 7, 0)
+        elseif aiButton == 9 ;Back
+          aiMessage = 1
+        endif
+      endif
+    elseif aiMessage == 4
+      aiButton = ReviveScript.RespawnScript.moaRespawnMenu10.Show()
+      if aiButton == -1
+      elseif aiButton == 0
+        return ConfigMenu.getNearbyCityRPIndex()
+      elseif aiButton == 1
+        return ConfigMenu.getRandCityRPIndex()
+      elseif aiButton == 2
+        aiMessage = 1
+      endif
+    elseif aiMessage == 5
+      aiButton = ReviveScript.RespawnScript.moaRespawnMenu11.Show()
+      if aiButton == -1
+      elseif aiButton == 0
+        aiMessage = 6
+      elseif aiButton == 1
+        aiMessage = 7
+      elseif aiButton == 2
+        aiMessage = 8
+      elseif aiButton == 3
+        aiMessage = 9
+      elseif aiButton == 4
+        aiMessage = 10
+      elseif aiButton == 5
+        aiMessage = 11
+      elseif aiButton == 6
+        aiMessage = 12
+      elseif aiButton == 7
+        aiMessage = 13
+      elseif aiButton == 8 ;more
+        aiMessage = 14
+      elseif aiButton == 9 ;back
+        aiMessage = 1
+      endif
+    elseif aiMessage == 6 ;Whiterun Inns (3)
+      aiButton = ReviveScript.RespawnScript.moaRespawnMenu110.Show()
+      if aiButton == -1
+      elseif aiButton < 3
+        iTavernIndex = aiButton
+        return ConfigMenu.getTavernRPIndex()
+      elseif aiButton == 3
+        aiMessage = 5
+      endif
+    elseif aiMessage == 7 ;Falkreath Inn (1)
+      aiButton = ReviveScript.RespawnScript.moaRespawnMenu111.Show()
+      if aiButton == -1
+      elseif aiButton < 1
+        iTavernIndex = aiButton + 3
+        return ConfigMenu.getTavernRPIndex()
+      elseif aiButton == 1
+        aiMessage = 5
+      endif
+    elseif aiMessage == 8 ;Markarth Inn (2)
+      aiButton = ReviveScript.RespawnScript.moaRespawnMenu112.Show()
+      if aiButton == -1
+      elseif aiButton < 2
+        iTavernIndex = aiButton + 4
+        return ConfigMenu.getTavernRPIndex()
+      elseif aiButton == 2
+        aiMessage = 5
+      endif
+    elseif aiMessage == 9 ;Riften Inn (1)
+      aiButton = ReviveScript.RespawnScript.moaRespawnMenu113.Show()
+      if aiButton == -1
+      elseif aiButton == 0 ;The Bee and Barb
+        iTavernIndex = 6
+        return ConfigMenu.getTavernRPIndex()
+      elseif aiButton == 1 ;Vilemyr Inn
+        iTavernIndex = 16
+        return ConfigMenu.getTavernRPIndex()
+      elseif aiButton == 2
+        aiMessage = 5
+      endif
+    elseif aiMessage == 10 ;Solitude Inn (2)
+      aiButton = ReviveScript.RespawnScript.moaRespawnMenu114.Show()
+      if aiButton == -1
+      elseif aiButton < 2
+        iTavernIndex = aiButton + 7
+        return ConfigMenu.getTavernRPIndex()
+      elseif aiButton == 2
+        aiMessage = 5
+      endif
+    elseif aiMessage == 11 ;Windhelm Inn (2)
+      aiButton = ReviveScript.RespawnScript.moaRespawnMenu115.Show()
+      if aiButton == -1
+      elseif aiButton < 2
+        iTavernIndex = aiButton + 9
+        return ConfigMenu.getTavernRPIndex()
+      elseif aiButton == 2
+        aiMessage = 5
+      endif
+    elseif aiMessage == 12 ;Winterhold Inn (1)
+      aiButton = ReviveScript.RespawnScript.moaRespawnMenu116.Show()
+      if aiButton == -1
+      elseif aiButton < 1
+        iTavernIndex = aiButton + 11
+        return ConfigMenu.getTavernRPIndex()
+      elseif aiButton == 1
+        aiMessage = 5
+      endif
+    elseif aiMessage == 13 ;Raven Rock Inn (1)
+      aiButton = ReviveScript.RespawnScript.moaRespawnMenu117.Show()
+      if aiButton == -1
+      elseif aiButton < 1
+        iTavernIndex = aiButton + 12
+        return ConfigMenu.getTavernRPIndex()
+      elseif aiButton == 1
+        aiMessage = 5
+      endif
+    elseif aiMessage == 14
+      aiButton = ReviveScript.RespawnScript.moaRespawnMenu118.Show()
+      if aiButton == -1
+      elseif aiButton == 0 ;morthal inn
+        aiMessage = 15
+      elseif aiButton == 1 ;dawnstar inn
+        aiMessage = 16
+      elseif aiButton == 2
+        iTavernIndex = ConfigMenu.getNearbyInnRPIndex()
+        return ConfigMenu.getTavernRPIndex()
+      elseif aiButton == 3
+        iTavernIndex = ConfigMenu.getRandInnRPIndex()
+        return ConfigMenu.getTavernRPIndex()
+      elseif aiButton == 4 ;Less
+        aiMessage = 5
+      elseif aiButton == 5 ;Back
+        aiMessage = 1
+      endif
+    elseif aiMessage == 15
+      aiButton = ReviveScript.RespawnScript.moaRespawnMenu1180.Show() ;Morthal Inn (1)
+      if aiButton == -1
+      elseif aiButton < 1
+        iTavernIndex = aiButton + 13
+        return ConfigMenu.getTavernRPIndex()
+      elseif aiButton == 1
+        aiMessage = 5
+      endif
+    elseif aiMessage == 16
+      aiButton = ReviveScript.RespawnScript.moaRespawnMenu1181.Show() ;Dawnstar Inn (2)
+      if aiButton == -1
+      elseif aiButton < 2
+        iTavernIndex = aiButton + 14
+        return ConfigMenu.getTavernRPIndex()
+      elseif aiButton == 2
+        aiMessage = 5
+      endif
+    endif
+  endwhile
+endfunction
 
-Function sendToTOW()
-	Caster.MoveTo(TOWMarker)
-Endfunction
+Bool function bInSameLocation(Location Loc)
+  if Loc
+    if Caster.IsInLocation(Loc)
+      return True
+    endif
+    if Caster.GetCurrentLocation()
+      if Caster.GetCurrentLocation().IsSameLocation(Loc, HoldKeyword)
+        return True
+      endif
+    endif
+  endif
+  return False
+endfunction
 
-Bool Function bSendToExternalMarker(Int iExternalIndex)
-	ObjectReference akMarker
-	Int iIndex = -1
-	If moaERPCount.GetValueInt() > 0
-		If iExternalIndex > -1 && iExternalIndex < moaERPCount.GetValueInt()
-			akMarker = getFromMergedFormList(MergedExternalMarkerList,iExternalIndex) As ObjectReference
-			If akMarker && (akMarker.GetParentCell() != Caster.GetParentCell()) && ReviveScript.RespawnScript.bCanTeleportToExtMarker(akMarker)
-				Caster.MoveTo(akMarker, abMatchRotation = true)
-				Return True
-			EndIf
-			iIndex = iExternalIndex
-		EndIf
-		Int i = iMin(3,moaERPCount.GetValueInt() - 1)
-		Bool[] bExcludes = Utility.CreateBoolArray(moaERPCount.GetValueInt(),True)
-		If iIndex > -1 && iIndex < moaERPCount.GetValueInt()
-			bExcludes[iIndex] = False
-		EndIf
-		While i > 0
-			i -= 1
-			iIndex = RandomIntWithExclusionArray(0,moaERPCount.GetValueInt() - 1,bExcludes)
-			akMarker = getFromMergedFormList(MergedExternalMarkerList,iIndex) As ObjectReference
-			If akMarker && (akMarker.GetParentCell() != Caster.GetParentCell()) && ReviveScript.RespawnScript.bCanTeleportToExtMarker(akMarker)
-				Caster.MoveTo(akMarker, abMatchRotation = true)
-				Return True
-			EndIf
-			bExcludes[iIndex] = False
-		EndWhile
-	EndIf
-	Return False
-EndFunction
+Bool function bIsCurrentCell(int iIndex)
+  return (((MarkerList.GetAt(iIndex)) As Objectreference).GetParentCell() == Caster.GetParentCell())
+endfunction
 
-Bool Function bSendToCustomMarker(Int iSlot)
-	Int iSelectedSlot = iSlot
-	Int i = iSelectedSlot
-	If ConfigMenu.isCustomSlotAvailable(i) && !ConfigMenu.isCustomSlotEmpty(i)
-		Caster.MoveTo((CustomRespawnPoints.GetAt(i) As ObjectReference), abMatchRotation = true)
-		Return True
-	EndIf
-	i = 0
-	While i < CustomRespawnPoints.getSize()
-		If i != iSelectedSlot
-			If ConfigMenu.isCustomSlotAvailable(i) && !ConfigMenu.isCustomSlotEmpty(i)
-				Caster.MoveTo((CustomRespawnPoints.GetAt(i) As ObjectReference), abMatchRotation = true)
-				Return True
-			EndIf
-		EndIf
-		i += 1
-	EndWhile
-	Return False
-EndFunction
+Bool function bMoveByQuest(Quest aTargetDetector, ReferenceAlias akTarget, Int aiTry=1)
+  Int i = aiTry
+  Int j
+  ObjectReference Marker
+  while i > 0
+    i -= 1
+    if !aTargetDetector.IsRunning()
+      aTargetDetector.Start()
+    else
+      j = 0
+      aTargetDetector.Stop()
+      while !aTargetDetector.IsStopped() && j < 30
+        Utility.Wait(0.1)
+        j += 1
+      endwhile
+      aTargetDetector.Start()
+    endif
+    if aTargetDetector.IsRunning()
+      if (!Marker || (Marker != (akTarget.GetReference() As ObjectReference)))
+        Marker = akTarget.GetReference() As ObjectReference
+        if Marker
+          Caster.MoveTo(Marker)
+          aTargetDetector.Stop()
+          return True
+        endif
+      endif
+    endif
+  endwhile
+  aTargetDetector.Stop()
+  return False
+endfunction
 
-Bool Function bSendToSleepMarker()
-	If !SleepMarker.IsDisabled() && (SleepMarker.GetParentCell() != ReviveScript.DefaultCell)
-		Caster.MoveTo(SleepMarker, abMatchRotation = true)
-		Return True
-	EndIf
-	Return False
-EndFunction
+Bool function bSendToCustomMarker(Int iSlot)
+  Int iSelectedSlot = iSlot
+  Int i = iSelectedSlot
+  if ConfigMenu.isCustomSlotAvailable(i) && !ConfigMenu.isCustomSlotEmpty(i)
+    Caster.MoveTo((CustomRespawnPoints.GetAt(i) As ObjectReference), abMatchRotation=true)
+    return True
+  endif
+  i = 0
+  while i < CustomRespawnPoints.getSize()
+    if i != iSelectedSlot
+      if ConfigMenu.isCustomSlotAvailable(i) && !ConfigMenu.isCustomSlotEmpty(i)
+        Caster.MoveTo((CustomRespawnPoints.GetAt(i) As ObjectReference), abMatchRotation=true)
+        return True
+      endif
+    endif
+    i += 1
+  endwhile
+  return False
+endfunction
+
+Bool function bSendToExternalMarker(Int iExternalIndex)
+  ObjectReference akMarker
+  Int iIndex = -1
+  if moaERPCount.GetValueInt() > 0
+    if iExternalIndex > -1 && iExternalIndex < moaERPCount.GetValueInt()
+      akMarker = getFromMergedFormList(MergedExternalMarkerList, iExternalIndex) As ObjectReference
+      if akMarker && (akMarker.GetParentCell() != Caster.GetParentCell()) && ReviveScript.RespawnScript.bCanTeleportToExtMarker(akMarker)
+        Caster.MoveTo(akMarker, abMatchRotation=true)
+        return True
+      endif
+      iIndex = iExternalIndex
+    endif
+    Int i = iMin(3, moaERPCount.GetValueInt() - 1)
+    Bool[] bExcludes = Utility.CreateBoolArray(moaERPCount.GetValueInt(), True)
+    if iIndex > -1 && iIndex < moaERPCount.GetValueInt()
+      bExcludes[iIndex] = False
+    endif
+    while i > 0
+      i -= 1
+      iIndex = RandomIntWithExclusionArray(0, moaERPCount.GetValueInt() - 1, bExcludes)
+      akMarker = getFromMergedFormList(MergedExternalMarkerList, iIndex) As ObjectReference
+      if akMarker && (akMarker.GetParentCell() != Caster.GetParentCell()) && ReviveScript.RespawnScript.bCanTeleportToExtMarker(akMarker)
+        Caster.MoveTo(akMarker, abMatchRotation=true)
+        return True
+      endif
+      bExcludes[iIndex] = False
+    endwhile
+  endif
+  return False
+endfunction
+
+Bool function bSendToSleepMarker()
+  if !SleepMarker.IsDisabled() && (SleepMarker.GetParentCell() != ReviveScript.DefaultCell)
+    Caster.MoveTo(SleepMarker, abMatchRotation=true)
+    return True
+  endif
+  return False
+endfunction
+
+ObjectReference function findCityMarkerByLocation()
+  Int iIndex = LocationsList.GetSize()
+  while (iIndex > 0)
+    iIndex -= 1
+    if (iIndex == 3)
+      if bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(DLC1HunterHQLocation) ;Riften or Dayspring Canyon
+        ;	If ConfigMenu.bRespawnPointsFlags[iIndex]
+        if (Caster.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference) >= ConfigMenu.fRPMinDistanceSlider)
+          return MarkerList.GetAt(iIndex) As ObjectReference
+        endif
+      endif
+
+      ;EndIf
+    elseif (iIndex == 4)
+      if bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(HjaalmarchHoldLocation) || bInSameLocation(DLC1VampireCastleLocation) ;Solitude or Morthal or Castle Volkihar
+        ;	If ConfigMenu.bRespawnPointsFlags[iIndex]
+        if (Caster.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference) >= ConfigMenu.fRPMinDistanceSlider)
+          return MarkerList.GetAt(iIndex) As ObjectReference
+        endif
+      endif
+
+      ;EndIf
+    elseif (iIndex == 6)
+      if (bInSameLocation(LocationsList.GetAt(iIndex) As Location) || bInSameLocation(PaleHoldLocation)) ;Winterhold or Dawnstar
+        ;	If ConfigMenu.bRespawnPointsFlags[iIndex]
+        if (Caster.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference) >= ConfigMenu.fRPMinDistanceSlider)
+          return MarkerList.GetAt(iIndex) As ObjectReference
+        endif
+      endif
+
+      ;EndIf
+    elseif bInSameLocation(LocationsList.GetAt(iIndex) As Location)
+      ;If ConfigMenu.bRespawnPointsFlags[iIndex]
+      if (Caster.GetDistance(MarkerList.GetAt(iIndex) As ObjectReference) >= ConfigMenu.fRPMinDistanceSlider)
+        return MarkerList.GetAt(iIndex) As ObjectReference
+      endif
+
+      ;EndIf
+    endif
+  endwhile
+  return None
+endfunction
+
+Int function iGetRandomWithExclusionArray(Int iFrom, Int iTo, Bool[] iFlagArray)
+  if iFrom == iTo
+    if iFlagArray[iFrom]
+      return iFrom
+    endif
+    return -1
+  elseif iFrom > iTo
+    Int iTemp = iFrom
+    iFrom = iTo
+    iTo = iTemp
+  endif
+  Int ExcludeCount = 0
+  int iIndex = iFrom
+  while iIndex <= iTo
+    if (!iFlagArray[iIndex] || bIsCurrentCell(iIndex))
+      ExcludeCount += 1
+    endif
+    iIndex += 1
+  endwhile
+  if ExcludeCount > (iTo - iFrom)
+    return -1
+  endif
+  Int iRandom = Utility.RandomInt(iFrom, iTo - ExcludeCount)
+  iIndex = iFrom
+  while (iIndex <= iTo)
+    if (iRandom < iIndex)
+      return iRandom
+    elseif ((iRandom >= iIndex) && (!iFlagArray[iIndex] || bIsCurrentCell(iIndex)))
+      iRandom += 1
+    endif
+    iIndex += 1
+  endwhile
+  return iRandom
+endfunction
+
+function sendToTOW()
+  Caster.MoveTo(TOWMarker)
+endfunction

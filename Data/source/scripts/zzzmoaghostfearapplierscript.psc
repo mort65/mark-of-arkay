@@ -1,8 +1,8 @@
-Scriptname zzzmoaGhostFearApplierScript extends activemagiceffect  
+Scriptname zzzmoaGhostFearApplierScript extends activemagiceffect
 
-Spell Property NPCGhostFearAbility Auto
+Spell property NPCGhostFearAbility auto
 
-Event OnEffectStart(Actor akTarget, Actor akCaster)
-	;Debug.Trace(Self + " adding monitor spell to " + akTarget)
-	akTarget.AddSpell(NPCGhostFearAbility)
-EndEvent
+event OnEffectStart(Actor akTarget, Actor akCaster)
+  ;Debug.Trace(Self + " adding monitor spell to " + akTarget)
+  akTarget.AddSpell(NPCGhostFearAbility)
+endevent

@@ -1,97 +1,95 @@
-Scriptname zzzmoaPermaDeathScript Extends Quest
+Scriptname zzzmoaPermaDeathScript extends Quest
 
-zzzmoaReviveMCM Property ConfigMenu Auto
-Actor Property PlayerRef Auto
-String Property LockFileExt Auto
-String Property LockFilePrefix Auto
-Int Property iNameTag Auto Hidden
-Message Property DeathMessage Auto
-Message Property NoRespawnMessage Auto
-Message Property PermaDeathMessage Auto
-Message Property LoadLockMessage Auto
+zzzmoaReviveMCM property ConfigMenu auto
+Message property DeathMessage auto
+Message property LoadLockMessage auto
+String property LockFileExt auto
+String property LockFilePrefix auto
+Message property NoRespawnMessage auto
+Message property PermaDeathMessage auto
+Actor property PlayerRef auto
+Int property iNameTag auto Hidden
+
 Bool bIsBusy = False
 
-Event OnInit()
-	If bIsBusy
-		Return
-	EndIf
-	bIsBusy = True
-	bCheckNameTag()
-	bIsBusy = False
-EndEvent
+event OnInit()
+  if bIsBusy
+    return
+  endif
+  bIsBusy = True
+  bCheckNameTag()
+  bIsBusy = False
+endevent
 
-Bool Function bCheckPermaDeath()
-	If bCheckNameTag() && ConfigMenu.bPUOK
-		If MiscUtil.FileExists(getLockName())
-			PlayerRef.SetAlpha(0)
-			LoadLockMessage.Show()
-			Game.QuitToMainMenu()
-			Return True
-		EndIf
-	EndIf
-	Return False
-EndFunction
+Bool function bCheckNameTag()
+  if iNameTag
+    ConfigMenu.iNameTagBackup = iNameTag
+  else
+    if ConfigMenu.iNameTagBackup
+      iNameTag = ConfigMenu.iNameTagBackup
+    else
+      iNameTag = utility.RandomInt(100000000, 2147483647)
+      while MiscUtil.FileExists(getLockName())
+        iNameTag = utility.RandomInt(100000000, 2147483647)
+      endwhile
+      ConfigMenu.iNameTagBackup = iNameTag
+      Debug.Trace("MarkOfArkay: " + PlayerRef.GetDisplayName() + "'s ID is " + iNameTag)
+      return False
+    endif
+  endif
+  return True
+endfunction
 
-Function lockGameLoad()
-	MiscUtil.WriteToFile(getLockName(),getPlayerDeathInfo(),False,False)
-EndFunction
+Bool function bCheckPermaDeath()
+  if bCheckNameTag() && ConfigMenu.bPUOK
+    if MiscUtil.FileExists(getLockName())
+      PlayerRef.SetAlpha(0)
+      LoadLockMessage.Show()
+      Game.QuitToMainMenu()
+      return True
+    endif
+  endif
+  return False
+endfunction
 
-String Function getPlayerDeathInfo()
-	String sText = "Name: "+PlayerRef.GetDisplayName()+"\nSex: "
-	Int iSex = PlayerRef.GetActorBase().GetSex()
-	If iSex == 1
-		sText += "Female"
-	ElseIf iSex == 0
-		sText += "Male"
-	Else
-		sText += "Unknown"
-	EndIf
-	sText += "\nRace: "+PlayerRef.GetRace().GetName()
-	sText += "\nLevel: "+PlayerRef.GetLevel()
-	sText += "\nPlace Of Death: "+PlayerRef.GetCurrentLocation().GetName()
-	sText += "\nDate Of Death: "+Utility.GameTimeToString(Utility.GetCurrentGameTime())
-	If ConfigMenu.ReviveScript.Attacker
-		sText += "\nPotential Killer: "+ConfigMenu.ReviveScript.Attacker.GetDisplayName()
-	EndIf
-	Return sText
-EndFunction
+Bool function bTagExist(Int iTag, String[] locks) ;Not needed
+  Int i = locks.Length
+  Int iTagLen = StringUtil.GetLength(iTag As String)
+  while i > 0
+    i -= 1
+    if (StringUtil.Substring(locks[i], 0, StringUtil.GetLength(LockFilePrefix)) == LockFilePrefix) && (StringUtil.GetLength(locks[i]) > (StringUtil.GetLength(LockFileExt) + iTagLen + 6))
+      if ("_" + (iTag As String)) == StringUtil.Substring(locks[i], StringUtil.GetLength(locks[i]) - (StringUtil.GetLength(LockFileExt) + iTagLen) - 1, iTagLen + 1)
+        return True
+      endif
+    endif
+  endwhile
+  return False
+endfunction
 
-Bool Function bCheckNameTag()
-	If iNameTag
-		ConfigMenu.iNameTagBackup = iNameTag
-	Else
-		If ConfigMenu.iNameTagBackup
-			iNameTag = ConfigMenu.iNameTagBackup
-		Else
-			iNameTag = utility.RandomInt(100000000, 2147483647)
-			While MiscUtil.FileExists(getLockName())
-				 iNameTag = utility.RandomInt(100000000, 2147483647)
-			EndWhile
-			ConfigMenu.iNameTagBackup = iNameTag
-			Debug.Trace("MarkOfArkay: "+PlayerRef.GetDisplayName()+"'s ID is "+iNameTag)
-			Return False
-		EndIf
-	EndIf
-	Return True
-EndFunction
+String function getLockName()
+  return (LockFilePrefix + PlayerRef.GetDisplayName() + "_" + iNameTag + LockFileExt)
+endfunction
 
-Bool Function bTagExist(Int iTag,String[] locks) ;Not needed
-	Int i = locks.Length
-	Int iTagLen = StringUtil.GetLength(iTag As String)
-	While i > 0
-		i -= 1
-		If (StringUtil.Substring(locks[i], 0, StringUtil.GetLength(LockFilePrefix)) == LockFilePrefix) && \
-		(StringUtil.GetLength(locks[i]) > (StringUtil.GetLength(LockFileExt) + iTagLen + 6))
-			If ("_" + (iTag As String)) == \
-			StringUtil.Substring(locks[i], StringUtil.GetLength(locks[i]) - \
-			(StringUtil.GetLength(LockFileExt) + iTagLen) - 1, iTagLen + 1)
-				Return True
-			EndIf
-		EndIf
-	EndWhile
-	Return False
-EndFunction
+String function getPlayerDeathInfo()
+  String sText = "Name: " + PlayerRef.GetDisplayName() + "\nSex: "
+  Int iSex = PlayerRef.GetActorBase().GetSex()
+  if iSex == 1
+    sText += "Female"
+  elseif iSex == 0
+    sText += "Male"
+  else
+    sText += "Unknown"
+  endif
+  sText += "\nRace: " + PlayerRef.GetRace().GetName()
+  sText += "\nLevel: " + PlayerRef.GetLevel()
+  sText += "\nPlace Of Death: " + PlayerRef.GetCurrentLocation().GetName()
+  sText += "\nDate Of Death: " + Utility.GameTimeToString(Utility.GetCurrentGameTime())
+  if ConfigMenu.ReviveScript.Attacker
+    sText += "\nPotential Killer: " + ConfigMenu.ReviveScript.Attacker.GetDisplayName()
+  endif
+  return sText
+endfunction
 
-String Function getLockName()
-	Return (LockFilePrefix+PlayerRef.GetDisplayName()+"_"+ iNameTag+LockFileExt)
-EndFunction
+function lockGameLoad()
+  MiscUtil.WriteToFile(getLockName(), getPlayerDeathInfo(), False, False)
+endfunction

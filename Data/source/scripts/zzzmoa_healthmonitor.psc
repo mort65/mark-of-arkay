@@ -1,19 +1,19 @@
-Scriptname zzzmoa_HealthMonitor Extends Quest
+Scriptname zzzmoa_HealthMonitor extends Quest
 
-zzzmoaReviveMCM Property ConfigMenu Auto
-zzzmoaReviverScript Property ReviveScript Auto
-Float Property fUpdateRate = 0.3 Auto Hidden
-Actor Property PlayerRef Auto
+zzzmoaReviveMCM property ConfigMenu auto
+Actor property PlayerRef auto
+zzzmoaReviverScript property ReviveScript auto
+Float property fUpdateRate=0.3 auto Hidden
 
-Event OnInit()
-	If Configmenu.moaState.GetValue() && ConfigMenu.bTriggerOnHealthPerc
-		RegisterForSingleUpdate(fUpdateRate )
-	EndIf
-EndEvent
+event OnInit()
+  if Configmenu.moaState.GetValue() && ConfigMenu.bTriggerOnHealthPerc
+    RegisterForSingleUpdate(fUpdateRate)
+  endif
+endevent
 
-Event OnUpdate()
-	If !ReviveScript.bInBleedout && PlayerRef.GetActorValuePercentage("Health") <= ConfigMenu.fHealthPercTrigger
-		ReviveScript.checkHealth()
-	EndIf
-	RegisterForSingleUpdate(fUpdateRate)
-EndEvent
+event OnUpdate()
+  if !ReviveScript.bInBleedout && PlayerRef.GetActorValuePercentage("Health") <= ConfigMenu.fHealthPercTrigger
+    ReviveScript.checkHealth()
+  endif
+  RegisterForSingleUpdate(fUpdateRate)
+endevent

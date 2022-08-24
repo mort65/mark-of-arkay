@@ -1,9 +1,9 @@
-Scriptname zzzmoa_SoulMarkScript extends Quest  
+Scriptname zzzmoa_SoulMarkScript extends Quest
 
-ReferenceAlias Property Alias_zzzmoa_ItemMarker02 Auto
+ReferenceAlias property Alias_zzzmoa_ItemMarker02 auto
 
-Event OnInit()
-		If Alias_zzzmoa_ItemMarker02 .GetActorReference()
-			Alias_zzzmoa_ItemMarker02 .RegisterForSingleUpdate(30.0)	
-		EndIf
-EndEvent
+event OnInit()
+  if Alias_zzzmoa_ItemMarker02.GetActorReference()
+    Alias_zzzmoa_ItemMarker02.RegisterForSingleUpdate(30.0)
+  endif
+endevent

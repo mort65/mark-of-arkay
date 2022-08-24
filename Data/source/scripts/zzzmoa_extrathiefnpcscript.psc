@@ -1,19 +1,19 @@
-Scriptname zzzmoa_extrathiefnpcscript extends ReferenceAlias  
+Scriptname zzzmoa_extrathiefnpcscript extends ReferenceAlias
 
-Import zzzmoautilscript
+import zzzmoautilscript
 
-Event OnDisintegrating(Form sender)
-	GoToState("Disintegrate")
-EndEvent
+event OnDisintegrating(Form sender)
+  GoToState("Disintegrate")
+endevent
 
-Event OnDisintegratingFast(Form sender)
-		Actor myself = GetActorReference()
-		myself && disintegrateNow(myself)
-EndEvent
+event OnDisintegratingFast(Form sender)
+  Actor myself = GetActorReference()
+  myself && disintegrateNow(myself)
+endevent
 
-State Disintegrate
-	Event OnBeginState()
-		Actor myself = GetActorReference()
-		myself && disintegrateWhenAble(myself)
-	EndEvent
-EndState
+state Disintegrate
+  event OnBeginState()
+    Actor myself = GetActorReference()
+    myself && disintegrateWhenAble(myself)
+  endevent
+endstate

@@ -1,53 +1,53 @@
-Scriptname zzzmoa_LostItemsMarker01Script extends ReferenceAlias  
+Scriptname zzzmoa_LostItemsMarker01Script extends ReferenceAlias
 
-ObjectReference Property LostItemsChest Auto
-Actor Property PlayerRef Auto
-Quest Property moaRetrieveLostItems Auto
-Quest Property moaRetrieveLostItems01 Auto
-Spell Property ArkayCurse Auto
-Spell Property ArkayCurseAlt Auto
+Spell property ArkayCurse auto
+Spell property ArkayCurseAlt auto
+zzzmoaReviveMCM property ConfigMenu auto
+ObjectReference property LostItemsChest auto
+Actor property PlayerRef auto
 EffectShader property TurnUnDisintegrate01FXS auto
-zzzmoaReviveMCM Property ConfigMenu Auto
+Quest property moaRetrieveLostItems auto
+Quest property moaRetrieveLostItems01 auto
+
 Bool bIsActive
 
-Event OnUpdate()
-	If GetActorReference() && GetActorReference().GetParentCell() != ConfigMenu.ReviveScript.DefaultCell
-		RegisterForSingleUpdate(30.0)
-	EndIf
-EndEvent
+event OnActivate(ObjectReference akActionRef)
+  if bIsActive
+    return
+  endif
+  bIsActive = True
+  if !PlayerRef.IsGhost()
+    PlayerRef.SetGhost(True)
+  endif
+  if (akActionRef As Actor) == PlayerRef
+    if ConfigMenu.ReviveScript.ItemScript.bIsItemsRemoved || PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt) || ConfigMenu.ReviveScript.skillscript.bSkillReduced() || ConfigMenu.ReviveScript.moaPlayerVoicelessQuest.IsRunning() || ConfigMenu.ReviveScript.moaPlayerGhostQuest.IsRunning()
+      Debug.Notification("$mrt_MarkofArkay_Notification_SoulMark_Activated")
+      GetActorReference().SetCriticalStage(GetActorReference().CritStage_DisintegrateStart)
+      TurnUnDisintegrate01FXS.Play(GetActorReference(), 2.0)
+      Utility.Wait(2.0)
+      TurnUnDisintegrate01FXS.Stop(GetActorReference())
+      GetActorReference().SetCriticalStage(GetActorReference().CritStage_DisintegrateEnd)
+      GetActorReference().SetAlpha(0.0)
+      Utility.Wait(0.5)
+      GetActorReference().MoveTo(ConfigMenu.ReviveScript.LostItemsChest)
+      if ConfigMenu.bSoulMarkCureDiseases
+        ConfigMenu.ReviveScript.DiseaseScript.cureAllDiseases(False)
+      endif
+      ConfigMenu.ReviveScript.ItemScript.RestoreLostItems(PlayerRef)
+      if moaRetrieveLostItems.IsRunning()
+        moaRetrieveLostItems.SetStage(20)
+      endif
+      if moaRetrieveLostItems01.IsRunning()
+        moaRetrieveLostItems01.SetStage(20)
+      endif
+    endif
+  endif
+  bIsActive = False
+  PlayerRef.SetGhost(False)
+endevent
 
-Event OnActivate(ObjectReference akActionRef)
-	If bIsActive
-		Return
-	EndIf
-	bIsActive = True
-	If !PlayerRef.IsGhost()
-		PlayerRef.SetGhost(True)
-	EndIf
-	If (akActionRef As Actor) == PlayerRef
-		If ConfigMenu.ReviveScript.ItemScript.bIsItemsRemoved || PlayerRef.HasSpell(ArkayCurse) || PlayerRef.HasSpell(ArkayCurseAlt) || \
-		ConfigMenu.ReviveScript.skillscript.bSkillReduced() || ConfigMenu.ReviveScript.moaPlayerVoicelessQuest.IsRunning() || ConfigMenu.ReviveScript.moaPlayerGhostQuest.IsRunning()
-			Debug.Notification("$mrt_MarkofArkay_Notification_SoulMark_Activated")
-			GetActorReference().SetCriticalStage(GetActorReference().CritStage_DisintegrateStart)
-			TurnUnDisintegrate01FXS.Play(GetActorReference(),2.0)
-			Utility.Wait(2.0)
-			TurnUnDisintegrate01FXS.Stop(GetActorReference())
-			GetActorReference().SetCriticalStage(GetActorReference().CritStage_DisintegrateEnd)
-			GetActorReference().SetAlpha(0.0)
-			Utility.Wait(0.5)
-			GetActorReference().MoveTo(ConfigMenu.ReviveScript.LostItemsChest)		
-			If ConfigMenu.bSoulMarkCureDiseases 
-				ConfigMenu.ReviveScript.DiseaseScript.cureAllDiseases(False)
-			EndIf			
-			ConfigMenu.ReviveScript.ItemScript.RestoreLostItems(PlayerRef)
-			If moaRetrieveLostItems.IsRunning()
-				moaRetrieveLostItems.SetStage(20)
-			EndIf
-			If moaRetrieveLostItems01.IsRunning()
-				moaRetrieveLostItems01.SetStage(20)
-			EndIf
-		EndIf
-	EndIf
-	bIsActive = False
-	PlayerRef.SetGhost(False)
-EndEvent
+event OnUpdate()
+  if GetActorReference() && GetActorReference().GetParentCell() != ConfigMenu.ReviveScript.DefaultCell
+    RegisterForSingleUpdate(30.0)
+  endif
+endevent

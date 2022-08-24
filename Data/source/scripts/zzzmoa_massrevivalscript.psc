@@ -1,5 +1,5 @@
-Scriptname zzzmoa_massrevivalscript extends activemagiceffect  
+Scriptname zzzmoa_massrevivalscript extends activemagiceffect
 
-Event OnEffectStart(Actor akTarget, Actor akCaster)
-	akTarget.Resurrect()
-EndEvent
+event OnEffectStart(Actor akTarget, Actor akCaster)
+  akTarget.Resurrect()
+endevent

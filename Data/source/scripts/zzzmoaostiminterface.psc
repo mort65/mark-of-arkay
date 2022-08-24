@@ -1,54 +1,53 @@
 Scriptname zzzmoaostiminterface extends Quest
 
-Quest OSexIntegrationMainQuest 
+Quest OSexIntegrationMainQuest
 
-Event OnInit()
-	Debug.trace("MarkofArkay: OnInit() trigged for "+self)
-	RegisterForModEvent("MOA_Int_PlayerLoadsGame", "On_MOA_Int_PlayerLoadsGame")
-EndEvent
+event OnEndState()
+  Utility.Wait(5.0) ; Wait before entering active state to help avoid making function calls to scripts that may not have initialized yet.
+  OSexIntegrationMainQuest = Game.GetFormFromFile(0x000801, "OStim.esp") as Quest ; Get quest now
+endevent
 
-Event On_MOA_Int_PlayerLoadsGame(string eventName, string strArg, float numArg, Form sender)
-	PlayerLoadsGame()
-EndEvent
+event OnInit()
+  Debug.trace("MarkofArkay: OnInit() trigged for " + self)
+  RegisterForModEvent("MOA_Int_PlayerLoadsGame", "On_MOA_Int_PlayerLoadsGame")
+endevent
 
-Function PlayerLoadsGame()
-	Debug.trace("MarkofArkay: PlayerLoadsGame() trigged for "+self)
-	; Is the soft dependency installed and is our script in the right state? If not change state. 
+event On_MOA_Int_PlayerLoadsGame(string eventName, string strArg, float numArg, Form sender)
+  PlayerLoadsGame()
+endevent
 
-	If Game.GetModByName("OStim.esp") != 255
-		If GetState() != "Installed"
-			GoToState("Installed")
-		EndIf
-	
-	Else
-		If GetState() != ""
-			GoToState("")
-		EndIf
-	EndIf
-EndFunction
+Bool function GetIsInterfaceActive()
+  if GetState() == "Installed"
+    return true
+  endif
+  return false
+endfunction
 
-Event OnEndState()
-	Utility.Wait(5.0) ; Wait before entering active state to help avoid making function calls to scripts that may not have initialized yet.
-	OSexIntegrationMainQuest = Game.GetFormFromFile(0x000801,"OStim.esp") as Quest ; Get quest now
-EndEvent  
+function PlayerLoadsGame()
+  Debug.trace("MarkofArkay: PlayerLoadsGame() trigged for " + self)
 
-Bool Function StartScene(Actor Dom, Actor Sub, Bool zUndressDom = False, Bool zUndressSub = False, Bool zAnimateUndress = False, String zStartingAnimation = "", Actor zThirdActor = None, ObjectReference Bed = None, Bool Aggressive = False, Actor AggressingActor = None)
-	Return False
-EndFunction
+  ; Is the soft dependency installed and is our script in the right state? If not change state.
+  if Game.GetModByName("OStim.esp") != 255
+    if GetState() != "Installed"
+      GoToState("Installed")
+    endif
+  else
+    if GetState() != ""
+      GoToState("")
+    endif
+  endif
+endfunction
 
-Bool Function GetIsInterfaceActive()
-	If GetState() == "Installed"
-		Return true
-	EndIf
-	Return false
-EndFunction
+Bool function StartScene(Actor Dom, Actor Sub, Bool zUndressDom=False, Bool zUndressSub=False, Bool zAnimateUndress=False, String zStartingAnimation="", Actor zThirdActor=None, ObjectReference Bed=None, Bool Aggressive=False, Actor AggressingActor=None)
+  return False
+endfunction
 
-State Installed
-	Bool Function StartScene(Actor Dom, Actor Sub, Bool zUndressDom = False, Bool zUndressSub = False, Bool zAnimateUndress = False, String zStartingAnimation = "", Actor zThirdActor = None, ObjectReference Bed = None, Bool Aggressive = False, Actor AggressingActor = None)
-		Return zzzmoa_int_ostim.StartSceneOS(OSexIntegrationMainQuest, Dom, Sub, zUndressDom, zUndressSub, zAnimateUndress, zStartingAnimation, zThirdActor, Bed, Aggressive, AggressingActor)
-	EndFunction
-	
-	Event On_MOA_Int_PlayerLoadsGame(string eventName, string strArg, float numArg, Form sender)
-		PlayerLoadsGame()
-	EndEvent
-EndState
+state Installed
+  event On_MOA_Int_PlayerLoadsGame(string eventName, string strArg, float numArg, Form sender)
+    PlayerLoadsGame()
+  endevent
+
+  Bool function StartScene(Actor Dom, Actor Sub, Bool zUndressDom=False, Bool zUndressSub=False, Bool zAnimateUndress=False, String zStartingAnimation="", Actor zThirdActor=None, ObjectReference Bed=None, Bool Aggressive=False, Actor AggressingActor=None)
+    return zzzmoa_int_ostim.StartSceneOS(OSexIntegrationMainQuest, Dom, Sub, zUndressDom, zUndressSub, zAnimateUndress, zStartingAnimation, zThirdActor, Bed, Aggressive, AggressingActor)
+  endfunction
+endstate

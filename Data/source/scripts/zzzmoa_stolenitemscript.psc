@@ -1,23 +1,23 @@
 Scriptname zzzmoa_stolenitemscript extends ObjectReference
 
-zzzmoaReviverScript Property ReviveScript Auto
-Actor Property PlayerRef Auto
+Actor property PlayerRef auto
+zzzmoaReviverScript property ReviveScript auto
 
-Event OnContainerChanged(ObjectReference akNewContainer, ObjectReference akOldContainer)
-	If !PlayerRef.IsGhost()
-		PlayerRef.SetGhost(True)
-	EndIf
-	If akNewContainer == PlayerRef
-		If ReviveScript.moaRetrieveLostItems.IsRunning()
-			ReviveScript.moaRetrieveLostItems.setStage(20)
-		EndIf
-		If ReviveScript.moaRetrieveLostItems01.IsRunning()
-			ReviveScript.moaRetrieveLostItems01.setStage(20)
-		EndIf
-		If ReviveScript.ConfigMenu.bSoulMarkCureDiseases 
-			ReviveScript.DiseaseScript.cureAllDiseases(False)
-		EndIf
-		ReviveScript.ItemScript.RestoreLostItems(PlayerRef)		
-	EndIf
-	PlayerRef.SetGhost(False)
-EndEvent
+event OnContainerChanged(ObjectReference akNewContainer, ObjectReference akOldContainer)
+  if !PlayerRef.IsGhost()
+    PlayerRef.SetGhost(True)
+  endif
+  if akNewContainer == PlayerRef
+    if ReviveScript.moaRetrieveLostItems.IsRunning()
+      ReviveScript.moaRetrieveLostItems.setStage(20)
+    endif
+    if ReviveScript.moaRetrieveLostItems01.IsRunning()
+      ReviveScript.moaRetrieveLostItems01.setStage(20)
+    endif
+    if ReviveScript.ConfigMenu.bSoulMarkCureDiseases
+      ReviveScript.DiseaseScript.cureAllDiseases(False)
+    endif
+    ReviveScript.ItemScript.RestoreLostItems(PlayerRef)
+  endif
+  PlayerRef.SetGhost(False)
+endevent

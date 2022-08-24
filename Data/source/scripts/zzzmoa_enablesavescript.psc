@@ -1,9 +1,9 @@
-Scriptname zzzmoa_enablesavescript extends ActiveMagicEffect  
+Scriptname zzzmoa_enablesavescript extends ActiveMagicEffect
 
-Event OnEffectStart(Actor akTarget, Actor akCaster)
-	Game.SetInChargen(False,False,False)
-EndEvent
+event OnEffectFinish(Actor akTarget, Actor akCaster)
+  Game.SetInChargen(abDisableSaving=True, abDisableWaiting=False, abShowControlsDisabledMessage=True)
+endevent
 
-Event OnEffectFinish(Actor akTarget, Actor akCaster)
-	Game.SetInChargen(abDisableSaving = True, abDisableWaiting = False, abShowControlsDisabledMessage = True)
-EndEvent
+event OnEffectStart(Actor akTarget, Actor akCaster)
+  Game.SetInChargen(False, False, False)
+endevent

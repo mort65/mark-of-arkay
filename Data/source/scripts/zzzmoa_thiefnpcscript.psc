@@ -1,103 +1,93 @@
 Scriptname zzzmoa_thiefnpcscript extends ReferenceAlias
 
-zzzmoaReviveMCM Property ConfigMenu Auto
-Import zzzmoautilscript
+import zzzmoautilscript
 
-Event OnDying(Actor akKiller)
-	If (( GetReference() As Actor ) && ( ConfigMenu.moaBleedoutHandlerState.GetValue() == 0 ))
-		If Configmenu.bIsLoggingEnabled
-			If akKiller
-				Debug.Trace( "MarkofArkay: ( '" + ( GetReference() As Actor ).GetActorBase().GetName() +\
-				"', " + ( GetReference() As Actor ) + ", " + ( GetReference() As Actor ).GetRace() +\
-				", ) who stoled player's items is killed by ( '" + akKiller.GetActorBase().GetName() + "', " +\
-				akKiller + ", " + akKiller.GetRace() + ", )." )
-			Else
-				Debug.Trace( "MarkofArkay: ( '" + ( GetReference() As Actor ).GetActorBase().GetName() +\
-				"', " + ( GetReference() As Actor ) + ", " + ( GetReference() As Actor ).GetRace() +\
-				", ) who stoled player's items is dead." )
-			EndIf
-		EndIf
-		If !(( GetReference() As Actor ).GetParentCell().IsAttached() )
-			GetOwningQuest().SetStage(20)
-		EndIf
-	EndIf
-EndEvent
+zzzmoaReviveMCM property ConfigMenu auto
 
-Event OnEnterBleedout()
-	If (( GetReference() As Actor ) && ( ConfigMenu.moaBleedoutHandlerState.GetValue() == 0 ))
-		If (( GetReference() As Actor ).GetParentCell().IsAttached() && (( GetReference() As Actor ).IsEssential() || ( GetReference() As Actor ).GetActorBase().IsEssential()))
-			If Configmenu.bIsLoggingEnabled
-				Debug.Trace( "MarkofArkay: ( '" + ( GetReference() As Actor ).GetActorBase().GetName() +\
-				"', " + ( GetReference() As Actor ) + ", " + ( GetReference() As Actor ).GetRace() +\
-				", ) who stoled player's items is bleeding out." )
-			EndIf
-		GetOwningQuest().SetStage(20)	
-		EndIf
-	EndIf
-EndEvent
+event OnAttachedToCell()
+  if GetActorReference() && !GetActorReference().IsDead()
+    RegisterForSingleLOSGain(GetActorReference(), Game.GetPlayer() as Actor)
+    RegisterForSingleUpdate(30.0)
+  endif
+endevent
 
-Event OnReset()
-	If (ConfigMenu.moaBleedoutHandlerState.GetValue() == 0 )
-		If Configmenu.bIsLoggingEnabled
-			If ( GetReference() As Actor )
-				If Configmenu.bIsLoggingEnabled
-					Debug.Trace( "MarkofArkay: ( '" + ( GetReference() As Actor ).GetActorBase().GetName() + "', " + ( GetReference() As Actor ) +\
-					", " + ( GetReference() As Actor ).GetRace() + ", ) who stoled player's items, has reset." )
-				EndIf
-			ElseIf Configmenu.bIsLoggingEnabled
-				Debug.Trace("MarkofArkay: NPC who stoled player's items no longer exist.")
-			EndIf
-		EndIf
-		GetOwningQuest().SetStage(15)
-	EndIf
-EndEvent
+event OnCellAttach()
+  if GetActorReference() && !GetActorReference().IsDead()
+    RegisterForSingleLOSGain(GetActorReference(), Game.GetPlayer() as Actor)
+    RegisterForSingleUpdate(30.0)
+  endif
+endevent
 
-Event OnGainLOS(Actor akViewer, ObjectReference akTarget)
-	If GetActorReference()
-		If akViewer == GetActorReference() && akTarget == Game.GetPlayer() as Actor
-			GetActorReference() && !GetActorReference().IsDead() && !Game.GetPlayer().IsBleedingOut() && GetActorReference().StartCombat(Game.GetPlayer())
-		Else
-			RegisterForSingleLOSGain(GetActorReference(), Game.GetPlayer() as Actor)
-		EndIf
-	EndIf
-EndEvent
+event OnCombatStateChanged(Actor akTarget, int aeCombatState)
+  if aeCombatState == 0 && GetActorReference() && !GetActorReference().IsDead()
+    RegisterForSingleLOSGain(GetActorReference(), Game.GetPlayer() as Actor)
+  endif
+endevent
 
-Event OnCombatStateChanged(Actor akTarget, int aeCombatState)
-	If aeCombatState == 0 && GetActorReference() && !GetActorReference().IsDead()
-		RegisterForSingleLOSGain(GetActorReference(), Game.GetPlayer() as Actor)
-	EndIf
-EndEvent
+event OnDying(Actor akKiller)
+  if ((GetReference() As Actor) && (ConfigMenu.moaBleedoutHandlerState.GetValue() == 0))
+    if Configmenu.bIsLoggingEnabled
+      if akKiller
+        Debug.Trace("MarkofArkay: ( '" + (GetReference() As Actor).GetActorBase().GetName() + "', " + (GetReference() As Actor) + ", " + (GetReference() As Actor).GetRace() + ", ) who stoled player's items is killed by ( '" + akKiller.GetActorBase().GetName() + "', " + akKiller + ", " + akKiller.GetRace() + ", ).")
+      else
+        Debug.Trace("MarkofArkay: ( '" + (GetReference() As Actor).GetActorBase().GetName() + "', " + (GetReference() As Actor) + ", " + (GetReference() As Actor).GetRace() + ", ) who stoled player's items is dead.")
+      endif
+    endif
+    if !((GetReference() As Actor).GetParentCell().IsAttached())
+      GetOwningQuest().SetStage(20)
+    endif
+  endif
+endevent
 
-Event OnUpdate()
-	If GetActorReference()
-		If GetActorReference().Is3DLoaded() && \
-		(Game.GetPlayer().GetParentCell() == GetActorReference().GetParentCell() || \
-		GetActorReference().GetDistance(Game.GetPlayer()) < 2000)
-			GetActorReference() && !GetActorReference().IsBleedingOut() && !Game.GetPlayer().IsBleedingOut() && !GetActorReference().IsDead() && GetActorReference().StartCombat(Game.GetPlayer())
-		EndIf
-		RegisterForSingleLOSGain(GetActorReference(), Game.GetPlayer() as Actor)
-		RegisterForSingleUpdate(30.0)
-	EndIf
-EndEvent
+event OnEnterBleedout()
+  if ((GetReference() As Actor) && (ConfigMenu.moaBleedoutHandlerState.GetValue() == 0))
+    if ((GetReference() As Actor).GetParentCell().IsAttached() && ((GetReference() As Actor).IsEssential() || (GetReference() As Actor).GetActorBase().IsEssential()))
+      if Configmenu.bIsLoggingEnabled
+        Debug.Trace("MarkofArkay: ( '" + (GetReference() As Actor).GetActorBase().GetName() + "', " + (GetReference() As Actor) + ", " + (GetReference() As Actor).GetRace() + ", ) who stoled player's items is bleeding out.")
+      endif
+      GetOwningQuest().SetStage(20)
+    endif
+  endif
+endevent
 
-Event OnLoad()
-	If GetActorReference() && !GetActorReference().IsDead()
-		RegisterForSingleLOSGain(GetActorReference(), Game.GetPlayer() as Actor)
-		RegisterForSingleUpdate(30.0)
-	EndIf
-EndEvent
+event OnGainLOS(Actor akViewer, ObjectReference akTarget)
+  if GetActorReference()
+    if akViewer == GetActorReference() && akTarget == Game.GetPlayer() as Actor
+      GetActorReference() && !GetActorReference().IsDead() && !Game.GetPlayer().IsBleedingOut() && GetActorReference().StartCombat(Game.GetPlayer())
+    else
+      RegisterForSingleLOSGain(GetActorReference(), Game.GetPlayer() as Actor)
+    endif
+  endif
+endevent
 
-Event OnCellAttach()
-	If GetActorReference() && !GetActorReference().IsDead()
-		RegisterForSingleLOSGain(GetActorReference(), Game.GetPlayer() as Actor)
-		RegisterForSingleUpdate(30.0)
-	EndIf
-EndEvent
+event OnLoad()
+  if GetActorReference() && !GetActorReference().IsDead()
+    RegisterForSingleLOSGain(GetActorReference(), Game.GetPlayer() as Actor)
+    RegisterForSingleUpdate(30.0)
+  endif
+endevent
 
+event OnReset()
+  if (ConfigMenu.moaBleedoutHandlerState.GetValue() == 0)
+    if Configmenu.bIsLoggingEnabled
+      if (GetReference() As Actor)
+        if Configmenu.bIsLoggingEnabled
+          Debug.Trace("MarkofArkay: ( '" + (GetReference() As Actor).GetActorBase().GetName() + "', " + (GetReference() As Actor) + ", " + (GetReference() As Actor).GetRace() + ", ) who stoled player's items, has reset.")
+        endif
+      elseif Configmenu.bIsLoggingEnabled
+        Debug.Trace("MarkofArkay: NPC who stoled player's items no longer exist.")
+      endif
+    endif
+    GetOwningQuest().SetStage(15)
+  endif
+endevent
 
-Event OnAttachedToCell()
-	If GetActorReference() && !GetActorReference().IsDead()
-		RegisterForSingleLOSGain(GetActorReference(), Game.GetPlayer() as Actor)
-		RegisterForSingleUpdate(30.0)
-	EndIf
-EndEvent
+event OnUpdate()
+  if GetActorReference()
+    if GetActorReference().Is3DLoaded() && (Game.GetPlayer().GetParentCell() == GetActorReference().GetParentCell() || GetActorReference().GetDistance(Game.GetPlayer()) < 2000)
+      GetActorReference() && !GetActorReference().IsBleedingOut() && !Game.GetPlayer().IsBleedingOut() && !GetActorReference().IsDead() && GetActorReference().StartCombat(Game.GetPlayer())
+    endif
+    RegisterForSingleLOSGain(GetActorReference(), Game.GetPlayer() as Actor)
+    RegisterForSingleUpdate(30.0)
+  endif
+endevent

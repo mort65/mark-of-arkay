@@ -6284,5 +6284,3 @@ function setTriggerMethod(Int iIndex)
     ToggleDeferredKill(True)
   endif
 endfunction
-
-; -----------------because papyrus compiler nags about default values ----------------

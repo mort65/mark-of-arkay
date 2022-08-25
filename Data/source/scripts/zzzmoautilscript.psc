@@ -498,8 +498,10 @@ function transferItems(ObjectReference akInContainer, ObjectReference akOutConta
     aiCount = akInContainer.GetNumItems()
   endif
   Int aiLast = iMin(akInContainer.GetNumItems() - 1, (aiIndex + aiCount) - 1)
+  Bool bNext = False
   Form kItem
   while aiIndex < aiLast + 1
+    bNext = true
     kItem = akInContainer.GetNthForm(aiIndex)
     if kItem
       if (aiNumber <= -1) || (aiNumber > akInContainer.GetItemCount(kItem))
@@ -507,8 +509,16 @@ function transferItems(ObjectReference akInContainer, ObjectReference akOutConta
       else
         akInContainer.RemoveItem(kItem, aiNumber, True, akOutContainer)
       endif
+      if (akInContainer.GetNthForm(aiIndex) && (kItem != akInContainer.GetNthForm(aiIndex)))
+        bNext = false ;current item replaced by the next item
+        if aiIndex < aiLast
+          aiLast -= 1
+        endif
+      endif
     endif
-    aiIndex += 1
+    if bNext
+      aiIndex += 1
+    endif
   endwhile
 endfunction
 
@@ -523,7 +533,9 @@ function transferItemsWithExclusionArr(ObjectReference akInContainer, ObjectRefe
   Int aiLast = iMin(akInContainer.GetNumItems() - 1, (aiIndex + aiCount) - 1)
   Bool bExcludeArr = (excludesArr && (excludesArr.Length > 0))
   Form kItem
+  Bool bNext = False
   while aiIndex < aiLast + 1
+    bNext = true
     kItem = akInContainer.GetNthForm(aiIndex)
     if kItem
       if (!bExcludeArr || (excludesArr.Find(kItem) < 0))
@@ -532,9 +544,17 @@ function transferItemsWithExclusionArr(ObjectReference akInContainer, ObjectRefe
         else
           akInContainer.RemoveItem(kItem, aiNumber, True, akOutContainer)
         endif
+        if (akInContainer.GetNthForm(aiIndex) && (kItem != akInContainer.GetNthForm(aiIndex)))
+          bNext = false ;current item replaced by the next item
+          if aiIndex < aiLast
+            aiLast -= 1
+          endif
+        endif
       endif
     endif
-    aiIndex += 1
+    if bNext
+      aiIndex += 1
+    endif
   endwhile
 endfunction
 
@@ -548,8 +568,10 @@ function transferItemsWithExclusions(ObjectReference akInContainer, ObjectRefere
   endif
   Int aiLast = iMin(akInContainer.GetNumItems() - 1, (aiIndex + aiCount) - 1)
   Bool bExcludeArr = (excludesArr && (excludesArr.Length > 0))
+  Bool bNext = False
   Form kItem
   while aiIndex < aiLast + 1
+    bNext = True
     kItem = akInContainer.GetNthForm(aiIndex)
     if kItem
       if (!bExcludeArr || (excludesArr.Find(kItem) < 0)) && (!excludeList || excludeList.Find(kItem) < 0)
@@ -558,8 +580,16 @@ function transferItemsWithExclusions(ObjectReference akInContainer, ObjectRefere
         else
           akInContainer.RemoveItem(kItem, aiNumber, True, akOutContainer)
         endif
+        if (akInContainer.GetNthForm(aiIndex) && (kItem != akInContainer.GetNthForm(aiIndex)))
+          bNext = false ;current item replaced by the next item
+          if aiIndex < aiLast
+            aiLast -= 1
+          endif
+        endif
       endif
     endif
-    aiIndex += 1
+    if bNext
+      aiIndex += 1
+    endif
   endwhile
 endfunction

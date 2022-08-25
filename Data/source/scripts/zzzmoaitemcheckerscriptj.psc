@@ -73,6 +73,7 @@ state Checking
       if !bContinue
         checked = ReviveScript.ItemScript.checkedStatus(kItem)
         if (checked == 0)
+          Debug.TraceConditional("MarkOfArkay: (" + kItem + "," + kItem.GetName() + ") Skipped -> IsChecked()", bIsLoggingEnabled)
           bContinue = True
         endif
       endif
@@ -163,7 +164,7 @@ state Checking
         endif
         if akInChest.GetNthForm(iIndex) && (kItem != akInChest.GetNthForm(iIndex)) ;size of inventory reduced
           bNext = False ;item at current index is another item, because the size of inventory reduced
-          if iIndex < iLast ;item with an index lower tan ilast removed so index of ilast decreased
+          if iIndex < iLast ;item with an index lower than ilast removed so index of ilast decreased
             iLast -= 1
           endif
         endif

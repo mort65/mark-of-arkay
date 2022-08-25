@@ -299,7 +299,7 @@ function LoseOtherItems()
     endif
   endif
 
-  ;RemoveAllItems Causes the script to halt until opening and closing a menu
+  ;RemoveAllItems sometimes Causes the script to halt until opening and closing a menu
   transferItems(ValuableItemsChest, PlayerRef As ObjectReference)
   ValuableItemsChest.RemoveAllItems(playerRef as ObjectReference, true, true)
   utility.wait(1.0)
@@ -414,7 +414,7 @@ function LoseOtherItems()
   QuestItems.Revert()
 endfunction
 
-function PO3LoseOtherItems() ;Slow?
+function PO3LoseOtherItems() ;Slow
   if !PlayerRef.GetNumItems() || ((ConfigMenu.iLoseInclusion == 1) && !(ConfigMenu.bLoseArmor || ConfigMenu.bLoseWeapon || ConfigMenu.bLoseAmmo))
     ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay:  Nothing else can be removed.")
     return
@@ -762,6 +762,7 @@ function removeEquipments(ObjectReference akInChest, ObjectReference akOutChest,
     if !bContinue
       checked = checkedStatus(kItem)
       if (checked == 0)
+        Debug.TraceConditional("MarkOfArkay: (" + kItem + "," + kItem.GetName() + ") Skipped -> IsChecked()", bIsLoggingEnabled)
         bContinue = True
       endif
     endif

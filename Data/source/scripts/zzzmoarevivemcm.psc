@@ -226,7 +226,7 @@ Int property iHostileOption=0 auto Hidden
 Int property iLoadPreset=0 auto Hidden
 Int property iLoseInclusion=0 auto Hidden
 Int property iNameTagBackup auto Hidden
-Int property iNotTradingAftermath=0 auto Hidden
+Int property iNotTradingAftermath=1 auto Hidden
 Int property iRapistGender=0 auto Hidden
 Int property iReducedSkill=0 auto Hidden
 Int property iRevivesByFollower=0 auto Hidden
@@ -1158,7 +1158,7 @@ event OnOptionDefault(Int option)
     _SetMenuOptionValue(oidTeleportLocation_M, sRespawnPoints[iTeleportLocation], False)
     ForcePageReset()
   elseif (option == oidNoTradingAftermath_M)
-    iNotTradingAftermath = 0
+    iNotTradingAftermath = 1
     _SetMenuOptionValue(oidNoTradingAftermath_M, sGetAftermathOptions()[iNotTradingAftermath], False)
     ForcePageReset()
   elseif (option == oidInformation)
@@ -1775,7 +1775,7 @@ event OnOptionMenuOpen(Int option)
   elseif (option == oidNoTradingAftermath_M)
     SetMenuDialogoptions(sGetAftermathOptions())
     SetMenuDialogStartIndex(iNotTradingAftermath)
-    SetMenuDialogDefaultIndex(0)
+    SetMenuDialogDefaultIndex(1)
   elseif (option == oidArkayCurses_M)
     SetMenuDialogoptions(sGetArkayCurses())
     SetMenuDialogStartIndex(iArkayCurse)
@@ -4409,7 +4409,7 @@ function LoadDefaultSettings()
   moaLootChance.SetValue(100.0 - fLootChanceSlider)
   fScrollChanceSlider = 25.0
   moaScrollChance.SetValue(100.0 - fScrollChanceSlider)
-  iNotTradingAftermath = 0
+  iNotTradingAftermath = 1
   iArkayCurse = 0
   bRespawnNaked = False
   bCorpseAsSoulMark = False
@@ -5140,7 +5140,7 @@ Bool function bLoadUserSettings(String sFileName)
   moaLootChance.SetValue(100.0 - fLootChanceSlider)
   fScrollChanceSlider = checkFloat(fiss.loadFloat("fScrollChanceSlider"), 0, 100, 25)
   moaScrollChance.SetValue(100.0 - fScrollChanceSlider)
-  iNotTradingAftermath = checkInt(fiss.loadInt("iNotTradingAftermath"), 0, sGetAftermathOptions().Length - 1, 0)
+  iNotTradingAftermath = checkInt(fiss.loadInt("iNotTradingAftermath"), 0, sGetAftermathOptions().Length - 1, 1)
   iArkayCurse = checkInt(fiss.loadInt("iArkayCurse"), 0, sGetArkayCurses().Length - 1, 0)
   bRespawnNaked = fiss.loadBool("bRespawnNaked")
   bCorpseAsSoulMark = fiss.loadBool("bCorpseAsSoulMark")

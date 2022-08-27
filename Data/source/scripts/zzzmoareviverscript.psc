@@ -1048,6 +1048,10 @@ endfunction
 function RevivePlayer(Bool bRevive)
   bIsraped = False
   if !bRevive && bRape()
+    bool bfastTravel = Game.IsFastTravelEnabled()
+    if bfastTravel
+      Game.EnableFastTravel(false)
+    endif
     CrimeGold = 0
     CrimeGoldViolent = 0
     CrimeFaction = None
@@ -1057,6 +1061,7 @@ function RevivePlayer(Bool bRevive)
       int i = Utility.randomInt(0, (ConfigMenu.fMaxRapes - 1) As int)
       while i > 0
         Game.DisablePlayerControls()
+        rapistActors = RapeScript.getRapists(PlayerRef, Attacker)
         Utility.Wait(6.0)
         RapeScript.rapePlayer(rapistActors)
         i -= 1
@@ -1067,6 +1072,9 @@ function RevivePlayer(Bool bRevive)
     Game.DisablePlayerControls()
     PlayerRef.SetDontMove(True)
     restoreCrime()
+    if bfastTravel
+      Game.EnableFastTravel(true)
+    endif
     ConfigMenu.bIsLoggingEnabled && Debug.trace("MarkOfArkay: Player raped = " + bIsraped)
   endif
   Bool bSendToSlavery = bSendToSlavery()

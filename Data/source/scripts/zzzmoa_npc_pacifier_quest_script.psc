@@ -10,7 +10,7 @@ Package property RapistWaitPackage auto
 Faction property calmFaction auto
 
 event OnInit()
-  unPacify()
+  ;unPacify()
 endevent
 
 function Pacify()
@@ -27,9 +27,9 @@ function Pacify()
       if ConfigMenu.bPUOK
         curPackage = ac.GetCurrentPackage()
         if (curPackage != RapistCheerPackage) && (curPackage != RapistStayPackage) && (curPackage != RapistWaitPackage) && (curPackage != RapistApproachPackage)
-          ActorUtil.AddPackageOverride(ac, RapistCheerPackage, 99)
-          ActorUtil.AddPackageOverride(ac, RapistStayPackage, 99)
-          ActorUtil.AddPackageOverride(ac, RapistApproachPackage, 99)
+          ActorUtil.AddPackageOverride(ac, RapistApproachPackage, 100)
+		  ActorUtil.AddPackageOverride(ac, RapistStayPackage, 100)
+		  ActorUtil.AddPackageOverride(ac, RapistCheerPackage, 100)
         endif
       endif
       ac.EvaluatePackage()

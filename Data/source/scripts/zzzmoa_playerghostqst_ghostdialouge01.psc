@@ -1,24 +1,22 @@
 ;BEGIN FRAGMENT CODE - Do not edit anything between this and the end comment
 ;NEXT FRAGMENT INDEX 1
-Scriptname zzzmoa_PlayerGhostQst_GhostDialouge01 extends TopicInfo Hidden
-
-zzzmoaReviveMCM property ConfigMenu auto
-
-;END FRAGMENT
-;END FRAGMENT CODE - Do not edit anything between this and the begin comment
-Spell property Phasmophobia auto
-Actor property PlayerRef auto
+Scriptname zzzmoa_PlayerGhostQst_GhostDialouge01 Extends TopicInfo Hidden
 
 ;BEGIN FRAGMENT Fragment_0
-function Fragment_0(ObjectReference akSpeakerRef)
-  Actor akSpeaker = akSpeakerRef as Actor
-
-  ;BEGIN CODE
-  if ConfigMenu.bLiteGhostCurse
+Function Fragment_0(ObjectReference akSpeakerRef)
+Actor akSpeaker = akSpeakerRef as Actor
+;BEGIN CODE
+If ConfigMenu.bLiteGhostCurse
     akSpeaker.StartCombat(PlayerRef)
-  else
-    akSpeaker.AddSpell(Phasmophobia, False)
-  endif
+Else
+    akSpeaker.AddSpell(Phasmophobia,False)
+EndIf
+;END CODE
+EndFunction
+;END FRAGMENT
 
-  ;END CODE
-endfunction
+;END FRAGMENT CODE - Do not edit anything between this and the begin comment
+
+Spell Property Phasmophobia Auto
+zzzmoaReviveMCM Property ConfigMenu Auto
+Actor Property PlayerRef Auto

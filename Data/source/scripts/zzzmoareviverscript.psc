@@ -21,6 +21,9 @@ ObjectReference property CellLoadMarker2 auto
 Quest property CidhnaMineJailEventScene auto
 FormList property CityMarkersList auto
 zzzmoaReviveMCM property ConfigMenu auto
+Faction property CrimeFaction auto hidden
+Int property CrimeGold auto hidden
+Int property CrimeGoldViolent auto hidden
 Quest property DGIntimidateQuest auto
 Message property DeathMessage auto
 Topic property DeathTopic auto
@@ -1045,6 +1048,9 @@ endfunction
 function RevivePlayer(Bool bRevive)
   bIsraped = False
   if !bRevive && bRape()
+    CrimeGold = 0
+    CrimeGoldViolent = 0
+    CrimeFaction = None
     Actor[] rapistActors = RapeScript.getRapists(PlayerRef, Attacker)
     bIsraped = RapeScript.rapePlayer(rapistActors)
     if bIsraped
@@ -1058,12 +1064,9 @@ function RevivePlayer(Bool bRevive)
     endif
     PlayerRef.RemoveFromFaction(RapeScript.CalmFaction)
     Attacker && Attacker.RemoveFromFaction(RapeScript.CalmFaction)
-
-    ;PlayerRef.DrawWeapon()
-    ;Utility.Wait(1.0)
-    ;PlayerRef.SheatheWeapon()
     Game.DisablePlayerControls()
     PlayerRef.SetDontMove(True)
+    restoreCrime()
     ConfigMenu.bIsLoggingEnabled && Debug.trace("MarkOfArkay: Player raped = " + bIsraped)
   endif
   Bool bSendToSlavery = bSendToSlavery()
@@ -2078,6 +2081,21 @@ function restore(Int iRevivePlayer=1, Bool bReviveFollower=True, Bool bEffect=Fa
   if sTrace && ConfigMenu.bIsLoggingEnabled
     Debug.Trace(sTrace)
   endif
+endfunction
+
+function restoreCrime()
+  if !crimefaction
+    return
+  endif
+  if CrimeGold > 0
+    CrimeFaction.ModCrimeGold(CrimeGold, false)
+  endif
+  if CrimeGoldViolent > 0
+    CrimeFaction.ModCrimeGold(CrimeGoldViolent, true)
+  endif
+  CrimeGold = 0
+  CrimeGoldViolent = 0
+  crimefaction = None
 endfunction
 
 function startInfectingPlayer()

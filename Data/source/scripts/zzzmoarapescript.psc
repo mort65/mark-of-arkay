@@ -255,7 +255,7 @@ Actor[] function getRapists(Actor Victim, Actor Attacker=None)
 endfunction
 
 Bool function isRapistValid(Actor rapist)
-  if rapist && (rapist != None)
+  if (rapist && (rapist != None) && !rapist.IsDead())
     if (getInteface() != "sexlab") ;sexlab's IsValidActor check for these
       if !rapist.Is3DLoaded()
         Utility.WaitMenuMode(2.0)

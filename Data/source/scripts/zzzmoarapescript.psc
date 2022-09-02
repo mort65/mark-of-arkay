@@ -1,5 +1,7 @@
 Scriptname zzzmoarapescript extends Quest
 
+import zzzmoautilscript
+
 FormList property BedsList auto
 zzzmoaReviveMCM property ConfigMenu auto
 Quest property NPCPacifier auto
@@ -187,9 +189,11 @@ String function getInteface()
   return ""
 endfunction
 
-Actor[] function getRapists(Actor Victim, Actor Attacker=None)
-  Unpacify()
-  utility.wait(1.0)
+Actor[] function getRapists(Actor Victim, Actor Attacker=None, Bool bReset=False)
+  if bReset
+    Unpacify()
+	keepControlsDisabled(1.0)
+  endif
   NPCPacifier.Start()
   Actor[] rapists
   if ((Attacker != None) && (Attacker.GetDistance(Victim) < 5000.0))
@@ -209,7 +213,7 @@ Actor[] function getRapists(Actor Victim, Actor Attacker=None)
     int k
     Bool bBreak = False
     Actor act
-    Utility.wait(5.0)
+	keepControlsDisabled(3.0)
     while i < (RapistCount)
       if (i == 0) && isRapistValid(Attacker)
         rapists[0] = Attacker
@@ -251,6 +255,9 @@ Actor[] function getRapists(Actor Victim, Actor Attacker=None)
       i += 1
     endwhile
   endif
+  If Game.IsFightingControlsEnabled()
+	game.DisablePlayerControls()
+  endIf
   return rapists
 endfunction
 
@@ -299,10 +306,13 @@ Bool function rapePlayer(Actor[] rapists)
   if (ReviveScript.moaPlayerGhostQuest.IsRunning() || !rapists || rapists.Length < 1 || !rapists[0])
     return False
   endif
+  If Game.IsFightingControlsEnabled()
+    game.DisablePlayerControls()
+  EndIf
   RapistsList.revert()
   string interface = getInteface()
   ReviveScript.FastFadeOut.Apply()
-  Utility.Wait(1.0)
+  keepControlsDisabled(1.0)
   ReviveScript.FastFadeOut.PopTo(ReviveScript.BlackScreen)
   playerRef.StopCombatAlarm()
   playerRef.AddToFaction(calmFaction)
@@ -376,7 +386,7 @@ Bool function rapePlayer(Actor[] rapists)
   endif
   if !NPCPacifier.IsRunning()
     NPCPacifier.Start()
-    Utility.Wait(3.0)
+    keepControlsDisabled(3.0)
   endif
   (NPCPacifier As zzzmoa_npc_pacifier_quest_script).ToggleTeamMates(False)
   Actor extraRapist = None
@@ -414,7 +424,7 @@ Bool function rapePlayer(Actor[] rapists)
       endif
     endif
   endwhile
-  Utility.Wait(3.0)
+  keepControlsDisabled(3.0)
   ReviveScript.BlackScreen.PopTo(ReviveScript.FadeIn)
   removeCrime()
   Victim1.ForceRefTo(PlayerRef)
@@ -572,7 +582,6 @@ Bool function rapePlayer(Actor[] rapists)
     result = ReviveScript.FlowerGirlsInterface.Result
   endif
   (NPCPacifier As zzzmoa_npc_pacifier_quest_script).ToggleTeamMates(True)
-  Game.SetPlayerAIDriven(False)
   Game.DisablePlayerControls(abMovement=True, abFighting=True, abCamSwitch=True, abLooking=False, abSneaking=True, abMenu=True, abActivate=True, abJournalTabs=True)
   return result
 endfunction

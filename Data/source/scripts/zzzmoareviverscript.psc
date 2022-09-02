@@ -1052,23 +1052,25 @@ function RevivePlayer(Bool bRevive)
     if bfastTravel
       Game.EnableFastTravel(false)
     endif
+	Game.SetPlayerAIDriven(True)
     CrimeGold = 0
     CrimeGoldViolent = 0
     CrimeFaction = None
-    Actor[] rapistActors = RapeScript.getRapists(PlayerRef, Attacker)
+    Actor[] rapistActors = RapeScript.getRapists(PlayerRef, Attacker, true)
     bIsraped = RapeScript.rapePlayer(rapistActors)
     if bIsraped
       int i = Utility.randomInt(0, (ConfigMenu.fMaxRapes - 1) As int)
       while i > 0
         Game.DisablePlayerControls()
-        rapistActors = RapeScript.getRapists(PlayerRef, Attacker)
-        Utility.Wait(6.0)
+        rapistActors = RapeScript.getRapists(PlayerRef, Attacker, false)
+        keepControlsDisabled(1.0)
         RapeScript.rapePlayer(rapistActors)
         i -= 1
       endwhile
     endif
     PlayerRef.RemoveFromFaction(RapeScript.CalmFaction)
     Attacker && Attacker.RemoveFromFaction(RapeScript.CalmFaction)
+	Game.SetPlayerAIDriven(False)
     Game.DisablePlayerControls()
     PlayerRef.SetDontMove(True)
     restoreCrime()

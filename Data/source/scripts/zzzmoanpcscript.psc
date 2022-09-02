@@ -1158,7 +1158,6 @@ Bool function bSpawnThief(ObjectReference akMarkerRef, Bool bExtra=False)
     Actor RandActor = RandActors[0] As Actor
     if !bExtra || !ReviveScript.Thief
       ReviveScript.Thief = RandActor
-      HostileActor.Clear()
       ReviveScript.ThiefNPC01.Clear()
       ReviveScript.ThiefNPC.Clear()
       stopAndConfirm(moaHostileNPCDetector, 3)

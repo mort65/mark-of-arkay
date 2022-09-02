@@ -357,6 +357,18 @@ function kArrayClear(Form[] Arr) Global
   endif
 endfunction
 
+function keepControlsDisabled(float fDuration) Global
+{Keeps fighting and movement controls disabled for the specified duration.}
+  float f = 0.0
+  while f < fDuration
+    if Game.IsFightingControlsEnabled() ;IsMovementControlsEnabled is unreliable.
+      game.DisablePlayerControls()
+    endif
+	utility.wait(0.2)
+    f += 0.2
+  endwhile
+endfunction
+
 function killPlayer() Global
 {Kills the player even if the player is essential or Invulnerable or god mod is active.}
   Actor player = Game.GetPlayer()

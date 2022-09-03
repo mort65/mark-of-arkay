@@ -192,7 +192,7 @@ endfunction
 Actor[] function getRapists(Actor Victim, Actor Attacker=None, Bool bReset=False)
   if bReset
     Unpacify()
-	keepControlsDisabled(1.0)
+    keepControlsDisabled(1.0, true, true, true, false, true, true, true, false, true)
   endif
   NPCPacifier.Start()
   Actor[] rapists
@@ -213,7 +213,7 @@ Actor[] function getRapists(Actor Victim, Actor Attacker=None, Bool bReset=False
     int k
     Bool bBreak = False
     Actor act
-	keepControlsDisabled(3.0)
+    keepControlsDisabled(3.0, true, true, true, false, true, true, true, false, true)
     while i < (RapistCount)
       if (i == 0) && isRapistValid(Attacker)
         rapists[0] = Attacker
@@ -255,9 +255,9 @@ Actor[] function getRapists(Actor Victim, Actor Attacker=None, Bool bReset=False
       i += 1
     endwhile
   endif
-  If Game.IsFightingControlsEnabled()
-	game.DisablePlayerControls()
-  endIf
+  if Game.IsFightingControlsEnabled()
+    Game.DisablePlayerControls(abMovement=True, abFighting=True, abCamSwitch=True, abLooking=False, abSneaking=True, abMenu=True, abActivate=True, abJournalTabs=False)
+  endif
   return rapists
 endfunction
 
@@ -306,13 +306,11 @@ Bool function rapePlayer(Actor[] rapists)
   if (ReviveScript.moaPlayerGhostQuest.IsRunning() || !rapists || rapists.Length < 1 || !rapists[0])
     return False
   endif
-  If Game.IsFightingControlsEnabled()
-    game.DisablePlayerControls()
-  EndIf
+  Game.DisablePlayerControls(abMovement=True, abFighting=True, abCamSwitch=True, abLooking=False, abSneaking=True, abMenu=True, abActivate=True, abJournalTabs=False)
   RapistsList.revert()
   string interface = getInteface()
   ReviveScript.FastFadeOut.Apply()
-  keepControlsDisabled(1.0)
+  keepControlsDisabled(1.0, true, true, true, false, true, true, true, false, true)
   ReviveScript.FastFadeOut.PopTo(ReviveScript.BlackScreen)
   playerRef.StopCombatAlarm()
   playerRef.AddToFaction(calmFaction)
@@ -386,7 +384,7 @@ Bool function rapePlayer(Actor[] rapists)
   endif
   if !NPCPacifier.IsRunning()
     NPCPacifier.Start()
-    keepControlsDisabled(3.0)
+    keepControlsDisabled(3.0, true, true, true, false, true, true, true, false, true)
   endif
   (NPCPacifier As zzzmoa_npc_pacifier_quest_script).ToggleTeamMates(False)
   Actor extraRapist = None
@@ -424,7 +422,7 @@ Bool function rapePlayer(Actor[] rapists)
       endif
     endif
   endwhile
-  keepControlsDisabled(3.0)
+  keepControlsDisabled(3.0, true, true, true, false, true, true, true, false, true)
   ReviveScript.BlackScreen.PopTo(ReviveScript.FadeIn)
   removeCrime()
   Victim1.ForceRefTo(PlayerRef)

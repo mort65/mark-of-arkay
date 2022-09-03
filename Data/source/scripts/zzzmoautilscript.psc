@@ -346,6 +346,11 @@ Int function ichangeVar(Int iVar, Int iMin, Int iMax, Int iAmount) Global
   return iVar
 endfunction
 
+bool function isPlayerControlsEnabled(bool bMovement=false, bool bFighting=false, bool bCamSwitch=false, bool bLooking=false, bool bSneaking=false, bool bMenu=false, bool bActivate=false, bool bJournalTabs=False, bool bFastTravel=False) Global
+{Checks whether the specified player controls are enabled or not.}
+  return ((bMovement && Game.IsMovementControlsEnabled()) || (bFighting && Game.IsFightingControlsEnabled()) || (bCamSwitch && Game.IsCamSwitchControlsEnabled()) || (bLooking && Game.IsLookingControlsEnabled()) || (bSneaking && Game.IsSneakingControlsEnabled()) || (bMenu && Game.IsMenuControlsEnabled()) || (bActivate && Game.IsActivateControlsEnabled()) || (bJournalTabs && Game.IsJournalControlsEnabled()) || (bFastTravel && Game.IsFastTravelControlsEnabled()))
+endfunction
+
 function kArrayClear(Form[] Arr) Global
 {clears a form array.}
   if Arr
@@ -357,14 +362,17 @@ function kArrayClear(Form[] Arr) Global
   endif
 endfunction
 
-function keepControlsDisabled(float fDuration) Global
-{Keeps fighting and movement controls disabled for the specified duration.}
+function keepControlsDisabled(float fDuration, bool bMovement=true, bool bFighting=true, bool bCamSwitch=false, bool bLooking=false, bool bSneaking=false, bool bMenu=true, bool bActivate=true, bool bJournalTabs=false, bool bFastTravel=false) Global
+{Keeps player controls disabled for the specified duration.}
   float f = 0.0
   while f < fDuration
-    if Game.IsFightingControlsEnabled() ;IsMovementControlsEnabled is unreliable.
-      game.DisablePlayerControls()
+    if isPlayerControlsEnabled(bMovement, bFighting, bCamSwitch, bLooking, bSneaking, bMenu, bActivate, bJournalTabs, false)
+      game.DisablePlayerControls(abMovement=bMovement, abFighting=bFighting, abCamSwitch=bCamSwitch, abLooking=bLooking, abSneaking=bSneaking, abMenu=bMenu, abActivate=bActivate, abJournalTabs=bJournalTabs)
     endif
-	utility.wait(0.2)
+    if (bFastTravel && Game.IsFastTravelControlsEnabled())
+      Game.EnableFastTravel(false)
+    endif
+    utility.wait(0.2)
     f += 0.2
   endwhile
 endfunction

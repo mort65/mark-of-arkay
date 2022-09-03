@@ -214,8 +214,6 @@ event OnEnterBleedout()
     bInBleedoutAnim = False
     bSheathed = False
     Game.DisablePlayerControls()
-
-    ;Game.DisablePlayerControls(abMovement = True, abFighting = True, abCamSwitch = False, abLooking = False, abSneaking = True, abMenu = True, abActivate = True, abJournalTabs = False, aiDisablePOVType = 0)
     fHealrate = PlayerRef.GetActorValue("HealRate")
     PlayerRef.DispelAllSpells()
     PlayerRef.SetActorValue("HealRate", 0.0)
@@ -1052,7 +1050,7 @@ function RevivePlayer(Bool bRevive)
     if bfastTravel
       Game.EnableFastTravel(false)
     endif
-	Game.SetPlayerAIDriven(True)
+    Game.SetPlayerAIDriven(True)
     CrimeGold = 0
     CrimeGoldViolent = 0
     CrimeFaction = None
@@ -1061,17 +1059,17 @@ function RevivePlayer(Bool bRevive)
     if bIsraped
       int i = Utility.randomInt(0, (ConfigMenu.fMaxRapes - 1) As int)
       while i > 0
-        Game.DisablePlayerControls()
+        Game.DisablePlayerControls(abMovement=True, abFighting=True, abCamSwitch=True, abLooking=False, abSneaking=True, abMenu=True, abActivate=True, abJournalTabs=False)
         rapistActors = RapeScript.getRapists(PlayerRef, Attacker, false)
-        keepControlsDisabled(1.0)
+        keepControlsDisabled(1.0, true, true, true, false, true, true, true, false, true)
         RapeScript.rapePlayer(rapistActors)
         i -= 1
       endwhile
     endif
     PlayerRef.RemoveFromFaction(RapeScript.CalmFaction)
     Attacker && Attacker.RemoveFromFaction(RapeScript.CalmFaction)
-	Game.SetPlayerAIDriven(False)
-    Game.DisablePlayerControls()
+    Game.SetPlayerAIDriven(False)
+    Game.DisablePlayerControls(abMovement=True, abFighting=True, abCamSwitch=True, abLooking=False, abSneaking=True, abMenu=True, abActivate=True, abJournalTabs=False)
     PlayerRef.SetDontMove(True)
     restoreCrime()
     if bfastTravel

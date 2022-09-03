@@ -255,9 +255,7 @@ Actor[] function getRapists(Actor Victim, Actor Attacker=None, Bool bReset=False
       i += 1
     endwhile
   endif
-  if Game.IsFightingControlsEnabled()
-    Game.DisablePlayerControls(abMovement=True, abFighting=True, abCamSwitch=True, abLooking=False, abSneaking=True, abMenu=True, abActivate=True, abJournalTabs=False)
-  endif
+  Game.DisablePlayerControls(abMovement=True, abFighting=True, abCamSwitch=True, abLooking=False, abSneaking=True, abMenu=True, abActivate=True, abJournalTabs=False)
   return rapists
 endfunction
 

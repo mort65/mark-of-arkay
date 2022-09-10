@@ -125,7 +125,7 @@ Bool property bMultipleDisProg=True auto Hidden
 Bool property bNPCHasLevelRange=False auto Hidden
 Bool property bOnlyEnslavedByEnemyFaction=False auto Hidden
 Bool property bOnlyHostilesRape=True auto Hidden
-Bool property bOnlyInfectIfHasBaseDis=True auto Hidden
+Bool property bOnlyInfectIfHasBaseDis=False auto Hidden
 Bool property bOnlyLoseSkillXP=False auto Hidden
 Bool property bOnlySpawn=False auto Hidden
 Bool property bPO3OK auto Hidden ;PO3 Extender
@@ -244,7 +244,7 @@ Int property iSpawnMaxLevel=4 auto Hidden
 Int property iSpawnMinLevel=4 auto Hidden
 Int[] property iSpawnWeights auto Hidden
 Int property iTavernIndex=0 auto Hidden
-Int property iTeleportLocation=0 auto Hidden
+Int property iTeleportLocation=14 auto Hidden
 Int property iTotalBleedOut=0 auto Hidden
 Int property iTotalRespawn=0 auto Hidden
 Int property iTotalRevives=0 auto Hidden
@@ -793,7 +793,7 @@ event OnOptionDefault(Int option)
     bMultipleDisProg = True
     _SetToggleOptionValue(oidMultipleDisProg, bMultipleDisProg)
   elseif (option == oidOnlyInfectIfHasBaseDis)
-    bOnlyInfectIfHasBaseDis = True
+    bOnlyInfectIfHasBaseDis = False
     _SetToggleOptionValue(oidOnlyInfectIfHasBaseDis, bOnlyInfectIfHasBaseDis)
   elseif (option == oidSoulMarkCureDiseases)
     bSoulMarkCureDiseases = False
@@ -1154,7 +1154,7 @@ event OnOptionDefault(Int option)
     bSoulMarkStay = False
     _SetToggleOptionValue(oidSoulMarkStay, bSoulMarkStay, False)
   elseif (option == oidTeleportLocation_M)
-    iTeleportLocation = 0
+    iTeleportLocation = 14
     _SetMenuOptionValue(oidTeleportLocation_M, sRespawnPoints[iTeleportLocation], False)
     ForcePageReset()
   elseif (option == oidNoTradingAftermath_M)
@@ -1767,7 +1767,7 @@ event OnOptionMenuOpen(Int option)
   if (option == oidTeleportLocation_M)
     SetMenuDialogoptions(sRespawnPoints)
     SetMenuDialogStartIndex(iTeleportLocation)
-    SetMenuDialogDefaultIndex(0)
+    SetMenuDialogDefaultIndex(14)
   elseif (option == oidTavern_M)
     SetMenuDialogoptions(sTaverns)
     SetMenuDialogStartIndex(iTavernIndex)
@@ -4421,7 +4421,7 @@ function LoadDefaultSettings()
   bMultipleDis = True
   bDiseaseCurse = False
   bMultipleDisProg = True
-  bOnlyInfectIfHasBaseDis = True
+  bOnlyInfectIfHasBaseDis = False
   bSoulMarkCureDiseases = False
   bCureDisIfHasBlessing = False
   moaCureDisIfHasBlessing.SetValueInt(0)
@@ -4448,7 +4448,7 @@ function LoadDefaultSettings()
   moaNPCHasLevelRange.SetValue(bNPCHasLevelRange As Int)
   bMoralityMatters = True
   moaMoralityMatters.SetValue(bMoralityMatters As Int)
-  iTeleportLocation = 0
+  iTeleportLocation = 14
   iExternalIndex = -1
   fRPMinDistanceSlider = 500.0
   moaRPMinDistance.SetValue(fRPMinDistanceSlider)
@@ -5000,7 +5000,7 @@ Bool function bCheckFissErrors(String strErrors)
     elseif strError == "Element bMultipleDisProg not found"
       bMultipleDisProg = True
     elseif strError == "Element bOnlyInfectIfHasBaseDis not found"
-      bOnlyInfectIfHasBaseDis = True
+      bOnlyInfectIfHasBaseDis = False
     elseif strError == "Element bSoulMarkCureDiseases not found"
       bSoulMarkCureDiseases = False
     elseif strError == "Element bGhostCurse not found"
@@ -5172,7 +5172,7 @@ Bool function bLoadUserSettings(String sFileName)
   moaCreaturesCanSteal.SetValue(bCreaturesCanSteal As Int)
   bNPCHasLevelRange = fiss.loadBool("bNPCHasLevelRange")
   moaNPCHasLevelRange.SetValue(bNPCHasLevelRange As Int)
-  iTeleportLocation = checkInt(fiss.loadInt("iTeleportLocation"), 0, sRespawnPoints.Length - 1, 0)
+  iTeleportLocation = checkInt(fiss.loadInt("iTeleportLocation"), 0, sRespawnPoints.Length - 1, 14)
   iExternalIndex = checkInt(fiss.loadInt("iExternalIndex"), 0, sExtraRPs.Length - 1, -1)
   fRPMinDistanceSlider = checkFloat(fiss.loadFloat("fRPMinDistanceSlider"), 0, 10000, 500)
   moaRPMinDistance.SetValue(fRPMinDistanceSlider)

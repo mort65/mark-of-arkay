@@ -4,6 +4,7 @@ import zzzmoautilscript
 
 FormList property BedsList auto
 zzzmoaReviveMCM property ConfigMenu auto
+GlobalVariable property CreatureRape auto
 Quest property NPCPacifier auto
 Formlist property PacifiedHostiles auto
 Formlist property PacifiedTeamMates auto
@@ -189,36 +190,58 @@ String function getInteface()
   return ""
 endfunction
 
-Actor[] function getRapists(Actor Victim, Actor Attacker=None, Bool bReset=False)
+Actor[] function getRapists(Actor Victim, Actor Attacker, Bool bReset=False)
+  Actor[] rapists
+  if (!Attacker || (Attacker == None) || (Attacker.GetDistance(Victim) > 5000.0))
+    return rapists
+  endif
   if bReset
     Unpacify()
     keepControlsDisabled(1.0, true, true, true, false, true, true, true, false, true)
   endif
+  Bool bCreature = ((getInteface() == "sexlab") && !Attacker.HasKeywordString("actortypenpc") && ReviveScript.SexLabInterface.IsCreaturesAllowed() && ReviveScript.SexLabInterface.AllowedCreature(Attacker.GetLeveledActorBase().GetRace()))
+  CreatureRape.SetValueInt(bCreature As Int)
   NPCPacifier.Start()
-  Actor[] rapists
-  if ((Attacker != None) && (Attacker.GetDistance(Victim) < 5000.0))
-    rapists = new Actor[4]
-    rapists[0] = None
-    rapists[1] = None
-    rapists[2] = None
-    rapists[3] = None
-    Actor rapist
-    string interface = getInteface()
-    Int RapistCount = Utility.RandomInt(1, ConfigMenu.fMaxRapists As Int)
-    int i = 0
-    int j = 0
-    int l = PacifiedHostiles.GetSize()
-    int m = 32
-    int c = 0
-    int k
-    Bool bBreak = False
-    Actor act
-    keepControlsDisabled(3.0, true, true, true, false, true, true, true, false, true)
-    while i < (RapistCount)
-      if (i == 0) && isRapistValid(Attacker)
-        rapists[0] = Attacker
-      else
-        if interface == "sexlab"
+  rapists = new Actor[4]
+  rapists[0] = None
+  rapists[1] = None
+  rapists[2] = None
+  rapists[3] = None
+  Actor rapist
+  string interface = getInteface()
+  Int RapistCount = Utility.RandomInt(1, ConfigMenu.fMaxRapists As Int)
+  int i = 0
+  int j = 0
+  int l = PacifiedHostiles.GetSize()
+  int m = 32
+  int c = 0
+  int k
+  Bool bBreak = False
+  Actor act
+  keepControlsDisabled(3.0, true, true, true, false, true, true, true, false, true)
+  while i < (RapistCount)
+    if (i == 0) && isRapistValid(Attacker)
+      rapists[0] = Attacker
+    else
+      if interface == "sexlab"
+        if bCreature
+          String raceKey = ReviveScript.SexLabInterface.getRaceKey(rapists[0])
+          if raceKey != ""
+            rapist = ReviveScript.SexLabInterface.FindRapistCreature(raceKey, Victim as ObjectReference, 5000.0, 2, Victim, rapists[0], rapists[1], rapists[2])
+            if isRapistValid(rapist)
+              race creaturerace = rapist.GetLeveledActorBase().GetRace()
+              race Attackerrace = Attacker.GetLeveledActorBase().GetRace()
+              if (creatureRace == AttackerRace) || ReviveScript.SexLabInterface.AllowedCreatureCombination(AttackerRace, creatureRace)
+                if !ConfigMenu.bOnlyHostilesRape || (!rapist.IsHostileToActor(Attacker) && (rapist.GetFactionReaction(Attacker) > 1))
+                  k = rapists.find(None)
+                  if k > -1
+                    rapists[k] = rapist
+                  endif
+                endif
+              endif
+            endif
+          endif
+        else
           rapist = ReviveScript.SexLabInterface.FindRapist(Victim as ObjectReference, 5000.0, ConfigMenu.iRapistGender - 1, Victim, rapists[0], rapists[1], rapists[2])
           if isRapistValid(rapist) && (!ConfigMenu.bOnlyHostilesRape || (!rapist.IsHostileToActor(Attacker) && (rapist.GetFactionReaction(Attacker) > 1)))
             k = rapists.find(None)
@@ -226,35 +249,35 @@ Actor[] function getRapists(Actor Victim, Actor Attacker=None, Bool bReset=False
               rapists[k] = rapist
             endif
           endif
-        else
-          c = 0
-          l = PacifiedHostiles.GetSize()
-          while !bBreak && (j < l) && (c < m)
-            act = PacifiedHostiles.GetAt(j) As actor
-            if act && rapists.Find(act) < 0 && isRapistValid(act) && (!ConfigMenu.bOnlyHostilesRape || (!act.IsHostileToActor(Attacker) && (act.GetFactionReaction(Attacker) > 1)))
-              k = rapists.find(None)
-              if k > -1
-                rapists[k] = act
-              endif
-              bBreak = True
+        endif
+      else
+        c = 0
+        l = PacifiedHostiles.GetSize()
+        while !bBreak && (j < l) && (c < m)
+          act = PacifiedHostiles.GetAt(j) As actor
+          if act && rapists.Find(act) < 0 && isRapistValid(act) && (!ConfigMenu.bOnlyHostilesRape || (!act.IsHostileToActor(Attacker) && (act.GetFactionReaction(Attacker) > 1)))
+            k = rapists.find(None)
+            if k > -1
+              rapists[k] = act
             endif
-            j += 1
-            c += 1
-          endwhile
-          if !bBreak
-            rapist = FindAvailableActor(Victim as ObjectReference, 5000.0, 0, Victim, rapists[0], rapists[1], rapists[2])
-            if isRapistValid(rapist) && (!ConfigMenu.bOnlyHostilesRape || (!rapist.IsHostileToActor(Attacker) && (rapist.GetFactionReaction(Attacker) > 1)))
-              k = rapists.find(None)
-              if k > -1
-                rapists[k] = rapist
-              endif
+            bBreak = True
+          endif
+          j += 1
+          c += 1
+        endwhile
+        if !bBreak
+          rapist = FindAvailableActor(Victim as ObjectReference, 5000.0, 0, Victim, rapists[0], rapists[1], rapists[2])
+          if isRapistValid(rapist) && (!ConfigMenu.bOnlyHostilesRape || (!rapist.IsHostileToActor(Attacker) && (rapist.GetFactionReaction(Attacker) > 1)))
+            k = rapists.find(None)
+            if k > -1
+              rapists[k] = rapist
             endif
           endif
         endif
       endif
-      i += 1
-    endwhile
-  endif
+    endif
+    i += 1
+  endwhile
   Game.DisablePlayerControls(abMovement=True, abFighting=True, abCamSwitch=True, abLooking=False, abSneaking=True, abMenu=True, abActivate=True, abJournalTabs=False)
   return rapists
 endfunction
@@ -277,12 +300,13 @@ Bool function isRapistValid(Actor rapist)
         return False
       endif
     endif
-    if rapist.hasKeywordString("actortypenpc")
+    Bool bCreature = (CreatureRape.GetValueInt() == 1)
+    if (bCreature || rapist.hasKeywordString("actortypenpc"))
       Int iSex = getActorSex(rapist)
-      if ((iSex < -1) || (iSex > 1))
+      if (!bCreature && ((iSex < -1) || (iSex > 1)))
         return False
       endif
-      if (ConfigMenu.iRapistGender == 0) || ((iSex > -1) && ((iSex + 1) == ConfigMenu.iRapistGender))
+      if (bCreature || (ConfigMenu.iRapistGender == 0) || ((iSex > -1) && ((iSex + 1) == ConfigMenu.iRapistGender)))
         if !ReviveScript.NPCScript.isActorChild(rapist)
           if (!rapist.IsGuard() || !ConfigMenu.bOnlyHostilesRape)
             if !rapist.IsPlayerTeammate()
@@ -433,7 +457,7 @@ Bool function rapePlayer(Actor[] rapists)
       playerRef.ResetHealthAndLimbs()
       Game.EnablePlayerControls(abMovement=False, abFighting=False, abCamSwitch=true, abLooking=true, abSneaking=False, abMenu=False, abActivate=False, abJournalTabs=False)
     endif
-    if ReviveScript.SexLabInterface.rape(rapists, playerRef)
+    if (revivescript.SexLabInterface.quickRape(rapists, playerRef) || ReviveScript.SexLabInterface.rape(rapists, playerRef))
       ReviveScript.RegisterForModEvent("AnimationEnd", "zzzmoa_Rape_End")
       bIsBusy = True
       playerRef.StopCombat()

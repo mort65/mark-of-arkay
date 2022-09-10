@@ -16,7 +16,19 @@ event On_MOA_Int_PlayerLoadsGame(string eventName, string strArg, float numArg, 
   PlayerLoadsGame()
 endevent
 
+Bool function AllowedCreature(Race CreatureRace)
+  return False
+endfunction
+
+bool function AllowedCreatureCombination(Race CreatureRace, Race CreatureRace2)
+  return False
+endfunction
+
 Actor function FindRapist(ObjectReference CenterRef, float Radius=5000.0, int FindGender=-1, Actor IgnoreRef1=none, Actor IgnoreRef2=none, Actor IgnoreRef3=none, Actor IgnoreRef4=none)
+  return None
+endfunction
+
+Actor function FindRapistCreature(string RaceKey, ObjectReference CenterRef, float Radius=5000.0, int FindGender=2, Actor IgnoreRef1=none, Actor IgnoreRef2=none, Actor IgnoreRef3=none, Actor IgnoreRef4=none)
   return None
 endfunction
 
@@ -29,6 +41,10 @@ endfunction
 
 ; SexLab is not installed so there wont be any action. Return 0 to the calling script and dont try to access any external resources.
 Bool function IsActorActive(Actor ActorRef)
+  return False
+endfunction
+
+Bool function IsCreaturesAllowed()
   return False
 endfunction
 
@@ -51,6 +67,14 @@ function PlayerLoadsGame()
   endif
 endfunction
 
+String function getRaceKey(Actor ActorRef)
+  return ""
+endfunction
+
+Bool function quickRape(Actor[] rapists, Actor victim)
+  return False
+endfunction
+
 Bool function rape(Actor[] rapists, Actor victim)
   return False
 endfunction
@@ -60,8 +84,20 @@ state Installed
     PlayerLoadsGame()
   endevent
 
+  Bool function AllowedCreature(Race CreatureRace)
+    return zzzmoa_int_sexlab.AllowedCreatureSL(SexLabQuestFramework, CreatureRace)
+  endfunction
+
+  bool function AllowedCreatureCombination(Race CreatureRace, Race CreatureRace2)
+    return zzzmoa_int_sexlab.AllowedCreatureCombinationSL(SexLabQuestFramework, CreatureRace, CreatureRace2)
+  endfunction
+
   Actor function FindRapist(ObjectReference CenterRef, float Radius=5000.0, int FindGender=-1, Actor IgnoreRef1=none, Actor IgnoreRef2=none, Actor IgnoreRef3=none, Actor IgnoreRef4=none)
     return zzzmoa_int_sexlab.FindRapistSL(SexLabQuestFramework, CenterRef, Radius, FindGender, IgnoreRef1, IgnoreRef2, IgnoreRef3, IgnoreRef4)
+  endfunction
+
+  Actor function FindRapistCreature(string RaceKey, ObjectReference CenterRef, float Radius=5000.0, int FindGender=2, Actor IgnoreRef1=none, Actor IgnoreRef2=none, Actor IgnoreRef3=none, Actor IgnoreRef4=none)
+    return zzzmoa_int_sexlab.FindRapistCreatureSL(SexLabQuestFramework, RaceKey, CenterRef, Radius, FindGender, IgnoreRef1, IgnoreRef2, IgnoreRef3, IgnoreRef4)
   endfunction
 
   ; SexLab IS installed. Now call the global script and get functions. Pass in SexLabFramework just to save some time
@@ -69,11 +105,23 @@ state Installed
     return zzzmoa_int_sexlab.IsActorActiveSL(SexLabQuestFramework, ActorRef)
   endfunction
 
+  Bool function IsCreaturesAllowed()
+    return zzzmoa_int_sexlab.IsCreaturesAllowedSL(SexLabQuestFramework)
+  endfunction
+
   Bool function IsValidActor(Actor ActorRef)
     return zzzmoa_int_sexlab.IsValidActorSL(SexLabQuestFramework, ActorRef)
   endfunction
 
-  Bool function rape(Actor[] rapists, Actor victim)
+  String function getRaceKey(Actor ActorRef)
+    return zzzmoa_int_sexlab.getRaceKeySL(SexLabQuestFramework, ActorRef)
+  endfunction
+
+  Bool function quickRape(Actor[] rapists, Actor victim)
     return zzzmoa_int_sexlab.quickRapeSL(SexLabQuestFramework, rapists, victim)
+  endfunction
+
+  Bool function rape(Actor[] rapists, Actor victim)
+    return zzzmoa_int_sexlab.RapeSL(SexLabQuestFramework, rapists, victim)
   endfunction
 endstate

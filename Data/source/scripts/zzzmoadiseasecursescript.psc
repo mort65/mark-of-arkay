@@ -44,6 +44,7 @@ function addCursedDisease(Spell aiDisease, Int iIndex)
   removeBaseDisease(iIndex)
   removeOtherStages(iIndex)
   PlayerRef.AddSpell(aiDisease)
+  Debug.TraceConditional("MarkOfArkay: player infected with " + aiDisease, ConfigMenu.bIsLoggingEnabled)
   Float fWait = 3.0
   while !PlayerRef.HasSpell(aiDisease) && fWait > 0
     Utility.Wait(0.2)

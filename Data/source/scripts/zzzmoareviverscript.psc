@@ -508,6 +508,23 @@ event zzzmoa_Rape_End(string eventName, string argString, float argNum, form sen
   RapeScript.bIsBusy = False
 endevent
 
+event zzzmoa_Rape_Ending(string eventName, string argString, float argNum, form sender)
+  ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Rape scene is ending.")
+  utility.wait(1.0)
+  Int i = RapeScript.Equipment.length ;because sexlab stuck when doing this until player open a game menu.
+  while i > 0
+    i -= 1
+    if RapeScript.Equipment[i] As Armor
+      if PlayerRef.GetItemCount(RapeScript.Equipment[i]) > 0 && !PlayerRef.IsEquipped(RapeScript.Equipment[i])
+        PlayerRef.EquipItemEx(RapeScript.Equipment[i])
+        Utility.Wait(0.2)
+      endif
+    endif
+  endwhile
+  Game.SetPlayerAIDriven(False)
+  Game.SetPlayerAIDriven(True)
+endevent
+
 function AutoRemoveItem(Int i) ;trade without menu
   Int j = i - 1
   Int count = 0
@@ -823,8 +840,6 @@ function BleedoutHandler(String CurrentState)
               EffectHealCirclFXS.Play(PlayerRef, ConfigMenu.fRecoveryTimeSlider + 1)
             endif
             Utility.Wait(ConfigMenu.fRecoveryTimeSlider)
-
-            ;RequipSpells()
             ShowNotification()
             ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Reviving player by trading with arkay (Menu is enabled)...")
             RevivePlayer(True)
@@ -1060,15 +1075,16 @@ function RevivePlayer(Bool bRevive)
       int i = Utility.randomInt(0, (ConfigMenu.fMaxRapes - 1) As int)
       while i > 0
         Game.DisablePlayerControls(abMovement=True, abFighting=True, abCamSwitch=True, abLooking=False, abSneaking=True, abMenu=True, abActivate=True, abJournalTabs=False)
-        rapistActors = RapeScript.getRapists(PlayerRef, Attacker, false)
-        keepControlsDisabled(1.0, true, true, true, false, true, true, true, false, true)
+        if !rapistActors || (!rapistActors[0] || (rapistActors[0] == None)) || ((ConfigMenu.fMaxRapists > 1.0) && (!rapistActors[1] || (rapistActors[1] == None)))
+          rapistActors = RapeScript.getRapists(PlayerRef, Attacker, false)
+        endif
+        RapeScript.shuffleActorArray(rapistActors)
         RapeScript.rapePlayer(rapistActors)
         i -= 1
       endwhile
     endif
     PlayerRef.RemoveFromFaction(RapeScript.CalmFaction)
     Attacker && Attacker.RemoveFromFaction(RapeScript.CalmFaction)
-    Game.SetPlayerAIDriven(False)
     Game.DisablePlayerControls(abMovement=True, abFighting=True, abCamSwitch=True, abLooking=False, abSneaking=True, abMenu=True, abActivate=True, abJournalTabs=False)
     PlayerRef.SetDontMove(True)
     restoreCrime()
@@ -2038,6 +2054,7 @@ endfunction
 function restore(Int iRevivePlayer=1, Bool bReviveFollower=True, Bool bEffect=False, Int iPotionIndex=-1, Bool bWait=False, String sTrace="")
   RapeScript.unPacify()
   if !PlayerRef.IsDead()
+    Game.SetPlayerAIDriven(False)
     if bEffect
       moaReviveAfterEffect.Cast(PlayerRef)
     endif

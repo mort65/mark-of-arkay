@@ -53,7 +53,7 @@ Bool function IsValidActor(Actor ActorRef)
 endfunction
 
 function PlayerLoadsGame()
-  Debug.trace("MarkofArkay: PlayerLoadsGame() trigged for " + self)
+  Debug.trace("MarkofArkay: PlayerLoadsGame() triggered for " + self)
 
   ; Is the soft dependency installed and is our script in the right state? If not change state.
   if Game.GetModByName("SexLab.esm") != 255
@@ -75,7 +75,7 @@ Bool function quickRape(Actor[] rapists, Actor victim)
   return False
 endfunction
 
-Bool function rape(Actor[] rapists, Actor victim)
+Bool function rape(Actor[] rapists, Actor victim, String sHook="")
   return False
 endfunction
 
@@ -121,7 +121,7 @@ state Installed
     return zzzmoa_int_sexlab.quickRapeSL(SexLabQuestFramework, rapists, victim)
   endfunction
 
-  Bool function rape(Actor[] rapists, Actor victim)
-    return zzzmoa_int_sexlab.RapeSL(SexLabQuestFramework, rapists, victim)
+  Bool function rape(Actor[] rapists, Actor victim, String sHook="")
+    return zzzmoa_int_sexlab.RapeSL(SexLabQuestFramework, rapists, victim, sHook)
   endfunction
 endstate

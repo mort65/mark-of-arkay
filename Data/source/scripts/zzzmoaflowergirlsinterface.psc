@@ -41,7 +41,7 @@ Bool function PlayThreesome(Actor participant1=NONE, Actor participant2=NONE, Ac
 endfunction
 
 function PlayerLoadsGame()
-  Debug.trace("MarkofArkay: PlayerLoadsGame() trigged for " + self)
+  Debug.trace("MarkofArkay: PlayerLoadsGame() triggered for " + self)
 
   ; Is the soft dependency installed and is our script in the right state? If not change state.
   if Game.GetModByName("FlowerGirls SE.esm") != 255

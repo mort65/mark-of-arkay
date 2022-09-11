@@ -1437,6 +1437,7 @@ Bool function bIsArrived(ObjectReference akMarker)
       return True
     endif
   endif
+    Game.SetPlayerAIDriven(False)  
   playerRef.SetDontMove(False)
   Float fTravel = PlayerMarker.GetDistance(akMarker)
   PlayerRef.MoveTo(akMarker, afZOffset=15.0)

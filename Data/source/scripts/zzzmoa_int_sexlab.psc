@@ -35,7 +35,7 @@ Bool function IsValidActorSL(Quest SexLabQuestFramework, Actor ActorRef) Global
   return SLFramework.IsValidActor(ActorRef)
 endfunction
 
-Bool function RapeSL(Quest SexLabQuestFramework, Actor[] rapists, Actor victimRef) Global
+Bool function RapeSL(Quest SexLabQuestFramework, Actor[] rapists, Actor victimRef, String sHook="") Global
   if ((victimRef != None) && (rapists && rapists.length > 0) && (rapists[0] != None))
     SexLabFramework SLFramework = SexLabQuestFramework as SexLabFramework
     if SLFramework == None
@@ -104,7 +104,7 @@ Bool function RapeSL(Quest SexLabQuestFramework, Actor[] rapists, Actor victimRe
       actors[4] = Rapists[3]
     endif
     if Rapists.length == 1
-      if SLFramework.QuickStart(Actor1=victimRef, Actor2=rapist1, Victim=victimRef, AnimationTags=tags) != None
+      if SLFramework.QuickStart(Actor1=victimRef, Actor2=rapist1, Victim=victimRef, Hook=sHook, AnimationTags=tags) != None
         return True
       endif
     else
@@ -165,7 +165,7 @@ Bool function RapeSL(Quest SexLabQuestFramework, Actor[] rapists, Actor victimRe
           endif
         endif
         if bAnim
-          if SLFramework.StartSex(Positions, animations, VictimRef, VictimRef As ObjectReference) > -1
+          if SLFramework.StartSex(Positions, animations, VictimRef, VictimRef As ObjectReference, True, sHook) > -1
             return True
           endif
         endif
@@ -203,7 +203,7 @@ Bool function quickRapeSL(Quest SexLabQuestFramework, Actor[] rapists, Actor vic
     if SLFramework == None
       return False
     endif
-	int j = rapists.length
+    int j = rapists.length
     int i = j
     while i > 0
       i -= 1

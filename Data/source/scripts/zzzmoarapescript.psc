@@ -5,6 +5,7 @@ import zzzmoautilscript
 FormList property BedsList auto
 zzzmoaReviveMCM property ConfigMenu auto
 GlobalVariable property CreatureRape auto
+Form[] property Equipment auto Hidden
 Quest property NPCPacifier auto
 Formlist property PacifiedHostiles auto
 Formlist property PacifiedTeamMates auto
@@ -123,55 +124,128 @@ function Unpacify()
   Actor act = None
   if Rapist1.GetActorRef()
     act = Rapist1.GetActorRef()
+    if act
+      act.RemoveFromFaction(calmFaction)
+    endif
     Rapist1.Clear()
-    act.RemoveFromFaction(calmFaction)
   endif
   if Rapist2.GetActorRef()
     act = Rapist2.GetActorRef()
+    if act
+      act.RemoveFromFaction(calmFaction)
+    endif
     Rapist2.Clear()
-    act.RemoveFromFaction(calmFaction)
   endif
   if Rapist3.GetActorRef()
     act = Rapist3.GetActorRef()
+    if act
+      act.RemoveFromFaction(calmFaction)
+    endif
     Rapist3.Clear()
-    act.RemoveFromFaction(calmFaction)
   endif
   if Rapist4.GetActorRef()
     act = Rapist4.GetActorRef()
+    if act
+      act.RemoveFromFaction(calmFaction)
+    endif
     Rapist4.Clear()
-    act.RemoveFromFaction(calmFaction)
   endif
   if Rapist5.GetActorRef()
     act = Rapist5.GetActorRef()
+    if act
+      act.RemoveFromFaction(calmFaction)
+    endif
     Rapist5.Clear()
-    act.RemoveFromFaction(calmFaction)
   endif
   if Rapist6.GetActorRef()
     act = Rapist6.GetActorRef()
+    if act
+      act.RemoveFromFaction(calmFaction)
+    endif
     Rapist6.Clear()
-    act.RemoveFromFaction(calmFaction)
   endif
   if Rapist7.GetActorRef()
     act = Rapist7.GetActorRef()
+    if act
+      act.RemoveFromFaction(calmFaction)
+    endif
     Rapist7.Clear()
-    act.RemoveFromFaction(calmFaction)
   endif
   if Rapist8.GetActorRef()
     act = Rapist8.GetActorRef()
+    if act
+      act.RemoveFromFaction(calmFaction)
+    endif
     Rapist8.Clear()
-    act.RemoveFromFaction(calmFaction)
   endif
   if Rapist9.GetActorRef()
     act = Rapist9.GetActorRef()
+    if act
+      act.RemoveFromFaction(calmFaction)
+    endif
     Rapist9.Clear()
-    act.RemoveFromFaction(calmFaction)
   endif
   if Rapist10.GetActorRef()
     act = Rapist10.GetActorRef()
+    if act
+      act.RemoveFromFaction(calmFaction)
+    endif
     Rapist10.Clear()
-    act.RemoveFromFaction(calmFaction)
   endif
   (NPCPacifier As zzzmoa_npc_pacifier_quest_script).Unpacify()
+endfunction
+
+Actor[] function fixActorArray(Actor[] Actors, Bool bRandomLen=False)
+  Actor[] ActorsArray
+  int j = Actors.length
+  int i = j
+  while i > 0
+    i -= 1
+    if (!Actors[i] || (Actors[i] == none) || Actors[i].IsDead())
+      j -= 1
+    endif
+  endwhile
+  if j < 1
+    return ActorsArray
+  endif
+  if j > 3
+    ActorsArray = new Actor[4]
+  elseif j > 2
+    ActorsArray = new Actor[3]
+  elseif j > 1
+    ActorsArray = new Actor[2]
+  else
+    ActorsArray = new Actor[1]
+  endif
+  i = 0
+  while i < Actors.length
+    if (Actors[i] && !Actors[i].IsDead())
+      j = ActorsArray.find(None)
+      if j > -1
+        ActorsArray[j] = Actors[i]
+      endif
+    endif
+    i += 1
+  endwhile
+  if bRandomLen && (ActorsArray.length > 1)
+    i = utility.RandomInt(1, ActorsArray.length)
+    Actor[] ShuffledArray
+    if i > 3
+      ShuffledArray = new Actor[4]
+    elseif i == 3
+      ShuffledArray = new Actor[3]
+    elseif i == 2
+      ShuffledArray = new Actor[2]
+    else
+      ShuffledArray = new Actor[1]
+    endif
+    while i > 0
+      i -= 1
+      ShuffledArray[i] = ActorsArray[i]
+    endwhile
+    ActorsArray = ShuffledArray
+  endif
+  return ActorsArray
 endfunction
 
 Int function getActorSex(Actor act)
@@ -209,7 +283,7 @@ Actor[] function getRapists(Actor Victim, Actor Attacker, Bool bReset=False)
   rapists[3] = None
   Actor rapist
   string interface = getInteface()
-  Int RapistCount = Utility.RandomInt(1, ConfigMenu.fMaxRapists As Int)
+  Int RapistCount = iMax(1, ConfigMenu.fMaxRapists As Int)
   int i = 0
   int j = 0
   int l = PacifiedHostiles.GetSize()
@@ -283,7 +357,7 @@ Actor[] function getRapists(Actor Victim, Actor Attacker, Bool bReset=False)
 endfunction
 
 Bool function isRapistValid(Actor rapist)
-  if (rapist && (rapist != None) && !rapist.IsDead())
+  if (rapist && (rapist != None) && !rapist.IsDead() && !(rapist.GetActorValue("Paralysis") As Bool))
     if (getInteface() != "sexlab") ;sexlab's IsValidActor check for these
       if !rapist.Is3DLoaded()
         Utility.WaitMenuMode(2.0)
@@ -325,10 +399,14 @@ Bool function isRapistValid(Actor rapist)
 endfunction
 
 Bool function rapePlayer(Actor[] rapists)
-  if (ReviveScript.moaPlayerGhostQuest.IsRunning() || !rapists || rapists.Length < 1 || !rapists[0])
+  if (ReviveScript.moaPlayerGhostQuest.IsRunning() || !rapists || rapists.Length < 1)
     return False
   endif
   Game.DisablePlayerControls(abMovement=True, abFighting=True, abCamSwitch=True, abLooking=False, abSneaking=True, abMenu=True, abActivate=True, abJournalTabs=False)
+  Actor[] rapistArray = fixActorArray(rapists, (Utility.RandomInt(0, 3) == 0))
+  if (!rapistArray || (rapists.Length < 1) || !rapistArray[0])
+    return False
+  endif
   RapistsList.revert()
   string interface = getInteface()
   ReviveScript.FastFadeOut.Apply()
@@ -352,55 +430,55 @@ Bool function rapePlayer(Actor[] rapists)
   if z > 360.0
     z = z - 360.0
   endif
-  if rapists[0].GetDistance(PlayerRef) > 1000.0
-    rapists[0].disable()
-    rapists[0].MoveTo(PlayerRef)
-    rapists[0].SetPosition(PlayerRef.GetPositionx() + Utility.RandomInt(75, 100), PlayerRef.GetPositiony() + Utility.RandomInt(75, 100), PlayerRef.GetPositionz())
-    rapists[0].SetAngle(PlayerRef.GetAngleX(), PlayerRef.GetAngleY(), z)
-    rapists[0].enable()
+  if rapistArray[0].GetDistance(PlayerRef) > 1000.0
+    rapistArray[0].disable()
+    rapistArray[0].MoveTo(PlayerRef)
+    rapistArray[0].SetPosition(PlayerRef.GetPositionx() + Utility.RandomInt(75, 100), PlayerRef.GetPositiony() + Utility.RandomInt(75, 100), PlayerRef.GetPositionz())
+    rapistArray[0].SetAngle(PlayerRef.GetAngleX(), PlayerRef.GetAngleY(), z)
+    rapistArray[0].enable()
   endif
-  RapistsList.AddForm(rapists[0])
-  Rapist1.ForceRefTo(rapists[0])
-  rapists[0].EvaluatePackage()
-  if rapists.Length > 1 && rapists[1]
-    if rapists[1].GetDistance(PlayerRef) > 1000.0
-      rapists[1].disable()
-      rapists[1].MoveTo(PlayerRef)
-      rapists[1].SetPosition(PlayerRef.GetPositionx() + Utility.RandomInt(75, 100), PlayerRef.GetPositiony() + Utility.RandomInt(75, 100), PlayerRef.GetPositionz())
-      rapists[1].SetAngle(PlayerRef.GetAngleX(), PlayerRef.GetAngleY(), z)
-      rapists[1].enable()
+  RapistsList.AddForm(rapistArray[0])
+  Rapist1.ForceRefTo(rapistArray[0])
+  rapistArray[0].EvaluatePackage()
+  if rapistArray.Length > 1 && rapistArray[1]
+    if rapistArray[1].GetDistance(PlayerRef) > 1000.0
+      rapistArray[1].disable()
+      rapistArray[1].MoveTo(PlayerRef)
+      rapistArray[1].SetPosition(PlayerRef.GetPositionx() + Utility.RandomInt(75, 100), PlayerRef.GetPositiony() + Utility.RandomInt(75, 100), PlayerRef.GetPositionz())
+      rapistArray[1].SetAngle(PlayerRef.GetAngleX(), PlayerRef.GetAngleY(), z)
+      rapistArray[1].enable()
     endif
-    RapistsList.AddForm(rapists[1])
-    Rapist2.ForceRefTo(rapists[1])
-    rapists[1].EvaluatePackage()
+    RapistsList.AddForm(rapistArray[1])
+    Rapist2.ForceRefTo(rapistArray[1])
+    rapistArray[1].EvaluatePackage()
   else
     Rapist2.Clear()
   endif
-  if rapists.Length > 2 && rapists[2]
-    if rapists[2].GetDistance(PlayerRef) > 1000.0
-      rapists[2].disable()
-      rapists[2].MoveTo(PlayerRef)
-      rapists[2].SetPosition(PlayerRef.GetPositionx() + Utility.RandomInt(75, 100), PlayerRef.GetPositiony() + Utility.RandomInt(75, 100), PlayerRef.GetPositionz())
-      rapists[2].SetAngle(PlayerRef.GetAngleX(), PlayerRef.GetAngleY(), z)
-      rapists[2].enable()
+  if rapistArray.Length > 2 && rapistArray[2]
+    if rapistArray[2].GetDistance(PlayerRef) > 1000.0
+      rapistArray[2].disable()
+      rapistArray[2].MoveTo(PlayerRef)
+      rapistArray[2].SetPosition(PlayerRef.GetPositionx() + Utility.RandomInt(75, 100), PlayerRef.GetPositiony() + Utility.RandomInt(75, 100), PlayerRef.GetPositionz())
+      rapistArray[2].SetAngle(PlayerRef.GetAngleX(), PlayerRef.GetAngleY(), z)
+      rapistArray[2].enable()
     endif
-    RapistsList.AddForm(rapists[2])
-    Rapist3.ForceRefTo(rapists[2])
-    rapists[2].EvaluatePackage()
+    RapistsList.AddForm(rapistArray[2])
+    Rapist3.ForceRefTo(rapistArray[2])
+    rapistArray[2].EvaluatePackage()
   else
     Rapist3.Clear()
   endif
-  if rapists.Length > 3 && rapists[3]
-    if rapists[3].GetDistance(PlayerRef) > 1000.0
-      rapists[3].disable()
-      rapists[3].MoveTo(PlayerRef)
-      rapists[3].SetPosition(PlayerRef.GetPositionx() + Utility.RandomInt(75, 100), PlayerRef.GetPositiony() + Utility.RandomInt(75, 100), PlayerRef.GetPositionz())
-      rapists[3].SetAngle(PlayerRef.GetAngleX(), PlayerRef.GetAngleY(), z)
-      rapists[3].enable()
+  if rapistArray.Length > 3 && rapistArray[3]
+    if rapistArray[3].GetDistance(PlayerRef) > 1000.0
+      rapistArray[3].disable()
+      rapistArray[3].MoveTo(PlayerRef)
+      rapistArray[3].SetPosition(PlayerRef.GetPositionx() + Utility.RandomInt(75, 100), PlayerRef.GetPositiony() + Utility.RandomInt(75, 100), PlayerRef.GetPositionz())
+      rapistArray[3].SetAngle(PlayerRef.GetAngleX(), PlayerRef.GetAngleY(), z)
+      rapistArray[3].enable()
     endif
-    RapistsList.AddForm(rapists[3])
-    Rapist4.ForceRefTo(rapists[3])
-    rapists[3].EvaluatePackage()
+    RapistsList.AddForm(rapistArray[3])
+    Rapist4.ForceRefTo(rapistArray[3])
+    rapistArray[3].EvaluatePackage()
   else
     Rapist4.Clear()
   endif
@@ -414,7 +492,7 @@ Bool function rapePlayer(Actor[] rapists)
   while i > 0
     i -= 1
     extraRapist = PacifiedHostiles.getAt(i) as Actor
-    if rapists.find(extraRapist) < 0
+    if rapistArray.find(extraRapist) < 0
       if isRapistValid(extraRapist)
         if !Rapist5.GetActorRef()
           Rapist5.ForceRefTo(extraRapist)
@@ -448,16 +526,18 @@ Bool function rapePlayer(Actor[] rapists)
   ReviveScript.BlackScreen.PopTo(ReviveScript.FadeIn)
   removeCrime()
   Victim1.ForceRefTo(PlayerRef)
-  Game.SetPlayerAIDriven(True)
   PlayerRef.EvaluatePackage()
   Bool result = False
+  Game.SetPlayerAIDriven(True)
   if interface == "sexlab"
     if playerRef.IsBleedingOut()
       PlayerRef.DispelSpell(ReviveScript.Bleed)
       playerRef.ResetHealthAndLimbs()
       Game.EnablePlayerControls(abMovement=False, abFighting=False, abCamSwitch=true, abLooking=true, abSneaking=False, abMenu=False, abActivate=False, abJournalTabs=False)
     endif
-    if (revivescript.SexLabInterface.quickRape(rapists, playerRef) || ReviveScript.SexLabInterface.rape(rapists, playerRef))
+    Equipment = revivescript.Itemscript.RegisterEquipments(playerRef, False, False)
+    if ReviveScript.SexLabInterface.rape(rapistArray, playerRef, "AnimationEnding,AnimationEnd")
+      ReviveScript.RegisterForModEvent("AnimationEnding", "zzzmoa_Rape_Ending")
       ReviveScript.RegisterForModEvent("AnimationEnd", "zzzmoa_Rape_End")
       bIsBusy = True
       playerRef.StopCombat()
@@ -474,7 +554,6 @@ Bool function rapePlayer(Actor[] rapists)
           i += 1
         endwhile
       endwhile
-      Game.DisablePlayerControls(abMovement=True, abFighting=True, abCamSwitch=True, abLooking=False, abSneaking=True, abMenu=True, abActivate=True, abJournalTabs=True)
       result = True
     endif
   elseif interface == "ostim"
@@ -483,43 +562,47 @@ Bool function rapePlayer(Actor[] rapists)
       playerRef.ResetHealthAndLimbs()
       Game.EnablePlayerControls(abMovement=False, abFighting=False, abCamSwitch=true, abLooking=true, abSneaking=False, abMenu=False, abActivate=False, abJournalTabs=False)
     endif
-    extraRapist = None
-    int l = PacifiedHostiles.GetSize()
-    if l > 0
-      i = utility.randomint(0, l - 1)
-      int j = i - 1
-      if j < 0
-        j = l - 1
+    if ((rapistArray.length > 1) && rapistArray[1])
+      extraRapist = rapistArray[1]
+    else
+      extraRapist = None
+      int l = PacifiedHostiles.GetSize()
+      if l > 0
+        i = utility.randomint(0, l - 1)
+        int j = i - 1
+        if j < 0
+          j = l - 1
+        endif
+        Bool bBreak = False
+        while !bBreak && (extraRapist == None)
+          extraRapist = PacifiedHostiles.getAt(i) as Actor
+          if (extraRapist == rapistArray[0]) || !isRapistValid(extraRapist)
+            extraRapist = None
+          endif
+          if i == j
+            bBreak = True
+          elseif i == (l - 1)
+            i = 0
+          else
+            i += 1
+          endif
+        endwhile
       endif
-      Bool bBreak = False
-      while !bBreak && (extraRapist == None)
-        extraRapist = PacifiedHostiles.getAt(i) as Actor
-        if (extraRapist == rapists[0]) || !isRapistValid(extraRapist)
-          extraRapist = None
-        endif
-        if i == j
-          bBreak = True
-        elseif i == (l - 1)
-          i = 0
-        else
-          i += 1
-        endif
-      endwhile
     endif
     Bool sceneStarted = False
     if extraRapist && (Utility.RandomInt(0, 1) == 1)
       if (ConfigMenu.fMaxRapists > 1) && (Utility.RandomInt(0, 1) == 1)
         rapist2.ForceRefTo(extraRapist)
-        if (getActorSex(extraRapist) == 0) && (getActorSex(rapists[0]) == 1) ;Swap them
-          sceneStarted = ReviveScript.OStimInterface.StartScene(Dom=extraRapist, Sub=playerRef, zThirdActor=rapists[0], Aggressive=True, AggressingActor=extraRapist)
+        if (getActorSex(extraRapist) == 0) && (getActorSex(rapistArray[0]) == 1) ;Swap them
+          sceneStarted = ReviveScript.OStimInterface.StartScene(Dom=extraRapist, Sub=playerRef, zThirdActor=rapistArray[0], Aggressive=True, AggressingActor=extraRapist)
         else
-          sceneStarted = ReviveScript.OStimInterface.StartScene(Dom=rapists[0], Sub=playerRef, zThirdActor=extraRapist, Aggressive=True, AggressingActor=rapists[0])
+          sceneStarted = ReviveScript.OStimInterface.StartScene(Dom=rapistArray[0], Sub=playerRef, zThirdActor=extraRapist, Aggressive=True, AggressingActor=rapistArray[0])
         endif
       else
         sceneStarted = ReviveScript.OStimInterface.StartScene(Dom=extraRapist, Sub=playerRef, zThirdActor=None, Aggressive=True, AggressingActor=extraRapist)
       endif
     else
-      sceneStarted = ReviveScript.OStimInterface.StartScene(Dom=rapists[0], Sub=playerRef, zThirdActor=None, Aggressive=True, AggressingActor=rapists[0])
+      sceneStarted = ReviveScript.OStimInterface.StartScene(Dom=rapistArray[0], Sub=playerRef, zThirdActor=None, Aggressive=True, AggressingActor=rapistArray[0])
     endif
     if sceneStarted
       ReviveScript.RegisterForModEvent("ostim_end", "zzzmoa_Rape_End")
@@ -546,32 +629,36 @@ Bool function rapePlayer(Actor[] rapists)
       playerRef.ResetHealthAndLimbs()
       Game.EnablePlayerControls(abMovement=False, abFighting=False, abCamSwitch=true, abLooking=true, abSneaking=False, abMenu=False, abActivate=False, abJournalTabs=False)
     endif
-    extraRapist = None
-    int l = PacifiedHostiles.GetSize()
-    if l > 0
-      i = utility.randomint(0, l - 1)
-      int j = i - 1
-      if j < 0
-        j = l - 1
+    if ((rapistArray.length > 1) && rapistArray[1])
+      extraRapist = rapistArray[1]
+    else
+      extraRapist = None
+      int l = PacifiedHostiles.GetSize()
+      if l > 0
+        i = utility.randomint(0, l - 1)
+        int j = i - 1
+        if j < 0
+          j = l - 1
+        endif
+        Bool bBreak = False
+        while !bBreak && (extraRapist == None)
+          extraRapist = PacifiedHostiles.getAt(i) as Actor
+          if (extraRapist == rapistArray[0]) || !isRapistValid(extraRapist)
+            extraRapist = None
+          endif
+          if i == j
+            bBreak = True
+          elseif i == (l - 1)
+            i = 0
+          else
+            i += 1
+          endif
+        endwhile
       endif
-      Bool bBreak = False
-      while !bBreak && (extraRapist == None)
-        extraRapist = PacifiedHostiles.getAt(i) as Actor
-        if (extraRapist == rapists[0]) || !isRapistValid(extraRapist)
-          extraRapist = None
-        endif
-        if i == j
-          bBreak = True
-        elseif i == (l - 1)
-          i = 0
-        else
-          i += 1
-        endif
-      endwhile
     endif
     if extraRapist && (Utility.RandomInt(0, 1) == 1)
       if (ConfigMenu.fMaxRapists > 1) && (Utility.RandomInt(0, 1) == 1)
-        ReviveScript.FlowerGirlsInterface.Actor1 = rapists[0]
+        ReviveScript.FlowerGirlsInterface.Actor1 = rapistArray[0]
         ReviveScript.FlowerGirlsInterface.Actor2 = playerRef
         ReviveScript.FlowerGirlsInterface.Actor3 = extraRapist
         sendModEvent("MOA_Int_FG_PlayThreesome")
@@ -581,7 +668,7 @@ Bool function rapePlayer(Actor[] rapists)
         sendModEvent("MOA_Int_FG_RandomScene")
       endif
     else
-      ReviveScript.FlowerGirlsInterface.Actor1 = rapists[0]
+      ReviveScript.FlowerGirlsInterface.Actor1 = rapistArray[0]
       ReviveScript.FlowerGirlsInterface.Actor2 = playerRef
       sendModEvent("MOA_Int_FG_RandomScene")
     endif
@@ -602,7 +689,9 @@ Bool function rapePlayer(Actor[] rapists)
     result = ReviveScript.FlowerGirlsInterface.Result
   endif
   (NPCPacifier As zzzmoa_npc_pacifier_quest_script).ToggleTeamMates(True)
-  Game.DisablePlayerControls(abMovement=True, abFighting=True, abCamSwitch=True, abLooking=False, abSneaking=True, abMenu=True, abActivate=True, abJournalTabs=True)
+  Game.DisablePlayerControls(abMovement=True, abFighting=True, abCamSwitch=True, abLooking=False, abSneaking=True, abMenu=True, abActivate=True, abJournalTabs=False)
+  Game.SetPlayerAIDriven(False)
+  Game.SetPlayerAIDriven(True)
   return result
 endfunction
 
@@ -627,4 +716,21 @@ function removeCrime()
     ReviveScript.CrimeFaction.ModCrimeGold(-ReviveScript.CrimeFaction.GetCrimeGoldViolent(), true)
   endif
   return
+endfunction
+
+function shuffleActorArray(Actor[] Actors)
+  int i = Actors.Length
+  if Actors.Length < 2
+    return
+  endif
+  i = Actors.Length
+  while i > 1
+    i -= 1
+    int j = utility.RandomInt(0, i)
+    if (i != j)
+      Actor act = Actors[i]
+      Actors[i] = Actors[j]
+      Actors[j] = act
+    endif
+  endwhile
 endfunction

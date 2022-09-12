@@ -403,7 +403,7 @@ Bool function rapePlayer(Actor[] rapists)
     return False
   endif
   Game.DisablePlayerControls(abMovement=True, abFighting=True, abCamSwitch=True, abLooking=False, abSneaking=True, abMenu=True, abActivate=True, abJournalTabs=False)
-  Actor[] rapistArray = fixActorArray(rapists, (Utility.RandomInt(0, 2) == 0))
+  Actor[] rapistArray = fixActorArray(rapists, (Utility.RandomInt(0, 1) == 0))
   if (!rapistArray || (rapists.Length < 1) || !(rapistArray[0] As Actor))
     return False
   endif

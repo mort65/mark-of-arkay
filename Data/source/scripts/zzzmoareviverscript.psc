@@ -215,7 +215,6 @@ event OnEnterBleedout()
     bSheathed = False
     Game.DisablePlayerControls()
     fHealrate = PlayerRef.GetActorValue("HealRate")
-    PlayerRef.DispelAllSpells()
     PlayerRef.SetActorValue("HealRate", 0.0)
     PlayerRef.RemoveSpell(Bleed)
     PlayerRef.AddSpell(Bleed, False)
@@ -672,8 +671,6 @@ function BleedoutHandler(String CurrentState)
     bWasSwimming = False
   endif
   moaBleedoutHandlerState.SetValue(1)
-
-  ;PlayerRef.DispelAllSpells()
   LowHealthImod.Remove()
   SetVars()
   if !ConfigMenu.bIsRevivalEnabled
@@ -1049,7 +1046,6 @@ function ResetPlayer()
   elseif bWasSwimming
     Debug.SendAnimationEvent(PlayerRef, "SwimStop")
   endif
-  PlayerRef.DispelAllSpells()
   PlayerRef.ClearExtraArrows()
   if PlayerRef.IsWeaponDrawn()
     PlayerRef.SheatheWeapon()
@@ -1138,7 +1134,6 @@ function RevivePlayer(Bool bRevive)
       if ConfigMenu.bCanContinue() && ((ConfigMenu.iNotTradingAftermath == 0) || (ConfigMenu.iNotTradingAftermath == 1 && !RespawnScript.bCanTeleport()))
         ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Player is dying...")
         Attacker = None
-        PlayerRef.DispelAllSpells()
         LowHealthImod.Remove()
         PlayerRef.PushActorAway(PlayerRef, 0)
         PlayerRef.EndDeferredKill()
@@ -1984,7 +1979,6 @@ function checkHealth()
         ;Game.DisablePlayerControls(abMovement = True, abFighting = True, abCamSwitch = False, abLooking = False, abSneaking = True, abMenu = True, abActivate = True, abJournalTabs = False, aiDisablePOVType = 0)
         PlayerRef.DamageActorValue("Health", 9999.0)
         fHealrate = PlayerRef.GetActorValue("HealRate")
-        PlayerRef.DispelallSpells()
         PlayerRef.SetActorValue("HealRate", 0.0)
         PlayerRef.AddPerk(Invulnerable)
         Debug.SetGodMode(True) ;still needed for when dying because of traps

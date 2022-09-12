@@ -1410,7 +1410,6 @@ Bool function bIsArrived(ObjectReference akMarker)
   if ConfigMenu.bIsRagdollEnabled
     fMinDistance = 4000.0
   endif
-  PlayerRef.DispelAllSpells()
   if PlayerRef.IsBleedingOut() || (PlayerRef.GetActorValue("Health") < PlayerRef.GetBaseActorValue("Health"))
     PlayerRef.DispelSpell(ReviveScript.Bleed)
     PlayerRef.ResetHealthAndLimbs()
@@ -1437,7 +1436,7 @@ Bool function bIsArrived(ObjectReference akMarker)
       return True
     endif
   endif
-    Game.SetPlayerAIDriven(False)  
+  Game.SetPlayerAIDriven(False)
   playerRef.SetDontMove(False)
   Float fTravel = PlayerMarker.GetDistance(akMarker)
   PlayerRef.MoveTo(akMarker, afZOffset=15.0)

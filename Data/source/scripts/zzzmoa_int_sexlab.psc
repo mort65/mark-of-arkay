@@ -104,9 +104,19 @@ Bool function RapeSL(Quest SexLabQuestFramework, Actor[] rapists, Actor victimRe
       actors[4] = Rapists[3]
     endif
     if Rapists.length == 1
+      Form ItemRef = victimRef.GetWornForm(32)
+      if ItemRef as Armor
+        victimRef.UnequipItemSlot(32) ;to prevent freeze
+        utility.wait(0.2)
+        if !SLFramework.IsStrippable(ItemRef)
+          victimRef.EquipItemEx(ItemRef)
+          utility.wait(0.2)
+        endif
+      endif
       if SLFramework.QuickStart(Actor1=victimRef, Actor2=rapist1, Victim=victimRef, Hook=sHook, AnimationTags=tags) != None
         return True
       endif
+      return False
     else
       int rapistIndex = Rapists.length
       Int FemaleCount
@@ -150,24 +160,44 @@ Bool function RapeSL(Quest SexLabQuestFramework, Actor[] rapists, Actor victimRe
         else
           FemaleCount = 0
           Malecount = 0
-          i = (rapistIndex + 2) ;actors[0]=vctim (1,2,3,4)=Rapist
+          i = positions.Length
           while i > 0
             i -= 1
-            if actors[i] && SLFramework.GetGender(actors[i]) == 1
+            if positions[i] && SLFramework.GetGender(positions[i]) == 1
               FemaleCount += 1
             else
               Malecount += 1
             endif
           endwhile
-          animations = SLFramework.GetAnimationsByDefaultTags(Malecount, FemaleCount, true, false, true, tags, "", true)
+          animations = SLFramework.GetAnimationsByDefaultTags(Malecount, FemaleCount, true, false, false, tags, "", true)
+          if animations.Length == 0
+            if (positions.length == 5 || positions.length == 4)
+              animations = SLFramework.GetAnimationsByDefaultTags(Malecount, FemaleCount, false, false, false, "gangbang", "", true)
+            elseif (positions.length == 3)
+              animations = SLFramework.GetAnimationsByDefaultTags(Malecount, FemaleCount, false, false, false, "threesome", "", true)
+            endif
+            if animations.Length == 0
+              animations = SLFramework.GetAnimationsByDefaultTags(Malecount, FemaleCount, false, false, false, "sex", "", true)
+            endif
+          endif
           if animations.Length > 0
             bAnim = true
           endif
         endif
         if bAnim
+          Form ItemRef = victimRef.GetWornForm(32)
+          if ItemRef as Armor
+            victimRef.UnequipItemSlot(32) ;to prevent freeze
+            utility.wait(0.2)
+            if !SLFramework.IsStrippable(ItemRef)
+              victimRef.EquipItemEx(ItemRef)
+              utility.wait(0.2)
+            endif
+          endif
           if SLFramework.StartSex(Positions, animations, VictimRef, VictimRef As ObjectReference, True, sHook) > -1
             return True
           endif
+          return False
         endif
         if rapistIndex < 4
           rapist4 = None

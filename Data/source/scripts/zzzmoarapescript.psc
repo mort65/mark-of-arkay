@@ -403,8 +403,8 @@ Bool function rapePlayer(Actor[] rapists)
     return False
   endif
   Game.DisablePlayerControls(abMovement=True, abFighting=True, abCamSwitch=True, abLooking=False, abSneaking=True, abMenu=True, abActivate=True, abJournalTabs=False)
-  Actor[] rapistArray = fixActorArray(rapists, (Utility.RandomInt(0, 3) == 0))
-  if (!rapistArray || (rapists.Length < 1) || !rapistArray[0])
+  Actor[] rapistArray = fixActorArray(rapists, (Utility.RandomInt(0, 2) == 0))
+  if (!rapistArray || (rapists.Length < 1) || !(rapistArray[0] As Actor))
     return False
   endif
   RapistsList.revert()
@@ -537,8 +537,8 @@ Bool function rapePlayer(Actor[] rapists)
     endif
     Equipment = revivescript.Itemscript.RegisterEquipments(playerRef, False, False)
     if ReviveScript.SexLabInterface.rape(rapistArray, playerRef, "AnimationEnding,AnimationEnd")
-      ReviveScript.RegisterForModEvent("AnimationEnding", "zzzmoa_Rape_Ending")
-      ReviveScript.RegisterForModEvent("AnimationEnd", "zzzmoa_Rape_End")
+      ReviveScript.RegisterForModEvent("HookAnimationEnding", "zzzmoa_sexlab_Rape_Ending")
+      ReviveScript.RegisterForModEvent("HookAnimationEnd", "zzzmoa_sexlab_Rape_End")
       bIsBusy = True
       playerRef.StopCombat()
       playerRef.StopCombatAlarm()
@@ -562,7 +562,7 @@ Bool function rapePlayer(Actor[] rapists)
       playerRef.ResetHealthAndLimbs()
       Game.EnablePlayerControls(abMovement=False, abFighting=False, abCamSwitch=true, abLooking=true, abSneaking=False, abMenu=False, abActivate=False, abJournalTabs=False)
     endif
-    if ((rapistArray.length > 1) && rapistArray[1])
+    if (rapistArray.length > 1) && ((rapistArray[1] As Actor) != None)
       extraRapist = rapistArray[1]
     else
       extraRapist = None
@@ -605,7 +605,7 @@ Bool function rapePlayer(Actor[] rapists)
       sceneStarted = ReviveScript.OStimInterface.StartScene(Dom=rapistArray[0], Sub=playerRef, zThirdActor=None, Aggressive=True, AggressingActor=rapistArray[0])
     endif
     if sceneStarted
-      ReviveScript.RegisterForModEvent("ostim_end", "zzzmoa_Rape_End")
+      ReviveScript.RegisterForModEvent("ostim_end", "zzzmoa_ostim_Rape_End")
       bIsBusy = True
       playerRef.StopCombat()
       playerRef.StopCombatAlarm()
@@ -629,7 +629,7 @@ Bool function rapePlayer(Actor[] rapists)
       playerRef.ResetHealthAndLimbs()
       Game.EnablePlayerControls(abMovement=False, abFighting=False, abCamSwitch=true, abLooking=true, abSneaking=False, abMenu=False, abActivate=False, abJournalTabs=False)
     endif
-    if ((rapistArray.length > 1) && rapistArray[1])
+    if (rapistArray.length > 1) && ((rapistArray[1] As Actor) != None)
       extraRapist = rapistArray[1]
     else
       extraRapist = None

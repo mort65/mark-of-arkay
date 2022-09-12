@@ -502,26 +502,37 @@ event OnUpdate()
   endif
 endevent
 
-event zzzmoa_Rape_End(string eventName, string argString, float argNum, form sender)
-  ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Rape scene ended.")
-  RapeScript.bIsBusy = False
+event zzzmoa_sexlab_Rape_End(int tid, bool HasPlayer)
+  if (RapeScript.bIsBusy && HasPlayer)
+    ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Rape scene ended.")
+    RapeScript.bIsBusy = False
+  endif
 endevent
 
-event zzzmoa_Rape_Ending(string eventName, string argString, float argNum, form sender)
-  ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Rape scene is ending.")
-  utility.wait(1.0)
-  Int i = RapeScript.Equipment.length ;because sexlab stuck when doing this until player open a game menu.
-  while i > 0
-    i -= 1
-    if RapeScript.Equipment[i] As Armor
-      if PlayerRef.GetItemCount(RapeScript.Equipment[i]) > 0 && !PlayerRef.IsEquipped(RapeScript.Equipment[i])
-        PlayerRef.EquipItemEx(RapeScript.Equipment[i])
-        Utility.Wait(0.2)
+event zzzmoa_sexlab_Rape_Ending(int tid, bool HasPlayer)
+  if (RapeScript.bIsBusy && HasPlayer)
+    ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Rape scene is ending.")
+    utility.wait(1.0)
+    Int i = RapeScript.Equipment.length ;because sexlab stuck when doing this until player open a game menu.
+    while i > 0
+      i -= 1
+      if RapeScript.Equipment[i] As Armor
+        if PlayerRef.GetItemCount(RapeScript.Equipment[i]) > 0 && !PlayerRef.IsEquipped(RapeScript.Equipment[i])
+          PlayerRef.EquipItemEx(RapeScript.Equipment[i])
+          Utility.Wait(0.2)
+        endif
       endif
-    endif
-  endwhile
-  Game.SetPlayerAIDriven(False)
-  Game.SetPlayerAIDriven(True)
+    endwhile
+    Game.SetPlayerAIDriven(False)
+    Game.SetPlayerAIDriven(True)
+  endif
+endevent
+
+event zzzmoa_ostim_Rape_End(string eventName, string argString, float argNum, form sender)
+  if RapeScript.bIsBusy
+    ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Rape scene ended.")
+    RapeScript.bIsBusy = False
+  endif
 endevent
 
 function AutoRemoveItem(Int i) ;trade without menu

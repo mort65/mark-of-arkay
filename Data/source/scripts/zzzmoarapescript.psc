@@ -203,7 +203,10 @@ Actor[] function fixActorArray(Actor[] Actors, Bool bRandomLen=False)
   int i = j
   while i > 0
     i -= 1
-    if (!Actors[i] || (Actors[i] == none) || Actors[i].IsDead())
+    if ((i > 0) && (Actors.rfind(Actors[i], i - 1) > -1))
+      Actors[i] = none
+      j -= 1
+    elseif (!Actors[i] || (Actors[i] == none) || Actors[i].IsDead())
       j -= 1
     endif
   endwhile

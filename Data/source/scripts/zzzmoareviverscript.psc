@@ -1081,15 +1081,16 @@ function RevivePlayer(Bool bRevive)
     bIsraped = RapeScript.rapePlayer(rapistActors)
     if bIsraped
       int i = Utility.randomInt(0, (ConfigMenu.fMaxRapes - 1) As int)
-      while i > 0
+      while bIsraped && (i > 0)
         Game.DisablePlayerControls(abMovement=True, abFighting=True, abCamSwitch=True, abLooking=False, abSneaking=True, abMenu=True, abActivate=True, abJournalTabs=False)
         if !rapistActors || (!rapistActors[0] || (rapistActors[0] == None)) || ((ConfigMenu.fMaxRapists > 1.0) && (!rapistActors[1] || (rapistActors[1] == None)))
           rapistActors = RapeScript.getRapists(PlayerRef, Attacker, false)
         endif
         RapeScript.shuffleActorArray(rapistActors)
-        RapeScript.rapePlayer(rapistActors)
+        bIsraped = RapeScript.rapePlayer(rapistActors)
         i -= 1
       endwhile
+	  bIsraped = true
     endif
     PlayerRef.RemoveFromFaction(RapeScript.CalmFaction)
     Attacker && Attacker.RemoveFromFaction(RapeScript.CalmFaction)
@@ -1101,8 +1102,8 @@ function RevivePlayer(Bool bRevive)
     endif
     ConfigMenu.bIsLoggingEnabled && Debug.trace("MarkOfArkay: Player raped = " + bIsraped)
   endif
-  Bool bSendToSlavery = bSendToSlavery()
-  Bool bSendToDreamWorld = bSendToDreamWorld()
+  Bool bSendToSlavery = (!bRevive && bSendToSlavery())
+  Bool bSendToDreamWorld = (!bRevive && bSendToDreamWorld())
   if bRevive || bSendToSlavery || bSendToDreamWorld
     if ConfigMenu.bShiftBack
       ShiftBack()
@@ -1125,7 +1126,9 @@ function RevivePlayer(Bool bRevive)
       endif
       bSacrifice = False
     endif
-    if (bSendToSlavery || bSendToDreamWorld)
+    if bRevive
+      Restore(iRevivePlayer=1, bReviveFollower=ConfigMenu.bPlayerProtectFollower, bEffect=ConfigMenu.bIsEffectEnabled, bWait=PlayerRef.GetActorValue("Paralysis") As Bool, sTrace="MarkOfArkay: Player is revived.")
+    elseif (bSendToSlavery || bSendToDreamWorld)
       Restore(iRevivePlayer=1, bReviveFollower=1, bEffect=False, bWait=PlayerRef.GetActorValue("Paralysis") As Bool, sTrace=("MarkOfArkay: Player is enslaved by " + Attacker))
       if bSendToSlavery
         Debug.TraceConditional("MarkOfArkay: Player enslaved.", ConfigMenu.bIsLoggingEnabled)
@@ -1134,8 +1137,6 @@ function RevivePlayer(Bool bRevive)
         Debug.TraceConditional("MarkOfArkay: Player visited the dreamworld.", ConfigMenu.bIsLoggingEnabled)
         sendModEvent("SDDreamworldPull")
       endif
-    else
-      Restore(iRevivePlayer=1, bReviveFollower=ConfigMenu.bPlayerProtectFollower, bEffect=ConfigMenu.bIsEffectEnabled, bWait=PlayerRef.GetActorValue("Paralysis") As Bool, sTrace="MarkOfArkay: Player is revived.")
     endif
     return
   else

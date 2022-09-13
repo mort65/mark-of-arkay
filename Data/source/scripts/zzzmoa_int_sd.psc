@@ -7,7 +7,7 @@ endfunction
 Bool function isDreaming(Location Dreamworld) Global
   if Dreamworld
     if Game.GetPlayer().GetCurrentLocation()
-      if Game.GetPlayer().GetCurrentLocation().IsSameLocation(Dreamworld)
+      if Game.GetPlayer().GetCurrentLocation() == Dreamworld
         return true
       endif
     endif

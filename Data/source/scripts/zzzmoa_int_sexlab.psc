@@ -103,21 +103,7 @@ Bool function RapeSL(Quest SexLabQuestFramework, Actor[] rapists, Actor victimRe
       rapist4 = Rapists[3]
       actors[4] = Rapists[3]
     endif
-    if Rapists.length == 1
-      Form ItemRef = victimRef.GetWornForm(32)
-      if ItemRef as Armor
-        victimRef.UnequipItemSlot(32) ;to prevent freeze
-        utility.wait(0.2)
-        if !SLFramework.IsStrippable(ItemRef)
-          victimRef.EquipItemEx(ItemRef)
-          utility.wait(0.2)
-        endif
-      endif
-      if SLFramework.QuickStart(Actor1=victimRef, Actor2=rapist1, Victim=victimRef, Hook=sHook, AnimationTags=tags) != None
-        return True
-      endif
-      return False
-    else
+    if Rapists.length > 0
       int rapistIndex = Rapists.length
       Int FemaleCount
       Int MaleCount
@@ -196,6 +182,13 @@ Bool function RapeSL(Quest SexLabQuestFramework, Actor[] rapists, Actor victimRe
           endif
           if SLFramework.StartSex(Positions, animations, VictimRef, VictimRef As ObjectReference, True, sHook) > -1
             return True
+          else
+            if (ItemRef as Armor)
+              if ((victimRef.GetItemCount(ItemRef) > 0) && !victimRef.IsEquipped(ItemRef))
+                victimRef.EquipItemEx(ItemRef)
+                Utility.Wait(0.2)
+              endif
+            endif
           endif
           return False
         endif

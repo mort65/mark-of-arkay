@@ -69,6 +69,7 @@ Some of the MCM settings can be locked from the debug page. You can set a maximu
     Flower Girls
     OStim
     Simple Slavery ++
+    Sanguine Debauchery enhanced: SD+ 
 
 
 **Compatibility**

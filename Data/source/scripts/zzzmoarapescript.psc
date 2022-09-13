@@ -307,7 +307,7 @@ Actor[] function getRapists(Actor Victim, Actor Attacker, Bool bReset=False)
           String raceKey = ReviveScript.SexLabInterface.getRaceKey(rapists[0])
           if raceKey != ""
             rapist = ReviveScript.SexLabInterface.FindRapistCreature(raceKey, Victim as ObjectReference, 5000.0, 2, Victim, rapists[0], rapists[1], rapists[2])
-            if isRapistValid(rapist)
+            if isRapistValid(rapist) && (rapists.find(rapist) < 0)
               race creaturerace = rapist.GetLeveledActorBase().GetRace()
               race Attackerrace = Attacker.GetLeveledActorBase().GetRace()
               if (creatureRace == AttackerRace) || ReviveScript.SexLabInterface.AllowedCreatureCombination(AttackerRace, creatureRace)
@@ -322,7 +322,7 @@ Actor[] function getRapists(Actor Victim, Actor Attacker, Bool bReset=False)
           endif
         else
           rapist = ReviveScript.SexLabInterface.FindRapist(Victim as ObjectReference, 5000.0, ConfigMenu.iRapistGender - 1, Victim, rapists[0], rapists[1], rapists[2])
-          if isRapistValid(rapist) && (!ConfigMenu.bOnlyHostilesRape || (!rapist.IsHostileToActor(Attacker) && (rapist.GetFactionReaction(Attacker) > 1)))
+          if isRapistValid(rapist) && (rapists.find(rapist) < 0) && (!ConfigMenu.bOnlyHostilesRape || (!rapist.IsHostileToActor(Attacker) && (rapist.GetFactionReaction(Attacker) > 1)))
             k = rapists.find(None)
             if k > -1
               rapists[k] = rapist
@@ -346,7 +346,7 @@ Actor[] function getRapists(Actor Victim, Actor Attacker, Bool bReset=False)
         endwhile
         if !bBreak
           rapist = FindAvailableActor(Victim as ObjectReference, 5000.0, 0, Victim, rapists[0], rapists[1], rapists[2])
-          if isRapistValid(rapist) && (!ConfigMenu.bOnlyHostilesRape || (!rapist.IsHostileToActor(Attacker) && (rapist.GetFactionReaction(Attacker) > 1)))
+          if isRapistValid(rapist) && (rapists.find(rapist) < 0) && (!ConfigMenu.bOnlyHostilesRape || (!rapist.IsHostileToActor(Attacker) && (rapist.GetFactionReaction(Attacker) > 1)))
             k = rapists.find(None)
             if k > -1
               rapists[k] = rapist

@@ -1483,6 +1483,9 @@ Bool function bIsLocForbidden(Location akLoc)
 endfunction
 
 Bool function bIsRespawnForbidden(Location akLoc)
+  if ReviveScript.SDInterface.isDreaming()
+    return True
+  endif
   Int iIndex = ReviveScript.LocationBlackList2.GetSize()
   while iIndex > 0
     iIndex -= 1

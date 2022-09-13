@@ -83,6 +83,7 @@ Bool property bIsRagdollEnabled=False auto Hidden
 Bool property bIsRecallRestricted=True auto Hidden
 Bool property bIsRevivalEnabled=True auto Hidden
 Bool property bIsRevivalRequiresBlessing=False auto Hidden
+Bool property bIsSDActive=False auto hidden
 Bool property bIsSexlabActive=False auto Hidden
 Bool property bIsTradeEnabled=True auto Hidden
 Bool property bIsUpdating=False auto Hidden
@@ -203,6 +204,7 @@ Float property fRespawnCounterSlider=0.0 auto Hidden
 Float property fRespawnTimeSlider=0.0 auto Hidden
 Float property fScrollChanceSlider=25.0 auto Hidden
 Float property fSimpleSlaveryChanceSlider=0.0 auto Hidden
+Float property fSDreamWorldChanceSlider=0.0 auto Hidden
 Float property fSkillReduceMaxValSlider=1.0 auto Hidden
 Float property fSkillReduceMinValSlider=0.0 auto Hidden
 Float property fSkillReduceValSlider=10.0 auto Hidden
@@ -471,6 +473,7 @@ Int oidShiftBack
 Int oidShiftBackRespawn
 Int oidShowRaceMenu
 Int oidSimpleSlaveryChanceSlider
+Int oidSDreamWorldChanceSlider
 Int oidSkillReduceMaxValSlider
 Int oidSkillReduceMinValSlider
 Int oidSkillReduceRandomVal
@@ -1017,6 +1020,10 @@ event OnOptionDefault(Int option)
     fSimpleSlaveryChanceSlider = 0.0
     _SetSliderOptionValue(oidSimpleSlaveryChanceSlider, fSimpleSlaveryChanceSlider, "$mrt_MarkofArkay_SimpleSlaveryChanceSlider_2")
     ForcePageReset()
+  elseif (option == oidSDreamWorldChanceSlider)
+    fSDreamWorldChanceSlider = 0.0
+    _SetSliderOptionValue(oidSDreamWorldChanceSlider, fSDreamWorldChanceSlider, "$mrt_MarkofArkay_SDreamWorldChanceSlider_2")
+    ForcePageReset()
   elseif (option == oidRapeChanceSlider)
     fRapeChanceSlider = 0.0
     _SetSliderOptionValue(oidRapeChanceSlider, fRapeChanceSlider, "$mrt_MarkofArkay_RapeChanceSlider_2")
@@ -1554,6 +1561,8 @@ event OnOptionHighlight(Int option)
     SetInfoText("$mrt_MarkofArkay_DESC_BossChestChanceSlider")
   elseif (option == oidSimpleSlaveryChanceSlider)
     SetInfoText("$mrt_MarkofArkay_DESC_SimpleSlaveryChanceSlider")
+  elseif (option == oidSDreamWorldChanceSlider)
+    SetInfoText("$mrt_MarkofArkay_DESC_SDreamWorldChanceSlider")
   elseif (option == oidRapeChanceSlider)
     SetInfoText("$mrt_MarkofArkay_DESC_RapeChanceSlider")
   elseif (option == oidRapesMaxSlider)
@@ -2758,6 +2767,10 @@ event OnOptionSliderAccept(int option, Float value)
     fSimpleSlaveryChanceSlider = value
     _SetSliderOptionValue(oidSimpleSlaveryChanceSlider, fSimpleSlaveryChanceSlider, "$mrt_MarkofArkay_SimpleSlaveryChanceSlider_2")
     ForcePageReset()
+  elseif (option == oidSDreamWorldChanceSlider)
+    fSDreamWorldChanceSlider = value
+    _SetSliderOptionValue(oidSDreamWorldChanceSlider, fSDreamWorldChanceSlider, "$mrt_MarkofArkay_SDreamWorldChanceSlider_2")
+    ForcePageReset()
   elseif (option == oidRapeChanceSlider)
     fRapeChanceSlider = value
     _SetSliderOptionValue(oidRapeChanceSlider, fRapeChanceSlider, "$mrt_MarkofArkay_RapeChanceSlider_2")
@@ -2994,6 +3007,11 @@ event OnOptionSliderOpen(Int option)
     SetSliderDialogInterval(1.0)
   elseif (option == oidSimpleSlaveryChanceSlider)
     SetSliderDialogStartValue(fSimpleSlaveryChanceSlider)
+    SetSliderDialogDefaultValue(0.0)
+    SetSliderDialogRange(0.0, 100.0)
+    SetSliderDialogInterval(1.0)
+  elseif (option == oidSDreamWorldChanceSlider)
+    SetSliderDialogStartValue(fSDreamWorldChanceSlider)
     SetSliderDialogDefaultValue(0.0)
     SetSliderDialogRange(0.0, 100.0)
     SetSliderDialogInterval(1.0)
@@ -3866,36 +3884,43 @@ event OnPageReset(String page)
     endif
     oidSimpleSlaveryChanceSlider = AddSliderOption("$mrt_MarkofArkay_SimpleSlaveryChanceSlider_1", fSimpleSlaveryChanceSlider, "$mrt_MarkofArkay_SimpleSlaveryChanceSlider_2", flags)
     SetCursorPosition(29)
-    if (moaState.getValue() == 1) && bIsRevivalEnabled && (iNotTradingAftermath == 1) && fRapeChanceSlider > 0.0 && fSimpleSlaveryChanceSlider > 0.0
+    if (moaState.getValue() == 1) && bIsRevivalEnabled && (iNotTradingAftermath == 1) && bIsSDActive
+      flags = OPTION_FLAG_NONE
+    else
+      flags = OPTION_FLAG_DISABLED
+    endif
+    oidSDreamWorldChanceSlider = AddSliderOption("$mrt_MarkofArkay_SDreamWorldChanceSlider_1", fSDreamWorldChanceSlider, "$mrt_MarkofArkay_SDreamWorldChanceSlider_2", flags)	
+	SetCursorPosition(31)
+    if (moaState.getValue() == 1) && bIsRevivalEnabled && (iNotTradingAftermath == 1) && fRapeChanceSlider > 0.0 && ((fSimpleSlaveryChanceSlider > 0.0) || (fSDreamWorldChanceSlider > 0.0))
       flags = OPTION_FLAG_NONE
     else
       flags = OPTION_FLAG_DISABLED
     endif
     oidSlaveryOnlyAfterRape = AddToggleOption("$mrt_MarkofArkay_SlaveryOnlyAfterRape", bSlaveryOnlyAfterRape, flags)
-    SetCursorPosition(31)
+    SetCursorPosition(33)
     if (moaState.getValue() == 1) && bIsRevivalEnabled && (iNotTradingAftermath == 1) && fSimpleSlaveryChanceSlider > 0.0
       flags = OPTION_FLAG_NONE
     else
       flags = OPTION_FLAG_DISABLED
     endif
     oidOnlyEnslavedByEnemyFaction = AddToggleOption("$mrt_MarkofArkay_OnlyEnslavedByEnemyFaction", bOnlyEnslavedByEnemyFaction, flags)
-    SetCursorPosition(35)
-    _AddHeaderOption("$mrt_MarkofArkay_Boss_Chest")
     SetCursorPosition(37)
+    _AddHeaderOption("$mrt_MarkofArkay_Boss_Chest")
+    SetCursorPosition(39)
     if (moaState.getValue() == 1) && bIsRevivalEnabled && (iNotTradingAftermath == 1)
       flags = OPTION_FLAG_NONE
     else
       flags = OPTION_FLAG_DISABLED
     endif
     oidBossChestChanceSlider = AddSliderOption("$mrt_MarkofArkay_BossChestChanceSlider_1", fBossChestChanceSlider, "$mrt_MarkofArkay_BossChestChanceSlider_2", flags)
-    SetCursorPosition(39)
+    SetCursorPosition(41)
     if (moaState.getValue() == 1) && bIsRevivalEnabled && (iNotTradingAftermath == 1) && fBossChestChanceSlider > 0.0
       flags = OPTION_FLAG_NONE
     else
       flags = OPTION_FLAG_DISABLED
     endif
     oidBossChestNotClearedLoc = AddToggleOption("$mrt_MarkofArkay_BossChestNotClearedLoc", bBossChestNotInClearedLoc, flags)
-    SetCursorPosition(41)
+    SetCursorPosition(43)
     oidBossChestOnlyCurLoc = AddToggleOption("$mrt_MarkofArkay_BossChestOnlyCurLoc", bBossChestOnlyCurLoc, flags)
   elseif (page == "$Debug")
     SetCursorPosition(0)
@@ -3923,7 +3948,7 @@ event OnPageReset(String page)
     endif
     oidRestoreItems = _AddTextOption("$mrt_MarkofArkay_RestoreItems", "", flags)
     SetCursorPosition(10)
-    if PlayerRef.GetCurrentLocation() && !ReviveScript.LocationBlackList.HasForm(PlayerRef.GetCurrentLocation())
+    if PlayerRef.GetCurrentLocation() && !ReviveScript.LocationBlackList.HasForm(PlayerRef.GetCurrentLocation()) && !ReviveScript.SDInterface.isDreaming()
       _AddHeaderOption(shortenString(PlayerRef.GetCurrentLocation().GetName(), 59))
       SetCursorPosition(12)
       if (ReviveScript.LocationBlackList2.Find(PlayerRef.GetCurrentLocation()) > -1) || (bPUOK && JsonUtil.FormListHas("/MarkofArkay/MOA_BlackLists", "LocationBlackList", PlayerRef.GetCurrentLocation()))
@@ -4965,6 +4990,8 @@ Bool function bCheckFissErrors(String strErrors)
       fHealthPercTrigger = 0.00
     elseif strError == "Element fSimpleSlaveryChanceSlider not found"
       fSimpleSlaveryChanceSlider = 0.00
+    elseif strError == "Element fSDreamWorldChanceSlider not found"
+      fSDreamWorldChanceSlider = 0.00
     elseif strError == "Element fRapeChanceSlider not found"
       fRapeChanceSlider = 0.00
     elseif strError == "Element fMaxRapes not found"
@@ -5307,6 +5334,7 @@ Bool function bLoadUserSettings(String sFileName)
   fLowerNPCMaxLvlDiff = checkFloat(fiss.loadFloat("fLowerNPCMaxLvlDiff"), 0, 200, 10)
   fHealthPercTrigger = checkFloat(fiss.loadFloat("fHealthPercTrigger"), 0, 25, 0)
   fSimpleSlaveryChanceSlider = checkFloat(fiss.loadFloat("fSimpleSlaveryChanceSlider"), 0, 100, 0)
+  fSDreamWorldChanceSlider = checkFloat(fiss.loadFloat("fSDreamWorldChanceSlider"), 0, 100, 0)
   fRapeChanceSlider = checkFloat(fiss.loadFloat("fRapeChanceSlider"), 0, 100, 0)
   fMaxRapes = checkFloat(fiss.loadFloat("fMaxRapes"), 1, 5, 1)
   fMaxRapists = checkFloat(fiss.loadFloat("fMaxRapists"), 1, 4, 1)
@@ -5570,6 +5598,7 @@ bool function bSaveUserSettings(String sFileName)
   fiss.saveFloat("fBossChestChanceSlider", fBossChestChanceSlider)
   fiss.saveFloat("fHealthPercTrigger", fHealthPercTrigger)
   fiss.saveFloat("fSimpleSlaveryChanceSlider", fSimpleSlaveryChanceSlider)
+  fiss.saveFloat("fSDreamWorldChanceSlider", fSDreamWorldChanceSlider)
   fiss.saveFloat("fRapeChanceSlider", fRapeChanceSlider)
   fiss.saveFloat("fMaxRapes", fMaxRapes)
   fiss.saveFloat("fMaxRapists", fMaxRapists)

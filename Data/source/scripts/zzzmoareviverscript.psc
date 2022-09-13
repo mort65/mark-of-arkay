@@ -82,6 +82,7 @@ Quest property ReviverQuest auto
 Form property RightHandEquipedItem auto Hidden
 Actor property Runil auto
 Faction property RunilMerchantFaction auto
+zzzmoa_sd_interface property SDInterface auto
 Scroll property SacrificeScroll auto
 zzzmoasexlabinterface property SexLabInterface auto
 zzzmoaskillcursescript property SkillScript auto Hidden
@@ -502,6 +503,13 @@ event OnUpdate()
   endif
 endevent
 
+event zzzmoa_ostim_Rape_End(string eventName, string argString, float argNum, form sender)
+  if RapeScript.bIsBusy
+    ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Rape scene ended.")
+    RapeScript.bIsBusy = False
+  endif
+endevent
+
 event zzzmoa_sexlab_Rape_End(int tid, bool HasPlayer)
   if (RapeScript.bIsBusy && HasPlayer)
     ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Rape scene ended.")
@@ -525,13 +533,6 @@ event zzzmoa_sexlab_Rape_Ending(int tid, bool HasPlayer)
     endwhile
     Game.SetPlayerAIDriven(False)
     Game.SetPlayerAIDriven(True)
-  endif
-endevent
-
-event zzzmoa_ostim_Rape_End(string eventName, string argString, float argNum, form sender)
-  if RapeScript.bIsBusy
-    ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Rape scene ended.")
-    RapeScript.bIsBusy = False
   endif
 endevent
 
@@ -1101,8 +1102,9 @@ function RevivePlayer(Bool bRevive)
     ConfigMenu.bIsLoggingEnabled && Debug.trace("MarkOfArkay: Player raped = " + bIsraped)
   endif
   Bool bSendToSlavery = bSendToSlavery()
-  if bRevive || bSendToSlavery
-    if ConfigMenu.bShiftBack || bSendToSlavery
+  Bool bSendToDreamWorld = bSendToDreamWorld()
+  if bRevive || bSendToSlavery || bSendToDreamWorld
+    if ConfigMenu.bShiftBack
       ShiftBack()
     endif
     if !bHasAutoReviveEffect || bSacrifice
@@ -1123,9 +1125,13 @@ function RevivePlayer(Bool bRevive)
       endif
       bSacrifice = False
     endif
-    if bSendToSlavery
+    if (bSendToSlavery || bSendToDreamWorld)
       Restore(iRevivePlayer=1, bReviveFollower=1, bEffect=False, bWait=PlayerRef.GetActorValue("Paralysis") As Bool, sTrace=("MarkOfArkay: Player is enslaved by " + Attacker))
-      sendModEvent("SSLV Entry")
+      if bSendToSlavery
+        sendModEvent("SSLV Entry")
+      elseif bSendToDreamWorld
+        sendModEvent("SDDreamworldPull")
+      endif
     else
       Restore(iRevivePlayer=1, bReviveFollower=ConfigMenu.bPlayerProtectFollower, bEffect=ConfigMenu.bIsEffectEnabled, bWait=PlayerRef.GetActorValue("Paralysis") As Bool, sTrace="MarkOfArkay: Player is revived.")
     endif
@@ -1761,19 +1767,6 @@ function ShowNotification()
       if (strRemovedItem == "Dragon Soul")
         Debug.Notification("$mrt_MarkofArkay_Notification_DragonSoul_Removed")
         Debug.Notification(iDragonSoulCost)
-
-        ;ElseIf (strRemovedItem == "Arkay Mark")
-        ;	Debug.Notification("$mrt_MarkofArkay_Notification_ArkayMark_Removed" )
-        ;	Debug.Notification( iArkayMarkCost)
-        ;ElseIf (strRemovedItem == "Black Soul Gem")
-        ;	Debug.Notification( "$mrt_MarkofArkay_Notification_BSoulGem_Removed"  )
-        ;	Debug.Notification( iBSoulGemCost )
-        ;ElseIf (strRemovedItem == "Grand Soul Gem")
-        ;	Debug.Notification( "$mrt_MarkofArkay_Notification_GSoulGem_Removed" )
-        ;	Debug.Notification(iGSoulGemCost )
-        ;ElseIf (strRemovedItem == "Septim")
-        ;	Debug.Notification( "$mrt_MarkofArkay_Notification_Septim_Removed" )
-        ;	Debug.Notification( iSeptimCost )
       endif
     endif
     if (bArkayMarkRevive)
@@ -1961,8 +1954,21 @@ Bool function bRape()
   return False
 endfunction
 
+Bool function bSendToDreamWorld()
+  if ((ConfigMenu.bShiftBack || !NPCScript.bInBeastForm()) && !bSacrifice && !bHasAutoReviveEffect)
+    if ConfigMenu.bIsSDActive && SDInterface.isDreamed() && !SDInterface.isDreaming()
+      if Utility.RandomInt(0, 99) < ConfigMenu.fSDreamWorldChanceSlider
+        if bIsraped || !ConfigMenu.bSlaveryOnlyAfterRape
+          return True
+        endif
+      endif
+    endif
+  endif
+  return False
+endfunction
+
 Bool function bSendToSlavery()
-  if Attacker != None
+  if ((Attacker != None) && (ConfigMenu.bShiftBack || !NPCScript.bInBeastForm()) && !bSacrifice && !bHasAutoReviveEffect)
     if Utility.RandomInt(0, 99) < ConfigMenu.fSimpleSlaveryChanceSlider
       if (PlayerRef.GetDistance(Attacker) < 10000.0) || (Attacker.GetParentCell() == PlayerRef.GetParentCell())
         if bIsraped || !ConfigMenu.bSlaveryOnlyAfterRape

@@ -1128,8 +1128,10 @@ function RevivePlayer(Bool bRevive)
     if (bSendToSlavery || bSendToDreamWorld)
       Restore(iRevivePlayer=1, bReviveFollower=1, bEffect=False, bWait=PlayerRef.GetActorValue("Paralysis") As Bool, sTrace=("MarkOfArkay: Player is enslaved by " + Attacker))
       if bSendToSlavery
+        Debug.TraceConditional("MarkOfArkay: Player enslaved.", ConfigMenu.bIsLoggingEnabled)
         sendModEvent("SSLV Entry")
       elseif bSendToDreamWorld
+        Debug.TraceConditional("MarkOfArkay: Player visited the dreamworld.", ConfigMenu.bIsLoggingEnabled)
         sendModEvent("SDDreamworldPull")
       endif
     else

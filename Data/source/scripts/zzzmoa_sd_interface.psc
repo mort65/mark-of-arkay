@@ -7,8 +7,6 @@ event OnEndState()
   Utility.Wait(5.0) ; Wait before entering active state to help avoid making function calls to scripts that may not have initialized yet.
   DreamQuest = Game.GetFormFromFile(0x03e470, "sanguinesDebauchery.esp") as Quest ; Get quest now
   Dreamworld = Game.GetFormFromFile(0x1ed39c, "sanguinesDebauchery.esp") as Location
-  debug.trace("DreamQuest:"+DreamQuest)
-  debug.trace("Dreamworld:"+Dreamworld)
 endevent
 
 event OnInit()

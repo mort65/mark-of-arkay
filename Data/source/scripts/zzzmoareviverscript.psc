@@ -1136,10 +1136,10 @@ function RevivePlayer(Bool bRevive)
           bSendToDreamWorld = false
         endif
       endif
-      Restore(iRevivePlayer=1, bReviveFollower=1, bEffect=False, bWait=PlayerRef.GetActorValue("Paralysis") As Bool, sTrace=("MarkOfArkay: Player is enslaved by " + Attacker))
       FastFadeOut.Apply()
       Utility.Wait(1.0)
       FastFadeOut.PopTo(BlackScreen)
+      Restore(iRevivePlayer=1, bReviveFollower=1, bEffect=False, bWait=PlayerRef.GetActorValue("Paralysis") As Bool, sTrace=("MarkOfArkay: Player is enslaved by " + Attacker))
       if bSendToSlavery
         Debug.TraceConditional("MarkOfArkay: Player enslaved.", ConfigMenu.bIsLoggingEnabled)
         sendModEvent("SSLV Entry")

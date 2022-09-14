@@ -211,6 +211,7 @@ Actor[] function fixActorArray(Actor[] Actors, Bool bRandomLen=False)
     endif
   endwhile
   if j < 1
+    ActorsArray = new Actor[4]
     return ActorsArray
   endif
   if j > 3

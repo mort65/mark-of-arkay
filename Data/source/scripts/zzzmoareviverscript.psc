@@ -1090,7 +1090,7 @@ function RevivePlayer(Bool bRevive)
         bIsraped = RapeScript.rapePlayer(rapistActors)
         i -= 1
       endwhile
-	  bIsraped = true
+      bIsraped = true
     endif
     PlayerRef.RemoveFromFaction(RapeScript.CalmFaction)
     Attacker && Attacker.RemoveFromFaction(RapeScript.CalmFaction)
@@ -1129,7 +1129,17 @@ function RevivePlayer(Bool bRevive)
     if bRevive
       Restore(iRevivePlayer=1, bReviveFollower=ConfigMenu.bPlayerProtectFollower, bEffect=ConfigMenu.bIsEffectEnabled, bWait=PlayerRef.GetActorValue("Paralysis") As Bool, sTrace="MarkOfArkay: Player is revived.")
     elseif (bSendToSlavery || bSendToDreamWorld)
+      if (bSendToSlavery && bSendToDreamWorld)
+        if utility.randomint(0, 1) == 1
+          bSendToSlavery = false
+        else
+          bSendToDreamWorld = false
+        endif
+      endif
       Restore(iRevivePlayer=1, bReviveFollower=1, bEffect=False, bWait=PlayerRef.GetActorValue("Paralysis") As Bool, sTrace=("MarkOfArkay: Player is enslaved by " + Attacker))
+      FastFadeOut.Apply()
+      Utility.Wait(1.0)
+      FastFadeOut.PopTo(BlackScreen)
       if bSendToSlavery
         Debug.TraceConditional("MarkOfArkay: Player enslaved.", ConfigMenu.bIsLoggingEnabled)
         sendModEvent("SSLV Entry")
@@ -1137,6 +1147,8 @@ function RevivePlayer(Bool bRevive)
         Debug.TraceConditional("MarkOfArkay: Player visited the dreamworld.", ConfigMenu.bIsLoggingEnabled)
         sendModEvent("SDDreamworldPull")
       endif
+      utility.wait(6.0)
+      BlackScreen.PopTo(FadeIn)
     endif
     return
   else

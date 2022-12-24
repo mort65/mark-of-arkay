@@ -279,7 +279,10 @@ Actor[] function getRapists(Actor Victim, Actor Attacker, Bool bReset=False)
     Unpacify()
     keepControlsDisabled(1.0, true, true, true, false, true, true, true, false, true)
   endif
-  Bool bCreature = ((getInteface() == "sexlab") && !Attacker.HasKeywordString("actortypenpc") && ReviveScript.SexLabInterface.IsCreaturesAllowed() && ReviveScript.SexLabInterface.AllowedCreature(Attacker.GetLeveledActorBase().GetRace()))
+  Bool bCreature = False
+  if ConfigMenu.bAllowCreatureRape
+    bCreature = ((getInteface() == "sexlab") && !Attacker.HasKeywordString("actortypenpc") && ReviveScript.SexLabInterface.IsCreaturesAllowed() && ReviveScript.SexLabInterface.AllowedCreature(Attacker.GetLeveledActorBase().GetRace()))
+  endif
   CreatureRape.SetValueInt(bCreature As Int)
   NPCPacifier.Start()
   rapists = new Actor[4]
@@ -729,7 +732,6 @@ function shuffleActorArray(Actor[] Actors)
   if Actors.Length < 2
     return
   endif
-  i = Actors.Length
   while i > 1
     i -= 1
     int j = utility.RandomInt(0, i)

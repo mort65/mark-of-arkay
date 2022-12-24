@@ -34,6 +34,7 @@ Spell property SacrificePower auto
 ObjectReference property SleepMarker auto
 ObjectReference property ThiefMarker auto
 Bool property bARCCOK auto Hidden ;ARCC
+Bool property bAllowCreatureRape=False auto Hidden
 Bool property bAltEyeFix=False auto Hidden
 Bool property bAlwaysSpawn=False auto Hidden
 Bool property bArkayCurse=False auto Hidden
@@ -202,9 +203,9 @@ Float property fRecallCastSlider=0.0 auto Hidden
 Float property fRecoveryTimeSlider=1.0 auto Hidden
 Float property fRespawnCounterSlider=0.0 auto Hidden
 Float property fRespawnTimeSlider=0.0 auto Hidden
+Float property fSDreamWorldChanceSlider=0.0 auto Hidden
 Float property fScrollChanceSlider=25.0 auto Hidden
 Float property fSimpleSlaveryChanceSlider=0.0 auto Hidden
-Float property fSDreamWorldChanceSlider=0.0 auto Hidden
 Float property fSkillReduceMaxValSlider=1.0 auto Hidden
 Float property fSkillReduceMinValSlider=0.0 auto Hidden
 Float property fSkillReduceValSlider=10.0 auto Hidden
@@ -289,6 +290,7 @@ String[] property sRespawnPoints auto Hidden
 String[] property sTaverns auto Hidden
 
 Int flags
+Int oidAllowCreatureRape
 Int oidAltEyeFix
 Int oidAlwaysSpawn
 Int oidArkayCurse
@@ -460,6 +462,7 @@ Int oidResurrectActors
 Int oidRetrySpawnWithoutLocation
 Int oidRevivalEnabled
 Int oidRevivalRequireBlessing
+Int oidSDreamWorldChanceSlider
 Int oidSaveLock
 Int oidSavePreset1
 Int oidSavePreset2
@@ -473,7 +476,6 @@ Int oidShiftBack
 Int oidShiftBackRespawn
 Int oidShowRaceMenu
 Int oidSimpleSlaveryChanceSlider
-Int oidSDreamWorldChanceSlider
 Int oidSkillReduceMaxValSlider
 Int oidSkillReduceMinValSlider
 Int oidSkillReduceRandomVal
@@ -925,6 +927,9 @@ event OnOptionDefault(Int option)
   elseif (option == oidOnlyHostilesRape)
     bOnlyHostilesRape = True
     _SetToggleOptionValue(oidOnlyHostilesRape, bOnlyHostilesRape)
+  elseif (option == oidAllowCreatureRape)
+    bAllowCreatureRape = False
+    _SetToggleOptionValue(oidAllowCreatureRape, bAllowCreatureRape)
   elseif (option == oidAlwaysSpawn)
     bAlwaysSpawn = False
     _SetToggleOptionValue(oidAlwaysSpawn, bAlwaysSpawn)
@@ -1639,6 +1644,8 @@ event OnOptionHighlight(Int option)
     SetInfoText("$mrt_MarkofArkay_DESC_SlaveryOnlyAfterRape")
   elseif (option == oidOnlyHostilesRape)
     SetInfoText("$mrt_MarkofArkay_DESC_OnlyHostilesRape")
+  elseif (option == oidAllowCreatureRape)
+    SetInfoText("$mrt_MarkofArkay_DESC_AllowCreatureRape")
   elseif (option == oidAlwaysSpawn)
     SetInfoText("$mrt_MarkofArkay_DESC_AlwaysSpawn")
   elseif (option == oidOnlySpawn)
@@ -2250,6 +2257,9 @@ event OnOptionSelect(Int option)
   elseif (option == oidOnlyHostilesRape)
     bOnlyHostilesRape = !bOnlyHostilesRape
     _SetToggleOptionValue(oidOnlyHostilesRape, bOnlyHostilesRape)
+  elseif (option == oidAllowCreatureRape)
+    bAllowCreatureRape = !bAllowCreatureRape
+    _SetToggleOptionValue(oidAllowCreatureRape, bAllowCreatureRape)
   elseif (option == oidAlwaysSpawn)
     bAlwaysSpawn = !bAlwaysSpawn
     _SetToggleOptionValue(oidAlwaysSpawn, bAlwaysSpawn)
@@ -3089,9 +3099,10 @@ event OnPageReset(String page)
   if iCurStatus == 1
     _AddHeaderOption("$mrt_MarkofArkay_HEAD_Mod_Status_1")
     return
-  elseif iCurStatus == 2
-    _AddHeaderOption("$mrt_MarkofArkay_HEAD_Mod_Status_2")
-    return
+
+    ;elseif iCurStatus == 2
+    ;  _AddHeaderOption("$mrt_MarkofArkay_HEAD_Mod_Status_2")
+    ;  return
   endif
   setArrays()
   if (page == "$General")
@@ -3874,53 +3885,60 @@ event OnPageReset(String page)
     oidRapistsMaxSlider = AddSliderOption("$mrt_MarkofArkay_RapistsMaxSlider_1", fMaxRapists, "$mrt_MarkofArkay_RapistsMaxSlider_2", flags)
     SetCursorPosition(21)
     oidOnlyHostilesRape = AddToggleOption("$mrt_MarkofArkay_OnlyHostilesRape", bOnlyHostilesRape, flags)
-    SetCursorPosition(25)
-    _AddHeaderOption("$mrt_MarkofArkay_Simple_Slavery")
+    SetCursorPosition(23)
+    if (moaState.getValue() == 1) && bIsRevivalEnabled && (iNotTradingAftermath == 1) && (fRapeChanceSlider > 0.0) && (iGetCurSexInterface() == 0)
+      flags = OPTION_FLAG_NONE
+    else
+      flags = OPTION_FLAG_DISABLED
+    endif
+    oidAllowCreatureRape = AddToggleOption("$mrt_MarkofArkay_AllowCreatureRape", bAllowCreatureRape, flags)
     SetCursorPosition(27)
+    _AddHeaderOption("$mrt_MarkofArkay_Simple_Slavery")
+    SetCursorPosition(29)
     if (moaState.getValue() == 1) && bIsRevivalEnabled && (iNotTradingAftermath == 1)
       flags = OPTION_FLAG_NONE
     else
       flags = OPTION_FLAG_DISABLED
     endif
     oidSimpleSlaveryChanceSlider = AddSliderOption("$mrt_MarkofArkay_SimpleSlaveryChanceSlider_1", fSimpleSlaveryChanceSlider, "$mrt_MarkofArkay_SimpleSlaveryChanceSlider_2", flags)
-    SetCursorPosition(29)
+    SetCursorPosition(31)
     if (moaState.getValue() == 1) && bIsRevivalEnabled && (iNotTradingAftermath == 1) && bIsSDActive
       flags = OPTION_FLAG_NONE
     else
       flags = OPTION_FLAG_DISABLED
     endif
-    oidSDreamWorldChanceSlider = AddSliderOption("$mrt_MarkofArkay_SDreamWorldChanceSlider_1", fSDreamWorldChanceSlider, "$mrt_MarkofArkay_SDreamWorldChanceSlider_2", flags)	
-	SetCursorPosition(31)
+    oidSDreamWorldChanceSlider = AddSliderOption("$mrt_MarkofArkay_SDreamWorldChanceSlider_1", fSDreamWorldChanceSlider, "$mrt_MarkofArkay_SDreamWorldChanceSlider_2", flags)
+    SetCursorPosition(33)
     if (moaState.getValue() == 1) && bIsRevivalEnabled && (iNotTradingAftermath == 1) && fRapeChanceSlider > 0.0 && ((fSimpleSlaveryChanceSlider > 0.0) || (fSDreamWorldChanceSlider > 0.0))
       flags = OPTION_FLAG_NONE
     else
       flags = OPTION_FLAG_DISABLED
     endif
     oidSlaveryOnlyAfterRape = AddToggleOption("$mrt_MarkofArkay_SlaveryOnlyAfterRape", bSlaveryOnlyAfterRape, flags)
-    SetCursorPosition(33)
+    SetCursorPosition(35)
     if (moaState.getValue() == 1) && bIsRevivalEnabled && (iNotTradingAftermath == 1) && fSimpleSlaveryChanceSlider > 0.0
       flags = OPTION_FLAG_NONE
     else
       flags = OPTION_FLAG_DISABLED
     endif
     oidOnlyEnslavedByEnemyFaction = AddToggleOption("$mrt_MarkofArkay_OnlyEnslavedByEnemyFaction", bOnlyEnslavedByEnemyFaction, flags)
-    SetCursorPosition(37)
-    _AddHeaderOption("$mrt_MarkofArkay_Boss_Chest")
     SetCursorPosition(39)
+    _AddHeaderOption("$mrt_MarkofArkay_Boss_Chest")
+    SetCursorPosition(41)
     if (moaState.getValue() == 1) && bIsRevivalEnabled && (iNotTradingAftermath == 1)
       flags = OPTION_FLAG_NONE
     else
       flags = OPTION_FLAG_DISABLED
     endif
     oidBossChestChanceSlider = AddSliderOption("$mrt_MarkofArkay_BossChestChanceSlider_1", fBossChestChanceSlider, "$mrt_MarkofArkay_BossChestChanceSlider_2", flags)
-    SetCursorPosition(41)
+    SetCursorPosition(43)
     if (moaState.getValue() == 1) && bIsRevivalEnabled && (iNotTradingAftermath == 1) && fBossChestChanceSlider > 0.0
       flags = OPTION_FLAG_NONE
     else
       flags = OPTION_FLAG_DISABLED
     endif
     oidBossChestNotClearedLoc = AddToggleOption("$mrt_MarkofArkay_BossChestNotClearedLoc", bBossChestNotInClearedLoc, flags)
-    SetCursorPosition(43)
+    SetCursorPosition(45)
     oidBossChestOnlyCurLoc = AddToggleOption("$mrt_MarkofArkay_BossChestOnlyCurLoc", bBossChestOnlyCurLoc, flags)
   elseif (page == "$Debug")
     SetCursorPosition(0)
@@ -4539,6 +4557,7 @@ function LoadDefaultSettings()
   bOnlyEnslavedByEnemyFaction = False
   bSlaveryOnlyAfterRape = False
   bOnlyHostilesRape = True
+  bAllowCreatureRape = False
   fHealthPercTrigger = 0.00
   bExcludeQuestItems = True
   bLoseItem = False
@@ -5051,6 +5070,8 @@ Bool function bCheckFissErrors(String strErrors)
       bSlaveryOnlyAfterRape = False
     elseif strError == "Element bOnlyHostilesRape not found"
       bOnlyHostilesRape = True
+    elseif strError == "Element bAllowCreatureRape not found"
+      bAllowCreatureRape = False
     elseif strError == "Element bNPCHasLevelRange not found"
       bNPCHasLevelRange = True
       moaNPCHasLevelRange.SetValueInt(0)
@@ -5373,6 +5394,7 @@ Bool function bLoadUserSettings(String sFileName)
   bOnlyEnslavedByEnemyFaction = fiss.loadBool("bOnlyEnslavedByEnemyFaction")
   bSlaveryOnlyAfterRape = fiss.loadBool("bSlaveryOnlyAfterRape")
   bOnlyHostilesRape = fiss.loadBool("bOnlyHostilesRape")
+  bAllowCreatureRape = fiss.loadBool("bAllowCreatureRape")
   bAlwaysSpawn = fiss.loadBool("bAlwaysSpawn")
   bOnlySpawn = fiss.loadBool("bOnlySpawn")
   bDisableUnsafe = fiss.loadBool("bDisableUnsafe")
@@ -5634,6 +5656,7 @@ bool function bSaveUserSettings(String sFileName)
   fiss.SaveBool("bOnlyEnslavedByEnemyFaction", bOnlyEnslavedByEnemyFaction)
   fiss.SaveBool("bSlaveryOnlyAfterRape", bSlaveryOnlyAfterRape)
   fiss.SaveBool("bOnlyHostilesRape", bOnlyHostilesRape)
+  fiss.SaveBool("bAllowCreatureRape", bAllowCreatureRape)
   fiss.SaveBool("bAlwaysSpawn", bAlwaysSpawn)
   fiss.SaveBool("bOnlySpawn", bOnlySpawn)
   fiss.saveBool("bDoNotStopCombat", bDoNotStopCombat)
@@ -5744,14 +5767,16 @@ Int function iGetCurSexInterface()
   return -1
 endfunction
 
+;1=busy, 2=combat
 Int function iGetModStatus()
   if moaIsBusy.GetValue() || (moaState.GetValue() == 1 && (PlayerRef.IsBleedingOut() || moaBleedoutHandlerState.GetValue() != 0 || ReviveScript.GetState() != "" || (moaCheckingMarkers.GetValue() != 0.0)))
-    return 2
-  endif
-  PlayerRef.GetCombatState()
-  if PlayerRef.GetCombatState() == 1
     return 1
   endif
+
+  ;PlayerRef.GetCombatState()
+  ;if PlayerRef.GetCombatState() == 1
+  ;  return 2
+  ;endif
   return 0
 endfunction
 

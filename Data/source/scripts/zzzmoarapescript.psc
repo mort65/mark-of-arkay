@@ -728,10 +728,10 @@ function removeCrime()
 endfunction
 
 function shuffleActorArray(Actor[] Actors)
-  int i = Actors.Length
   if Actors.Length < 2
     return
   endif
+  int i = Actors.Length
   while i > 1
     i -= 1
     int j = utility.RandomInt(0, i)

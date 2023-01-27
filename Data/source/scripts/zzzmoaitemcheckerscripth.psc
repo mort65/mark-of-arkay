@@ -124,7 +124,7 @@ state Checking
         endif
       endif
       if bContinue
-        if (checked == -1)
+        if ((checked == -1) && (iToRemove > 0))
           if (akInChest.GetItemCount(kItem) > 0)
             ReviveScript.ItemScript.addInvalidItem(kItem)
           endif

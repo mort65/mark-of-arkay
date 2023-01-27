@@ -1083,7 +1083,7 @@ function RevivePlayer(Bool bRevive)
       int i = Utility.randomInt(0, (ConfigMenu.fMaxRapes - 1) As int)
       while bIsraped && (i > 0)
         Game.DisablePlayerControls(abMovement=True, abFighting=True, abCamSwitch=True, abLooking=False, abSneaking=True, abMenu=True, abActivate=True, abJournalTabs=False)
-        if !rapistActors || (!rapistActors[0] || (rapistActors[0] == None)) || ((ConfigMenu.fMaxRapists > 1.0) && (!rapistActors[1] || (rapistActors[1] == None)))
+        if !rapistActors || (!rapistActors[0] || (rapistActors[0] == None)) || ((ConfigMenu.fMaxRapists > 1.0) && (!rapistActors[1] || (rapistActors[1] == None))) || ((ConfigMenu.fMaxRapists > 2.0) && (!rapistActors[2] || (rapistActors[2] == None))) || ((ConfigMenu.fMaxRapists > 3.0) && (!rapistActors[3] || (rapistActors[3] == None)))
           rapistActors = RapeScript.getRapists(PlayerRef, Attacker, false)
         endif
         RapeScript.shuffleActorArray(rapistActors)

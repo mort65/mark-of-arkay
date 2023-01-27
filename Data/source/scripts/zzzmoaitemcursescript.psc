@@ -228,6 +228,7 @@ function LoseItems()
   endif
   Bool RightHand = (ReviveScript.RightHandEquipedItem && !(ReviveScript.RightHandEquipedItem As Spell))
   Bool LeftHand = (ReviveScript.LeftHandEquippedItem && !(ReviveScript.LeftHandEquippedItem As Spell) && !(ReviveScript.LeftHandEquippedItem == ReviveScript.RightHandEquipedItem))
+  Utility.Wait(1.0)
   Equipment = RegisterEquipments(PlayerRef, True, True)
   bEquipmentRegistered = True
   ValuableItemsChest.RemoveAllItems()

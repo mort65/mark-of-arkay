@@ -877,6 +877,7 @@ event OnOptionDefault(Int option)
   elseif (option == oidEquipInclude_M)
     iLoseInclusion = 0
     _SetMenuOptionValue(oidEquipInclude_M, sGetLoseInclusions()[iLoseInclusion], False)
+    revivescript.itemscript.resetChecked()
     ForcePageReset()
   elseif (option == oidRapistGender_M)
     iRapistGender = 0
@@ -1003,6 +1004,7 @@ event OnOptionDefault(Int option)
     fMaxLoseGrandSoulGemSlider = 1.0
     _SetSliderOptionValue(oidMaxLoseGrandSoulGemSlider, fMaxLoseGrandSoulGemSlider, "{0}")
   elseif (option == oidLoseOtherMinValueSlider)
+    revivescript.itemscript.resetChecked()
     fLoseOtherMinValueSlider = 0.0
     _SetSliderOptionValue(oidLoseOtherMinValueSlider, fLoseOtherMinValueSlider, "{0}")
   elseif (option == oidLoseOtherTotalValueSlider)
@@ -1046,6 +1048,7 @@ event OnOptionDefault(Int option)
     _SetSliderOptionValue(oidHealthTriggerSlider, fHealthPercTrigger * 100, "mrt_MarkofArkay_HealthPercSlider_2")
   elseif (option == oidExcludeQuestItems)
     bExcludeQuestItems = True
+	revivescript.itemscript.resetChecked()
     _SetToggleOptionValue(oidExcludeQuestItems, bExcludeQuestItems, False)
   elseif (option == oidLoseGold)
     bLoseGold = True
@@ -1711,6 +1714,7 @@ event OnOptionMenuAccept(Int option, Int index)
   elseif (option == oidEquipInclude_M)
     iLoseInclusion = index
     _SetMenuOptionValue(oidEquipInclude_M, sGetLoseInclusions()[iLoseInclusion])
+    revivescript.itemscript.resetChecked()
     ForcePageReset()
   elseif (option == oidRapistGender_M)
     iRapistGender = index
@@ -2291,6 +2295,7 @@ event OnOptionSelect(Int option)
     ForcePageReset()
   elseif (option == oidExcludeQuestItems)
     bExcludeQuestItems = !bExcludeQuestItems
+	revivescript.itemscript.resetChecked()
     _SetToggleOptionValue(oidExcludeQuestItems, bExcludeQuestItems)
   elseif (option == oidCheckWeight)
     bCheckWeight = !bCheckWeight
@@ -2745,6 +2750,7 @@ event OnOptionSliderAccept(int option, Float value)
     fMaxLoseArkayMarkSlider = value
     _SetSliderOptionValue(oidMaxLoseArkayMarkSlider, fMaxLoseArkayMarkSlider, "{0}")
   elseif (option == oidLoseOtherMinValueSlider)
+    revivescript.itemscript.resetChecked()
     fLoseOtherMinValueSlider = value
     _SetSliderOptionValue(oidLoseOtherMinValueSlider, fLoseOtherMinValueSlider, "{0}")
   elseif (option == oidLoseOtherTotalValueSlider)

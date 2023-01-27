@@ -1083,8 +1083,20 @@ function RevivePlayer(Bool bRevive)
       int i = Utility.randomInt(0, (ConfigMenu.fMaxRapes - 1) As int)
       while bIsraped && (i > 0)
         Game.DisablePlayerControls(abMovement=True, abFighting=True, abCamSwitch=True, abLooking=False, abSneaking=True, abMenu=True, abActivate=True, abJournalTabs=False)
-        if !rapistActors || (!rapistActors[0] || (rapistActors[0] == None)) || ((ConfigMenu.fMaxRapists > 1.0) && (!rapistActors[1] || (rapistActors[1] == None))) || ((ConfigMenu.fMaxRapists > 2.0) && (!rapistActors[2] || (rapistActors[2] == None))) || ((ConfigMenu.fMaxRapists > 3.0) && (!rapistActors[3] || (rapistActors[3] == None)))
+        if (!rapistActors || !rapistActors.Length)
           rapistActors = RapeScript.getRapists(PlayerRef, Attacker, false)
+        else
+          int j = rapistActors.Length
+          int c = 0
+          while j > 0
+            j -= 1
+            if (!rapistActors[j] || (rapistActors[j] == None))
+              c += 1
+            endif
+          endwhile
+          if (((ConfigMenu.fMaxRapists > 1.0) && (c < 2)) || ((ConfigMenu.fMaxRapists > 2.0) && (c < 3)) || ((ConfigMenu.fMaxRapists > 3.0) && (c < 4)))
+            rapistActors = RapeScript.getRapists(PlayerRef, Attacker, false)
+          endif
         endif
         RapeScript.shuffleActorArray(rapistActors)
         bIsraped = RapeScript.rapePlayer(rapistActors)

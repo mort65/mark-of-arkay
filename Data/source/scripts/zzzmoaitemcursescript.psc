@@ -316,7 +316,7 @@ function LoseOtherItems()
     endif
   endwhile
   if bRemove
-    if bRemoveAll && (ConfigMenu.iLoseInclusion != 1) && (ConfigMenu.fLoseOtherMinValueSlider <= 0) && (ConfigMenu.fLoseOtherTotalValueSlider <= 0) && !ConfigMenu.bRandomItemCurse
+    if bRemoveAll && (ConfigMenu.iLoseInclusion == 0) && (ConfigMenu.fLoseOtherMinValueSlider <= 0) && (ConfigMenu.fLoseOtherTotalValueSlider <= 0) && !ConfigMenu.bRandomItemCurse
       PlayerRef.RemoveAllItems(LostItemsChest, True, !ConfigMenu.bExcludeQuestItems)
     else
       Tradables = new Form[4]
@@ -376,9 +376,17 @@ function LoseOtherItems()
             if iIndex > 0
               containerArr[iIndex] = LostItemsChest.PlaceAtMe(ItemChest, abForcePersist=True)
               if ConfigMenu.bExcludeQuestItems
-                transferItemsWithExclusions(PlayerRef, containerArr[iIndex] As ObjectReference, QuestItems, Equipment, Utility.RandomInt(0, PlayerRef.GetNumItems() - iNum), iNum)
+                if ConfigMenu.iLoseInclusion == 2
+                  transferItemsWithExclusions(PlayerRef, containerArr[iIndex] As ObjectReference, QuestItems, Equipment, Utility.RandomInt(0, PlayerRef.GetNumItems() - iNum), iNum)
+                else
+                  transferItemsWithExclusions(PlayerRef, containerArr[iIndex] As ObjectReference, QuestItems, None, Utility.RandomInt(0, PlayerRef.GetNumItems() - iNum), iNum)
+                endif
               else
-                transferItemsWithExclusionArr(PlayerRef, containerArr[iIndex] As ObjectReference, Equipment, Utility.RandomInt(0, PlayerRef.GetNumItems() - iNum), iNum)
+                if ConfigMenu.iLoseInclusion == 2
+                  transferItemsWithExclusionArr(PlayerRef, containerArr[iIndex] As ObjectReference, Equipment, Utility.RandomInt(0, PlayerRef.GetNumItems() - iNum), iNum)
+                else
+                  transferItemsWithExclusionArr(PlayerRef, containerArr[iIndex] As ObjectReference, None, Utility.RandomInt(0, PlayerRef.GetNumItems() - iNum), iNum)
+                endif
               endif
               Int iCount = iMin(iNum, (containerArr[iIndex] As ObjectReference).GetNumItems())
               iChecked -= iCount
@@ -808,7 +816,7 @@ function removeEquipments(ObjectReference akInChest, ObjectReference akOutChest,
       endif
     endif
     if bContinue
-      if (checked == -1)
+      if (checked == -1) && (iToRemove > 0)
         if (akInChest.GetItemCount(kItem) > 0)
           addInvalidItem(kItem)
         endif

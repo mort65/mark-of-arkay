@@ -49,13 +49,13 @@ Actor property Guard auto Hidden
 zzzmoa_HealthMonitor property HealthMonitorScript auto
 Keyword property IgnoreItem auto
 Perk property Invulnerable auto
+FormList property ItemBlackList auto
+FormList property ItemBlackList2 auto
 zzzmoaitemcursescript property ItemScript auto Hidden
 Faction property JobMerchantFaction auto
 Form property LeftHandEquippedItem auto Hidden
 FormList property LocationBlackList auto
 FormList property LocationBlackList2 auto
-FormList property ItemBlackList auto
-FormList property ItemBlackList2 auto
 ObjectReference property LocationMarker auto
 ObjectReference property LocationMarker2 auto
 ObjectReference property LostItemsChest auto

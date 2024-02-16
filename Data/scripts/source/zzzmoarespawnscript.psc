@@ -1498,7 +1498,7 @@ Bool function bIsRespawnForbidden(Location akLoc)
           ForbiddenLocation = locArr[iIndex] As Location
           if (akLoc == ForbiddenLocation) || ForbiddenLocation.IsChild(akLoc)
             return True
-          EndIf
+          endif
         endif
       endwhile
     endif

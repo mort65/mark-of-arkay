@@ -12,6 +12,7 @@ Spell property ArkayCurseTemp auto
 Spell property ArkayCurseTempAlt auto
 Objectreference property CellLoadMarker auto
 Objectreference property CellLoadMarker2 auto
+Message property ConfirmMenu auto
 FormList property CustomRespawnPoints auto
 ObjectReference property DetachMarker1 auto
 ObjectReference property DetachMarker2 auto
@@ -266,11 +267,11 @@ GlobalVariable property moaHigherNPCMaxLvlDiff auto
 Quest property moaHostileNPCDetector auto
 Quest property moaHostileNPCDetector01 auto
 GlobalVariable property moaIsBusy auto
-GlobalVariable property moaLootChance auto
-Message property moaLostItemMenu auto
-Message property moaItemIncludeExcludeMenu auto
 Message property moaItemExcludeConfirmMenu auto
 Message property moaItemIncludeConfirmMenu auto
+Message property moaItemIncludeExcludeMenu auto
+GlobalVariable property moaLootChance auto
+Message property moaLostItemMenu auto
 GlobalVariable property moaLowerNPCMaxLvlDiff auto
 GlobalVariable property moaMoralityMatters auto
 GlobalVariable property moaNPCHasLevelRange auto
@@ -290,7 +291,6 @@ String[] property sExtraRPs auto Hidden
 String property sResetHistory="" auto Hidden
 String[] property sRespawnPoints auto Hidden
 String[] property sTaverns auto Hidden
-Message property ConfirmMenu auto
 
 Int flags
 Int oidAllowCreatureRape
@@ -353,6 +353,7 @@ Int oidHistory
 Int oidHostileOptions_M
 Int oidInformation
 Int oidInvisibility
+Int oidItemExclude
 Int oidJail
 Int oidKillIfCantRespawn
 Int oidLevelReduce
@@ -395,7 +396,6 @@ Int oidLoseWeapon
 Int oidLoseforever
 Int oidLostItemQuest
 Int oidLostItemsInfo
-Int oidItemExclude
 Int oidLostSkillsInfo
 Int oidLowerNPCMaxLvlDiff
 int oidMarkCost
@@ -1052,7 +1052,7 @@ event OnOptionDefault(Int option)
     _SetSliderOptionValue(oidHealthTriggerSlider, fHealthPercTrigger * 100, "mrt_MarkofArkay_HealthPercSlider_2")
   elseif (option == oidExcludeQuestItems)
     bExcludeQuestItems = True
-	revivescript.itemscript.resetChecked()
+    revivescript.itemscript.resetChecked()
     _SetToggleOptionValue(oidExcludeQuestItems, bExcludeQuestItems, False)
   elseif (option == oidLoseGold)
     bLoseGold = True
@@ -2301,7 +2301,7 @@ event OnOptionSelect(Int option)
     ForcePageReset()
   elseif (option == oidExcludeQuestItems)
     bExcludeQuestItems = !bExcludeQuestItems
-	revivescript.itemscript.resetChecked()
+    revivescript.itemscript.resetChecked()
     _SetToggleOptionValue(oidExcludeQuestItems, bExcludeQuestItems)
   elseif (option == oidCheckWeight)
     bCheckWeight = !bCheckWeight
@@ -2419,30 +2419,30 @@ event OnOptionSelect(Int option)
     int iButton
     Bool bBreak = False
     while !bBreak
-    	iButton = moaItemIncludeExcludeMenu.Show()
-	    if iButton == -1
-	    elseif (iButton) == 0 ;exclude
-	    	showExcludeItemMenu()
-	    elseif (iButton) == 1 ;include
-	    	if bPUOK
-	    		showIncludeItemMenuPU()
-	    	else
-	    		showIncludeItemMenu()
-	    	endif
-	    elseif (iButton) == 2 ;clear
-	    	ForceCloseMenu()
-	    	iButton = ConfirmMenu.Show()
-	    	if iButton == -1
-	    	elseIf iButton == 0 
-	    		ReviveScript.ItemBlackList2.Revert()
-		    	if bPUOK
-		    		JsonUtil.FormListClear("/MarkofArkay/MOA_BlackLists", "ItemBlackList")
-		      endif
-	    	endif
-	    else
-	     		bBreak = true
-	    endif
-	  endwhile
+      iButton = moaItemIncludeExcludeMenu.Show()
+      if iButton == -1
+      elseif (iButton) == 0 ;exclude
+        showExcludeItemMenu()
+      elseif (iButton) == 1 ;include
+        if bPUOK
+          showIncludeItemMenuPU()
+        else
+          showIncludeItemMenu()
+        endif
+      elseif (iButton) == 2 ;clear
+        ForceCloseMenu()
+        iButton = ConfirmMenu.Show()
+        if iButton == -1
+        elseif iButton == 0
+          ReviveScript.ItemBlackList2.Revert()
+          if bPUOK
+            JsonUtil.FormListClear("/MarkofArkay/MOA_BlackLists", "ItemBlackList")
+          endif
+        endif
+      else
+        bBreak = true
+      endif
+    endwhile
   elseif (option == oidLostSkillsInfo)
     if !bUIEOK
       return
@@ -4387,28 +4387,29 @@ event OnPageReset(String page)
     else
       _AddTextOption("$mrt_MarkofArkay_Destroyed_Items", "$Disabled", flags)
     endif
-	SetCursorPosition(37)
-	_AddHeaderOption("$mrt_MarkofArkay_HEAD_Dependency")
-	SetCursorPosition(39)
-	_AddTextOption("SKSE", bSKSEOK As String, flags)
-	SetCursorPosition(41)
-	_AddTextOption("UIExtensions", bUIEOK As String, flags)
-	SetCursorPosition(43)
-	_AddHeaderOption("$mrt_MarkofArkay_HEAD_OptionalDependency")
-	SetCursorPosition(45)
-	_AddTextOption("FISSES", bFISSOK As String, flags)
-	SetCursorPosition(47)
-	_AddTextOption("PapyrusUtil ", bPUOK As String, flags)
-	SetCursorPosition(49)
-	_AddTextOption("PO3 Papyrus Extender", bPO3Ok As String, flags)
-	;SetCursorPosition(51)
-	;_AddTextOption("Autorun Console Commands", bARCCOK As String, flags)
-	SetCursorPosition(51)
-	AddTextOption("OStim", bIsOStimActive As String, flags)
-	SetCursorPosition(53)
-	AddTextOption("Flower Girls", bIsFlowerGirlsActive As String, flags)
-	SetCursorPosition(55)
-	AddTextOption("SexLabFramework", bIsSexlabActive As String, flags)
+    SetCursorPosition(37)
+    _AddHeaderOption("$mrt_MarkofArkay_HEAD_Dependency")
+    SetCursorPosition(39)
+    _AddTextOption("SKSE", bSKSEOK As String, flags)
+    SetCursorPosition(41)
+    _AddTextOption("UIExtensions", bUIEOK As String, flags)
+    SetCursorPosition(43)
+    _AddHeaderOption("$mrt_MarkofArkay_HEAD_OptionalDependency")
+    SetCursorPosition(45)
+    _AddTextOption("FISSES", bFISSOK As String, flags)
+    SetCursorPosition(47)
+    _AddTextOption("PapyrusUtil ", bPUOK As String, flags)
+    SetCursorPosition(49)
+    _AddTextOption("PO3 Papyrus Extender", bPO3Ok As String, flags)
+
+    ;SetCursorPosition(51)
+    ;_AddTextOption("Autorun Console Commands", bARCCOK As String, flags)
+    SetCursorPosition(51)
+    AddTextOption("OStim", bIsOStimActive As String, flags)
+    SetCursorPosition(53)
+    AddTextOption("Flower Girls", bIsFlowerGirlsActive As String, flags)
+    SetCursorPosition(55)
+    AddTextOption("SexLabFramework", bIsSexlabActive As String, flags)
   elseif (page == "$Presets")
     SetCursorPosition(0)
     _AddHeaderOption("$Presets")
@@ -4476,6 +4477,37 @@ event OnVersionUpdate(int a_version)
   ForcePageReset()
 endevent
 
+function ExcludeItem(Form akItem)
+  Form kItem
+  if akItem as Objectreference
+    kItem = (akItem as Objectreference).GetBaseObject()
+  else
+    kItem = akItem
+  endif
+  if kItem == ReviveScript.Gold001
+    bLoseGold = false
+    _SetToggleOptionValue(oidLoseGold, bLoseGold)
+  elseif kItem == ReviveScript.GrandFilledGem
+    bLoseGrandSoulGem = false
+    _SetToggleOptionValue(oidLoseGrandSoulGem, bLoseGrandSoulGem)
+  elseif kItem == ReviveScript.BlackFilledGem
+    bLoseBlackSoulGem = false
+    _SetToggleOptionValue(oidLoseBlackSoulGem, bLoseBlackSoulGem)
+  elseif kItem == ReviveScript.MarkOfArkay
+    bLoseArkayMark = false
+    _SetToggleOptionValue(oidLoseArkayMark, bLoseArkayMark)
+  elseif !ReviveScript.ItemBlackList.HasForm(kItem)
+    if !ReviveScript.ItemBlackList2.HasForm(kItem)
+      ReviveScript.ItemBlackList2.AddForm(kItem)
+    endif
+    if bPUOK
+      JsonUtil.FormListAdd("/MarkofArkay/MOA_BlackLists", "ItemBlackList", kItem, False)
+      JsonUtil.Save("/MarkofArkay/MOA_BlackLists")
+    endif
+    ForcePageReset()
+  endif
+endfunction
+
 function ForceCloseMenu()
   ;ForcePageReset()
   UI.Invoke("Journal Menu", "_root.QuestJournalFader.Menu_mc.ConfigPanelClose") ; mcm
@@ -4485,6 +4517,38 @@ endfunction
 
 Int function GetVersion()
   return 301
+endfunction
+
+function IncludeItem(Form akItem)
+  Form kItem
+  if akItem as Objectreference
+    kItem = (akItem as Objectreference).GetBaseObject()
+  else
+    kItem = akItem
+  endif
+  if kItem == ReviveScript.Gold001
+    bLoseGold = true
+    _SetToggleOptionValue(oidLoseGold, bLoseGold)
+  elseif kItem == ReviveScript.GrandFilledGem
+    bLoseGrandSoulGem = true
+    _SetToggleOptionValue(oidLoseGrandSoulGem, bLoseGrandSoulGem)
+  elseif kItem == ReviveScript.BlackFilledGem
+    bLoseBlackSoulGem = true
+    _SetToggleOptionValue(oidLoseBlackSoulGem, bLoseBlackSoulGem)
+  elseif kItem == ReviveScript.MarkOfArkay
+    bLoseArkayMark = true
+    _SetToggleOptionValue(oidLoseArkayMark, bLoseArkayMark)
+  endif
+  if !ReviveScript.ItemBlackList.HasForm(kItem)
+    if ReviveScript.ItemBlackList2.HasForm(kItem)
+      ReviveScript.ItemBlackList2.RemoveAddedForm(kItem)
+    endif
+    if bPUOK
+      JsonUtil.FormListRemove("/MarkofArkay/MOA_BlackLists", "ItemBlackList", kItem, True)
+      JsonUtil.Save("/MarkofArkay/MOA_BlackLists")
+    endif
+    ForcePageReset()
+  endif
 endfunction
 
 function LoadDefaultSettings()
@@ -4793,541 +4857,6 @@ function ShowExtraRPInfo(Int iFirstIndex=0, Int iLen=0, Int iList=0)
   endwhile
 endfunction
 
-Function ExcludeItem(Form akItem)
-	Form kItem
-	If akItem as Objectreference
-		kItem = (akItem as Objectreference).GetBaseObject()
-	else
-		kItem = akItem
-	endIf
-	if kItem == ReviveScript.Gold001
-		bLoseGold = false
-    _SetToggleOptionValue(oidLoseGold, bLoseGold)
-	elseif kItem == ReviveScript.GrandFilledGem
-		bLoseGrandSoulGem = false
-    _SetToggleOptionValue(oidLoseGrandSoulGem, bLoseGrandSoulGem)
-	elseif kItem == ReviveScript.BlackFilledGem
-		bLoseBlackSoulGem = false
-    _SetToggleOptionValue(oidLoseBlackSoulGem, bLoseBlackSoulGem)
-	elseif kItem == ReviveScript.MarkOfArkay
-    bLoseArkayMark = false
-    _SetToggleOptionValue(oidLoseArkayMark, bLoseArkayMark)
-  elseif !ReviveScript.ItemBlackList.HasForm(kItem)
-  	if !ReviveScript.ItemBlackList2.HasForm(kItem)
-      ReviveScript.ItemBlackList2.AddForm(kItem)
-  	endif
-    if bPUOK
-    	JsonUtil.FormListAdd("/MarkofArkay/MOA_BlackLists", "ItemBlackList", kItem, False)
-      JsonUtil.Save("/MarkofArkay/MOA_BlackLists")
-    endif
-    ForcePageReset()
-  endif
-EndFunction
-
-Function IncludeItem(Form akItem)
-	Form kItem
-	If akItem as Objectreference
-		kItem = (akItem as Objectreference).GetBaseObject()
-	else
-		kItem = akItem
-	endIf
-	if kItem == ReviveScript.Gold001
-		bLoseGold = true
-    _SetToggleOptionValue(oidLoseGold, bLoseGold)
-	elseif kItem == ReviveScript.GrandFilledGem
-		bLoseGrandSoulGem = true
-    _SetToggleOptionValue(oidLoseGrandSoulGem, bLoseGrandSoulGem)
-	elseif kItem == ReviveScript.BlackFilledGem
-		bLoseBlackSoulGem = true
-    _SetToggleOptionValue(oidLoseBlackSoulGem, bLoseBlackSoulGem)
-	elseif kItem == ReviveScript.MarkOfArkay
-    bLoseArkayMark = true
-    _SetToggleOptionValue(oidLoseArkayMark, bLoseArkayMark)
-  endIf
-  if !ReviveScript.ItemBlackList.HasForm(kItem)
-    if ReviveScript.ItemBlackList2.HasForm(kItem)
-      ReviveScript.ItemBlackList2.RemoveAddedForm(kItem)
-    endif
-    if bPUOK
-      JsonUtil.FormListRemove("/MarkofArkay/MOA_BlackLists", "ItemBlackList", kItem, True)
-      JsonUtil.Save("/MarkofArkay/MOA_BlackLists")
-    endif
-    ForcePageReset()
-  endif
-EndFunction
-
-Function showIncludeItemMenuPU()
-	UIListMenu ListMenu = uiextensions.GetMenu("UIListMenu", True) as UIListMenu
-	Form[] ItemArr = JsonUtil.FormListToArray("/MarkofArkay/MOA_BlackLists", "ItemBlackList")
-	if !ListMenu || ItemArr.Length == 0
-		return
-	endif
-	ForceCloseMenu()
-	String sText
-	int iButton
-	Int iResult = 0
-	int count = ItemArr.Length
-	if count < 128
-      Int i = 0
-      Form kItem
-      while i < ItemArr.Length
-        kItem = ItemArr[i]
-        if kItem
-          if kItem.GetName()
-            sText = kItem.GetName()
-          else
-            sText ="?"
-          endif
-        else
-          sText = "?"
-        endif
-        if GetLength(sText) > 40
-          sText = Substring(sText, 0, 37) + "..."
-        endif
-        listMenu.AddEntryItem(sText, -1, -1, False)
-        i += 1
-      endwhile
-      listMenu.AddEntryItem("$mrt_MarkofArkay_TXT_Exit", -1, -1, False)
-      ForceCloseMenu()
-      listMenu.OpenMenu(none, none)
-      iResult = listMenu.GetResultInt()
-      while iResult > -1 && iResult < ItemArr.Length
-        kItem = ItemArr[iResult]
-        Int iType = kItem.GetType()
-        String sType = sType(iType)
-        Int iFormID = kItem.GetFormID()
-        Debug.Notification("Mark of Arkay - Name: " + kItem.GetName())
-        Debug.Notification("Mark of Arkay - Type: " + sType)
-        Debug.Notification("Mark of Arkay - Form ID: " + sDecToHex(iFormID))
-        iButton = moaItemIncludeConfirmMenu.Show(iType, kItem.GetGoldValue(), PlayerRef.GetItemCount(kItem), kItem.GetWeight(), iFormID)
-        if iButton == -1
-        elseif iButton == 0 ;yes
-        	IncludeItem(kItem)
-        endif
-        listMenu.OpenMenu(none, none)
-        iResult = listMenu.GetResultInt()
-      endwhile
-      listMenu.ResetMenu()
-  else
-    Int iPage = 1
-    Int iPrevPage = -1
-    Int iTotal = 124
-    Int iTotalPages = (Count / iTotal) As Int
-    Int iLast = 127 ;Index of last item in last page
-    if (Count % iTotal) > 0
-      iTotalPages += 1
-      iLast = (Count % iTotal) + 3
-    endif
-    ForceCloseMenu()
-    Int i
-    Form kItem
-    while iPage > 0
-      if iPrevPage != iPage
-        iPrevPage = iPage
-        listMenu.ResetMenu()
-        if iPage == 1
-          listMenu.AddEntryItem((iPage + 1) + "/" + iTotalPages + " >", -1, -1, False)
-        else
-          listMenu.AddEntryItem("< " + (iPage - 1) + "/" + iTotalPages + "", -1, -1, False)
-        endif
-        listMenu.AddEntryItem("$mrt_MarkofArkay_TXT_GoToPage", -1, -1, False)
-        i = ((iPage - 1) * iTotal)
-        while i < iMin((iPage * iTotal), ItemArr.Length)
-          kItem = ItemArr[i]
-          if kItem
-            if kItem.GetName()
-              sText = kItem.GetName()
-            else
-              sText = "?"
-            endif
-          else
-            sText = "?"
-          endif
-          if GetLength(sText) > 40
-            sText = Substring(sText, 0, 37) + "..."
-          endif
-          listMenu.AddEntryItem(sText, -1, -1, False)
-          i += 1
-        endwhile
-        if iPage < iTotalPages
-          listMenu.AddEntryItem((iPage + 1) + "/" + iTotalPages + " >", -1, -1, False)
-        else
-          listMenu.AddEntryItem("< " + (iPage - 1) + "/" + iTotalPages, -1, -1, False)
-        endif
-        listMenu.AddEntryItem("$mrt_MarkofArkay_TXT_Exit", -1, -1, False)
-      endif
-      listMenu.OpenMenu(none, none)
-      iResult = listMenu.GetResultInt()
-      if iResult == -1
-        iPage = 0
-        listMenu.ResetMenu()
-      else
-        if (iPage < iTotalPages && iResult == 126) || (iPage == iTotalPages && iResult == (iLast - 1))
-          if iPage < iTotalPages
-            iPage += 1
-          else
-            iPage -= 1
-          endif
-        elseif (iPage < iTotalPages && iResult == 127) || (iPage == iTotalPages && iResult == iLast)
-          iPage = 0
-          listMenu.ResetMenu()
-        elseif iResult == 0
-          if iPage > 1
-            iPage -= 1
-          else
-            iPage += 1
-          endif
-        elseif iResult == 1
-          UITextEntryMenu TextMenu = uiextensions.GetMenu("UITextEntryMenu", True) as UITextEntryMenu
-          TextMenu.OpenMenu(none, none)
-          String sResult = TextMenu.GetResultString()
-          i = 0
-          Bool bIsDigit = True
-          while (i < getLength(sResult) && bIsDigit)
-            if !IsDigit(GetNthChar(sResult, i))
-              bIsDigit = False
-            endif
-            i += 1
-          endwhile
-          if bIsDigit
-            if ((sResult As Int) >= 1 && (sResult As Int) <= iTotalPages)
-              iPage = sResult As Int
-            endif
-          endif
-        else
-          Int iIndex = ((iPage - 1) * iTotal) + (iResult - 2)
-          kItem = ItemArr[iIndex]
-          Int iType = kItem.GetType()
-          String sType = sType(iType)
-          Int iFormID = kItem.GetFormID()
-          Debug.Notification("Mark of Arkay - Name: " + kItem.GetName())
-          Debug.Notification("Mark of Arkay - Type: " + sType)
-          Debug.Notification("Mark of Arkay - Form ID: " + sDecToHex(iFormID))
-          iButton = moaItemIncludeConfirmMenu.Show(iType, kItem.GetGoldValue(), PlayerRef.GetItemCount(kItem), kItem.GetWeight(), iFormID)
-          if iButton == -1
-          elseif iButton == 0 ;yes
-          	IncludeItem(kItem)
-          endif
-        endif
-      endif
-    endwhile
-  endif
-EndFunction
-
-Function showIncludeItemMenu()
-	UIListMenu ListMenu = uiextensions.GetMenu("UIListMenu", True) as UIListMenu
-	if !ListMenu || ReviveScript.ItemBlackList2.GetSize() == 0
-		return
-	endif
-	ForceCloseMenu()
-	String sText
-	int iButton
-	Int iResult = 0
-	int count = ReviveScript.ItemBlackList2.GetSize()
-	if count < 128
-      Int i = 0
-      Form kItem
-      while i < ReviveScript.ItemBlackList2.GetSize()
-        kItem = ReviveScript.ItemBlackList2.GetAt(i)
-        if kItem
-          if kItem.GetName()
-            sText = kItem.GetName()
-          else
-            sText ="?"
-          endif
-        else
-          sText = "?"
-        endif
-        if GetLength(sText) > 40
-          sText = Substring(sText, 0, 37) + "..."
-        endif
-        listMenu.AddEntryItem(sText, -1, -1, False)
-        i += 1
-      endwhile
-      listMenu.AddEntryItem("$mrt_MarkofArkay_TXT_Exit", -1, -1, False)
-      ForceCloseMenu()
-      listMenu.OpenMenu(none, none)
-      iResult = listMenu.GetResultInt()
-      while iResult > -1 && iResult < ReviveScript.ItemBlackList2.GetSize()
-        kItem = ReviveScript.ItemBlackList2.GetAt(iResult)
-        Int iType = kItem.GetType()
-        String sType = sType(iType)
-        Int iFormID = kItem.GetFormID()
-        Debug.Notification("Mark of Arkay - Name: " + kItem.GetName())
-        Debug.Notification("Mark of Arkay - Type: " + sType)
-        Debug.Notification("Mark of Arkay - Form ID: " + sDecToHex(iFormID))
-        iButton = moaItemIncludeConfirmMenu.Show(iType, kItem.GetGoldValue(), PlayerRef.GetItemCount(kItem), kItem.GetWeight(), iFormID)
-        if iButton == -1
-        elseif iButton == 0 ;yes
-        	IncludeItem(kItem)
-        endif
-        listMenu.OpenMenu(none, none)
-        iResult = listMenu.GetResultInt()
-      endwhile
-      listMenu.ResetMenu()
-  else
-    Int iPage = 1
-    Int iPrevPage = -1
-    Int iTotal = 124
-    Int iTotalPages = (Count / iTotal) As Int
-    Int iLast = 127 ;Index of last item in last page
-    if (Count % iTotal) > 0
-      iTotalPages += 1
-      iLast = (Count % iTotal) + 3
-    endif
-    ForceCloseMenu()
-    Int i
-    Form kItem
-    while iPage > 0
-      if iPrevPage != iPage
-        iPrevPage = iPage
-        listMenu.ResetMenu()
-        if iPage == 1
-          listMenu.AddEntryItem((iPage + 1) + "/" + iTotalPages + " >", -1, -1, False)
-        else
-          listMenu.AddEntryItem("< " + (iPage - 1) + "/" + iTotalPages + "", -1, -1, False)
-        endif
-        listMenu.AddEntryItem("$mrt_MarkofArkay_TXT_GoToPage", -1, -1, False)
-        i = ((iPage - 1) * iTotal)
-        while i < iMin((iPage * iTotal), ReviveScript.ItemBlackList2.GetSize())
-          kItem = ReviveScript.ItemBlackList2.GetAt(i)
-          if kItem
-            if kItem.GetName()
-              sText = kItem.GetName()
-            else
-              sText = "?"
-            endif
-          else
-            sText = "?"
-          endif
-          if GetLength(sText) > 40
-            sText = Substring(sText, 0, 37) + "..."
-          endif
-          listMenu.AddEntryItem(sText, -1, -1, False)
-          i += 1
-        endwhile
-        if iPage < iTotalPages
-          listMenu.AddEntryItem((iPage + 1) + "/" + iTotalPages + " >", -1, -1, False)
-        else
-          listMenu.AddEntryItem("< " + (iPage - 1) + "/" + iTotalPages, -1, -1, False)
-        endif
-        listMenu.AddEntryItem("$mrt_MarkofArkay_TXT_Exit", -1, -1, False)
-      endif
-      listMenu.OpenMenu(none, none)
-      iResult = listMenu.GetResultInt()
-      if iResult == -1
-        iPage = 0
-        listMenu.ResetMenu()
-      else
-        if (iPage < iTotalPages && iResult == 126) || (iPage == iTotalPages && iResult == (iLast - 1))
-          if iPage < iTotalPages
-            iPage += 1
-          else
-            iPage -= 1
-          endif
-        elseif (iPage < iTotalPages && iResult == 127) || (iPage == iTotalPages && iResult == iLast)
-          iPage = 0
-          listMenu.ResetMenu()
-        elseif iResult == 0
-          if iPage > 1
-            iPage -= 1
-          else
-            iPage += 1
-          endif
-        elseif iResult == 1
-          UITextEntryMenu TextMenu = uiextensions.GetMenu("UITextEntryMenu", True) as UITextEntryMenu
-          TextMenu.OpenMenu(none, none)
-          String sResult = TextMenu.GetResultString()
-          i = 0
-          Bool bIsDigit = True
-          while (i < getLength(sResult) && bIsDigit)
-            if !IsDigit(GetNthChar(sResult, i))
-              bIsDigit = False
-            endif
-            i += 1
-          endwhile
-          if bIsDigit
-            if ((sResult As Int) >= 1 && (sResult As Int) <= iTotalPages)
-              iPage = sResult As Int
-            endif
-          endif
-        else
-          Int iIndex = ((iPage - 1) * iTotal) + (iResult - 2)
-          kItem = ReviveScript.ItemBlackList2.GetAt(iIndex)
-          Int iType = kItem.GetType()
-          String sType = sType(iType)
-          Int iFormID = kItem.GetFormID()
-          Debug.Notification("Mark of Arkay - Name: " + kItem.GetName())
-          Debug.Notification("Mark of Arkay - Type: " + sType)
-          Debug.Notification("Mark of Arkay - Form ID: " + sDecToHex(iFormID))
-          iButton = moaItemIncludeConfirmMenu.Show(iType, kItem.GetGoldValue(), PlayerRef.GetItemCount(kItem), kItem.GetWeight(), iFormID)
-          if iButton == -1
-          elseif iButton == 0 ;yes
-          	IncludeItem(kItem)
-          endif
-        endif
-      endif
-    endwhile
-  endif
-EndFunction
-
-Function showExcludeItemMenu()
-	UIListMenu ListMenu = uiextensions.GetMenu("UIListMenu", True) as UIListMenu
-	if !ListMenu || PlayerRef.GetNumItems() == 0
-		return
-	endif
-	ForceCloseMenu()
-	String sText
-	int iButton
-	Int iResult = 0
-	int count = PlayerRef.GetNumItems()
-	if count < 128
-      Int i = 0
-      Form kItem
-      while i < PlayerRef.GetNumItems()
-        kItem = PlayerRef.GetNthForm(i)
-        if kItem
-          if kItem.GetName()
-            sText = kItem.GetName()
-          else
-            sText ="?"
-          endif
-        else
-          sText = "?"
-        endif
-        if GetLength(sText) > 40
-          sText = Substring(sText, 0, 37) + "..."
-        endif
-        listMenu.AddEntryItem(sText, -1, -1, False)
-        i += 1
-      endwhile
-      listMenu.AddEntryItem("$mrt_MarkofArkay_TXT_Exit", -1, -1, False)
-      ForceCloseMenu()
-      listMenu.OpenMenu(none, none)
-      iResult = listMenu.GetResultInt()
-      while iResult > -1 && iResult < PlayerRef.GetNumItems()
-        kItem = PlayerRef.GetNthForm(iResult)
-        Int iType = kItem.GetType()
-        String sType = sType(iType)
-        Int iFormID = kItem.GetFormID()
-        Debug.Notification("Mark of Arkay - Name: " + kItem.GetName())
-        Debug.Notification("Mark of Arkay - Type: " + sType)
-        Debug.Notification("Mark of Arkay - Form ID: " + sDecToHex(iFormID))
-        iButton = moaItemExcludeConfirmMenu.Show(iType, kItem.GetGoldValue(), PlayerRef.GetItemCount(kItem), kItem.GetWeight(), iFormID)
-        if iButton == -1
-        elseif iButton == 0 ;yes
-        	ExcludeItem(kItem)
-        endif
-        listMenu.OpenMenu(none, none)
-        iResult = listMenu.GetResultInt()
-      endwhile
-      listMenu.ResetMenu()
-  else
-    Int iPage = 1
-    Int iPrevPage = -1
-    Int iTotal = 124
-    Int iTotalPages = (Count / iTotal) As Int
-    Int iLast = 127 ;Index of last item in last page
-    if (Count % iTotal) > 0
-      iTotalPages += 1
-      iLast = (Count % iTotal) + 3
-    endif
-    ForceCloseMenu()
-    Int i
-    Form kItem
-    while iPage > 0
-      if iPrevPage != iPage
-        iPrevPage = iPage
-        listMenu.ResetMenu()
-        if iPage == 1
-          listMenu.AddEntryItem((iPage + 1) + "/" + iTotalPages + " >", -1, -1, False)
-        else
-          listMenu.AddEntryItem("< " + (iPage - 1) + "/" + iTotalPages + "", -1, -1, False)
-        endif
-        listMenu.AddEntryItem("$mrt_MarkofArkay_TXT_GoToPage", -1, -1, False)
-        i = ((iPage - 1) * iTotal)
-        while i < iMin((iPage * iTotal), PlayerRef.GetNumItems())
-          kItem = PlayerRef.GetNthForm(i)
-          if kItem
-            if kItem.GetName()
-              sText = kItem.GetName()
-            else
-              sText = "?"
-            endif
-          else
-            sText = "?"
-          endif
-          if GetLength(sText) > 40
-            sText = Substring(sText, 0, 37) + "..."
-          endif
-          listMenu.AddEntryItem(sText, -1, -1, False)
-          i += 1
-        endwhile
-        if iPage < iTotalPages
-          listMenu.AddEntryItem((iPage + 1) + "/" + iTotalPages + " >", -1, -1, False)
-        else
-          listMenu.AddEntryItem("< " + (iPage - 1) + "/" + iTotalPages, -1, -1, False)
-        endif
-        listMenu.AddEntryItem("$mrt_MarkofArkay_TXT_Exit", -1, -1, False)
-      endif
-      listMenu.OpenMenu(none, none)
-      iResult = listMenu.GetResultInt()
-      if iResult == -1
-        iPage = 0
-        listMenu.ResetMenu()
-      else
-        if (iPage < iTotalPages && iResult == 126) || (iPage == iTotalPages && iResult == (iLast - 1))
-          if iPage < iTotalPages
-            iPage += 1
-          else
-            iPage -= 1
-          endif
-        elseif (iPage < iTotalPages && iResult == 127) || (iPage == iTotalPages && iResult == iLast)
-          iPage = 0
-          listMenu.ResetMenu()
-        elseif iResult == 0
-          if iPage > 1
-            iPage -= 1
-          else
-            iPage += 1
-          endif
-        elseif iResult == 1
-          UITextEntryMenu TextMenu = uiextensions.GetMenu("UITextEntryMenu", True) as UITextEntryMenu
-          TextMenu.OpenMenu(none, none)
-          String sResult = TextMenu.GetResultString()
-          i = 0
-          Bool bIsDigit = True
-          while (i < getLength(sResult) && bIsDigit)
-            if !IsDigit(GetNthChar(sResult, i))
-              bIsDigit = False
-            endif
-            i += 1
-          endwhile
-          if bIsDigit
-            if ((sResult As Int) >= 1 && (sResult As Int) <= iTotalPages)
-              iPage = sResult As Int
-            endif
-          endif
-        else
-          Int iIndex = ((iPage - 1) * iTotal) + (iResult - 2)
-          kItem = PlayerRef.GetNthForm(iIndex)
-          Int iType = kItem.GetType()
-          String sType = sType(iType)
-          Int iFormID = kItem.GetFormID()
-          Debug.Notification("Mark of Arkay - Name: " + kItem.GetName())
-          Debug.Notification("Mark of Arkay - Type: " + sType)
-          Debug.Notification("Mark of Arkay - Form ID: " + sDecToHex(iFormID))
-          iButton = moaItemExcludeConfirmMenu.Show(iType, kItem.GetGoldValue(), PlayerRef.GetItemCount(kItem), kItem.GetWeight(), iFormID)
-          if iButton == -1
-          elseif iButton == 0 ;yes
-          	ExcludeItem(kItem)
-          endif
-        endif
-      endif
-    endwhile
-  endif
-EndFunction
-
 function ShowLostItems()
   UIListMenu ListMenu = uiextensions.GetMenu("UIListMenu", True) as UIListMenu
   if !ListMenu || LostItemsChest.GetNumItems() == 0
@@ -5591,15 +5120,20 @@ Bool function bCheckARCC()
 endfunction
 
 Bool function bCheckFISS()
-  If bCheckFISSNew()
+  if bCheckFISS_AE()
     return True
-  EndIf
+  endif
   Int iFissIndex = Game.GetModByName("FISS.esp")
   return (iFissIndex > 0 && iFissIndex < 255 && bSKSELoaded && ((SKSE.GetVersion() == 1 && SKSE.GetPluginVersion("fiss") != -1) || (SKSE.GetVersion() == 2 && SKSE.GetPluginVersion("fisses") != -1)))
 endfunction
 
-Bool function bCheckFISSNew()
-  return FISSFactory.getFISS() as Bool
+Bool function bCheckFISS_AE()
+  if FISSFactory.getFISS() as Bool
+    if (SKSE.GetVersion() == 2 && SKSE.GetPluginVersion("fiss") != -1)
+      return true
+    endif
+  endif
+  return false
 endfunction
 
 Bool function bCheckFissErrors(String strErrors)
@@ -6416,6 +5950,18 @@ Bool function isCustomSlotSelected(Int aiIndex)
   return aiIndex == iSelectedCustomRPSlot
 endfunction
 
+Bool function isPlayerLocationBlacklisted()
+  if bPUOK
+    if JsonUtil.FormListHas("/MarkofArkay/MOA_BlackLists", "LocationBlackList", PlayerRef.GetCurrentLocation())
+      return True
+    endif
+  endif
+  if ReviveScript.LocationBlackList2.Find(PlayerRef.GetCurrentLocation()) > -1
+    return True
+  endif
+  return False
+endfunction
+
 function moaStart()
   if moaState.GetValue() == 0
     moaState.SetValue(1)
@@ -6954,14 +6500,474 @@ function setTriggerMethod(Int iIndex)
   endif
 endfunction
 
-Bool Function isPlayerLocationBlacklisted()
-	if bPUOK
-		if JsonUtil.FormListHas("/MarkofArkay/MOA_BlackLists", "LocationBlackList", PlayerRef.GetCurrentLocation())
-			Return  True
-		endIf
-	endIf
-	If ReviveScript.LocationBlackList2.Find(PlayerRef.GetCurrentLocation()) > -1
-		return True
-	endIf
-	return False
+function showExcludeItemMenu()
+  UIListMenu ListMenu = uiextensions.GetMenu("UIListMenu", True) as UIListMenu
+  if !ListMenu || PlayerRef.GetNumItems() == 0
+    return
+  endif
+  ForceCloseMenu()
+  String sText
+  int iButton
+  Int iResult = 0
+  int count = PlayerRef.GetNumItems()
+  if count < 128
+    Int i = 0
+    Form kItem
+    while i < PlayerRef.GetNumItems()
+      kItem = PlayerRef.GetNthForm(i)
+      if kItem
+        if kItem.GetName()
+          sText = kItem.GetName()
+        else
+          sText = "?"
+        endif
+      else
+        sText = "?"
+      endif
+      if GetLength(sText) > 40
+        sText = Substring(sText, 0, 37) + "..."
+      endif
+      listMenu.AddEntryItem(sText, -1, -1, False)
+      i += 1
+    endwhile
+    listMenu.AddEntryItem("$mrt_MarkofArkay_TXT_Exit", -1, -1, False)
+    ForceCloseMenu()
+    listMenu.OpenMenu(none, none)
+    iResult = listMenu.GetResultInt()
+    while iResult > -1 && iResult < PlayerRef.GetNumItems()
+      kItem = PlayerRef.GetNthForm(iResult)
+      Int iType = kItem.GetType()
+      String sType = sType(iType)
+      Int iFormID = kItem.GetFormID()
+      Debug.Notification("Mark of Arkay - Name: " + kItem.GetName())
+      Debug.Notification("Mark of Arkay - Type: " + sType)
+      Debug.Notification("Mark of Arkay - Form ID: " + sDecToHex(iFormID))
+      iButton = moaItemExcludeConfirmMenu.Show(iType, kItem.GetGoldValue(), PlayerRef.GetItemCount(kItem), kItem.GetWeight(), iFormID)
+      if iButton == -1
+      elseif iButton == 0 ;yes
+        ExcludeItem(kItem)
+      endif
+      listMenu.OpenMenu(none, none)
+      iResult = listMenu.GetResultInt()
+    endwhile
+    listMenu.ResetMenu()
+  else
+    Int iPage = 1
+    Int iPrevPage = -1
+    Int iTotal = 124
+    Int iTotalPages = (Count / iTotal) As Int
+    Int iLast = 127 ;Index of last item in last page
+    if (Count % iTotal) > 0
+      iTotalPages += 1
+      iLast = (Count % iTotal) + 3
+    endif
+    ForceCloseMenu()
+    Int i
+    Form kItem
+    while iPage > 0
+      if iPrevPage != iPage
+        iPrevPage = iPage
+        listMenu.ResetMenu()
+        if iPage == 1
+          listMenu.AddEntryItem((iPage + 1) + "/" + iTotalPages + " >", -1, -1, False)
+        else
+          listMenu.AddEntryItem("< " + (iPage - 1) + "/" + iTotalPages + "", -1, -1, False)
+        endif
+        listMenu.AddEntryItem("$mrt_MarkofArkay_TXT_GoToPage", -1, -1, False)
+        i = ((iPage - 1) * iTotal)
+        while i < iMin((iPage * iTotal), PlayerRef.GetNumItems())
+          kItem = PlayerRef.GetNthForm(i)
+          if kItem
+            if kItem.GetName()
+              sText = kItem.GetName()
+            else
+              sText = "?"
+            endif
+          else
+            sText = "?"
+          endif
+          if GetLength(sText) > 40
+            sText = Substring(sText, 0, 37) + "..."
+          endif
+          listMenu.AddEntryItem(sText, -1, -1, False)
+          i += 1
+        endwhile
+        if iPage < iTotalPages
+          listMenu.AddEntryItem((iPage + 1) + "/" + iTotalPages + " >", -1, -1, False)
+        else
+          listMenu.AddEntryItem("< " + (iPage - 1) + "/" + iTotalPages, -1, -1, False)
+        endif
+        listMenu.AddEntryItem("$mrt_MarkofArkay_TXT_Exit", -1, -1, False)
+      endif
+      listMenu.OpenMenu(none, none)
+      iResult = listMenu.GetResultInt()
+      if iResult == -1
+        iPage = 0
+        listMenu.ResetMenu()
+      else
+        if (iPage < iTotalPages && iResult == 126) || (iPage == iTotalPages && iResult == (iLast - 1))
+          if iPage < iTotalPages
+            iPage += 1
+          else
+            iPage -= 1
+          endif
+        elseif (iPage < iTotalPages && iResult == 127) || (iPage == iTotalPages && iResult == iLast)
+          iPage = 0
+          listMenu.ResetMenu()
+        elseif iResult == 0
+          if iPage > 1
+            iPage -= 1
+          else
+            iPage += 1
+          endif
+        elseif iResult == 1
+          UITextEntryMenu TextMenu = uiextensions.GetMenu("UITextEntryMenu", True) as UITextEntryMenu
+          TextMenu.OpenMenu(none, none)
+          String sResult = TextMenu.GetResultString()
+          i = 0
+          Bool bIsDigit = True
+          while (i < getLength(sResult) && bIsDigit)
+            if !IsDigit(GetNthChar(sResult, i))
+              bIsDigit = False
+            endif
+            i += 1
+          endwhile
+          if bIsDigit
+            if ((sResult As Int) >= 1 && (sResult As Int) <= iTotalPages)
+              iPage = sResult As Int
+            endif
+          endif
+        else
+          Int iIndex = ((iPage - 1) * iTotal) + (iResult - 2)
+          kItem = PlayerRef.GetNthForm(iIndex)
+          Int iType = kItem.GetType()
+          String sType = sType(iType)
+          Int iFormID = kItem.GetFormID()
+          Debug.Notification("Mark of Arkay - Name: " + kItem.GetName())
+          Debug.Notification("Mark of Arkay - Type: " + sType)
+          Debug.Notification("Mark of Arkay - Form ID: " + sDecToHex(iFormID))
+          iButton = moaItemExcludeConfirmMenu.Show(iType, kItem.GetGoldValue(), PlayerRef.GetItemCount(kItem), kItem.GetWeight(), iFormID)
+          if iButton == -1
+          elseif iButton == 0 ;yes
+            ExcludeItem(kItem)
+          endif
+        endif
+      endif
+    endwhile
+  endif
+endfunction
+
+function showIncludeItemMenu()
+  UIListMenu ListMenu = uiextensions.GetMenu("UIListMenu", True) as UIListMenu
+  if !ListMenu || ReviveScript.ItemBlackList2.GetSize() == 0
+    return
+  endif
+  ForceCloseMenu()
+  String sText
+  int iButton
+  Int iResult = 0
+  int count = ReviveScript.ItemBlackList2.GetSize()
+  if count < 128
+    Int i = 0
+    Form kItem
+    while i < ReviveScript.ItemBlackList2.GetSize()
+      kItem = ReviveScript.ItemBlackList2.GetAt(i)
+      if kItem
+        if kItem.GetName()
+          sText = kItem.GetName()
+        else
+          sText = "?"
+        endif
+      else
+        sText = "?"
+      endif
+      if GetLength(sText) > 40
+        sText = Substring(sText, 0, 37) + "..."
+      endif
+      listMenu.AddEntryItem(sText, -1, -1, False)
+      i += 1
+    endwhile
+    listMenu.AddEntryItem("$mrt_MarkofArkay_TXT_Exit", -1, -1, False)
+    ForceCloseMenu()
+    listMenu.OpenMenu(none, none)
+    iResult = listMenu.GetResultInt()
+    while iResult > -1 && iResult < ReviveScript.ItemBlackList2.GetSize()
+      kItem = ReviveScript.ItemBlackList2.GetAt(iResult)
+      Int iType = kItem.GetType()
+      String sType = sType(iType)
+      Int iFormID = kItem.GetFormID()
+      Debug.Notification("Mark of Arkay - Name: " + kItem.GetName())
+      Debug.Notification("Mark of Arkay - Type: " + sType)
+      Debug.Notification("Mark of Arkay - Form ID: " + sDecToHex(iFormID))
+      iButton = moaItemIncludeConfirmMenu.Show(iType, kItem.GetGoldValue(), PlayerRef.GetItemCount(kItem), kItem.GetWeight(), iFormID)
+      if iButton == -1
+      elseif iButton == 0 ;yes
+        IncludeItem(kItem)
+      endif
+      listMenu.OpenMenu(none, none)
+      iResult = listMenu.GetResultInt()
+    endwhile
+    listMenu.ResetMenu()
+  else
+    Int iPage = 1
+    Int iPrevPage = -1
+    Int iTotal = 124
+    Int iTotalPages = (Count / iTotal) As Int
+    Int iLast = 127 ;Index of last item in last page
+    if (Count % iTotal) > 0
+      iTotalPages += 1
+      iLast = (Count % iTotal) + 3
+    endif
+    ForceCloseMenu()
+    Int i
+    Form kItem
+    while iPage > 0
+      if iPrevPage != iPage
+        iPrevPage = iPage
+        listMenu.ResetMenu()
+        if iPage == 1
+          listMenu.AddEntryItem((iPage + 1) + "/" + iTotalPages + " >", -1, -1, False)
+        else
+          listMenu.AddEntryItem("< " + (iPage - 1) + "/" + iTotalPages + "", -1, -1, False)
+        endif
+        listMenu.AddEntryItem("$mrt_MarkofArkay_TXT_GoToPage", -1, -1, False)
+        i = ((iPage - 1) * iTotal)
+        while i < iMin((iPage * iTotal), ReviveScript.ItemBlackList2.GetSize())
+          kItem = ReviveScript.ItemBlackList2.GetAt(i)
+          if kItem
+            if kItem.GetName()
+              sText = kItem.GetName()
+            else
+              sText = "?"
+            endif
+          else
+            sText = "?"
+          endif
+          if GetLength(sText) > 40
+            sText = Substring(sText, 0, 37) + "..."
+          endif
+          listMenu.AddEntryItem(sText, -1, -1, False)
+          i += 1
+        endwhile
+        if iPage < iTotalPages
+          listMenu.AddEntryItem((iPage + 1) + "/" + iTotalPages + " >", -1, -1, False)
+        else
+          listMenu.AddEntryItem("< " + (iPage - 1) + "/" + iTotalPages, -1, -1, False)
+        endif
+        listMenu.AddEntryItem("$mrt_MarkofArkay_TXT_Exit", -1, -1, False)
+      endif
+      listMenu.OpenMenu(none, none)
+      iResult = listMenu.GetResultInt()
+      if iResult == -1
+        iPage = 0
+        listMenu.ResetMenu()
+      else
+        if (iPage < iTotalPages && iResult == 126) || (iPage == iTotalPages && iResult == (iLast - 1))
+          if iPage < iTotalPages
+            iPage += 1
+          else
+            iPage -= 1
+          endif
+        elseif (iPage < iTotalPages && iResult == 127) || (iPage == iTotalPages && iResult == iLast)
+          iPage = 0
+          listMenu.ResetMenu()
+        elseif iResult == 0
+          if iPage > 1
+            iPage -= 1
+          else
+            iPage += 1
+          endif
+        elseif iResult == 1
+          UITextEntryMenu TextMenu = uiextensions.GetMenu("UITextEntryMenu", True) as UITextEntryMenu
+          TextMenu.OpenMenu(none, none)
+          String sResult = TextMenu.GetResultString()
+          i = 0
+          Bool bIsDigit = True
+          while (i < getLength(sResult) && bIsDigit)
+            if !IsDigit(GetNthChar(sResult, i))
+              bIsDigit = False
+            endif
+            i += 1
+          endwhile
+          if bIsDigit
+            if ((sResult As Int) >= 1 && (sResult As Int) <= iTotalPages)
+              iPage = sResult As Int
+            endif
+          endif
+        else
+          Int iIndex = ((iPage - 1) * iTotal) + (iResult - 2)
+          kItem = ReviveScript.ItemBlackList2.GetAt(iIndex)
+          Int iType = kItem.GetType()
+          String sType = sType(iType)
+          Int iFormID = kItem.GetFormID()
+          Debug.Notification("Mark of Arkay - Name: " + kItem.GetName())
+          Debug.Notification("Mark of Arkay - Type: " + sType)
+          Debug.Notification("Mark of Arkay - Form ID: " + sDecToHex(iFormID))
+          iButton = moaItemIncludeConfirmMenu.Show(iType, kItem.GetGoldValue(), PlayerRef.GetItemCount(kItem), kItem.GetWeight(), iFormID)
+          if iButton == -1
+          elseif iButton == 0 ;yes
+            IncludeItem(kItem)
+          endif
+        endif
+      endif
+    endwhile
+  endif
+endfunction
+
+function showIncludeItemMenuPU()
+  UIListMenu ListMenu = uiextensions.GetMenu("UIListMenu", True) as UIListMenu
+  Form[] ItemArr = JsonUtil.FormListToArray("/MarkofArkay/MOA_BlackLists", "ItemBlackList")
+  if !ListMenu || ItemArr.Length == 0
+    return
+  endif
+  ForceCloseMenu()
+  String sText
+  int iButton
+  Int iResult = 0
+  int count = ItemArr.Length
+  if count < 128
+    Int i = 0
+    Form kItem
+    while i < ItemArr.Length
+      kItem = ItemArr[i]
+      if kItem
+        if kItem.GetName()
+          sText = kItem.GetName()
+        else
+          sText = "?"
+        endif
+      else
+        sText = "?"
+      endif
+      if GetLength(sText) > 40
+        sText = Substring(sText, 0, 37) + "..."
+      endif
+      listMenu.AddEntryItem(sText, -1, -1, False)
+      i += 1
+    endwhile
+    listMenu.AddEntryItem("$mrt_MarkofArkay_TXT_Exit", -1, -1, False)
+    ForceCloseMenu()
+    listMenu.OpenMenu(none, none)
+    iResult = listMenu.GetResultInt()
+    while iResult > -1 && iResult < ItemArr.Length
+      kItem = ItemArr[iResult]
+      Int iType = kItem.GetType()
+      String sType = sType(iType)
+      Int iFormID = kItem.GetFormID()
+      Debug.Notification("Mark of Arkay - Name: " + kItem.GetName())
+      Debug.Notification("Mark of Arkay - Type: " + sType)
+      Debug.Notification("Mark of Arkay - Form ID: " + sDecToHex(iFormID))
+      iButton = moaItemIncludeConfirmMenu.Show(iType, kItem.GetGoldValue(), PlayerRef.GetItemCount(kItem), kItem.GetWeight(), iFormID)
+      if iButton == -1
+      elseif iButton == 0 ;yes
+        IncludeItem(kItem)
+      endif
+      listMenu.OpenMenu(none, none)
+      iResult = listMenu.GetResultInt()
+    endwhile
+    listMenu.ResetMenu()
+  else
+    Int iPage = 1
+    Int iPrevPage = -1
+    Int iTotal = 124
+    Int iTotalPages = (Count / iTotal) As Int
+    Int iLast = 127 ;Index of last item in last page
+    if (Count % iTotal) > 0
+      iTotalPages += 1
+      iLast = (Count % iTotal) + 3
+    endif
+    ForceCloseMenu()
+    Int i
+    Form kItem
+    while iPage > 0
+      if iPrevPage != iPage
+        iPrevPage = iPage
+        listMenu.ResetMenu()
+        if iPage == 1
+          listMenu.AddEntryItem((iPage + 1) + "/" + iTotalPages + " >", -1, -1, False)
+        else
+          listMenu.AddEntryItem("< " + (iPage - 1) + "/" + iTotalPages + "", -1, -1, False)
+        endif
+        listMenu.AddEntryItem("$mrt_MarkofArkay_TXT_GoToPage", -1, -1, False)
+        i = ((iPage - 1) * iTotal)
+        while i < iMin((iPage * iTotal), ItemArr.Length)
+          kItem = ItemArr[i]
+          if kItem
+            if kItem.GetName()
+              sText = kItem.GetName()
+            else
+              sText = "?"
+            endif
+          else
+            sText = "?"
+          endif
+          if GetLength(sText) > 40
+            sText = Substring(sText, 0, 37) + "..."
+          endif
+          listMenu.AddEntryItem(sText, -1, -1, False)
+          i += 1
+        endwhile
+        if iPage < iTotalPages
+          listMenu.AddEntryItem((iPage + 1) + "/" + iTotalPages + " >", -1, -1, False)
+        else
+          listMenu.AddEntryItem("< " + (iPage - 1) + "/" + iTotalPages, -1, -1, False)
+        endif
+        listMenu.AddEntryItem("$mrt_MarkofArkay_TXT_Exit", -1, -1, False)
+      endif
+      listMenu.OpenMenu(none, none)
+      iResult = listMenu.GetResultInt()
+      if iResult == -1
+        iPage = 0
+        listMenu.ResetMenu()
+      else
+        if (iPage < iTotalPages && iResult == 126) || (iPage == iTotalPages && iResult == (iLast - 1))
+          if iPage < iTotalPages
+            iPage += 1
+          else
+            iPage -= 1
+          endif
+        elseif (iPage < iTotalPages && iResult == 127) || (iPage == iTotalPages && iResult == iLast)
+          iPage = 0
+          listMenu.ResetMenu()
+        elseif iResult == 0
+          if iPage > 1
+            iPage -= 1
+          else
+            iPage += 1
+          endif
+        elseif iResult == 1
+          UITextEntryMenu TextMenu = uiextensions.GetMenu("UITextEntryMenu", True) as UITextEntryMenu
+          TextMenu.OpenMenu(none, none)
+          String sResult = TextMenu.GetResultString()
+          i = 0
+          Bool bIsDigit = True
+          while (i < getLength(sResult) && bIsDigit)
+            if !IsDigit(GetNthChar(sResult, i))
+              bIsDigit = False
+            endif
+            i += 1
+          endwhile
+          if bIsDigit
+            if ((sResult As Int) >= 1 && (sResult As Int) <= iTotalPages)
+              iPage = sResult As Int
+            endif
+          endif
+        else
+          Int iIndex = ((iPage - 1) * iTotal) + (iResult - 2)
+          kItem = ItemArr[iIndex]
+          Int iType = kItem.GetType()
+          String sType = sType(iType)
+          Int iFormID = kItem.GetFormID()
+          Debug.Notification("Mark of Arkay - Name: " + kItem.GetName())
+          Debug.Notification("Mark of Arkay - Type: " + sType)
+          Debug.Notification("Mark of Arkay - Form ID: " + sDecToHex(iFormID))
+          iButton = moaItemIncludeConfirmMenu.Show(iType, kItem.GetGoldValue(), PlayerRef.GetItemCount(kItem), kItem.GetWeight(), iFormID)
+          if iButton == -1
+          elseif iButton == 0 ;yes
+            IncludeItem(kItem)
+          endif
+        endif
+      endif
+    endwhile
+  endif
 endfunction

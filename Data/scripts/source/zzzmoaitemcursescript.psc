@@ -7,6 +7,8 @@ zzzmoaReviveMCM property ConfigMenu auto
 Form[] property Equipment auto Hidden
 MiscObject property Gold001 auto
 SoulGem property GrandFilledGem auto
+FormList property ItemBlackList auto
+FormList property ItemBlackList2 auto
 Container property ItemChest auto
 zzzmoaitemcheckerscriptA property ItemcheckerA auto
 zzzmoaitemcheckerscriptB property ItemcheckerB auto
@@ -38,8 +40,6 @@ Float property fLostSouls auto Hidden
 Int property iCheckLimit=0 auto Hidden
 Int property iItemCheckers=0 auto Hidden
 Int property iTotalValues=0 auto Hidden
-FormList property ItemBlackList auto
-FormList property ItemBlackList2 auto
 
 event On_MOA_checkCachedItems(string eventName, string strArg, float numArg, Form sender)
   Debug.trace("MarkOfArkay: On_MOA_checkCachedItems() triggered by " + sender)
@@ -77,12 +77,6 @@ event On_MOA_checkCachedItems(string eventName, string strArg, float numArg, For
   checkAndFixFormList(checkedItemsInvalid, abCheckSize=True)
   Debug.trace("MarkOfArkay: checking cached items finished.")
 endevent
-
-function checkBlackListedItems()
-  if !ConfigMenu.bPUOK
-      checkAndFixFormList(ItemBlackList2, abCheckSize=True)
-  endif
-endfunction
 
 function AddStolenItemMarker(Actor ActorRef) ;Thief can only steal souls or only no physical item stolen
   if ActorRef
@@ -747,6 +741,12 @@ Bool function bSoulReduced()
   return fLostSouls > 0
 endfunction
 
+function checkBlackListedItems()
+  if !ConfigMenu.bPUOK
+    checkAndFixFormList(ItemBlackList2, abCheckSize=True)
+  endif
+endfunction
+
 Int function checkedStatus(Form kItem)
   if kItem
     if (checkedItemsValid.Find(kItem) > -1)
@@ -759,7 +759,7 @@ Int function checkedStatus(Form kItem)
 endfunction
 
 Bool function isItemBlacklisted(form akItem)
-  if ConfigMenu.bPUOK 
+  if ConfigMenu.bPUOK
     if JsonUtil.FormListHas("/MarkofArkay/MOA_BlackLists", "ItemBlackList", akItem)
       return true
     endif

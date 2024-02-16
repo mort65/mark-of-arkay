@@ -59,7 +59,7 @@ state Checking
         bContinue = True
       endif
       if !bContinue
-       if ReviveScript.ItemScript.isItemBlacklisted(kItem)
+        if ReviveScript.ItemScript.isItemBlacklisted(kItem)
           Debug.TraceConditional("MarkOfArkay: (" + kItem + "," + kItem.GetName() + ") Skipped -> IsInBlackList()", bIsLoggingEnabled)
           bContinue = True
         endif

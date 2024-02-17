@@ -72,7 +72,6 @@ event On_MOA_checkCachedItems(string eventName, string strArg, float numArg, For
       endif
     endif
   endwhile
-  checkBlackListedItems()
   checkAndFixFormList(checkedItemsValid, abCheckSize=True)
   checkAndFixFormList(checkedItemsInvalid, abCheckSize=True)
   Debug.trace("MarkOfArkay: checking cached items finished.")
@@ -739,12 +738,6 @@ endfunction
 
 Bool function bSoulReduced()
   return fLostSouls > 0
-endfunction
-
-function checkBlackListedItems()
-  if !ConfigMenu.bPUOK
-    checkAndFixFormList(ItemBlackList2, abCheckSize=True)
-  endif
 endfunction
 
 Int function checkedStatus(Form kItem)

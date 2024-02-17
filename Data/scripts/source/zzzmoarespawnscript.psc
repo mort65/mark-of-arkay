@@ -116,7 +116,6 @@ Bool bFirstTryFailed = False
 event OnCheckingMarkers(Form sender, Bool bTavern, Bool bExtra, Bool bCustom, Bool bFast)
   if sender == (self As Quest) As Form
     checkMarkers(bTavern, bExtra, bCustom, bFast)
-    checkBlackListedLocations()
   endif
 endevent
 
@@ -1639,12 +1638,6 @@ Bool function bTryToMoveByQuest(Quest aTargetDetector, ReferenceAlias akTarget, 
   endif
   aTargetDetector.Stop()
   return False
-endfunction
-
-function checkBlackListedLocations()
-  if !ConfigMenu.bPUOK
-    checkAndFixFormList(ReviveScript.LocationBlackList2, abCheckSize=True)
-  endif
 endfunction
 
 function checkMarkers(Bool bCheckInn, Bool bCheckExtra, Bool bCheckCustom, Bool bFast=False)

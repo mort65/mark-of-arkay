@@ -116,7 +116,7 @@ Bool function bIsInteger(String s) Global
 endfunction
 
 FormList function checkAndFixFormList(FormList akList, Bool abCheckSize=False, Bool abOnlyRef=False, Bool abCheckRefPlace=False, Int aiBaseType=-1, FormList akOtherList=None) Global
-{Checking a Form list for nones, invalid refs, reducing number of forms to 128 and removing invalids in place or adding valid forms to another form list.}
+{Checking a FormList for none, invalid refs, reducing the number of forms to 128 to reduce delay, and removing invalids in place or adding valid forms to another form list.}
   Bool bHasNone = False
   Int i = 0
   while i < akList.GetSize() && !bHasNone

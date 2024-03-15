@@ -573,6 +573,7 @@ Bool function rapePlayer(Actor[] rapists)
       playerRef.ResetHealthAndLimbs()
       Game.EnablePlayerControls(abMovement=False, abFighting=False, abCamSwitch=true, abLooking=true, abSneaking=False, abMenu=False, abActivate=False, abJournalTabs=False)
     endif
+    Victim1.Clear() ;to fix camera switch bug related to package idle
     Bool sceneStarted = ReviveScript.OStimInterface.StartSex(rapistArray, playerRef)
     if sceneStarted
       ReviveScript.RegisterForModEvent("ostim_end", "zzzmoa_ostim_Rape_End")
@@ -592,6 +593,7 @@ Bool function rapePlayer(Actor[] rapists)
         endwhile
       endwhile
     endif
+    Victim1.ForceRefTo(PlayerRef)
     result = sceneStarted
   elseif interface == "fg"
     if playerRef.IsBleedingOut()

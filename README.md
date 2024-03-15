@@ -67,7 +67,7 @@ Some of the MCM settings can be locked from the debug page. You can set a maximu
     powerofthree's Papyrus Extender
     SexLab
     Flower Girls
-    OStim
+    OStim Standalone
     Simple Slavery ++
     Sanguine Debauchery enhanced: SD+ 
 

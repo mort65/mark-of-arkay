@@ -42,6 +42,10 @@ Bool function StartScene(Actor Dom, Actor Sub, Bool zUndressDom=False, Bool zUnd
   return False
 endfunction
 
+Bool function StartSex(Actor[] Actors, Actor partner)
+  return False
+endfunction
+
 state Installed
   event On_MOA_Int_PlayerLoadsGame(string eventName, string strArg, float numArg, Form sender)
     PlayerLoadsGame()
@@ -49,5 +53,9 @@ state Installed
 
   Bool function StartScene(Actor Dom, Actor Sub, Bool zUndressDom=False, Bool zUndressSub=False, Bool zAnimateUndress=False, String zStartingAnimation="", Actor zThirdActor=None, ObjectReference Bed=None, Bool Aggressive=False, Actor AggressingActor=None)
     return zzzmoa_int_ostim.StartSceneOS(OSexIntegrationMainQuest, Dom, Sub, zUndressDom, zUndressSub, zAnimateUndress, zStartingAnimation, zThirdActor, Bed, Aggressive, AggressingActor)
+  endfunction
+
+  Bool function StartSex(Actor[] Actors, Actor partner)
+    return zzzmoa_int_ostim.StartSexOS(OSexIntegrationMainQuest, Actors, partner)
   endfunction
 endstate

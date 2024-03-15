@@ -27,6 +27,8 @@ Bool property bIsBusy=False auto Hidden
 Faction property calmFaction auto
 Actor property playerRef auto
 
+String[] _anim_interfaces
+
 event OnInit()
   RegisterForModEvent("MOA_Int_PlayerLoadsGame", "On_MOA_Int_PlayerLoadsGame")
 endevent
@@ -571,48 +573,7 @@ Bool function rapePlayer(Actor[] rapists)
       playerRef.ResetHealthAndLimbs()
       Game.EnablePlayerControls(abMovement=False, abFighting=False, abCamSwitch=true, abLooking=true, abSneaking=False, abMenu=False, abActivate=False, abJournalTabs=False)
     endif
-    if (rapistArray.length > 1) && ((rapistArray[1] As Actor) != None)
-      extraRapist = rapistArray[1]
-    else
-      extraRapist = None
-      int l = PacifiedHostiles.GetSize()
-      if l > 0
-        i = utility.randomint(0, l - 1)
-        int j = i - 1
-        if j < 0
-          j = l - 1
-        endif
-        Bool bBreak = False
-        while !bBreak && (extraRapist == None)
-          extraRapist = PacifiedHostiles.getAt(i) as Actor
-          if (extraRapist == rapistArray[0]) || !isRapistValid(extraRapist)
-            extraRapist = None
-          endif
-          if i == j
-            bBreak = True
-          elseif i == (l - 1)
-            i = 0
-          else
-            i += 1
-          endif
-        endwhile
-      endif
-    endif
-    Bool sceneStarted = False
-    if extraRapist && (Utility.RandomInt(0, 1) == 1)
-      if (ConfigMenu.fMaxRapists > 1) && (Utility.RandomInt(0, 1) == 1)
-        rapist2.ForceRefTo(extraRapist)
-        if (getActorSex(extraRapist) == 0) && (getActorSex(rapistArray[0]) == 1) ;Swap them
-          sceneStarted = ReviveScript.OStimInterface.StartScene(Dom=extraRapist, Sub=playerRef, zThirdActor=rapistArray[0], Aggressive=True, AggressingActor=extraRapist)
-        else
-          sceneStarted = ReviveScript.OStimInterface.StartScene(Dom=rapistArray[0], Sub=playerRef, zThirdActor=extraRapist, Aggressive=True, AggressingActor=rapistArray[0])
-        endif
-      else
-        sceneStarted = ReviveScript.OStimInterface.StartScene(Dom=extraRapist, Sub=playerRef, zThirdActor=None, Aggressive=True, AggressingActor=extraRapist)
-      endif
-    else
-      sceneStarted = ReviveScript.OStimInterface.StartScene(Dom=rapistArray[0], Sub=playerRef, zThirdActor=None, Aggressive=True, AggressingActor=rapistArray[0])
-    endif
+    Bool sceneStarted = ReviveScript.OStimInterface.StartSex(rapistArray, playerRef)
     if sceneStarted
       ReviveScript.RegisterForModEvent("ostim_end", "zzzmoa_ostim_Rape_End")
       bIsBusy = True

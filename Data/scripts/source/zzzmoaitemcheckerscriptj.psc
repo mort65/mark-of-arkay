@@ -54,7 +54,7 @@ state Checking
         bContinue = False
       endif
       kItem = akInChest.GetNthForm(iIndex)
-      if (!kItem)
+      if !kItem || !kItem.GetName()
         Debug.TraceConditional("MarkOfArkay: Unknown item at index(" + iIndex + ")", bIsLoggingEnabled)
         bContinue = True
       endif
@@ -114,8 +114,14 @@ state Checking
         endif
       endif
       if (!bContinue && (checked == -1))
+        if ((kItem As Armor) && (((kItem as Armor).GetSlotMask() == 0) || ((kItem as Armor).GetNumArmorAddons() == 0)))
+          Debug.TraceConditional("MarkOfArkay: (" + kItem + "," + kItem.GetName() + ") Skipped -> IsUnequipable()", bIsLoggingEnabled)
+          bContinue = True
+        endif
+      endif
+      if (!bContinue && (checked == -1))
         if ConfigMenu.bCheckKeyword
-          if (kItem.HasKeywordString("zzzmoa_ignoreitem") || kItem.HasKeywordString("vendornosale") || kItem.HasKeywordString("magicdisallowenchanting") || kItem.HasKeywordString("sos_underwear") || kItem.HasKeywordString("sos_genitals"))
+          if ReviveScript.ItemScript.hasInvalidKeyword(kItem)
             Debug.TraceConditional("MarkOfArkay: (" + kItem + "," + kItem.GetName() + ") skipped -> InvalidKeyword()", bIsLoggingEnabled)
             bContinue = True
           endif

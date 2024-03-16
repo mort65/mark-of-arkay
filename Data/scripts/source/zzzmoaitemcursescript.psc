@@ -487,7 +487,7 @@ function PO3LoseOtherItems() ;Slower
     endif
     ExcludedIndexArr[iChecked] = iIndex
     kItem = RemovableItemsArr[iIndex]
-    if (!kItem)
+    if (!kItem || !kItem.GetName())
       Debug.TraceConditional("MarkOfArkay: Unknown item at index(" + iIndex + ")", bIsLoggingEnabled)
       bContinue = True
     endif
@@ -525,9 +525,15 @@ function PO3LoseOtherItems() ;Slower
         bContinue = True
       endif
     endif
+    if !bContinue 
+      if ((kItem As Armor) && (((kItem as Armor).GetSlotMask() == 0) || ((kItem as Armor).GetNumArmorAddons() == 0)))
+        Debug.TraceConditional("MarkOfArkay: (" + kItem + "," + kItem.GetName() + ") Skipped -> IsUnequipable()", bIsLoggingEnabled)
+        bContinue = True
+      endif
+    endif
     if !bContinue
       if ConfigMenu.bCheckKeyword
-        if (kItem.HasKeywordString("zzzmoa_ignoreitem") || kItem.HasKeywordString("vendornosale") || kItem.HasKeywordString("magicdisallowenchanting") || kItem.HasKeywordString("sos_underwear") || kItem.HasKeywordString("sos_genitals"))
+        if hasInvalidKeyword(kItem)
           Debug.TraceConditional("MarkOfArkay: (" + kItem + "," + kItem.GetName() + ") skipped -> InvalidKeyword()", bIsLoggingEnabled)
           bContinue = True
         endif
@@ -780,9 +786,15 @@ function removeEquipments(ObjectReference akInChest, ObjectReference akOutChest,
     i -= 1
     bContinue = False
     kItem = Equipment[i]
-    if (!kItem)
+    if !kItem
       iChecked -= 1
       bContinue = True
+    endif
+    if !bContinue
+      if !kItem.GetName()
+        Debug.TraceConditional("MarkOfArkay: (" + kItem + ",) Skipped -> IsUnknown()", bIsLoggingEnabled)
+        bContinue = True
+      endif
     endif
     if !bContinue
       if isItemBlacklisted(kItem)
@@ -828,8 +840,14 @@ function removeEquipments(ObjectReference akInChest, ObjectReference akOutChest,
       endif
     endif
     if (!bContinue && (checked == -1))
+      if ((kItem As Armor) && (((kItem as Armor).GetSlotMask() == 0) || ((kItem as Armor).GetNumArmorAddons() == 0)))
+        Debug.TraceConditional("MarkOfArkay: (" + kItem + "," + kItem.GetName() + ") Skipped -> IsUnequipable()", bIsLoggingEnabled)
+        bContinue = True
+      endif
+    endif
+    if (!bContinue && (checked == -1))
       if ConfigMenu.bCheckKeyword
-        if (kItem.HasKeywordString("zzzmoa_ignoreitem") || kItem.HasKeywordString("vendornosale") || kItem.HasKeywordString("magicdisallowenchanting") || kItem.HasKeywordString("sos_underwear") || kItem.HasKeywordString("sos_genitals"))
+        if hasInvalidKeyword(kItem)
           Debug.TraceConditional("MarkOfArkay: (" + kItem + "," + kItem.GetName() + ") skipped -> InvalidKeyword()", bIsLoggingEnabled)
           bContinue = True
         endif
@@ -921,3 +939,43 @@ function resetChecked()
   checkedItemsValid.Revert()
   checkedItemsInvalid.Revert()
 endfunction
+
+
+Bool Function hasInvalidKeyword(Form kItem)
+  if kItem.HasKeywordString("zzzmoa_ignoreitem")
+    return True
+  endif
+  if kItem.HasKeywordString("vendornosale")
+    return true
+  endif
+  if kItem.HasKeywordString("magicdisallowenchanting")
+    return true
+  endif
+  if kItem.HasKeywordString("sos_underwear")
+    return true
+  endif
+  if kItem.HasKeywordString("sos_genitals")
+    return true
+  endif
+  ;if kItem.HasKeywordString("sexlabnostrip")
+  ;  return true
+  ;endif
+  if kItem.HasKeywordString("zad_questitem")
+    return true
+  endif
+  if kItem.HasKeywordString("zad_lockable")
+    return true
+  endif 
+  if kItem.HasKeywordString("zad_inventorydevice")
+    return true
+  endif 
+    if kItem.HasKeywordString("zbfworndevice")
+    return true
+  endif 
+  if kItem.HasKeywordString("toystoy")
+    return true
+  endif 
+  return False
+endfunction
+
+

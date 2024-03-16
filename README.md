@@ -92,7 +92,7 @@ List of known incompatible mods:
 
 *VioLens - A Killmove Mod: Either place this mod lower than Violens in your load order or enable 'Player KillMove immunity' in its MCM Menu.*
 
-*Survival Mod:  You can't revive/respawn after freezing to death, but it can be disabled by installing Conner's Survival Mode and disabling “Death From Cold” from the MCM menu.*
+*Survival Mod:  You can't revive/respawn after freezing to death, but it can be disabled by installing "Conner's Survival Mode" and disabling “Death From Cold” from the MCM menu.*
 
 **Installation**
 

@@ -83,6 +83,14 @@ state Checking
           bContinue = True
         endif
       endif
+      if !bContinue ;Only A which is the Player needs to check for this, for other containers equippments will be excluded when transfering items inside them. 
+        if ConfigMenu.iLoseInclusion == 2 ;unequipped items
+          if Equipment.Find(kItem) > -1
+            Debug.TraceConditional("MarkOfArkay: (" + kItem + "," + kItem.GetName() + ") Skipped -> IsEquipped()", bIsLoggingEnabled)
+            bContinue = true
+          endif
+        endif
+      endif
       if !bContinue
         iAmount = akInChest.GetItemCount(kItem)
         if ConfigMenu.iLoseInclusion == 1

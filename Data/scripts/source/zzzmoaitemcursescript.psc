@@ -260,9 +260,7 @@ function LoseItems()
   ValuableItemsChest.RemoveAllItems(playerRef as ObjectReference, true, true)
   utility.wait(1.0)
   if ConfigMenu.bRespawnNaked
-    if !ConfigMenu.bExcludeQuestItems
-      PlayerRef.Unequipall()
-    endif
+    UnequipPlayerItems()
   else
     EquipItems(PlayerRef, RightHand, LeftHand)
   endif
@@ -976,6 +974,37 @@ Bool Function hasInvalidKeyword(Form kItem)
     return true
   endif 
   return False
+endfunction
+
+
+Function UnequipPlayerItems(Bool bCheckItems = true)
+  if !bCheckItems
+    playerRef.Unequipall()
+    return
+  endif
+  Form kArmor
+  int iIndex = 30
+  while iIndex < 61
+    if (iIndex != 50) && (iIndex != 51) ;50=DecapitateHead 51=Decapitate 61=FX01
+      kArmor = playerRef.GetWornForm(Armor.GetMaskForSlot(iIndex))
+      if (kArmor As Armor) && !QuestItems.HasForm(kArmor)
+        if !kArmor.HasKeywordString("zad_inventorydevice") && \
+        !kArmor.HasKeywordString("zzzmoa_ignoreitem") && \
+        !kArmor.HasKeywordString("sos_underwear") && \
+        !kArmor.HasKeywordString("zbfworndevice") && \
+        !kArmor.HasKeywordString("zad_questitem") && \
+        !kArmor.HasKeywordString("sexlabnostrip") && \
+        !kArmor.HasKeywordString("ostimnostrip") && \
+        !kArmor.HasKeywordString("zad_lockable") && \
+        !kArmor.HasKeywordString("sos_genitals") && \
+        !kArmor.HasKeywordString("toystoy")
+          playerRef.UnequipItemSlot(iIndex)
+        endif
+      endif
+    endif
+    iIndex += 1
+  endWhile
+  return
 endfunction
 
 

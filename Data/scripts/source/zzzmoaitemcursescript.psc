@@ -259,9 +259,7 @@ function LoseItems()
   transferItems(ValuableItemsChest, PlayerRef as ObjectReference)
   ValuableItemsChest.RemoveAllItems(playerRef as ObjectReference, true, true)
   utility.wait(1.0)
-  if ConfigMenu.bRespawnNaked
-    UnequipPlayerItems()
-  else
+  if !ConfigMenu.bRespawnNaked
     EquipItems(PlayerRef, RightHand, LeftHand)
   endif
   bIsItemsRemoved = True
@@ -976,29 +974,38 @@ Bool Function hasInvalidKeyword(Form kItem)
   return False
 endfunction
 
-
-Function UnequipPlayerItems(Bool bCheckItems = true)
-  if !bCheckItems
-    playerRef.Unequipall()
+Function undressActor(Actor akActor, Bool abCheckItems = true)
+  if !akActor
     return
+  endif
+  if !abCheckItems
+    akActor.Unequipall()
+    return
+  endif
+  Form[] QuestItemsArr
+  if ConfigMenu.bPO3OK
+    QuestItemsArr = PO3_SKSEFunctions.GetQuestItems(akActor As ObjectReference)
   endif
   Form kArmor
   int iIndex = 30
   while iIndex < 61
     if (iIndex != 50) && (iIndex != 51) ;50=DecapitateHead 51=Decapitate 61=FX01
-      kArmor = playerRef.GetWornForm(Armor.GetMaskForSlot(iIndex))
-      if (kArmor As Armor) && !QuestItems.HasForm(kArmor)
-        if !kArmor.HasKeywordString("zad_inventorydevice") && \
-        !kArmor.HasKeywordString("zzzmoa_ignoreitem") && \
-        !kArmor.HasKeywordString("sos_underwear") && \
-        !kArmor.HasKeywordString("zbfworndevice") && \
-        !kArmor.HasKeywordString("zad_questitem") && \
-        !kArmor.HasKeywordString("sexlabnostrip") && \
-        !kArmor.HasKeywordString("ostimnostrip") && \
-        !kArmor.HasKeywordString("zad_lockable") && \
-        !kArmor.HasKeywordString("sos_genitals") && \
-        !kArmor.HasKeywordString("toystoy")
-          playerRef.UnequipItemSlot(iIndex)
+      kArmor = akActor.GetWornForm(Armor.GetMaskForSlot(iIndex))
+      if (kArmor As Armor)
+        if (QuestItemsArr.Find(kArmor) > -1)
+        elseif kArmor.HasKeywordString("zad_inventorydevice")
+        elseif kArmor.HasKeywordString("zzzmoa_ignoreitem")
+        elseif kArmor.HasKeywordString("sos_underwear")
+        elseif kArmor.HasKeywordString("zbfworndevice")
+        elseif kArmor.HasKeywordString("zad_questitem")
+        elseif kArmor.HasKeywordString("sexlabnostrip")
+        elseif kArmor.HasKeywordString("ostimnostrip")
+        elseif kArmor.HasKeywordString("zad_lockable")
+        elseif kArmor.HasKeywordString("sos_genitals")
+        elseif kArmor.HasKeywordString("toystoy")
+        else
+          akActor.UnequipItemSlot(iIndex)
+          utility.wait(0.1)
         endif
       endif
     endif

@@ -1493,7 +1493,7 @@ function RevivePlayer(Bool bRevive)
         Utility.Wait(1.0)
         NPCScript.ToggleFollower(True)
         if (ConfigMenu.bRespawnNaked && !NPCScript.bInBeastForm())
-          PlayerRef.UnequipAll()
+          ItemScript.undressActor(playerRef, true)
         endif
         if ((ConfigMenu.bArkayCurse && !ConfigMenu.bIsArkayCurseTemporary) && (moaThiefNPC01.IsRunning() || (moaSoulMark01.IsRunning())))
           PlayerRef.DispelSpell(ArkayCurseTemp)

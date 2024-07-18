@@ -538,6 +538,16 @@ event zzzmoa_sexlab_Rape_Ending(int tid, bool HasPlayer)
   endif
 endevent
 
+
+Float function getBaseVersion()
+  return 0.0
+endfunction
+
+Float function getCurrentVersion()
+  return getBaseVersion() + 3.48
+endfunction
+
+
 function AutoRemoveItem(Int i) ;trade without menu
   Int j = i - 1
   Int count = 0

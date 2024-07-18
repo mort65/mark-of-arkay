@@ -4157,12 +4157,14 @@ event OnPageReset(String page)
     endif
     oidLockPermaDeath = AddToggleOption("$mrt_MarkofArkay_PermaDeathLock", bLockPermaDeath, flags)
     SetCursorPosition(1)
+     _AddTextOption("Mark of Arkay v" + ReviveScript.getCurrentVersion(), "", OPTION_FLAG_DISABLED)
+    SetCursorPosition(3)
     if (iNotTradingAftermath == 1 && !ReviveScript.RespawnScript.bCanTeleport())
       _AddHeaderOption("$mrt_MarkofArkay_HEAD_CanNotRespawn")
     else
       _AddHeaderOption("$mrt_MarkofArkay_HEAD_Curses")
     endif
-    SetCursorPosition(3)
+    SetCursorPosition(5)
     flags = OPTION_FLAG_DISABLED
     String sText
     Int iCount
@@ -4186,7 +4188,7 @@ event OnPageReset(String page)
       sText = "$Disabled"
     endif
     oidLostItemsInfo = _AddTextOption("$mrt_MarkofArkay_Cur_Lost_Items", sText, flags)
-    SetCursorPosition(5)
+    SetCursorPosition(7)
     flags = OPTION_FLAG_DISABLED
     if bIsInfoEnabled
       iCount = ReviveScript.SkillScript.iGetReducedSkillsCount(False)
@@ -4198,7 +4200,7 @@ event OnPageReset(String page)
       sText = "$Disabled"
     endif
     oidLostSkillsInfo = _AddTextOption("$mrt_MarkofArkay_LostSkillsInfo", sText, flags)
-    SetCursorPosition(7)
+    SetCursorPosition(9)
     flags = OPTION_FLAG_DISABLED
     if bIsInfoEnabled
       sText = ReviveScript.ItemScript.fLostSouls As Int
@@ -4206,9 +4208,9 @@ event OnPageReset(String page)
       sText = "$Disabled"
     endif
     _AddTextOption("$mrt_MarkofArkay_Lost_Dragon_Souls", sText, flags)
-    SetCursorPosition(9)
-    _AddHeaderOption("$mrt_MarkofArkay_HEAD_RespawnPoint")
     SetCursorPosition(11)
+    _AddHeaderOption("$mrt_MarkofArkay_HEAD_RespawnPoint")
+    SetCursorPosition(13)
     flags = OPTION_FLAG_DISABLED
     if (moaState.getValue() == 1) && bIsInfoEnabled
       sRPCellName = "$Unknown"
@@ -4283,9 +4285,9 @@ event OnPageReset(String page)
       endif
     endif
     _AddTextOption("$mrt_MarkofArkay_Respawn_Cell_Name", sRPCellName, flags)
-    SetCursorPosition(13)
-    _AddTextOption("$mrt_MarkofArkay_Respawn_Cell_FormID", sRPCellFormID, flags)
     SetCursorPosition(15)
+    _AddTextOption("$mrt_MarkofArkay_Respawn_Cell_FormID", sRPCellFormID, flags)
+    SetCursorPosition(17)
     if fDistance < 0.0
       _AddTextOption("$mrt_MarkofArkay_Dis_From_Respawn", sRPDistance, flags)
     else
@@ -4295,9 +4297,9 @@ event OnPageReset(String page)
         _AddTextOption("$mrt_MarkofArkay_Dis_From_Respawn", "+999999", flags)
       endif
     endif
-    SetCursorPosition(17)
-    _AddHeaderOption("$mrt_MarkofArkay_HEAD_History")
     SetCursorPosition(19)
+    _AddHeaderOption("$mrt_MarkofArkay_HEAD_History")
+    SetCursorPosition(21)
     if bIsInfoEnabled && (moaState.getValue() == 1)
       if iTotalBleedOut > 99999999
         _AddTextOption("$Bleedouts", "+99999999", flags)
@@ -4307,7 +4309,7 @@ event OnPageReset(String page)
     else
       _AddTextOption("$Bleedouts", "$Disabled", flags)
     endif
-    SetCursorPosition(21)
+    SetCursorPosition(23)
     if bIsInfoEnabled && (moaState.getValue() == 1)
       if iTotalRevives > 99999999
         _AddTextOption("$Revivals", "+99999999", flags)
@@ -4317,7 +4319,7 @@ event OnPageReset(String page)
     else
       _AddTextOption("$Revivals", "$Disabled", flags)
     endif
-    SetCursorPosition(23)
+    SetCursorPosition(25)
     if bIsInfoEnabled && (moaState.getValue() == 1)
       if iRevivesByFollower > 99999999
         _AddTextOption("$mrt_MarkofArkay_Revive_By_Follower", "+99999999", flags)
@@ -4327,7 +4329,7 @@ event OnPageReset(String page)
     else
       _AddTextOption("$mrt_MarkofArkay_Revive_By_Follower", "$Disabled", flags)
     endif
-    SetCursorPosition(25)
+    SetCursorPosition(27)
     if bIsInfoEnabled && (moaState.getValue() == 1)
       if iRevivesByPotion > 99999999
         _AddTextOption("$mrt_MarkofArkay_Revive_With_Potion", "+99999999", flags)
@@ -4337,7 +4339,7 @@ event OnPageReset(String page)
     else
       _AddTextOption("$mrt_MarkofArkay_Revive_With_Potion", "$Disabled", flags)
     endif
-    SetCursorPosition(27)
+    SetCursorPosition(29)
     if bIsInfoEnabled && (moaState.getValue() == 1)
       if iRevivesByRevivalSpell > 99999999
         _AddTextOption("$mrt_MarkofArkay_Revive_With_Revival_Spell", "+99999999", flags)
@@ -4347,7 +4349,7 @@ event OnPageReset(String page)
     else
       _AddTextOption("$mrt_MarkofArkay_Revive_With_Revival_Spell", "$Disabled", flags)
     endif
-    SetCursorPosition(29)
+    SetCursorPosition(31)
     if bIsInfoEnabled && (moaState.getValue() == 1)
       if iRevivesBySacrificeSpell > 99999999
         _AddTextOption("$mrt_MarkofArkay_Revive_With_Sacrifice_Spell", "+99999999", flags)
@@ -4357,7 +4359,7 @@ event OnPageReset(String page)
     else
       _AddTextOption("$mrt_MarkofArkay_Revive_With_Sacrifice_Spell", "$Disabled", flags)
     endif
-    SetCursorPosition(31)
+    SetCursorPosition(33)
     if bIsInfoEnabled && (moaState.getValue() == 1)
       if iRevivesByTrade > 99999999
         _AddTextOption("$mrt_MarkofArkay_Revive_By_Trading", "+99999999", flags)
@@ -4367,7 +4369,7 @@ event OnPageReset(String page)
     else
       _AddTextOption("$mrt_MarkofArkay_Revive_By_Trading", "$Disabled", flags)
     endif
-    SetCursorPosition(33)
+    SetCursorPosition(35)
     if bIsInfoEnabled && (moaState.getValue() == 1)
       if iTotalRespawn > 99999999
         _AddTextOption("$Respawns", "+99999999", flags)
@@ -4377,7 +4379,7 @@ event OnPageReset(String page)
     else
       _AddTextOption("$Respawns", "$Disabled", flags)
     endif
-    SetCursorPosition(35)
+    SetCursorPosition(37)
     if bIsInfoEnabled && (moaState.getValue() == 1)
       if iDestroyedItems > 99999999
         _AddTextOption("$mrt_MarkofArkay_Destroyed_Items", "+99999999", flags)
@@ -4387,28 +4389,28 @@ event OnPageReset(String page)
     else
       _AddTextOption("$mrt_MarkofArkay_Destroyed_Items", "$Disabled", flags)
     endif
-    SetCursorPosition(37)
-    _AddHeaderOption("$mrt_MarkofArkay_HEAD_Dependency")
     SetCursorPosition(39)
-    _AddTextOption("SKSE", bSKSEOK As String, flags)
+    _AddHeaderOption("$mrt_MarkofArkay_HEAD_Dependency")
     SetCursorPosition(41)
-    _AddTextOption("UIExtensions", bUIEOK As String, flags)
+    _AddTextOption("SKSE", bSKSEOK As String, flags)
     SetCursorPosition(43)
-    _AddHeaderOption("$mrt_MarkofArkay_HEAD_OptionalDependency")
+    _AddTextOption("UIExtensions", bUIEOK As String, flags)
     SetCursorPosition(45)
-    _AddTextOption("FISSES", bFISSOK As String, flags)
+    _AddHeaderOption("$mrt_MarkofArkay_HEAD_OptionalDependency")
     SetCursorPosition(47)
-    _AddTextOption("PapyrusUtil ", bPUOK As String, flags)
+    _AddTextOption("FISSES", bFISSOK As String, flags)
     SetCursorPosition(49)
+    _AddTextOption("PapyrusUtil ", bPUOK As String, flags)
+    SetCursorPosition(51)
     _AddTextOption("PO3 Papyrus Extender", bPO3Ok As String, flags)
 
     ;SetCursorPosition(51)
     ;_AddTextOption("Autorun Console Commands", bARCCOK As String, flags)
-    SetCursorPosition(51)
-    AddTextOption("OStim", bIsOStimActive As String, flags)
     SetCursorPosition(53)
-    AddTextOption("Flower Girls", bIsFlowerGirlsActive As String, flags)
+    AddTextOption("OStim", bIsOStimActive As String, flags)
     SetCursorPosition(55)
+    AddTextOption("Flower Girls", bIsFlowerGirlsActive As String, flags)
+    SetCursorPosition(57)
     AddTextOption("SexLabFramework", bIsSexlabActive As String, flags)
   elseif (page == "$Presets")
     SetCursorPosition(0)

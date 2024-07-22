@@ -303,7 +303,7 @@ Actor[] function getRapists(Actor Victim, Actor Attacker, Bool bReset=False)
   int k
   Bool bBreak = False
   Actor act
-  keepControlsDisabled(3.0, true, true, true, false, true, true, true, false, true)
+  keepControlsDisabled(1.0, true, true, true, false, true, true, true, false, true)
   while i < (RapistCount)
     if (i == 0) && isRapistValid(Attacker)
       rapists[0] = Attacker
@@ -420,9 +420,14 @@ Bool function rapePlayer(Actor[] rapists)
   endif
   RapistsList.revert()
   string interface = getInteface()
+  keepControlsDisabled(0.2, true, true, true, false, true, true, true, false, true)
   ReviveScript.FastFadeOut.Apply()
-  keepControlsDisabled(1.0, true, true, true, false, true, true, true, false, true)
+  utility.Wait(1.0)
   ReviveScript.FastFadeOut.PopTo(ReviveScript.BlackScreen)
+  If ConfigMenu.bPO3Ok
+	PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
+	PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
+  Endif
   playerRef.StopCombatAlarm()
   playerRef.AddToFaction(calmFaction)
   PacifyNPC.SetValueInt(1)
@@ -495,7 +500,7 @@ Bool function rapePlayer(Actor[] rapists)
   endif
   if !NPCPacifier.IsRunning()
     NPCPacifier.Start()
-    keepControlsDisabled(3.0, true, true, true, false, true, true, true, false, true)
+    keepControlsDisabled(1.0, true, true, true, false, true, true, true, false, true)
   endif
   (NPCPacifier As zzzmoa_npc_pacifier_quest_script).ToggleTeamMates(False)
   Actor extraRapist = None

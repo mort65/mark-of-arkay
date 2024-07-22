@@ -502,6 +502,10 @@ event OnUpdate()
     bSheathed = False
     PlayerRef.RemovePerk(Invulnerable)
     Debug.SetGodMode(False)
+    If ConfigMenu.bPO3Ok
+		  PO3_SKSEFunctions.ResetActorDetection(PlayerRef)
+		  PO3_SKSEFunctions.ResetActorDetection(PlayerRef)
+    Endif
   endif
 endevent
 
@@ -523,13 +527,13 @@ event zzzmoa_sexlab_Rape_Ending(int tid, bool HasPlayer)
   if (RapeScript.bIsBusy && HasPlayer)
     ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Rape scene is ending.")
     utility.wait(1.0)
-    Int i = RapeScript.Equipment.length ;because sexlab stuck when doing this until player open a game menu.
+    Int i = RapeScript.Equipment.length ;because sexlab may stuck when doing this until player open a game menu.
     while i > 0
       i -= 1
       if RapeScript.Equipment[i] As Armor
         if PlayerRef.GetItemCount(RapeScript.Equipment[i]) > 0 && !PlayerRef.IsEquipped(RapeScript.Equipment[i])
           PlayerRef.EquipItemEx(RapeScript.Equipment[i])
-          Utility.Wait(0.2)
+          Utility.Wait(0.5) ; must be atleast 0.5 to prevent stack dump
         endif
       endif
     endwhile
@@ -544,7 +548,7 @@ Float function getBaseVersion()
 endfunction
 
 Float function getCurrentVersion()
-  return getBaseVersion() + 3.48
+  return getBaseVersion() + 3.49
 endfunction
 
 
@@ -773,11 +777,19 @@ function BleedoutHandler(String CurrentState)
         Game.EnablePlayerControls(abMovement=False, abFighting=False, abCamSwitch=False, abLooking=False, abSneaking=False, abMenu=True, abActivate=False, abJournalTabs=False)
         PlayerRef.RemovePerk(Invulnerable)
         Debug.SetGodMode(False)
+        If ConfigMenu.bPO3Ok
+          PO3_SKSEFunctions.ResetActorDetection(PlayerRef)
+			    PO3_SKSEFunctions.ResetActorDetection(PlayerRef)
+		    Endif
       else
         PlayerRef.SetDontMove(False)
         Game.EnablePlayerControls()
         PlayerRef.RemovePerk(Invulnerable)
         Debug.SetGodMode(False)
+    		If ConfigMenu.bPO3Ok
+    			PO3_SKSEFunctions.ResetActorDetection(PlayerRef)
+    			PO3_SKSEFunctions.ResetActorDetection(PlayerRef)
+    		Endif
       endif
       Utility.Wait(ConfigMenu.fBleedoutTimeSlider)
     endif
@@ -790,6 +802,10 @@ function BleedoutHandler(String CurrentState)
     else
       PlayerRef.AddPerk(Invulnerable)
       Debug.SetGodMode(True)
+  	  If ConfigMenu.bPO3Ok
+  		  PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
+  		  PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
+  	  Endif
       bInBleedout = True
       if bHasAutoReviveEffect ;player has cast a revive spell or scroll
         ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Reviving player by an auto revival spell or scroll...")
@@ -1086,12 +1102,22 @@ function RevivePlayer(Bool bRevive)
       Game.EnableFastTravel(false)
     endif
     Game.SetPlayerAIDriven(True)
+    PlayerRef.setGhost(True)
+    If ConfigMenu.bPO3Ok
+	   PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
+	   PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
+    Endif
     CrimeGold = 0
     CrimeGoldViolent = 0
     CrimeFaction = None
     Actor[] rapistActors = RapeScript.getRapists(PlayerRef, Attacker, true)
     bIsraped = RapeScript.rapePlayer(rapistActors)
     if bIsraped
+      PlayerRef.setGhost(True)
+  	  If ConfigMenu.bPO3Ok
+  		  PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
+  		  PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
+  	  Endif
       int i = Utility.randomInt(0, (ConfigMenu.fMaxRapes - 1) As int)
       while bIsraped && (i > 0)
         Game.DisablePlayerControls(abMovement=True, abFighting=True, abCamSwitch=True, abLooking=False, abSneaking=True, abMenu=True, abActivate=True, abJournalTabs=False)
@@ -1112,10 +1138,18 @@ function RevivePlayer(Bool bRevive)
         endif
         RapeScript.shuffleActorArray(rapistActors)
         bIsraped = RapeScript.rapePlayer(rapistActors)
+  		  PlayerRef.setGhost(True)
+    		If ConfigMenu.bPO3Ok
+    		  PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
+    		  PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
+    		Endif
         i -= 1
       endwhile
       bIsraped = true
     endif
+    If !PlayerRef.HasMagicEffect(VoiceMakeEthereal)
+		PlayerRef.setGhost(False)
+    Endif
     PlayerRef.RemoveFromFaction(RapeScript.CalmFaction)
     Attacker && Attacker.RemoveFromFaction(RapeScript.CalmFaction)
     Game.DisablePlayerControls(abMovement=True, abFighting=True, abCamSwitch=True, abLooking=False, abSneaking=True, abMenu=True, abActivate=True, abJournalTabs=False)

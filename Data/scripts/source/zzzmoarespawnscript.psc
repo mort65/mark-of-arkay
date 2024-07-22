@@ -1043,7 +1043,6 @@ function Teleport()
     else
       ObjectReference Marker = TavernMarkers[iTavernIndex] As ObjectReference
       if (PlayerMarker.GetDistance(Marker) >= fRPMinDistance) && bIsArrived(Marker)
-        return
       else
         SendToAnotherLocation()
       endif

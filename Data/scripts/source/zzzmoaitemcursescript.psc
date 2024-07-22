@@ -147,18 +147,18 @@ function EquipItems(Actor ActorRef, Bool RightHand, Bool LeftHand)
     if RightHand
       if ActorRef.GetItemCount(ReviveScript.RightHandEquipedItem) > 0 && !ActorRef.IsEquipped(ReviveScript.RightHandEquipedItem)
         ActorRef.EquipItemEx(ReviveScript.RightHandEquipedItem, 1)
-        Utility.Wait(0.2)
+        Utility.Wait(0.5)
       endif
     elseif LeftHand && !(ReviveScript.RightHandEquipedItem As Spell)
       if ActorRef.GetItemCount(ReviveScript.LeftHandEquippedItem) > 0 && !ActorRef.IsEquipped(ReviveScript.LeftHandEquippedItem)
         ActorRef.EquipItemEx(ReviveScript.LeftHandEquippedItem, 1)
         bLW = True
-        Utility.Wait(0.2)
+        Utility.Wait(0.5)
       endif
     endif
     if LeftHand && !bLW && ActorRef.GetItemCount(ReviveScript.LeftHandEquippedItem) > 0
       ActorRef.EquipItemEx(ReviveScript.LeftHandEquippedItem, 2)
-      Utility.Wait(0.2)
+      Utility.Wait(0.5)
     endif
     Int i = Equipment.length
     while i > 0
@@ -166,7 +166,7 @@ function EquipItems(Actor ActorRef, Bool RightHand, Bool LeftHand)
       if Equipment[i] As Armor || Equipment[i] As Ammo
         if ActorRef.GetItemCount(Equipment[i]) > 0 && !ActorRef.IsEquipped(Equipment[i])
           ActorRef.EquipItemEx(Equipment[i])
-          Utility.Wait(0.2)
+          Utility.Wait(0.5)
         endif
       endif
     endwhile
@@ -174,12 +174,12 @@ function EquipItems(Actor ActorRef, Bool RightHand, Bool LeftHand)
     if RightHand
       if ActorRef.GetItemCount(ReviveScript.RightHandEquipedItem) > 0 && !ActorRef.IsEquipped(ReviveScript.RightHandEquipedItem)
         ActorRef.EquipItem(ReviveScript.RightHandEquipedItem, False, True)
-        Utility.Wait(0.2)
+        Utility.Wait(0.5)
       endif
     elseif LeftHand && !(ReviveScript.RightHandEquipedItem As Spell)
       if ActorRef.GetItemCount(ReviveScript.LeftHandEquippedItem) > 0 && !ActorRef.IsEquipped(ReviveScript.LeftHandEquippedItem)
         ActorRef.EquipItem(ReviveScript.LeftHandEquippedItem, False, True)
-        Utility.Wait(0.2)
+        Utility.Wait(0.5)
       endif
     endif
     Int i = Equipment.length
@@ -188,7 +188,7 @@ function EquipItems(Actor ActorRef, Bool RightHand, Bool LeftHand)
       if Equipment[i] As Armor || Equipment[i] As Ammo
         if ActorRef.GetItemCount(Equipment[i]) > 0 && !ActorRef.IsEquipped(Equipment[i])
           ActorRef.EquipItem(Equipment[i], False, True)
-          Utility.Wait(0.2)
+          Utility.Wait(0.5)
         endif
       endif
     endwhile
@@ -286,7 +286,7 @@ function LoseOtherItems()
       endwhile
     else
       PlayerRef.RemoveAllItems(ValuableItemsChest, True, False)
-      Utility.Wait(0.2)
+      Utility.Wait(0.5)
       iIndex = PlayerRef.GetNumItems()
       while iIndex > 0
         iIndex -= 1
@@ -1005,7 +1005,7 @@ Function undressActor(Actor akActor, Bool abCheckItems = true)
         elseif kArmor.HasKeywordString("toystoy")
         else
           akActor.UnequipItemSlot(iIndex)
-          utility.wait(0.1)
+          utility.wait(0.5)
         endif
       endif
     endif

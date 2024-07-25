@@ -238,7 +238,6 @@ event OnEnterBleedout()
       ;PlayerRef.SetDontMove(False)
       ;Game.EnablePlayerControls()
       LowHealthImod.Remove()
-      moaBleedoutHandlerState.SetValue(0)
       RegisterForSingleUpdate(3.0)
       bRevived = true
       ToggleSaving(True)
@@ -509,6 +508,7 @@ event OnUpdate()
     bRevived = false
     bWasraped = False
     bfastTravel = False
+    moaBleedoutHandlerState.SetValue(0)
     PlayerRef.RemovePerk(Invulnerable)
     Debug.SetGodMode(False)
     If !PlayerRef.HasMagicEffect(VoiceMakeEthereal)
@@ -2140,7 +2140,6 @@ function checkHealth()
           ;PlayerRef.SetDontMove(False)
           ;Game.EnablePlayerControls()
           LowHealthImod.Remove()
-          moaBleedoutHandlerState.SetValue(0)
           RegisterForSingleUpdate(3.0)
           bRevived = true
           ToggleSaving(True)

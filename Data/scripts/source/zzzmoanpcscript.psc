@@ -980,6 +980,8 @@ Bool Function bIsHostile(Actor ActorRef)
           return false
         endif
       endif
+    elseif ActorRef.HasKeywordString("actortypeanimal")
+      return false
     elseif ConfigMenu.bMoralityMatters && (ActorRef.GetActorValue("Morality") > 2)
       return false
     endif
@@ -1034,14 +1036,10 @@ Bool Function isCreature(Actor ActorRef)
   race actorRace = ActorRef.GetRace()
   if actorRace && (AdultNPCRaces.hasForm(actorRace) || AsultNPCVampireRaces.hasForm(actorRace))
     return False
-  elseif ActorRef.IsInFaction(CreatureFaction)
+  elseif ActorRef.IsInFaction(CreatureFaction) || ActorRef.HasKeywordString("actortypecreature")
     Return true
-  elseif ActorRef.HasKeywordString("actortypenpc")
-    if (!ActorRef.HasKeywordString("actortypecreature") && !ActorRef.HasKeywordString("actortypeanimal"))
-      return False
-    endif
   endif
-  return true
+  return False
 endfunction
 
 Form[] function bCloneActor(Actor akActor, ObjectReference akMarker, Int aiCount=1, Int aiLevel=2, Bool abDead=False)

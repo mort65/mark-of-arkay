@@ -540,7 +540,7 @@ Bool function rapePlayer(Actor[] rapists)
       endif
     endif
   endwhile
-  keepControlsDisabled(3.0, true, true, true, false, true, true, true, false, true)
+  keepControlsDisabled(2.0, true, true, true, false, true, true, true, false, true)
   removeCrime()
   Victim1.ForceRefTo(PlayerRef)
   PlayerRef.EvaluatePackage()

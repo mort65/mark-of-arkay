@@ -217,7 +217,7 @@ event OnDying(Actor akKiller)
 endevent
 
 event OnEnterBleedout()
-  if !PlayerRef.IsDead() && !bInBleedout && !moaIgnoreBleedout.GetValue()
+  if !PlayerRef.IsDead() && !bInBleedout && !moaIgnoreBleedout.GetValue() && !bSurrendering
     bInBleedout = True
     bInBleedoutAnim = False
     Game.DisablePlayerControls()
@@ -2112,7 +2112,7 @@ endfunction
 function checkHealth()
   if ConfigMenu.bTriggerOnHealthPerc
     if !PlayerRef.IsDead() && (playerRef.GetActorValuePercentage("Health") <= ConfigMenu.fHealthPercTrigger)
-      if !bInBleedout && !moaIgnoreBleedout.GetValue()
+      if !bInBleedout && !moaIgnoreBleedout.GetValue() && !bSurrendering
         bInBleedout = True
         Game.DisablePlayerControls()
          bfastTravel = Game.IsFastTravelEnabled()
@@ -2341,10 +2341,12 @@ endstate
 
 Event OnKeyDown(int keyCode)
   If moaState.getValue() != 1
-  ElseIf ConfigMenu.iNotTradingAftermath != 1
   ElseIf Utility.IsInMenuMode() 
+  ElseIf (ConfigMenu.iNotTradingAftermath != 1)
+  Elseif playerRef.IsFlying()
+  Elseif playerRef.IsSwimming() 
   ElseIf !PlayerRef.IsInCombat()
-  ElseIf PlayerRef.IsBleedingOut() 
+  ElseIf PlayerRef.IsBleedingOut()
   ElseIf bInBleedoutAnim 
   ElseIf bInBleedout
   Elseif bSoulMarkActivated
@@ -2361,6 +2363,11 @@ State Surrender
     bSurrendering = True
     PlayerRef.SetGhost(True)
     PlayerRef.AddPerk(Invulnerable)
+    moaBleedoutHandlerState.SetValue(2)
+    if PlayerRef.IsOnMount()
+      PlayerRef.Dismount()
+      utility.wait(3.0)
+    endif
     if !Attacker || !Attacker.IS3dLoaded() || (Attacker.GetDistance(playerRef) > 2000.0) || (attacker == playerRef)
       Bool bFound = False
       Actor npc = Game.FindClosestActorFromRef(PlayerRef, 2000.0)

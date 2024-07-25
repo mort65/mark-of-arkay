@@ -888,14 +888,14 @@ function reviveHandler(string currentState)
     ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Player Revived by sacrificing for arkay.")
   elseif (bIsRevivable() || (ConfigMenu.bIsMenuEnabled && ConfigMenu.moaSnoozeState.GetValue() != 0))
     ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Player has enough items to trade with arkay...")
-    reviveByTrade(currentState)
+    tradeHandler(currentState)
   else
     ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Player doesn't have enough items to trade with arkay...")
     RevivePlayer(False)
   endif
 endfunction
 
-function reviveByTrade(string currentState)
+function tradeHandler(string currentState)
   if ConfigMenu.bIsMenuEnabled
     Int iResult = RemoveItemByMenu(currentState)
     if (iResult == 1)
@@ -1247,7 +1247,7 @@ function aftermathHandler()
     elseif ConfigMenu.bCanContinue() && (ConfigMenu.iNotTradingAftermath == 1)
       ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Respawning the player...")
       NPCScript.HoldFollowers()
-      respawn()
+      respawnHandler()
     else
       if !ConfigMenu.bCanContinue()
         if ConfigMenu.bLockPermaDeath && ConfigMenu.bPUOK
@@ -1271,7 +1271,7 @@ function aftermathHandler()
   endif
 endfunction
 
-function respawn()
+function respawnHandler()
   Float fRespawnStartTime = Utility.GetCurrentRealTime()
   bReadyForRespawn = False
   bInfectingPlayer = False
@@ -2426,7 +2426,7 @@ State Surrender
     RevivePlayer(False)
     GoToState("")
     bSurrendering = False
-	  RegisterForSingleUpdate(3.0)
+    RegisterForSingleUpdate(3.0)
     bRevived = true
   EndEvent
 

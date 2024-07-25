@@ -2275,6 +2275,10 @@ function startRespawning()
   endif
 endfunction
 
+Bool Function bCanSurrender()
+  return False
+endFunction
+
 state Bleedout1
   event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile, Bool abPowerattack, Bool abSneakAttack, Bool abBashAttack, Bool abHitBlocked)
   endevent
@@ -2339,95 +2343,115 @@ state Bleedout2
 endstate
 
 Event OnKeyDown(int keyCode)
-  If moaState.getValue() != 1
-  ElseIf Utility.IsInMenuMode() 
-  ElseIf (ConfigMenu.iNotTradingAftermath != 1)
-  Elseif playerRef.IsFlying()
-  Elseif playerRef.IsSwimming() 
-  ElseIf !PlayerRef.IsInCombat()
-  ElseIf PlayerRef.IsBleedingOut()
-  ElseIf bInBleedoutAnim 
-  ElseIf bInBleedout
-  Elseif bSoulMarkActivated
-  Else
-    GoToState("Surrender")
+  If Utility.IsInMenuMode() 
+    return
   endif
-endevent
-
-State Surrender
-  Event OnBeginState()
-    if bSurrendering
-      return
+  if getstate() == ""
+    GoToState("Surrender")
+  else
+    return
+  endif
+  if bSurrendering
+    GoToState("")
+    return
+  endif
+  bSurrendering = True
+  PlayerRef.SetGhost(True)
+  PlayerRef.AddPerk(Invulnerable)
+  moaBleedoutHandlerState.SetValue(2)
+  if !bCanSurrender()
+    bSurrendering = False
+    GoToState("")
+    If !PlayerRef.HasMagicEffect(VoiceMakeEthereal)
+      PlayerRef.setGhost(False)
+    Endif
+    moaBleedoutHandlerState.SetValue(0)
+    return
+  endif
+  if PlayerRef.IsOnMount()
+    PlayerRef.Dismount()
+    utility.wait(3.0)
+  endif
+  if !Attacker || !Attacker.IS3dLoaded() || (Attacker.GetDistance(playerRef) > 2000.0) || (attacker == playerRef)
+    Bool bFound = False
+    Actor npc = Game.FindClosestActorFromRef(PlayerRef, 2000.0)
+    if NPCScript.bPlayerCanSurrenderToActor(npc)
+      Attacker = npc
+      bfound = true
+    elseif npc
+      actor npc2
+      int i = 15
+      bFound = False
+      while i > 0 && !bFound
+        i -= 1
+        npc2 = Game.FindRandomActorFromRef(PlayerRef, 2000.0)
+        if NPCScript.bPlayerCanSurrenderToActor(npc2)
+          Attacker = npc2
+          bFound = True
+        endif
+      endWhile
     endif
-    bSurrendering = True
-    PlayerRef.SetGhost(True)
-    PlayerRef.AddPerk(Invulnerable)
-    moaBleedoutHandlerState.SetValue(2)
-    if PlayerRef.IsOnMount()
-      PlayerRef.Dismount()
-      utility.wait(3.0)
-    endif
-    if !Attacker || !Attacker.IS3dLoaded() || (Attacker.GetDistance(playerRef) > 2000.0) || (attacker == playerRef)
-      Bool bFound = False
-      Actor npc = Game.FindClosestActorFromRef(PlayerRef, 2000.0)
-      if NPCScript.bPlayerCanSurrenderToActor(npc)
-        Attacker = npc
-        bfound = true
-      elseif npc
-        actor npc2
-        int i = 15
-        bFound = False
-        while i > 0 && !bFound
-          i -= 1
-          npc2 = Game.FindRandomActorFromRef(PlayerRef, 2000.0)
-          if NPCScript.bPlayerCanSurrenderToActor(npc2)
-            Attacker = npc2
-            bFound = True
-          endif
-        endWhile
-      endif
-      if bFound
-        AttackerActor.ForceRefTo(Attacker)
-        AttackerActor01.ForceRefTo(Attacker)
-      endif
-    else
+    if bFound
       AttackerActor.ForceRefTo(Attacker)
       AttackerActor01.ForceRefTo(Attacker)
     endif
-    bfastTravel = Game.IsFastTravelEnabled()
-    Game.EnableFastTravel(false)
-    if !NPCScript.iInBeastForm() && !PlayerRef.GetActorValue("paralysis") && !PlayerRef.IsWeaponDrawn()
-      playerRef.playIdle(SurrenderIdle)
-      utility.wait(1.0)
-    endif
-    if ConfigMenu.bPO3Ok
-      PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
-      PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
-    endif 
-    PlayerRef.StopCombatAlarm()
-    Game.DisablePlayerControls(abMovement=True, abFighting=True, abCamSwitch=True, abLooking=False, abSneaking=True, abMenu=True, abActivate=True, abJournalTabs=False)
-    stopAndConfirm(moaHostileNPCDetector)
-    stopAndConfirm(moaHostileNPCDetector01)
-    if ConfigMenu.iHostileOption == 2
-      if ConfigMenu.bNPCHasLevelRange
-        Int iMinNPCLevel = PlayerRef.GetLevel() - (ConfigMenu.fLowerNPCMaxLvlDiff As Int)
-        Int iMaxNPCLevel = PlayerRef.GetLevel() + (ConfigMenu.fHigherNPCMaxLvlDiff As Int)
-        if iMinNPCLevel < 0
-          iMinNPCLevel = 1
-        endif
-        ConfigMenu.moaLowerNPCMaxLvlDiff.SetValueInt(iMinNPCLevel)
-        ConfigMenu.moaHigherNPCMaxLvlDiff.SetValueInt(iMaxNPCLevel)
+  else
+    AttackerActor.ForceRefTo(Attacker)
+    AttackerActor01.ForceRefTo(Attacker)
+  endif
+  bfastTravel = Game.IsFastTravelEnabled()
+  Game.EnableFastTravel(false)
+  if !NPCScript.iInBeastForm() && !PlayerRef.GetActorValue("paralysis") && !PlayerRef.IsWeaponDrawn()
+    playerRef.playIdle(SurrenderIdle)
+    utility.wait(1.0)
+  endif
+  if ConfigMenu.bPO3Ok
+    PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
+    PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
+  endif 
+  PlayerRef.StopCombatAlarm()
+  Game.DisablePlayerControls(abMovement=True, abFighting=True, abCamSwitch=True, abLooking=False, abSneaking=True, abMenu=True, abActivate=True, abJournalTabs=False)
+  stopAndConfirm(moaHostileNPCDetector)
+  stopAndConfirm(moaHostileNPCDetector01)
+  if ConfigMenu.iHostileOption == 2
+    if ConfigMenu.bNPCHasLevelRange
+      Int iMinNPCLevel = PlayerRef.GetLevel() - (ConfigMenu.fLowerNPCMaxLvlDiff As Int)
+      Int iMaxNPCLevel = PlayerRef.GetLevel() + (ConfigMenu.fHigherNPCMaxLvlDiff As Int)
+      if iMinNPCLevel < 0
+        iMinNPCLevel = 1
       endif
-      moaHostileNPCDetector.Start()
-    elseif ConfigMenu.iHostileOption == 1
-      moaHostileNPCDetector01.Start()
+      ConfigMenu.moaLowerNPCMaxLvlDiff.SetValueInt(iMinNPCLevel)
+      ConfigMenu.moaHigherNPCMaxLvlDiff.SetValueInt(iMaxNPCLevel)
     endif
-    RevivePlayer(False)
-    GoToState("")
-    bSurrendering = False
-    RegisterForSingleUpdate(3.0)
-    bRevived = true
-  EndEvent
+    moaHostileNPCDetector.Start()
+  elseif ConfigMenu.iHostileOption == 1
+    moaHostileNPCDetector01.Start()
+  endif
+  RevivePlayer(False)
+  GoToState("")
+  bSurrendering = False
+  RegisterForSingleUpdate(3.0)
+  bRevived = true
+endevent
+
+State Surrender
+
+  Bool Function bCanSurrender()
+    If moaState.getValue() != 1
+    ElseIf Utility.IsInMenuMode() 
+    ElseIf (ConfigMenu.iNotTradingAftermath != 1)
+    Elseif playerRef.IsFlying()
+    Elseif playerRef.IsSwimming() 
+    ElseIf !PlayerRef.IsInCombat()
+    ElseIf PlayerRef.IsBleedingOut()
+    ElseIf bInBleedoutAnim 
+    ElseIf bInBleedout
+    Elseif bSoulMarkActivated
+    else
+      return true
+    endif
+    return false
+  endFunction
 
   Event OnKeyDown(int keyCode)
   endevent

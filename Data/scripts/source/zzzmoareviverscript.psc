@@ -116,6 +116,7 @@ Bool property bInBleedoutAnim=False auto Hidden
 Bool property bInfectingPlayer=False auto Hidden
 Bool property bIsConditionSafe=False auto Hidden
 Bool property bIsraped=False auto Hidden
+Bool property bWasraped=False auto Hidden
 Bool property bPlayerIsVoiceless=False auto Hidden
 Bool property bReadyForRespawn=False auto Hidden
 Bool property bRemoveItems auto Hidden
@@ -153,6 +154,9 @@ GlobalVariable property moaSeptimRevive auto
 Quest property moaSoulMark01 auto
 GlobalVariable property moaState auto
 Quest property moaThiefNPC01 auto
+Idle Property SurrenderIdle Auto
+Idle Property BoundStandingCut Auto
+Bool Property bSoulMarkActivated = False Auto Hidden
 
 Float[] PriorityArray
 Bool UnarmedAttacker = False
@@ -163,12 +167,13 @@ Bool bDragonSoulRevive
 Bool bGSoulGemRevive
 Bool bHasAutoReviveEffect
 Bool bIsBusy = False
-Bool bParalyzed = False
+Bool bSurrendering = False
 Bool bPotionRevive
 Bool bSacrifice = False
 Bool bSeptimRevive
-Bool bSheathed = False
+Bool bRevived = False
 Bool bWasSwimming
+Bool bfastTravel
 Float fHealrate = 0.0
 Int iChoice
 Int iIsBeast = 0
@@ -215,7 +220,6 @@ event OnEnterBleedout()
   if !PlayerRef.IsDead() && !bInBleedout && !moaIgnoreBleedout.GetValue()
     bInBleedout = True
     bInBleedoutAnim = False
-    bSheathed = False
     Game.DisablePlayerControls()
     fHealrate = PlayerRef.GetActorValue("HealRate")
     PlayerRef.SetActorValue("HealRate", 0.0)
@@ -223,18 +227,20 @@ event OnEnterBleedout()
     PlayerRef.AddSpell(Bleed, False)
     PlayerRef.AddPerk(Invulnerable)
     Debug.SetGodMode(True)
+    bfastTravel = Game.IsFastTravelEnabled()
+    Game.EnableFastTravel(False)
     iIsBeast = NPCScript.iInBeastForm()
     BleedoutHandler(ToggleState())
     if GetState() == ""
       Attacker = None
       PlayerRef.RemoveSpell(Bleed)
       PlayerRef.SetActorValue("HealRate", fHealrate)
-      PlayerRef.SetDontMove(False)
-      Game.EnablePlayerControls()
+      ;PlayerRef.SetDontMove(False)
+      ;Game.EnablePlayerControls()
       LowHealthImod.Remove()
       moaBleedoutHandlerState.SetValue(0)
       RegisterForSingleUpdate(3.0)
-      Game.EnableFastTravel(True)
+      bRevived = true
       ToggleSaving(True)
       bInBleedout = False
     endif
@@ -475,33 +481,39 @@ event OnUpdate()
   if (ConfigMenu.iSaveOption > 1)
     Game.SetInChargen(abDisableSaving=True, abDisableWaiting=False, abShowControlsDisabledMessage=True)
   endif
-  if GetState() == ""
-    if bParalyzed
-      if bInBleedoutAnim
-        if !bSheathed
-          PlayerRef.SetDontMove(False)
-          Game.EnablePlayerControls()
-          PlayerRef.DrawWeapon()
-        endif
-      else ;auto fix for can't draw weapon, jump,.. after paralysis
-        PlayerRef.SetDontMove(False)
-        Game.EnablePlayerControls()
-        Form rw = PlayerRef.GetEquippedObject(1)
-        if rw
-          PlayerRef.UnequipItemEx(rw, equipSlot=1, preventEquip=False)
-          PlayerRef.EquipItemEx(rw, equipSlot=1, preventUnequip=False, equipSound=True)
-        else
-          playerRef.AddItem(DummySword As form, abSilent=True)
-          PlayerRef.EquipItemEx(DummySword, equipSlot=1, preventUnequip=True, equipSound=True)
-          PlayerRef.UnequipItemEx(DummySword, equipSlot=1, preventEquip=True)
-          PlayerRef.RemoveItem(DummySword As Form, PlayerRef.GetItemCount(DummySword As Form), abSilent=True)
-        endif
+  if bRevived && (GetState() == "")
+    if bWasraped
+      if !NPCScript.iInBeastForm() && !PlayerRef.IsWeaponDrawn()
+        playerRef.playIdle(BoundStandingCut)
+        Utility.wait(2.0)
       endif
     endif
-    bParalyzed = False
-    bSheathed = False
+    PlayerRef.SetDontMove(False)
+    Game.EnablePlayerControls()
+    if bfastTravel
+      Game.EnableFastTravel(True)
+    endif
+    if !bInBleedoutAnim  ;auto fix for can't draw weapon, jump,.. after paralysis
+      Form rw = PlayerRef.GetEquippedObject(1)
+      if rw
+        PlayerRef.UnequipItemEx(rw, equipSlot=1, preventEquip=False)
+        PlayerRef.EquipItemEx(rw, equipSlot=1, preventUnequip=False, equipSound=True)
+      else
+        playerRef.AddItem(DummySword As form, abSilent=True)
+        PlayerRef.EquipItemEx(DummySword, equipSlot=1, preventUnequip=True, equipSound=True)
+        PlayerRef.UnequipItemEx(DummySword, equipSlot=1, preventEquip=True)
+        PlayerRef.RemoveItem(DummySword As Form, PlayerRef.GetItemCount(DummySword As Form), abSilent=True)
+      endif    
+    endif
+    PlayerRef.DrawWeapon()
+    bRevived = false
+    bWasraped = False
+    bfastTravel = False
     PlayerRef.RemovePerk(Invulnerable)
     Debug.SetGodMode(False)
+    If !PlayerRef.HasMagicEffect(VoiceMakeEthereal)
+      PlayerRef.setGhost(False)
+    Endif
     If ConfigMenu.bPO3Ok
 		  PO3_SKSEFunctions.ResetActorDetection(PlayerRef)
 		  PO3_SKSEFunctions.ResetActorDetection(PlayerRef)
@@ -548,7 +560,7 @@ Float function getBaseVersion()
 endfunction
 
 Float function getCurrentVersion()
-  return getBaseVersion() + 3.49
+  return getBaseVersion() + 3.50
 endfunction
 
 
@@ -650,12 +662,8 @@ function BleedoutHandler(String CurrentState)
   if ConfigMenu.bIsRagdollEnabled && (!PlayerRef.GetActorValue("paralysis") && !iIsBeast && !PlayerRef.GetAnimationVariableBool("bIsSynced"))
     PlayerRef.PushActorAway(PlayerRef, 0)
     PlayerRef.SetActorValue("paralysis", 1)
-    bParalyzed = True
-  else
-    bParalyzed = False
   endif
   ToggleSaving(False)
-  Game.EnableFastTravel(False)
   if ConfigMenu.iTotalBleedOut < 99999999
     ConfigMenu.iTotalBleedOut += 1
   endif
@@ -689,7 +697,7 @@ function BleedoutHandler(String CurrentState)
     moaHostileNPCDetector01.Start()
   endif
   bIsConditionSafe = bIsConditionSafe()
-  if (ConfigMenu.bIsRevivalEnabled && PlayerRef.IsSwimming()) ;SKSE
+  if PlayerRef.IsSwimming() ;SKSE
     if bIsConditionSafe && ConfigMenu.bDeathEffect && (ConfigMenu.bInvisibility || ConfigMenu.bFadeToBlack)
       PlayerRef.PushActorAway(PlayerRef, 0)
     endif
@@ -701,10 +709,6 @@ function BleedoutHandler(String CurrentState)
   moaBleedoutHandlerState.SetValue(1)
   LowHealthImod.Remove()
   SetVars()
-  if !ConfigMenu.bIsRevivalEnabled
-    restore(iRevivePlayer=0, bReviveFollower=False, sTrace="MarkOfArkay: Player won't be revived because revival is not enabled.")
-    return
-  endif
   NPCScript.DetectFollowers()
   strRemovedItem = ""
   bHasAutoReviveEffect = PlayerRef.HasMagicEffect(AutoReviveSelf)
@@ -740,7 +744,7 @@ function BleedoutHandler(String CurrentState)
     if ConfigMenu.iTotalRevives < 99999999
       ConfigMenu.iTotalRevives += 1
     endif
-    Restore(iRevivePlayer=2, bReviveFollower=ConfigMenu.bPlayerProtectFollower, bEffect=False, bWait=PlayerRef.GetActorValue("Paralysis") As Bool, sTrace="MarkOfArkay: Player is alive because of followers.")
+    Restore(iRevivePlayer=2, bReviveFollower=ConfigMenu.bPlayerProtectFollower, bEffect=False, sTrace="MarkOfArkay: Player is alive because of followers.")
     return
   endif
   if ConfigMenu.bAutoDrinkPotion && !NPCScript.bInBeastForm()
@@ -752,7 +756,7 @@ function BleedoutHandler(String CurrentState)
         if ConfigMenu.iTotalRevives < 99999999
           ConfigMenu.iTotalRevives += 1
         endif
-        Restore(iRevivePlayer=1, bReviveFollower=ConfigMenu.bPlayerProtectFollower, bEffect=ConfigMenu.bIsEffectEnabled, bWait=PlayerRef.GetActorValue("Paralysis") As Bool, sTrace="MarkOfArkay: Player revived before starting of the revival by auto drinking healing potions.")
+        Restore(iRevivePlayer=1, bReviveFollower=ConfigMenu.bPlayerProtectFollower, bEffect=ConfigMenu.bIsEffectEnabled, sTrace="MarkOfArkay: Player revived before starting of the revival by auto drinking healing potions.")
         return
       else
         if ConfigMenu.bIsNotificationEnabled
@@ -764,7 +768,7 @@ function BleedoutHandler(String CurrentState)
         if ConfigMenu.iTotalRevives < 99999999
           ConfigMenu.iTotalRevives += 1
         endif
-        Restore(iRevivePlayer=1, bReviveFollower=ConfigMenu.bPlayerProtectFollower, bEffect=ConfigMenu.bIsEffectEnabled, bWait=PlayerRef.GetActorValue("Paralysis") As Bool, iPotionIndex=iPotion, sTrace="MarkOfArkay: Player revived by auto drinking a healing potion.")
+        Restore(iRevivePlayer=1, bReviveFollower=ConfigMenu.bPlayerProtectFollower, bEffect=ConfigMenu.bIsEffectEnabled, iPotionIndex=iPotion, sTrace="MarkOfArkay: Player revived by auto drinking a healing potion.")
         return
       endif
     endif
@@ -797,167 +801,10 @@ function BleedoutHandler(String CurrentState)
       if ConfigMenu.iTotalRevives < 99999999
         ConfigMenu.iTotalRevives += 1
       endif
-      Restore(iRevivePlayer=1, bReviveFollower=ConfigMenu.bPlayerProtectFollower, bEffect=ConfigMenu.bIsEffectEnabled, bWait=PlayerRef.GetActorValue("Paralysis") As Bool, sTrace="MarkOfArkay: Player is not in bleedout. (probably revived by manual drinking of a healing potion.)")
+      Restore(iRevivePlayer=1, bReviveFollower=ConfigMenu.bPlayerProtectFollower, bEffect=ConfigMenu.bIsEffectEnabled, sTrace="MarkOfArkay: Player is not in bleedout. (probably revived by manual drinking of a healing potion.)")
       return
     else
-      PlayerRef.AddPerk(Invulnerable)
-      Debug.SetGodMode(True)
-  	  If ConfigMenu.bPO3Ok
-  		  PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
-  		  PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
-  	  Endif
-      bInBleedout = True
-      if bHasAutoReviveEffect ;player has cast a revive spell or scroll
-        ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Reviving player by an auto revival spell or scroll...")
-        if ConfigMenu.bIsEffectEnabled
-          VisMagDragonAbsorbEffect.Play(PlayerRef, ConfigMenu.fRecoveryTimeSlider)
-          VisMagDragonAbsorbManEffect.Play(PlayerRef, ConfigMenu.fRecoveryTimeSlider)
-          SoulAbsorbWind.Play(PlayerRef)
-          SoulAbsorbExplosion.Play(PlayerRef)
-          EffectHealCirclFXS.Play(PlayerRef, ConfigMenu.fRecoveryTimeSlider + 1.0)
-        endif
-        Utility.Wait(ConfigMenu.fRecoveryTimeSlider)
-        if ConfigMenu.bIsNotificationEnabled
-          Debug.Notification("$mrt_MarkofArkay_Notification_Revive_Revival_Scroll")
-        endif
-        RevivePlayer(True)
-        if ConfigMenu.bIsEffectEnabled
-          moaReviveAfterEffect.Cast(PlayerRef)
-        endif
-        if ConfigMenu.iRevivesByRevivalSpell < 99999999
-          ConfigMenu.iRevivesByRevivalSpell += 1
-        endif
-        if ConfigMenu.iTotalRevives < 99999999
-          ConfigMenu.iTotalRevives += 1
-        endif
-        ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Player revived by an auto revival spell or scroll.")
-      elseif (Victim && !Victim.IsDead()) ; player has cast a sacrifice spell or scroll on someone
-        ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Reviving player by sacrificing " + Victim + " for arkay...")
-        Victim.Kill(PlayerRef)
-        Victim = None
-        if ConfigMenu.bIsEffectEnabled
-          VisMagDragonAbsorbEffect.Play(PlayerRef, ConfigMenu.fRecoveryTimeSlider)
-          VisMagDragonAbsorbManEffect.Play(PlayerRef, ConfigMenu.fRecoveryTimeSlider)
-          SoulAbsorbWind.Play(PlayerRef)
-          SoulAbsorbExplosion.Play(PlayerRef)
-          EffectHealCirclFXS.Play(PlayerRef, ConfigMenu.fRecoveryTimeSlider + 1.0)
-        endif
-        Utility.Wait(ConfigMenu.fRecoveryTimeSlider)
-        bSacrifice = True
-        RevivePlayer(True)
-        if ConfigMenu.bIsEffectEnabled
-          moaReviveAfterEffect.Cast(PlayerRef)
-        endif
-        if ConfigMenu.iRevivesBySacrificeSpell < 99999999
-          ConfigMenu.iRevivesBySacrificeSpell += 1
-        endif
-        if ConfigMenu.iTotalRevives < 99999999
-          ConfigMenu.iTotalRevives += 1
-        endif
-        if ConfigMenu.bIsNotificationEnabled
-          Debug.Notification("$mrt_MarkofArkay_Notification_Revive_Sacrifice_Scroll")
-        endif
-        if moaRetrieveLostItems.IsRunning()
-          moaRetrieveLostItems.SetStage(20)
-        endif
-        if moaRetrieveLostItems01.IsRunning()
-          moaRetrieveLostItems01.SetStage(20)
-        endif
-        ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Player Revived by sacrificing for arkay.")
-      elseif (bIsRevivable() || (ConfigMenu.bIsMenuEnabled && ConfigMenu.moaSnoozeState.GetValue() != 0))
-        ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Player has enough items to trade with arkay...")
-        if ConfigMenu.bIsMenuEnabled
-          Int iResult = RemoveItemByMenu(CurrentState)
-          if (iResult == 1)
-            if ConfigMenu.bIsEffectEnabled
-              VisMagDragonAbsorbEffect.Play(PlayerRef, ConfigMenu.fRecoveryTimeSlider)
-              VisMagDragonAbsorbManEffect.Play(PlayerRef, ConfigMenu.fRecoveryTimeSlider)
-              SoulAbsorbWind.Play(PlayerRef)
-              SoulAbsorbExplosion.Play(PlayerRef)
-              EffectHealCirclFXS.Play(PlayerRef, ConfigMenu.fRecoveryTimeSlider + 1)
-            endif
-            Utility.Wait(ConfigMenu.fRecoveryTimeSlider)
-            ShowNotification()
-            ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Reviving player by trading with arkay (Menu is enabled)...")
-            RevivePlayer(True)
-            if ConfigMenu.bIsEffectEnabled
-              moaReviveAfterEffect.Cast(PlayerRef)
-            endif
-            if ConfigMenu.iRevivesByTrade < 99999999
-              ConfigMenu.iRevivesByTrade += 1
-            endif
-            if ConfigMenu.iTotalRevives < 99999999
-              ConfigMenu.iTotalRevives += 1
-            endif
-            ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: player revived by trading with arkay (Menu is enabled).")
-          elseif (iResult == 0)
-            ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Player select nothing from the trading menu.")
-            RevivePlayer(False)
-          endif
-        else
-          if !PriorityArray.Length == 5
-            PriorityArray = new Float[5]
-          endif
-          PriorityArray[0] = ConfigMenu.fGoldPSlider + 10 ; adding this numbers to Priorities so after sorting them by ones, they still be distinguishable
-          PriorityArray[1] = ConfigMenu.fDragonSoulPSlider + 20
-          PriorityArray[2] = ConfigMenu.fBSoulgemPSlider + 30
-          PriorityArray[3] = ConfigMenu.fMarkPSlider + 40
-          PriorityArray[4] = ConfigMenu.fGSoulgemPSlider + 50
-          SortPriorityArray()
-          Int i = 4
-          Bool bBreak = False
-          while (i > -1) && !bBreak
-            if PriorityArray[i] > 50 && bGSoulGemRevive ; player has enough grand soul gem and its Priority is higher
-              AutoRemoveItem(i)
-              bBreak = True
-            elseif PriorityArray[i] > 40 && (PriorityArray[i] < 50) && bArkayMarkRevive
-              AutoRemoveItem(i)
-              bBreak = True
-            elseif (PriorityArray[i] > 30) && (PriorityArray[i] < 40) && bBSoulGemRevive
-              AutoRemoveItem(i)
-              bBreak = True
-            elseif (PriorityArray[i] > 20) && (PriorityArray[i] < 30) && bDragonSoulRevive
-              AutoRemoveItem(i)
-              bBreak = True
-            elseif (PriorityArray[i] > 10) && (PriorityArray[i] < 20) && bSeptimRevive
-              AutoRemoveItem(i)
-              bBreak = True
-            endif
-            i -= 1
-          endwhile
-          if bBreak ;player has traded
-            if ConfigMenu.bIsEffectEnabled
-              VisMagDragonAbsorbEffect.Play(PlayerRef, ConfigMenu.fRecoveryTimeSlider)
-              VisMagDragonAbsorbManEffect.Play(PlayerRef, ConfigMenu.fRecoveryTimeSlider)
-              SoulAbsorbWind.Play(PlayerRef)
-              SoulAbsorbExplosion.Play(PlayerRef)
-              EffectHealCirclFXS.Play(PlayerRef, ConfigMenu.fRecoveryTimeSlider + 1)
-            endif
-            Utility.Wait(ConfigMenu.fRecoveryTimeSlider)
-
-            ;RequipSpells()
-            ShowNotification()
-            ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Reviving player by trading with arkay (Menu is disabled)...")
-            RevivePlayer(True)
-            if ConfigMenu.bIsEffectEnabled
-              moaReviveAfterEffect.Cast(PlayerRef)
-            endif
-            if ConfigMenu.iRevivesByTrade < 99999999
-              ConfigMenu.iRevivesByTrade += 1
-            endif
-            if ConfigMenu.iTotalRevives < 99999999
-              ConfigMenu.iTotalRevives += 1
-            endif
-            ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Player revived by trading with arkay (Menu is disabled).")
-          else ; player couldn't trade
-            ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Trading with arkay failed (Menu is disabled).")
-            RevivePlayer(False)
-          endif
-        endif
-      else
-        ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Player doesn't have enough items to trade with arkay...")
-        RevivePlayer(False)
-      endif
+      reviveHandler(currentState)
     endif
   else
     Utility.Wait(ConfigMenu.fBleedoutTimeSlider)
@@ -965,10 +812,175 @@ function BleedoutHandler(String CurrentState)
       if ConfigMenu.iTotalRevives < 99999999
         ConfigMenu.iTotalRevives += 1
       endif
-      Restore(iRevivePlayer=0, bReviveFollower=False, bEffect=False, bWait=PlayerRef.GetActorValue("Paralysis") As Bool, sTrace="MarkOfArkay: Player can't be revived but isn't in bleedout.")
+      Restore(iRevivePlayer=0, bReviveFollower=False, bEffect=False, sTrace="MarkOfArkay: Player can't be revived but isn't in bleedout.")
       return
     else
       ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Player can't be revived...")
+      RevivePlayer(False)
+    endif
+  endif
+endfunction
+
+function reviveHandler(string currentState)
+  PlayerRef.AddPerk(Invulnerable)
+  Debug.SetGodMode(True)
+  If ConfigMenu.bPO3Ok
+    PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
+    PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
+  Endif
+  bInBleedout = True
+  if bHasAutoReviveEffect ;player has cast a revive spell or scroll
+    ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Reviving player by an auto revival spell or scroll...")
+    if ConfigMenu.bIsEffectEnabled
+      VisMagDragonAbsorbEffect.Play(PlayerRef, ConfigMenu.fRecoveryTimeSlider)
+      VisMagDragonAbsorbManEffect.Play(PlayerRef, ConfigMenu.fRecoveryTimeSlider)
+      SoulAbsorbWind.Play(PlayerRef)
+      SoulAbsorbExplosion.Play(PlayerRef)
+      EffectHealCirclFXS.Play(PlayerRef, ConfigMenu.fRecoveryTimeSlider + 1.0)
+    endif
+    Utility.Wait(ConfigMenu.fRecoveryTimeSlider)
+    if ConfigMenu.bIsNotificationEnabled
+      Debug.Notification("$mrt_MarkofArkay_Notification_Revive_Revival_Scroll")
+    endif
+    RevivePlayer(True)
+    if ConfigMenu.bIsEffectEnabled
+      moaReviveAfterEffect.Cast(PlayerRef)
+    endif
+    if ConfigMenu.iRevivesByRevivalSpell < 99999999
+      ConfigMenu.iRevivesByRevivalSpell += 1
+    endif
+    if ConfigMenu.iTotalRevives < 99999999
+      ConfigMenu.iTotalRevives += 1
+    endif
+    ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Player revived by an auto revival spell or scroll.")
+  elseif (Victim && !Victim.IsDead()) ; player has cast a sacrifice spell or scroll on someone
+    ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Reviving player by sacrificing " + Victim + " for arkay...")
+    Victim.Kill(PlayerRef)
+    Victim = None
+    if ConfigMenu.bIsEffectEnabled
+      VisMagDragonAbsorbEffect.Play(PlayerRef, ConfigMenu.fRecoveryTimeSlider)
+      VisMagDragonAbsorbManEffect.Play(PlayerRef, ConfigMenu.fRecoveryTimeSlider)
+      SoulAbsorbWind.Play(PlayerRef)
+      SoulAbsorbExplosion.Play(PlayerRef)
+      EffectHealCirclFXS.Play(PlayerRef, ConfigMenu.fRecoveryTimeSlider + 1.0)
+    endif
+    Utility.Wait(ConfigMenu.fRecoveryTimeSlider)
+    bSacrifice = True
+    RevivePlayer(True)
+    if ConfigMenu.bIsEffectEnabled
+      moaReviveAfterEffect.Cast(PlayerRef)
+    endif
+    if ConfigMenu.iRevivesBySacrificeSpell < 99999999
+      ConfigMenu.iRevivesBySacrificeSpell += 1
+    endif
+    if ConfigMenu.iTotalRevives < 99999999
+      ConfigMenu.iTotalRevives += 1
+    endif
+    if ConfigMenu.bIsNotificationEnabled
+      Debug.Notification("$mrt_MarkofArkay_Notification_Revive_Sacrifice_Scroll")
+    endif
+    if moaRetrieveLostItems.IsRunning()
+      moaRetrieveLostItems.SetStage(20)
+    endif
+    if moaRetrieveLostItems01.IsRunning()
+      moaRetrieveLostItems01.SetStage(20)
+    endif
+    ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Player Revived by sacrificing for arkay.")
+  elseif (bIsRevivable() || (ConfigMenu.bIsMenuEnabled && ConfigMenu.moaSnoozeState.GetValue() != 0))
+    ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Player has enough items to trade with arkay...")
+    reviveByTrade(currentState)
+  else
+    ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Player doesn't have enough items to trade with arkay...")
+    RevivePlayer(False)
+  endif
+endfunction
+
+function reviveByTrade(string currentState)
+  if ConfigMenu.bIsMenuEnabled
+    Int iResult = RemoveItemByMenu(currentState)
+    if (iResult == 1)
+      if ConfigMenu.bIsEffectEnabled
+        VisMagDragonAbsorbEffect.Play(PlayerRef, ConfigMenu.fRecoveryTimeSlider)
+        VisMagDragonAbsorbManEffect.Play(PlayerRef, ConfigMenu.fRecoveryTimeSlider)
+        SoulAbsorbWind.Play(PlayerRef)
+        SoulAbsorbExplosion.Play(PlayerRef)
+        EffectHealCirclFXS.Play(PlayerRef, ConfigMenu.fRecoveryTimeSlider + 1)
+      endif
+      Utility.Wait(ConfigMenu.fRecoveryTimeSlider)
+      ShowNotification()
+      ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Reviving player by trading with arkay (Menu is enabled)...")
+      RevivePlayer(True)
+      if ConfigMenu.bIsEffectEnabled
+        moaReviveAfterEffect.Cast(PlayerRef)
+      endif
+      if ConfigMenu.iRevivesByTrade < 99999999
+        ConfigMenu.iRevivesByTrade += 1
+      endif
+      if ConfigMenu.iTotalRevives < 99999999
+        ConfigMenu.iTotalRevives += 1
+      endif
+      ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: player revived by trading with arkay (Menu is enabled).")
+    elseif (iResult == 0)
+      ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Player select nothing from the trading menu.")
+      RevivePlayer(False)
+    endif
+  else
+    if !PriorityArray.Length == 5
+      PriorityArray = new Float[5]
+    endif
+    PriorityArray[0] = ConfigMenu.fGoldPSlider + 10 ; adding this numbers to Priorities so after sorting them by ones, they still be distinguishable
+    PriorityArray[1] = ConfigMenu.fDragonSoulPSlider + 20
+    PriorityArray[2] = ConfigMenu.fBSoulgemPSlider + 30
+    PriorityArray[3] = ConfigMenu.fMarkPSlider + 40
+    PriorityArray[4] = ConfigMenu.fGSoulgemPSlider + 50
+    SortPriorityArray()
+    Int i = 4
+    Bool bBreak = False
+    while (i > -1) && !bBreak
+      if PriorityArray[i] > 50 && bGSoulGemRevive ; player has enough grand soul gem and its Priority is higher
+        AutoRemoveItem(i)
+        bBreak = True
+      elseif PriorityArray[i] > 40 && (PriorityArray[i] < 50) && bArkayMarkRevive
+        AutoRemoveItem(i)
+        bBreak = True
+      elseif (PriorityArray[i] > 30) && (PriorityArray[i] < 40) && bBSoulGemRevive
+        AutoRemoveItem(i)
+        bBreak = True
+      elseif (PriorityArray[i] > 20) && (PriorityArray[i] < 30) && bDragonSoulRevive
+        AutoRemoveItem(i)
+        bBreak = True
+      elseif (PriorityArray[i] > 10) && (PriorityArray[i] < 20) && bSeptimRevive
+        AutoRemoveItem(i)
+        bBreak = True
+      endif
+      i -= 1
+    endwhile
+    if bBreak ;player has traded
+      if ConfigMenu.bIsEffectEnabled
+        VisMagDragonAbsorbEffect.Play(PlayerRef, ConfigMenu.fRecoveryTimeSlider)
+        VisMagDragonAbsorbManEffect.Play(PlayerRef, ConfigMenu.fRecoveryTimeSlider)
+        SoulAbsorbWind.Play(PlayerRef)
+        SoulAbsorbExplosion.Play(PlayerRef)
+        EffectHealCirclFXS.Play(PlayerRef, ConfigMenu.fRecoveryTimeSlider + 1)
+      endif
+      Utility.Wait(ConfigMenu.fRecoveryTimeSlider)
+
+      ;RequipSpells()
+      ShowNotification()
+      ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Reviving player by trading with arkay (Menu is disabled)...")
+      RevivePlayer(True)
+      if ConfigMenu.bIsEffectEnabled
+        moaReviveAfterEffect.Cast(PlayerRef)
+      endif
+      if ConfigMenu.iRevivesByTrade < 99999999
+        ConfigMenu.iRevivesByTrade += 1
+      endif
+      if ConfigMenu.iTotalRevives < 99999999
+        ConfigMenu.iTotalRevives += 1
+      endif
+      ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Player revived by trading with arkay (Menu is disabled).")
+    else ; player couldn't trade
+      ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Trading with arkay failed (Menu is disabled).")
       RevivePlayer(False)
     endif
   endif
@@ -1051,7 +1063,7 @@ Int function RemoveItemByMenu(String curState) ;trade by using menu
         endif
         iRevive = -1
         bBreak = True
-        Restore(iRevivePlayer=0, bReviveFollower=False, bEffect=False, bwait=PlayerRef.GetActorValue("Paralysis") As Bool, sTrace="MarkOfArkay: Player revived before showing the trade menu.")
+        Restore(iRevivePlayer=0, bReviveFollower=False, bEffect=False, sTrace="MarkOfArkay: Player revived before showing the trade menu.")
       else
         bInBleedout = True
         SetVars()
@@ -1091,21 +1103,17 @@ function ResetPlayer()
     PlayerRef.SheatheWeapon()
   endif
   RequipSpells()
-  bSheathed = True
 endfunction
 
 function RevivePlayer(Bool bRevive)
   bIsraped = False
+  bWasraped = False
   if !bRevive && bRape()
-    bool bfastTravel = Game.IsFastTravelEnabled()
-    if bfastTravel
-      Game.EnableFastTravel(false)
-    endif
     Game.SetPlayerAIDriven(True)
     PlayerRef.setGhost(True)
     If ConfigMenu.bPO3Ok
-	   PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
-	   PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
+     PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
+     PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
     Endif
     CrimeGold = 0
     CrimeGoldViolent = 0
@@ -1114,10 +1122,10 @@ function RevivePlayer(Bool bRevive)
     bIsraped = RapeScript.rapePlayer(rapistActors)
     if bIsraped
       PlayerRef.setGhost(True)
-  	  If ConfigMenu.bPO3Ok
-  		  PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
-  		  PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
-  	  Endif
+      If ConfigMenu.bPO3Ok
+        PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
+        PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
+      Endif
       int i = Utility.randomInt(0, (ConfigMenu.fMaxRapes - 1) As int)
       while bIsraped && (i > 0)
         Game.DisablePlayerControls(abMovement=True, abFighting=True, abCamSwitch=True, abLooking=False, abSneaking=True, abMenu=True, abActivate=True, abJournalTabs=False)
@@ -1138,27 +1146,25 @@ function RevivePlayer(Bool bRevive)
         endif
         RapeScript.shuffleActorArray(rapistActors)
         bIsraped = RapeScript.rapePlayer(rapistActors)
-  		  PlayerRef.setGhost(True)
-    		If ConfigMenu.bPO3Ok
-    		  PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
-    		  PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
-    		Endif
+        PlayerRef.setGhost(True)
+        If ConfigMenu.bPO3Ok
+          PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
+          PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
+        Endif
         i -= 1
       endwhile
       bIsraped = true
     endif
     If !PlayerRef.HasMagicEffect(VoiceMakeEthereal)
-		PlayerRef.setGhost(False)
+      PlayerRef.setGhost(False)
     Endif
     PlayerRef.RemoveFromFaction(RapeScript.CalmFaction)
     Attacker && Attacker.RemoveFromFaction(RapeScript.CalmFaction)
     Game.DisablePlayerControls(abMovement=True, abFighting=True, abCamSwitch=True, abLooking=False, abSneaking=True, abMenu=True, abActivate=True, abJournalTabs=False)
     PlayerRef.SetDontMove(True)
     restoreCrime()
-    if bfastTravel
-      Game.EnableFastTravel(true)
-    endif
     ConfigMenu.bIsLoggingEnabled && Debug.trace("MarkOfArkay: Player raped = " + bIsraped)
+    bWasraped = bIsraped
   endif
   Bool bSendToSlavery = (!bRevive && bSendToSlavery())
   Bool bSendToDreamWorld = (!bRevive && bSendToDreamWorld())
@@ -1185,7 +1191,7 @@ function RevivePlayer(Bool bRevive)
       bSacrifice = False
     endif
     if bRevive
-      Restore(iRevivePlayer=1, bReviveFollower=ConfigMenu.bPlayerProtectFollower, bEffect=ConfigMenu.bIsEffectEnabled, bWait=PlayerRef.GetActorValue("Paralysis") As Bool, sTrace="MarkOfArkay: Player is revived.")
+      Restore(iRevivePlayer=1, bReviveFollower=ConfigMenu.bPlayerProtectFollower, bEffect=ConfigMenu.bIsEffectEnabled, sTrace="MarkOfArkay: Player is revived.")
     elseif (bSendToSlavery || bSendToDreamWorld)
       if (bSendToSlavery && bSendToDreamWorld)
         if utility.randomint(0, 1) == 1
@@ -1197,7 +1203,7 @@ function RevivePlayer(Bool bRevive)
       FastFadeOut.Apply()
       Utility.Wait(1.0)
       FastFadeOut.PopTo(BlackScreen)
-      Restore(iRevivePlayer=1, bReviveFollower=1, bEffect=False, bWait=PlayerRef.GetActorValue("Paralysis") As Bool, sTrace=("MarkOfArkay: Player is enslaved by " + Attacker))
+      Restore(iRevivePlayer=1, bReviveFollower=1, bEffect=False, sTrace=("MarkOfArkay: Player is enslaved by " + Attacker))
       if bSendToSlavery
         Debug.TraceConditional("MarkOfArkay: Player enslaved.", ConfigMenu.bIsLoggingEnabled)
         sendModEvent("SSLV Entry")
@@ -1210,498 +1216,541 @@ function RevivePlayer(Bool bRevive)
     endif
     return
   else
-    if (!ConfigMenu.bKillIfCantRespawn && ConfigMenu.iNotTradingAftermath == 1 && !RespawnScript.bCanTeleport() && ConfigMenu.bCanContinue())
-      if ConfigMenu.iRevivesByFollower < 99999999
-        ConfigMenu.iRevivesByFollower += 1
+    aftermathHandler()
+  endif
+endfunction
+
+
+function aftermathHandler()
+  if (!ConfigMenu.bKillIfCantRespawn && ConfigMenu.iNotTradingAftermath == 1 && !RespawnScript.bCanTeleport() && ConfigMenu.bCanContinue())
+    if ConfigMenu.iRevivesByFollower < 99999999
+      ConfigMenu.iRevivesByFollower += 1
+    endif
+    if ConfigMenu.iTotalRevives < 99999999
+      ConfigMenu.iTotalRevives += 1
+    endif
+    Restore(iRevivePlayer=2, bReviveFollower=ConfigMenu.bPlayerProtectFollower, bEffect=False, sTrace="MarkOfArkay: Player is revived because respawn is currently disabled.")
+    return
+  else
+    if ConfigMenu.bCanContinue() && ((ConfigMenu.iNotTradingAftermath == 0) || (ConfigMenu.iNotTradingAftermath == 1 && !RespawnScript.bCanTeleport()))
+      ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Player is dying...")
+      Attacker = None
+      LowHealthImod.Remove()
+      PlayerRef.PushActorAway(PlayerRef, 0)
+      PlayerRef.EndDeferredKill()
+      Utility.Wait(0.1)
+      if !PlayerRef.IsDead()
+        killPlayer()
       endif
-      if ConfigMenu.iTotalRevives < 99999999
-        ConfigMenu.iTotalRevives += 1
-      endif
-      Restore(iRevivePlayer=2, bReviveFollower=ConfigMenu.bPlayerProtectFollower, bEffect=False, bWait=PlayerRef.GetActorValue("Paralysis") As Bool, sTrace="MarkOfArkay: Player is revived because respawn is currently disabled.")
-      return
-    else
+      ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Player died.")
+      GoToState("")
+    elseif ConfigMenu.bCanContinue() && (ConfigMenu.iNotTradingAftermath == 1)
+      ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Respawning the player...")
       NPCScript.HoldFollowers()
-      if ConfigMenu.bCanContinue() && ((ConfigMenu.iNotTradingAftermath == 0) || (ConfigMenu.iNotTradingAftermath == 1 && !RespawnScript.bCanTeleport()))
-        ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Player is dying...")
-        Attacker = None
-        LowHealthImod.Remove()
-        PlayerRef.PushActorAway(PlayerRef, 0)
-        PlayerRef.EndDeferredKill()
-        Utility.Wait(0.1)
-        if !PlayerRef.IsDead()
-          killPlayer()
+      respawn()
+    else
+      if !ConfigMenu.bCanContinue()
+        if ConfigMenu.bLockPermaDeath && ConfigMenu.bPUOK
+          PermaDeathScript.lockGameLoad()
         endif
-        ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Player died.")
-        GoToState("")
-      elseif ConfigMenu.bCanContinue() && (ConfigMenu.iNotTradingAftermath == 1)
-        ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Respawning the player...")
-        Float fRespawnStartTime = Utility.GetCurrentRealTime()
-        bReadyForRespawn = False
-        bInfectingPlayer = False
-        Game.DisablePlayerControls(abMovement=True, abFighting=True, abCamSwitch=False, abLooking=False, abSneaking=True, abMenu=True, abActivate=True, abJournalTabs=False, aiDisablePOVType=0)
-        if ConfigMenu.bDiseaseCurse
-          startInfectingPlayer()
-        endif
-        if (ConfigMenu.bRespawnMenu)
-          RespawnScript.SelectRespawnPointbyMenu()
-        endif
-        startRespawning()
-        if (!bWasSwimming && bIsConditionSafe)
-          if (ConfigMenu.bInvisibility || ConfigMenu.bFadeToBlack)
-            if ConfigMenu.bDeathEffect && !moaPlayerGhostQuest.IsRunning() && !moaPlayerVoicelessQuest.IsRunning()
-              RespawnScript.PlayerMarker.Enable()
-              RespawnScript.PlayerMarker.MoveTo(playerRef)
-              RespawnScript.PlayerMarker.SetPosition(PlayerRef.GetPositionx(), PlayerRef.GetPositiony(), PlayerRef.GetPositionz())
-              RespawnScript.PlayerMarker.SetAngle(0.0, 0.0, PlayerRef.GetAnglez())
-              Utility.Wait(0.5)
-              if !bIsraped
-                PlayerRef.PushActorAway(PlayerRef, 0)
-                Utility.Wait(0.1)
-                RespawnScript.PlayerMarker.Say(DeathTopic, PlayerRef, True)
-              endif
-            endif
-            if !bIsCameraStateSafe()
-              Game.ForceThirdPerson()
-            endif
-            if ConfigMenu.bFadeToBlack
-              FastFadeOut.Apply()
-              Utility.Wait(1.0)
-              FastFadeOut.PopTo(BlackScreen)
-            else
-              Utility.Wait(1.0)
-            endif
-            if ConfigMenu.bInvisibility && !moaPlayerGhostQuest.IsRunning()
-              PlayerRef.SetAlpha(0.0)
-            endif
-          endif
-        else
-          Game.ForceThirdPerson()
-          if ConfigMenu.bFadeToBlack
-            FastFadeOut.Apply()
-            Utility.Wait(1.0)
-            FastFadeOut.PopTo(BlackScreen)
-          endif
-          if ConfigMenu.bInvisibility && !moaPlayerGhostQuest.IsRunning()
-            PlayerRef.SetAlpha(0.0)
-          endif
-        endif
-        if ConfigMenu.bShiftBackRespawn
-          ShiftBack()
-        endif
-        if ConfigMenu.bLoseForever
-          ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Destroying previously lost items...")
-          if ((LostItemsChest.GetNumItems() > 0) || (ItemScript.fLostSouls > 0.0) || SkillScript.bSkillReduced())
-            bDidItemsRemoved = True
-            if ConfigMenu.iDestroyedItems < 99999999
-              ConfigMenu.iDestroyedItems += LostItemsChest.GetNumItems()
-              if ItemScript.fLostSouls > 0.0
-                ConfigMenu.iDestroyedItems += 1
-              endif
-            endif
-          else
-            bDidItemsRemoved = False
-          endif
-          LostItemsChest.RemoveAllItems()
-          SkillScript.LoseSkills()
-          if moaSoulMark01.IsRunning()
-            NPCScript.RemoveDeadClone()
-            StopAndConfirm(moaSoulMark01)
-            LostItemsMarker.MoveToMyEditorLocation()
-            LostItemsMarker.Disable()
-          endif
-          if moaThiefNPC01.IsRunning()
-            StopAndConfirm(moaThiefNPC01, 3, 27)
-            Utility.Wait(1.0) ;to remove spawn before starting the quest.
-          endif
-          if moaBossChest01.IsRunning()
-            StopAndConfirm(moaBossChest01, 3, 15)
-          endif
-          ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: previously lost items are destroyed.")
-        endif
-        bRemoveItems = ConfigMenu.bLoseItem
-        iReducedSkill = ConfigMenu.iReducedSkill
-        if !moaSoulMark01.IsRunning() && !moaThiefNPC01.IsRunning() && (!moaBossChest01.IsRunning() || moaBossChest01.GetStage() == 0)
-          StopAndConfirm(moaBossChest01, 3, 25)
-          if Utility.RandomInt(0, 99) < ConfigMenu.fBossChestChanceSlider
-            Location curLoc = PlayerRef.GetCurrentLocation()
-            if !curLoc || !curLoc.HasKeyWord(NPCScript.LocTypeDungeon) || !curLoc.HasRefType(BossContainer) || (ConfigMenu.moaBossChestNotInclearedLoc.GetValueInt() && curLoc.IsCleared())
-              PlayerLocRef.ForceLocationTo(EmptyLocation)
-            else
-              PlayerLocRef.ForceLocationTo(PlayerRef.GetCurrentLocation())
-            endif
-            moaBossChest01.Start()
-          endif
-        endif
-        if ConfigMenu.iHostileOption == 2 && !moaSoulMark01.IsRunning() && (!moaBossChest01.IsRunning() || !LostItemsChest.GetNumItems())
-          if !moaThiefNPC01.IsRunning() || moaThiefNPC01.GetStage() == 1
-            ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Finding a hostile NPC who can steal from player ...")
-            NPCScript.DetectThiefNPC()
-            if Thief
-              if !ThiefNPC01.GetActorReference() || (ConfigMenu.bAlwaysSpawn && (ThiefNPC01.GetActorReference() != Thief))
-                ThiefNPC.ForceRefTo(Thief)
-              endif
-              if !moaThiefNPC01.IsRunning()
-                moaThiefNPC01.Start()
-              endif
-              ThiefMarker.MoveTo(Thief)
-              if ThiefNPC01.GetActorReference() && (ThiefNPC.GetActorReference() && (Thief == ThiefNPC.GetActorReference()))
-                RemoveStolenItemMarkers(ThiefNPC01.GetActorReference())
-              endif
-            elseif moaThiefNPC01.IsRunning() && !bCursed() ;if cursed, location change event will respawn or stop the quest
-              RemoveStolenItemMarkers(ThiefNPC.GetReference() As Actor)
-              StopAndConfirm(moaThiefNPC01, 3, 25)
-            endif
-          endif
-        endif
-        bSoulMark = bSoulMark()
-        Bool bRemoveItemTemp = True
-        Bool bInBeastForm = NPCScript.bInBeastForm()
-        if bInBeastForm || ((ConfigMenu.iHostileOption == 2 && (moaSoulMark01.IsRunning() || !moaThiefNPC01.IsRunning() || moaThiefNPC01.GetStage() != 1)) || (ConfigMenu.iHostileOption != 2 && (moaThiefNPC01.IsRunning() || (ConfigMenu.iHostileOption == 1 && !NPCScript.bIsHostileNPCNearby()))) || (PlayerRef.GetParentCell() == DefaultCell))
-          if (moaBossChest01.IsRunning() && moaBossChest01.GetStage() == 0) && !bInBeastForm
-            bRemoveItemTemp = False
-          else
-            bRemoveItems = False
-            if !ConfigMenu.bOnlyLoseSkillXP && !(ConfigMenu.bLoseSkillForever && ConfigMenu.bDLIEOK)
-              iReducedSkill = 0
-            endif
-          endif
-        endif
-        if bRemoveItems
-          Debug.TraceConditional("MarkOfArkay: Removing items from the player...", ConfigMenu.bIsLoggingEnabled)
-          Float fStart = Utility.GetCurrentRealTime()
-          ItemScript.loseItems()
-          Debug.TraceConditional("MarkOfArkay: Removing items from the player finished in " + (Utility.GetCurrentRealTime() - fStart) + " seconds.", ConfigMenu.bIsLoggingEnabled)
-          if ConfigMenu.bIsLoggingEnabled
-            Int c = LostItemsChest.GetNumItems()
-            String str = "MarkOfArkay: Currently removed items -> "
-            if ItemScript.fLostSouls > 0.0
-              c += 1
-              str += c
-              str += "("
-              str += (c - 1)
-            else
-              str += c
-              str += "("
-              str += c
-            endif
-            str += " + "
-            str += (ItemScript.fLostSouls As Int)
-            str += " dragon souls)"
-            Debug.Trace(str)
-          endif
-        endif
-        if (moaBossChest01.IsRunning() && moaBossChest01.GetStage() == 0) && !LostItemsChest.GetNumItems()
-          if !bRemoveItemTemp
-            bRemoveItems = False ;No phycical item removed and nothing else can be removed
-            if !ConfigMenu.bOnlyLoseSkillXP && !(ConfigMenu.bLoseSkillForever && ConfigMenu.bDLIEOK)
-              iReducedSkill = 0
-            endif
-          endif
-          stopAndConfirm(moaBossChest01, 3, 25)
-        endif
-        if iReducedSkill > 0
-          Debug.TraceConditional("MarkOfArkay: Reducing player's Skills/Skill XPs...", ConfigMenu.bIsLoggingEnabled)
-          Float fStart = Utility.GetCurrentRealTime()
-          String Skill
-          if iReducedSkill < 19
-            Skill = SkillScript.sSkillName[iReducedSkill - 1]
-          elseif iReducedSkill == 19
-            Skill = "Random"
-          elseif iReducedSkill == 20
-            Skill = "Lowest"
-          elseif iReducedSkill == 21
-            Skill = "Highest"
-          elseif iReducedSkill == 22
-            Skill = "Lowest_All"
-          elseif iReducedSkill == 23
-            Skill = "Highest_All"
-          elseif iReducedSkill == 24
-            Skill = "All_Low"
-          elseif iReducedSkill == 25
-            Skill = "All_High"
-          elseif iReducedSkill == 26
-            Skill = "All_Random"
-          elseif iReducedSkill == 27
-            Skill = "All_One_By_One"
-          endif
-          if ConfigMenu.bSkillReduceRandomVal
-            SkillScript.ReduceSkills(Skill, -1, ConfigMenu.fSkillReduceMinValSlider As Int, ConfigMenu.fSkillReduceMaxValSlider As Int, bOnlyXP=ConfigMenu.bOnlyLoseSkillXP)
-          else
-            SkillScript.ReduceSkills(Skill, ConfigMenu.fSkillReduceValSlider As Int, ConfigMenu.fSkillReduceMinValSlider As Int, ConfigMenu.fSkillReduceMaxValSlider As Int, bOnlyXP=ConfigMenu.bOnlyLoseSkillXP)
-          endif
-          Debug.TraceConditional("MarkOfArkay: Reducing skills completed in " + (Utility.GetCurrentRealTime() - fStart) + " seconds.", ConfigMenu.bIsLoggingEnabled)
-        endif
-        if (PlayerRef.GetParentCell() != DefaultCell)
-          if bCursed() || (ConfigMenu.bArkayCurse && !ConfigMenu.bIsArkayCurseTemporary) || ConfigMenu.bVoicelessCurse || ConfigMenu.bGhostCurse ;Something is removed or stats of player are reduced or going to be reduced
-            if (bSoulMark || (((ConfigMenu.bArkayCurse && !ConfigMenu.bIsArkayCurseTemporary) || bHasArkayCurse() || ConfigMenu.bVoicelessCurse || ConfigMenu.bGhostCurse || moaPlayerGhostQuest.IsRunning() || moaPlayerVoicelessQuest.IsRunning()) && !moaThiefNPC01.IsRunning() && (!moaBossChest01.IsRunning() || LostItemsChest.GetNumItems() == 0))) ;Soul mark can be used
-              if moaBossChest01.GetStage() == 0
-                stopAndConfirm(moaBossChest01, 3, 25)
-              else
-                stopAndConfirm(moaBossChest01, 3, 20)
-              endif
-              LostItemsMarker.Enable()
-              if !ConfigMenu.bSoulMarkStay || ((!NPCScript.SoulMark02.GetActorReference() || NPCScript.SoulMark02.GetActorReference().GetParentCell() == DefaultCell) && LostItemsMarker.GetParentCell() == DefaultCell)
-                ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Moving soul mark to player's location...")
-                if !ConfigMenu.bCorpseAsSoulMark
-                  NPCScript.RemoveDeadClone()
-                  LostItemsMarker.MoveTo(PlayerRef, 0, 0, 42)
-                elseif ConfigMenu.bCorpseAsSoulMark
-                  LostItemsMarker.MoveToMyEditorLocation()
-                  NPCScript.RemoveDeadClone()
-                  NPCScript.bringDeadClone()
-                endif
-                moaSoulMark01.Start()
-                ConfigMenu.bIsLoggingEnabled && !ConfigMenu.bCorpseAsSoulMark && LostItemsMarker.GetParentCell() != DefaultCell && Debug.Trace("MarkOfArkay: Soul mark dropped at ( " + LostItemsMarker.GetPositionX() + ", " + LostItemsMarker.GetPositionY() + ", " + LostItemsMarker.GetPositionZ() + " ).")
-                ConfigMenu.bIsLoggingEnabled && ConfigMenu.bCorpseAsSoulMark && NPCScript.SoulMark02.GetActorReference() && NPCScript.SoulMark02.GetActorReference().GetParentCell() != DefaultCell && Debug.Trace("MarkOfArkay: Body dropped at ( " + NPCScript.SoulMark02.GetReference().GetPositionX() + ", " + NPCScript.SoulMark02.GetReference().GetPositionY() + ", " + NPCScript.SoulMark02.GetReference().GetPositionZ() + " ).")
-                if Thief
-                  RemoveStolenItemMarkers(Thief)
-                endif
-                RemoveStolenItemMarkers(PlayerRef)
-              endif
-            endif
-          else
-            NPCScript.RemoveDeadClone()
-            StopAndConfirm(moaSoulMark01, 3)
-            LostItemsMarker.MoveToMyEditorLocation()
-            LostItemsMarker.Disable()
-            if (ThiefNPC.GetReference() As Actor)
-              RemoveStolenItemMarkers(ThiefNPC.GetReference() As Actor)
-            endif
-            if (ThiefNPC01.GetReference() As Actor)
-              RemoveStolenItemMarkers(ThiefNPC01.GetReference() As Actor)
-            endif
-            StopAndConfirm(moaThiefNPC01, 3, 25)
-          endif
-        endif
-        if moaBossChest01.IsRunning() && moaThiefNPC01.IsRunning()
-          ;if no physical item is removed boss chest quest not needed
-          if LostItemsChest.GetNumItems() == 0
-            if moaBossChest01.GetStage() == 0
-              stopAndConfirm(moaBossChest01, 3, 25)
-            else
-              stopAndConfirm(moaBossChest01, 3, 20)
-            endif
-          else
-            RemoveStolenItemMarkers(ThiefNPC.GetReference() As Actor)
-            StopAndConfirm(moaThiefNPC01, 3, 25)
-          endif
-        endif
-        PlayerRef.DispelSpell(Bleed)
-        PlayerRef.ResetHealthAndLimbs()
-        PlayerRef.RestoreActorValue("health", 10000)
-        if ConfigMenu.bPlayerProtectFollower
-          NPCScript.ResurrectFollowers()
-        endif
-        if ConfigMenu.bResurrectActors
-          ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Resurrecting non-unique actors in player's location...")
-          if Attacker
-            if (!Attacker.IsCommandedActor() && !Attacker.GetActorBase().IsUnique() && !Attacker.IsDisabled() && Attacker.IsDead())
-              if ((Attacker.GetParentCell() == PlayerRef.GetParentCell()) || PlayerRef.GetDistance(Attacker) < 10000.0)
-                Attacker.Resurrect()
-              endif
-            endif
-          endif
-          MassRevival.Cast(PlayerRef)
-          ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Resurrection finished.")
-        endif
-        if ConfigMenu.bHealActors
-          ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Healing actors in player's location...")
-          if Attacker && !Attacker.IsDead()
-            if ((Attacker.GetParentCell() == PlayerRef.GetParentCell()) || PlayerRef.GetDistance(Attacker) < 10000.0)
-              if Attacker.GetActorValue("Health") > 0
-                Attacker.RestoreActorValue("Health", 999999)
-              endif
-            endif
-          endif
-          MassHealing.Cast(PlayerRef)
-          ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Last attacker and other actors are healed.")
-        endif
-        while bInfectingPlayer
-          Utility.WaitMenuMode(0.2)
-        endwhile
-        bReadyForRespawn = True ;allowing bIsArrived in respawnscript to teleport player
-        while bReadyForRespawn
-          Utility.WaitMenuMode(0.2)
-        endwhile
-        Utility.Wait(0.5)
-        if PlayerRef.IsDead()
-          PlayerRef.SetAlpha(1.0)
-          BlackScreen.Remove()
-          return
-        endif
-        Attacker = None
-        ResetPlayer()
-        if !ConfigMenu.bGhostCurse && !moaPlayerGhostQuest.IsRunning()
-          PlayerRef.SetAlpha(1.0, True)
-        endif
-        Utility.Wait(1.0)
-        NPCScript.ToggleFollower(True)
-        if (ConfigMenu.bRespawnNaked && !NPCScript.bInBeastForm())
-          ItemScript.undressActor(playerRef, true)
-        endif
-        if ((ConfigMenu.bArkayCurse && !ConfigMenu.bIsArkayCurseTemporary) && (moaThiefNPC01.IsRunning() || (moaSoulMark01.IsRunning())))
-          PlayerRef.DispelSpell(ArkayCurseTemp)
-          PlayerRef.DispelSpell(ArkayCurseTempAlt)
-          if ConfigMenu.iArkayCurse == 0
-            PlayerRef.AddSpell(ArkayCurse)
-          elseif ConfigMenu.iArkayCurse == 1
-            PlayerRef.AddSpell(ArkayCurseAlt)
-          else
-            PlayerRef.AddSpell(ArkayCurse)
-            PlayerRef.AddSpell(ArkayCurseAlt)
-          endif
-        elseif ((ConfigMenu.bArkayCurse && ConfigMenu.bIsArkayCurseTemporary) && !bHasArkayCurse())
-          if ConfigMenu.iArkayCurse == 0
-            ArkayCurseTemp.Cast(PlayerRef)
-          elseif ConfigMenu.iArkayCurse == 1
-            ArkayCurseTempAlt.Cast(PlayerRef)
-          else
-            ArkayCurseTemp.Cast(PlayerRef)
-            ArkayCurseTempAlt.Cast(PlayerRef)
-          endif
-        endif
-        if ConfigMenu.bGhostCurse
-          if moaPlayerVoicelessQuest.IsRunning()
-            moaPlayerVoicelessQuest.Stop()
-          endif
-          if !moaPlayerGhostQuest.IsRunning()
-            moaPlayerGhostQuest.Start()
-          endif
-        endif
-        if ConfigMenu.bVoicelessCurse
-          if !moaPlayerGhostQuest.IsRunning() && !moaPlayerVoicelessQuest.IsRunning()
-            moaPlayerVoicelessQuest.Start()
-          endif
-          PlayerRef.SetVoiceRecoveryTime(9999999.0)
-          bPlayerIsVoiceless = True
-        endif
-        if PlayerRef.GetActorValue("paralysis")
-          PlayerRef.SetActorValue("paralysis", 0)
-          if PlayerRef.GetActorValue("paralysis")
-            PlayerRef.ForceActorValue("paralysis", 0)
-          endif
-          Utility.Wait(6.5)
-        endif
-        if (ConfigMenu.bFadeToBlack || ConfigMenu.bInvisibility || ConfigMenu.fRespawnTimeSlider)
-          RespawnScript.PassTime(ConfigMenu.fRespawnTimeSlider, 6.0)
-        endif
-        if ConfigMenu.bFadeToBlack
-          BlackScreen.PopTo(FadeIn)
-        endif
-        RefreshFace()
-        Utility.Wait(0.5)
-        if ConfigMenu.bLoseForever && bDidItemsRemoved
-          if moaRetrieveLostItems.IsRunning()
-            moaRetrieveLostItems.SetStage(10)
-            ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Soul Mark Quest Failed.")
-          endif
-          if moaRetrieveLostItems01.IsRunning()
-            moaRetrieveLostItems01.SetStage(10)
-            ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Stolen Items Quest Failed.")
-          endif
-          if PreviousThief
-            if (!moaThiefNPC01.IsRunning() || (PreviousThief != Thief))
-              RemoveStolenItemMarkers(PreviousThief)
-              PreviousThief.RemoveFromFaction(PlayerEnemyFaction)
-            endif
-          endif
-          RemoveStolenItemMarkers(PlayerRef)
-          Utility.Wait(0.5)
-        endif
-        if moaThiefNPC01.IsRunning()
-          Thief && ItemScript.AddStolenItemMarker(Thief)
-        endif
-        if bCursed()
-          if moaBossChest01.IsRunning()
-            if moaBossChest01.getStage() < 5
-              moaBossChest01.SetStage(5)
-              ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Boss Chest Quest Started.")
-            endif
-          elseif moaSoulMark01.IsRunning()
-            if ConfigMenu.bLostItemQuest
-              moaRetrieveLostItems.Start()
-              moaRetrieveLostItems.SetStage(1)
-              ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Soul Mark Quest Started.")
-            endif
-          elseif moaThiefNPC01.IsRunning()
-            if ConfigMenu.bLostItemQuest
-              moaRetrieveLostItems01.Start()
-              moaRetrieveLostItems01.SetStage(1)
-              ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Stolen Items Quest Started.")
-            endif
-          endif
-          if SkillScript.bSkillReduced()
-            SkillScript.DisableAllXP()
-          endif
-        else
-          if moaBossChest01.GetStage() == 0
-            stopAndConfirm(moaBossChest01, 3, 25)
-          else
-            stopAndConfirm(moaBossChest01, 3, 20)
-          endif
-        endif
-        moaHostileNPCDetector.Stop()
-        moaHostileNPCDetector01.Stop()
-        RapeScript.unPacify()
-        if !bIsCameraStateSafe()
-          Game.ForceThirdPerson()
-        endif
-        if !ConfigMenu.bShowRaceMenu
-          if ConfigMenu.bAltEyeFix && ConfigMenu.bARCCOK
-            Utility.Wait(0.5)
-            ExecuteCommand("player.say 0142b5", 1, 0, 1)
-          endif
-        endif
-        if !ConfigMenu.bDoNotStopCombat
-          !moaPlayerGhostQuest.IsRunning() && PlayerRef.StopCombatAlarm()
-        endif
-        LowHealthImod.Remove()
-        if bCidhnaJail
-          if (PlayerRef.GetParentCell() == RespawnScript.MarkarthJailMarker.GetParentCell())
-            if !CidhnaMineJailEventScene.GetStageDone(10)
-              CidhnaMineJailEventScene.SetStage(10)
-            endif
-          endif
-          bCidhnaJail = False
-        endif
-        if ConfigMenu.iTotalRespawn < 99999999
-          ConfigMenu.iTotalRespawn += 1
-        endif
-        if ConfigMenu.bRespawnCounter
-          ConfigMenu.fRespawnCounterSlider -= 1
-          if ConfigMenu.bIsNotificationEnabled
-            Debug.Notification("$mrt_MarkofArkay_Notification_totalRemainingRespawns")
-            Debug.Notification(ConfigMenu.fRespawnCounterSlider As Int)
-          endif
-          ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: You have " + ConfigMenu.fRespawnCounterSlider As Int + " more respawns.")
-        endif
-        ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Respawn finished.")
-        Debug.TraceConditional("MarkOfArkay: Respawn finished in " + (Utility.GetCurrentRealTime() - fRespawnStartTime) + " seconds.", ConfigMenu.bIsLoggingEnabled)
-        if ConfigMenu.bShowRaceMenu
-          Utility.Wait(2.0)
-          Game.ShowRaceMenu()
-        endif
-        GoToState("")
-      else
-        if !ConfigMenu.bCanContinue()
-          if ConfigMenu.bLockPermaDeath && ConfigMenu.bPUOK
-            PermaDeathScript.lockGameLoad()
-          endif
-          bFinished = True
-          KillPlayer()
-          return
-        endif
-        ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Exiting to the Main menu...")
-        PlayerRef.SetDontMove(False)
-        Game.EnablePlayerControls()
-        Game.EnableFastTravel(True)
-        Attacker = None
-        ToggleSaving(True)
-        moaBleedoutHandlerState.SetValue(0)
-        LowHealthImod.Remove()
-        GoToState("")
-        Game.QuitToMainMenu()
+        bFinished = True
+        KillPlayer()
+        return
       endif
+      ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Exiting to the Main menu...")
+      PlayerRef.SetDontMove(False)
+      Game.EnablePlayerControls()
+      Game.EnableFastTravel(True)
+      Attacker = None
+      ToggleSaving(True)
+      moaBleedoutHandlerState.SetValue(0)
+      LowHealthImod.Remove()
+      GoToState("")
+      Game.QuitToMainMenu()
+    endif
+  endif
+endfunction
+
+function respawn()
+  Float fRespawnStartTime = Utility.GetCurrentRealTime()
+  bReadyForRespawn = False
+  bInfectingPlayer = False
+  Game.DisablePlayerControls(abMovement=True, abFighting=True, abCamSwitch=False, abLooking=False, abSneaking=True, abMenu=True, abActivate=True, abJournalTabs=False, aiDisablePOVType=0)
+  if ConfigMenu.bDiseaseCurse
+    startInfectingPlayer()
+  endif
+  if (ConfigMenu.bRespawnMenu)
+    RespawnScript.SelectRespawnPointbyMenu()
+  endif
+  startRespawning()
+  if (!bWasSwimming && bIsConditionSafe)
+    if (ConfigMenu.bInvisibility || ConfigMenu.bFadeToBlack)
+      if ConfigMenu.bDeathEffect && !moaPlayerGhostQuest.IsRunning() && !moaPlayerVoicelessQuest.IsRunning()
+        RespawnScript.PlayerMarker.Enable()
+        RespawnScript.PlayerMarker.MoveTo(playerRef)
+        RespawnScript.PlayerMarker.SetPosition(PlayerRef.GetPositionx(), PlayerRef.GetPositiony(), PlayerRef.GetPositionz())
+        RespawnScript.PlayerMarker.SetAngle(0.0, 0.0, PlayerRef.GetAnglez())
+        Utility.Wait(0.5)
+        if !bIsraped
+          PlayerRef.PushActorAway(PlayerRef, 0)
+          Utility.Wait(0.1)
+          RespawnScript.PlayerMarker.Say(DeathTopic, PlayerRef, True)
+        endif
+      endif
+      if !bIsCameraStateSafe()
+        Game.ForceThirdPerson()
+      endif
+      if ConfigMenu.bFadeToBlack
+        FastFadeOut.Apply()
+        Utility.Wait(1.0)
+        FastFadeOut.PopTo(BlackScreen)
+      else
+        Utility.Wait(1.0)
+      endif
+      if ConfigMenu.bInvisibility && !moaPlayerGhostQuest.IsRunning()
+        PlayerRef.SetAlpha(0.0)
+      endif
+    endif
+  else
+    Game.ForceThirdPerson()
+    if ConfigMenu.bFadeToBlack
+      FastFadeOut.Apply()
+      Utility.Wait(1.0)
+      FastFadeOut.PopTo(BlackScreen)
+    endif
+    if ConfigMenu.bInvisibility && !moaPlayerGhostQuest.IsRunning()
+      PlayerRef.SetAlpha(0.0)
+    endif
+  endif
+  if ConfigMenu.bShiftBackRespawn
+    ShiftBack()
+  endif
+  if ConfigMenu.bLoseForever
+    ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Destroying previously lost items...")
+    if ((LostItemsChest.GetNumItems() > 0) || (ItemScript.fLostSouls > 0.0) || SkillScript.bSkillReduced())
+      bDidItemsRemoved = True
+      if ConfigMenu.iDestroyedItems < 99999999
+        ConfigMenu.iDestroyedItems += LostItemsChest.GetNumItems()
+        if ItemScript.fLostSouls > 0.0
+          ConfigMenu.iDestroyedItems += 1
+        endif
+      endif
+    else
+      bDidItemsRemoved = False
+    endif
+    LostItemsChest.RemoveAllItems()
+    SkillScript.LoseSkills()
+    if moaSoulMark01.IsRunning()
+      NPCScript.RemoveDeadClone()
+      StopAndConfirm(moaSoulMark01)
+      LostItemsMarker.MoveToMyEditorLocation()
+      LostItemsMarker.Disable()
+    endif
+    if moaThiefNPC01.IsRunning()
+      StopAndConfirm(moaThiefNPC01, 3, 27)
+      Utility.Wait(1.0) ;to remove spawn before starting the quest.
+    endif
+    if moaBossChest01.IsRunning()
+      StopAndConfirm(moaBossChest01, 3, 15)
+    endif
+    ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: previously lost items are destroyed.")
+  endif
+  bRemoveItems = ConfigMenu.bLoseItem
+  iReducedSkill = ConfigMenu.iReducedSkill
+  if !moaSoulMark01.IsRunning() && !moaThiefNPC01.IsRunning() && (!moaBossChest01.IsRunning() || moaBossChest01.GetStage() == 0)
+    bossChestHandler()
+  endif
+  if ConfigMenu.iHostileOption == 2 && !moaSoulMark01.IsRunning() && (!moaBossChest01.IsRunning() || !LostItemsChest.GetNumItems())
+    thiefHandler()
+  endif
+  bSoulMark = bSoulMark()
+  Bool bRemoveItemTemp = True
+  Bool bInBeastForm = NPCScript.bInBeastForm()
+  if bInBeastForm || ((ConfigMenu.iHostileOption == 2 && (moaSoulMark01.IsRunning() || !moaThiefNPC01.IsRunning() || moaThiefNPC01.GetStage() != 1)) || (ConfigMenu.iHostileOption != 2 && (moaThiefNPC01.IsRunning() || (ConfigMenu.iHostileOption == 1 && !NPCScript.bIsHostileNPCNearby()))) || (PlayerRef.GetParentCell() == DefaultCell))
+    if (moaBossChest01.IsRunning() && moaBossChest01.GetStage() == 0) && !bInBeastForm
+      bRemoveItemTemp = False
+    else
+      bRemoveItems = False
+      if !ConfigMenu.bOnlyLoseSkillXP && !(ConfigMenu.bLoseSkillForever && ConfigMenu.bDLIEOK)
+        iReducedSkill = 0
+      endif
+    endif
+  endif
+  if bRemoveItems
+    itemCurseHandler()
+  endif
+  if (moaBossChest01.IsRunning() && moaBossChest01.GetStage() == 0) && !LostItemsChest.GetNumItems()
+    if !bRemoveItemTemp
+      bRemoveItems = False ;No phycical item removed and nothing else can be removed
+      if !ConfigMenu.bOnlyLoseSkillXP && !(ConfigMenu.bLoseSkillForever && ConfigMenu.bDLIEOK)
+        iReducedSkill = 0
+      endif
+    endif
+    stopAndConfirm(moaBossChest01, 3, 25)
+  endif
+  if iReducedSkill > 0
+    skillCurseHandler()
+  endif
+  if (PlayerRef.GetParentCell() != DefaultCell)
+  soulMarkHandler()
+  endif
+  if moaBossChest01.IsRunning() && moaThiefNPC01.IsRunning()
+    ;if no physical item is removed boss chest quest not needed
+    if LostItemsChest.GetNumItems() == 0
+      if moaBossChest01.GetStage() == 0
+        stopAndConfirm(moaBossChest01, 3, 25)
+      else
+        stopAndConfirm(moaBossChest01, 3, 20)
+      endif
+    else
+      RemoveStolenItemMarkers(ThiefNPC.GetReference() As Actor)
+      StopAndConfirm(moaThiefNPC01, 3, 25)
+    endif
+  endif
+  PlayerRef.DispelSpell(Bleed)
+  PlayerRef.ResetHealthAndLimbs()
+  PlayerRef.RestoreActorValue("health", 10000)
+  if ConfigMenu.bPlayerProtectFollower
+    NPCScript.ResurrectFollowers()
+  endif
+  if ConfigMenu.bResurrectActors
+    resurrectActors()
+  endif
+  if ConfigMenu.bHealActors
+    healActors()
+  endif
+  while bInfectingPlayer
+    Utility.WaitMenuMode(0.2)
+  endwhile
+  bReadyForRespawn = True ;allowing bIsArrived in respawnscript to teleport player
+  while bReadyForRespawn
+    Utility.WaitMenuMode(0.2)
+  endwhile
+  Utility.Wait(0.5)
+  if PlayerRef.IsDead()
+    PlayerRef.SetAlpha(1.0)
+    BlackScreen.Remove()
+    return
+  endif
+  Attacker = None
+  ResetPlayer()
+  if !ConfigMenu.bGhostCurse && !moaPlayerGhostQuest.IsRunning()
+    PlayerRef.SetAlpha(1.0, True)
+  endif
+  Utility.Wait(1.0)
+  NPCScript.ToggleFollower(True)
+  if (ConfigMenu.bRespawnNaked && !NPCScript.bInBeastForm())
+    ItemScript.undressActor(playerRef, true)
+  endif
+  arkayCurseHandler()
+  if ConfigMenu.bGhostCurse
+    if moaPlayerVoicelessQuest.IsRunning()
+      moaPlayerVoicelessQuest.Stop()
+    endif
+    if !moaPlayerGhostQuest.IsRunning()
+      moaPlayerGhostQuest.Start()
+    endif
+  endif
+  if ConfigMenu.bVoicelessCurse
+    if !moaPlayerGhostQuest.IsRunning() && !moaPlayerVoicelessQuest.IsRunning()
+      moaPlayerVoicelessQuest.Start()
+    endif
+    PlayerRef.SetVoiceRecoveryTime(9999999.0)
+    bPlayerIsVoiceless = True
+  endif
+  if PlayerRef.GetActorValue("paralysis")
+    PlayerRef.SetActorValue("paralysis", 0)
+    if PlayerRef.GetActorValue("paralysis")
+      PlayerRef.ForceActorValue("paralysis", 0)
+    endif
+    Utility.Wait(6.5)
+  endif
+  if (ConfigMenu.bFadeToBlack || ConfigMenu.bInvisibility || ConfigMenu.fRespawnTimeSlider)
+    RespawnScript.PassTime(ConfigMenu.fRespawnTimeSlider, 6.0)
+  endif
+  if ConfigMenu.bFadeToBlack
+    BlackScreen.PopTo(FadeIn)
+  endif
+  RefreshFace()
+  Utility.Wait(0.5)
+  if ConfigMenu.bLoseForever && bDidItemsRemoved
+    if moaRetrieveLostItems.IsRunning()
+      moaRetrieveLostItems.SetStage(10)
+      ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Soul Mark Quest Failed.")
+    endif
+    if moaRetrieveLostItems01.IsRunning()
+      moaRetrieveLostItems01.SetStage(10)
+      ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Stolen Items Quest Failed.")
+    endif
+    if PreviousThief
+      if (!moaThiefNPC01.IsRunning() || (PreviousThief != Thief))
+        RemoveStolenItemMarkers(PreviousThief)
+        PreviousThief.RemoveFromFaction(PlayerEnemyFaction)
+      endif
+    endif
+    RemoveStolenItemMarkers(PlayerRef)
+    Utility.Wait(0.5)
+  endif
+  if moaThiefNPC01.IsRunning()
+    Thief && ItemScript.AddStolenItemMarker(Thief)
+  endif
+  if bCursed()
+    if moaBossChest01.IsRunning()
+      if moaBossChest01.getStage() < 5
+        moaBossChest01.SetStage(5)
+        ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Boss Chest Quest Started.")
+      endif
+    elseif moaSoulMark01.IsRunning()
+      if ConfigMenu.bLostItemQuest
+        moaRetrieveLostItems.Start()
+        moaRetrieveLostItems.SetStage(1)
+        ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Soul Mark Quest Started.")
+      endif
+    elseif moaThiefNPC01.IsRunning()
+      if ConfigMenu.bLostItemQuest
+        moaRetrieveLostItems01.Start()
+        moaRetrieveLostItems01.SetStage(1)
+        ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Stolen Items Quest Started.")
+      endif
+    endif
+    if SkillScript.bSkillReduced()
+      SkillScript.DisableAllXP()
+    endif
+  else
+    if moaBossChest01.GetStage() == 0
+      stopAndConfirm(moaBossChest01, 3, 25)
+    else
+      stopAndConfirm(moaBossChest01, 3, 20)
+    endif
+  endif
+  moaHostileNPCDetector.Stop()
+  moaHostileNPCDetector01.Stop()
+  RapeScript.unPacify()
+  if !bIsCameraStateSafe()
+    Game.ForceThirdPerson()
+  endif
+  if !ConfigMenu.bShowRaceMenu
+    if ConfigMenu.bAltEyeFix && ConfigMenu.bARCCOK
+      Utility.Wait(0.5)
+      ExecuteCommand("player.say 0142b5", 1, 0, 1)
+    endif
+  endif
+  if !ConfigMenu.bDoNotStopCombat
+    !moaPlayerGhostQuest.IsRunning() && PlayerRef.StopCombatAlarm()
+  endif
+  LowHealthImod.Remove()
+  if bCidhnaJail
+    if (PlayerRef.GetParentCell() == RespawnScript.MarkarthJailMarker.GetParentCell())
+      if !CidhnaMineJailEventScene.GetStageDone(10)
+        CidhnaMineJailEventScene.SetStage(10)
+      endif
+    endif
+    bCidhnaJail = False
+  endif
+  if ConfigMenu.iTotalRespawn < 99999999
+    ConfigMenu.iTotalRespawn += 1
+  endif
+  if ConfigMenu.bRespawnCounter
+    ConfigMenu.fRespawnCounterSlider -= 1
+    if ConfigMenu.bIsNotificationEnabled
+      Debug.Notification("$mrt_MarkofArkay_Notification_totalRemainingRespawns")
+      Debug.Notification(ConfigMenu.fRespawnCounterSlider As Int)
+    endif
+    ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: You have " + ConfigMenu.fRespawnCounterSlider As Int + " more respawns.")
+  endif
+  ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Respawn finished.")
+  Debug.TraceConditional("MarkOfArkay: Respawn finished in " + (Utility.GetCurrentRealTime() - fRespawnStartTime) + " seconds.", ConfigMenu.bIsLoggingEnabled)
+  if ConfigMenu.bShowRaceMenu
+    Utility.Wait(2.0)
+    Game.ShowRaceMenu()
+  endif
+  GoToState("")
+endfunction
+
+function skillCurseHandler()
+  Debug.TraceConditional("MarkOfArkay: Reducing player's Skills/Skill XPs...", ConfigMenu.bIsLoggingEnabled)
+  Float fStart = Utility.GetCurrentRealTime()
+  String Skill
+  if iReducedSkill < 19
+    Skill = SkillScript.sSkillName[iReducedSkill - 1]
+  elseif iReducedSkill == 19
+    Skill = "Random"
+  elseif iReducedSkill == 20
+    Skill = "Lowest"
+  elseif iReducedSkill == 21
+    Skill = "Highest"
+  elseif iReducedSkill == 22
+    Skill = "Lowest_All"
+  elseif iReducedSkill == 23
+    Skill = "Highest_All"
+  elseif iReducedSkill == 24
+    Skill = "All_Low"
+  elseif iReducedSkill == 25
+    Skill = "All_High"
+  elseif iReducedSkill == 26
+    Skill = "All_Random"
+  elseif iReducedSkill == 27
+    Skill = "All_One_By_One"
+  endif
+  if ConfigMenu.bSkillReduceRandomVal
+    SkillScript.ReduceSkills(Skill, -1, ConfigMenu.fSkillReduceMinValSlider As Int, ConfigMenu.fSkillReduceMaxValSlider As Int, bOnlyXP=ConfigMenu.bOnlyLoseSkillXP)
+  else
+    SkillScript.ReduceSkills(Skill, ConfigMenu.fSkillReduceValSlider As Int, ConfigMenu.fSkillReduceMinValSlider As Int, ConfigMenu.fSkillReduceMaxValSlider As Int, bOnlyXP=ConfigMenu.bOnlyLoseSkillXP)
+  endif
+  Debug.TraceConditional("MarkOfArkay: Reducing skills completed in " + (Utility.GetCurrentRealTime() - fStart) + " seconds.", ConfigMenu.bIsLoggingEnabled)
+endFunction
+
+function itemCurseHandler()
+   Debug.TraceConditional("MarkOfArkay: Removing items from the player...", ConfigMenu.bIsLoggingEnabled)
+    Float fStart = Utility.GetCurrentRealTime()
+    ItemScript.loseItems()
+    Debug.TraceConditional("MarkOfArkay: Removing items from the player finished in " + (Utility.GetCurrentRealTime() - fStart) + " seconds.", ConfigMenu.bIsLoggingEnabled)
+    if ConfigMenu.bIsLoggingEnabled
+      Int c = LostItemsChest.GetNumItems()
+      String str = "MarkOfArkay: Currently removed items -> "
+      if ItemScript.fLostSouls > 0.0
+        c += 1
+        str += c
+        str += "("
+        str += (c - 1)
+      else
+        str += c
+        str += "("
+        str += c
+      endif
+      str += " + "
+      str += (ItemScript.fLostSouls As Int)
+      str += " dragon souls)"
+      Debug.Trace(str)
+    endif
+endFunction
+
+function soulMarkHandler()
+  if bCursed() || (ConfigMenu.bArkayCurse && !ConfigMenu.bIsArkayCurseTemporary) || ConfigMenu.bVoicelessCurse || ConfigMenu.bGhostCurse ;Something is removed or stats of player are reduced or going to be reduced
+    if (bSoulMark || (((ConfigMenu.bArkayCurse && !ConfigMenu.bIsArkayCurseTemporary) || bHasArkayCurse() || ConfigMenu.bVoicelessCurse || ConfigMenu.bGhostCurse || moaPlayerGhostQuest.IsRunning() || moaPlayerVoicelessQuest.IsRunning()) && !moaThiefNPC01.IsRunning() && (!moaBossChest01.IsRunning() || LostItemsChest.GetNumItems() == 0))) ;Soul mark can be used
+      if moaBossChest01.GetStage() == 0
+        stopAndConfirm(moaBossChest01, 3, 25)
+      else
+        stopAndConfirm(moaBossChest01, 3, 20)
+      endif
+      LostItemsMarker.Enable()
+      if !ConfigMenu.bSoulMarkStay || ((!NPCScript.SoulMark02.GetActorReference() || NPCScript.SoulMark02.GetActorReference().GetParentCell() == DefaultCell) && LostItemsMarker.GetParentCell() == DefaultCell)
+        ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Moving soul mark to player's location...")
+        if !ConfigMenu.bCorpseAsSoulMark
+          NPCScript.RemoveDeadClone()
+          LostItemsMarker.MoveTo(PlayerRef, 0, 0, 42)
+        elseif ConfigMenu.bCorpseAsSoulMark
+          LostItemsMarker.MoveToMyEditorLocation()
+          NPCScript.RemoveDeadClone()
+          NPCScript.bringDeadClone()
+        endif
+        moaSoulMark01.Start()
+        ConfigMenu.bIsLoggingEnabled && !ConfigMenu.bCorpseAsSoulMark && LostItemsMarker.GetParentCell() != DefaultCell && Debug.Trace("MarkOfArkay: Soul mark dropped at ( " + LostItemsMarker.GetPositionX() + ", " + LostItemsMarker.GetPositionY() + ", " + LostItemsMarker.GetPositionZ() + " ).")
+        ConfigMenu.bIsLoggingEnabled && ConfigMenu.bCorpseAsSoulMark && NPCScript.SoulMark02.GetActorReference() && NPCScript.SoulMark02.GetActorReference().GetParentCell() != DefaultCell && Debug.Trace("MarkOfArkay: Body dropped at ( " + NPCScript.SoulMark02.GetReference().GetPositionX() + ", " + NPCScript.SoulMark02.GetReference().GetPositionY() + ", " + NPCScript.SoulMark02.GetReference().GetPositionZ() + " ).")
+        if Thief
+          RemoveStolenItemMarkers(Thief)
+        endif
+        RemoveStolenItemMarkers(PlayerRef)
+      endif
+    endif
+  else
+    NPCScript.RemoveDeadClone()
+    StopAndConfirm(moaSoulMark01, 3)
+    LostItemsMarker.MoveToMyEditorLocation()
+    LostItemsMarker.Disable()
+    if (ThiefNPC.GetReference() As Actor)
+      RemoveStolenItemMarkers(ThiefNPC.GetReference() As Actor)
+    endif
+    if (ThiefNPC01.GetReference() As Actor)
+      RemoveStolenItemMarkers(ThiefNPC01.GetReference() As Actor)
+    endif
+    StopAndConfirm(moaThiefNPC01, 3, 25)
+  endif
+endfunction
+
+function bossChestHandler()
+  StopAndConfirm(moaBossChest01, 3, 25)
+  if Utility.RandomInt(0, 99) < ConfigMenu.fBossChestChanceSlider
+    Location curLoc = PlayerRef.GetCurrentLocation()
+    if !curLoc || !curLoc.HasKeyWord(NPCScript.LocTypeDungeon) || !curLoc.HasRefType(BossContainer) || (ConfigMenu.moaBossChestNotInclearedLoc.GetValueInt() && curLoc.IsCleared())
+      PlayerLocRef.ForceLocationTo(EmptyLocation)
+    else
+      PlayerLocRef.ForceLocationTo(PlayerRef.GetCurrentLocation())
+    endif
+    moaBossChest01.Start()
+  endif
+endfunction
+
+function thiefHandler()
+    if !moaThiefNPC01.IsRunning() || moaThiefNPC01.GetStage() == 1
+      ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Finding a hostile NPC who can steal from player ...")
+      NPCScript.checkedActors.revert()
+      NPCScript.DetectThiefNPC()
+      NPCScript.checkedActors.revert()
+      if Thief
+        if !ThiefNPC01.GetActorReference() || (ConfigMenu.bAlwaysSpawn && (ThiefNPC01.GetActorReference() != Thief))
+          ThiefNPC.ForceRefTo(Thief)
+        endif
+        if !moaThiefNPC01.IsRunning()
+          moaThiefNPC01.Start()
+        endif
+        ThiefMarker.MoveTo(Thief)
+        if ThiefNPC01.GetActorReference() && (ThiefNPC.GetActorReference() && (Thief == ThiefNPC.GetActorReference()))
+          RemoveStolenItemMarkers(ThiefNPC01.GetActorReference())
+        endif
+      elseif moaThiefNPC01.IsRunning() && !bCursed() ;if cursed, location change event will respawn or stop the quest
+        RemoveStolenItemMarkers(ThiefNPC.GetReference() As Actor)
+        StopAndConfirm(moaThiefNPC01, 3, 25)
+      endif
+    endif
+endfunction
+
+function resurrectActors()
+  ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Resurrecting non-unique actors in player's location...")
+  if Attacker
+    if (!Attacker.IsCommandedActor() && !Attacker.GetActorBase().IsUnique() && !Attacker.IsDisabled() && Attacker.IsDead())
+      if ((Attacker.GetParentCell() == PlayerRef.GetParentCell()) || PlayerRef.GetDistance(Attacker) < 10000.0)
+        Attacker.Resurrect()
+      endif
+    endif
+  endif
+  MassRevival.Cast(PlayerRef)
+  ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Resurrection finished.")
+endfunction
+
+function healActors()
+  ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Healing actors in player's location...")
+  if Attacker && !Attacker.IsDead()
+    if ((Attacker.GetParentCell() == PlayerRef.GetParentCell()) || PlayerRef.GetDistance(Attacker) < 10000.0)
+      if Attacker.GetActorValue("Health") > 0
+        Attacker.RestoreActorValue("Health", 999999)
+      endif
+    endif
+  endif
+  MassHealing.Cast(PlayerRef)
+  ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Last attacker and other actors are healed.")
+endfunction
+
+function arkayCurseHandler()
+  if ((ConfigMenu.bArkayCurse && !ConfigMenu.bIsArkayCurseTemporary) && (moaThiefNPC01.IsRunning() || (moaSoulMark01.IsRunning())))
+    PlayerRef.DispelSpell(ArkayCurseTemp)
+    PlayerRef.DispelSpell(ArkayCurseTempAlt)
+    if ConfigMenu.iArkayCurse == 0
+      PlayerRef.AddSpell(ArkayCurse)
+    elseif ConfigMenu.iArkayCurse == 1
+      PlayerRef.AddSpell(ArkayCurseAlt)
+    else
+      PlayerRef.AddSpell(ArkayCurse)
+      PlayerRef.AddSpell(ArkayCurseAlt)
+    endif
+  elseif ((ConfigMenu.bArkayCurse && ConfigMenu.bIsArkayCurseTemporary) && !bHasArkayCurse())
+    if ConfigMenu.iArkayCurse == 0
+      ArkayCurseTemp.Cast(PlayerRef)
+    elseif ConfigMenu.iArkayCurse == 1
+      ArkayCurseTempAlt.Cast(PlayerRef)
+    else
+      ArkayCurseTemp.Cast(PlayerRef)
+      ArkayCurseTempAlt.Cast(PlayerRef)
     endif
   endif
 endfunction
@@ -1734,6 +1783,9 @@ function SetGameVars(Bool abFast=False)
     ConfigMenu.ToggleFallDamage(ConfigMenu.bIsNoFallDamageEnabled) ;SKSE
   else
     ConfigMenu.ToggleFallDamage(False)
+  endif
+  if ConfigMenu.iSurrenderKey > 0
+    RegisterForKey(ConfigMenu.iSurrenderKey)
   endif
   RapeScript.RegisterForModEvent("MOA_Int_PlayerLoadsGame", "On_MOA_Int_PlayerLoadsGame")
   sendModEvent("MOA_Int_PlayerLoadsGame")
@@ -1835,7 +1887,6 @@ function ShowNotification()
   endif
   Int totalRemainingLives = 0
   SetVars()
-  if (ConfigMenu.bIsRevivalEnabled)
     if !(strRemovedItem == "")
       if (strRemovedItem == "Dragon Soul")
         Debug.Notification("$mrt_MarkofArkay_Notification_DragonSoul_Removed")
@@ -1883,7 +1934,6 @@ function ShowNotification()
     else
       Debug.Notification("$mrt_MarkofArkay_Notification_NoRemainingTrades")
     endif
-  endif
 endfunction
 
 function SortPriorityArray() ;sort priority so higher priority and those items that can be traded are first
@@ -2060,12 +2110,13 @@ Bool function bSoulMark() ;Whether drop soul mark or not
 endfunction
 
 function checkHealth()
-  if ConfigMenu.bTriggerOnHealthPerc && ConfigMenu.bIsRevivalEnabled
+  if ConfigMenu.bTriggerOnHealthPerc
     if !PlayerRef.IsDead() && (playerRef.GetActorValuePercentage("Health") <= ConfigMenu.fHealthPercTrigger)
       if !bInBleedout && !moaIgnoreBleedout.GetValue()
         bInBleedout = True
         Game.DisablePlayerControls()
-
+         bfastTravel = Game.IsFastTravelEnabled()
+         Game.EnableFastTravel(False)
         ;Game.DisablePlayerControls(abMovement = True, abFighting = True, abCamSwitch = False, abLooking = False, abSneaking = True, abMenu = True, abActivate = True, abJournalTabs = False, aiDisablePOVType = 0)
         PlayerRef.DamageActorValue("Health", 9999.0)
         fHealrate = PlayerRef.GetActorValue("HealRate")
@@ -2073,7 +2124,6 @@ function checkHealth()
         PlayerRef.AddPerk(Invulnerable)
         Debug.SetGodMode(True) ;still needed for when dying because of traps
         bInBleedoutAnim = True
-        bSheathed = False
         iIsBeast = NPCScript.iInBeastForm()
         if ConfigMenu.bIsRagdollEnabled
           BleedoutHandler(ToggleState())
@@ -2087,12 +2137,12 @@ function checkHealth()
         if GetState() == ""
           Attacker = None
           PlayerRef.SetActorValue("HealRate", fHealrate)
-          PlayerRef.SetDontMove(False)
-          Game.EnablePlayerControls()
+          ;PlayerRef.SetDontMove(False)
+          ;Game.EnablePlayerControls()
           LowHealthImod.Remove()
           moaBleedoutHandlerState.SetValue(0)
           RegisterForSingleUpdate(3.0)
-          Game.EnableFastTravel(True)
+          bRevived = true
           ToggleSaving(True)
           bInBleedout = False
         endif
@@ -2135,7 +2185,7 @@ Int function iHasHealingPotion()
   return -1
 endfunction
 
-function restore(Int iRevivePlayer=1, Bool bReviveFollower=True, Bool bEffect=False, Int iPotionIndex=-1, Bool bWait=False, String sTrace="")
+function restore(Int iRevivePlayer=1, Bool bReviveFollower=True, Bool bEffect=False, Int iPotionIndex=-1, String sTrace="")
   RapeScript.unPacify()
   if !PlayerRef.IsDead()
     Game.SetPlayerAIDriven(False)
@@ -2181,11 +2231,11 @@ function restore(Int iRevivePlayer=1, Bool bReviveFollower=True, Bool bEffect=Fa
     if PlayerRef.GetActorValue("paralysis")
       PlayerRef.ForceActorValue("paralysis", 0)
     endif
+    Utility.Wait(5.0)
   endif
   if bEffect && (iRevivePlayer == 1) && !PlayerRef.IsDead()
     BleedoutProtection.Cast(PlayerRef)
   endif
-  bWait && Utility.Wait(5.0)
   GoToState("")
   if sTrace && ConfigMenu.bIsLoggingEnabled
     Debug.Trace(sTrace)
@@ -2252,6 +2302,9 @@ state Bleedout1
 
   event OnSleepStop(Bool abInterrupted)
   endevent
+
+  Event OnKeyDown(int keyCode)
+  endevent
 endstate
 
 state Bleedout2
@@ -2280,4 +2333,122 @@ state Bleedout2
 
   event OnSleepStop(Bool abInterrupted)
   endevent
+
+  Event OnKeyDown(int keyCode)
+  endevent
+
+endstate
+
+Event OnKeyDown(int keyCode)
+  If moaState.getValue() != 1
+  ElseIf ConfigMenu.iNotTradingAftermath != 1
+  ElseIf Utility.IsInMenuMode() 
+  ElseIf !PlayerRef.IsInCombat()
+  ElseIf PlayerRef.IsBleedingOut() 
+  ElseIf bInBleedoutAnim 
+  ElseIf bInBleedout
+  Elseif bSoulMarkActivated
+  Else
+    GoToState("Surrender")
+  endif
+endevent
+
+State Surrender
+  Event OnBeginState()
+    if bSurrendering
+      return
+    endif
+    bSurrendering = True
+    PlayerRef.SetGhost(True)
+    PlayerRef.AddPerk(Invulnerable)
+    if !Attacker || !Attacker.IS3dLoaded() || (Attacker.GetDistance(playerRef) > 2000.0) || (attacker == playerRef)
+      Bool bFound = False
+      Actor npc = Game.FindClosestActorFromRef(PlayerRef, 2000.0)
+      if NPCScript.bPlayerCanSurrenderToActor(npc)
+        Attacker = npc
+        bfound = true
+      elseif npc
+        actor npc2
+        int i = 15
+        bFound = False
+        while i > 0 && !bFound
+          i -= 1
+          npc2 = Game.FindRandomActorFromRef(PlayerRef, 2000.0)
+          if NPCScript.bPlayerCanSurrenderToActor(npc2)
+            Attacker = npc2
+            bFound = True
+          endif
+        endWhile
+      endif
+      if bFound
+        AttackerActor.ForceRefTo(Attacker)
+        AttackerActor01.ForceRefTo(Attacker)
+      endif
+    else
+      AttackerActor.ForceRefTo(Attacker)
+      AttackerActor01.ForceRefTo(Attacker)
+    endif
+    bfastTravel = Game.IsFastTravelEnabled()
+    Game.EnableFastTravel(false)
+    if !NPCScript.iInBeastForm() && !PlayerRef.GetActorValue("paralysis") && !PlayerRef.IsWeaponDrawn()
+      playerRef.playIdle(SurrenderIdle)
+      utility.wait(1.0)
+    endif
+    if ConfigMenu.bPO3Ok
+      PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
+      PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
+    endif 
+    PlayerRef.StopCombatAlarm()
+    Game.DisablePlayerControls(abMovement=True, abFighting=True, abCamSwitch=True, abLooking=False, abSneaking=True, abMenu=True, abActivate=True, abJournalTabs=False)
+    stopAndConfirm(moaHostileNPCDetector)
+    stopAndConfirm(moaHostileNPCDetector01)
+    if ConfigMenu.iHostileOption == 2
+      if ConfigMenu.bNPCHasLevelRange
+        Int iMinNPCLevel = PlayerRef.GetLevel() - (ConfigMenu.fLowerNPCMaxLvlDiff As Int)
+        Int iMaxNPCLevel = PlayerRef.GetLevel() + (ConfigMenu.fHigherNPCMaxLvlDiff As Int)
+        if iMinNPCLevel < 0
+          iMinNPCLevel = 1
+        endif
+        ConfigMenu.moaLowerNPCMaxLvlDiff.SetValueInt(iMinNPCLevel)
+        ConfigMenu.moaHigherNPCMaxLvlDiff.SetValueInt(iMaxNPCLevel)
+      endif
+      moaHostileNPCDetector.Start()
+    elseif ConfigMenu.iHostileOption == 1
+      moaHostileNPCDetector01.Start()
+    endif
+    RevivePlayer(False)
+    GoToState("")
+    bSurrendering = False
+	  RegisterForSingleUpdate(3.0)
+    bRevived = true
+  EndEvent
+
+  Event OnKeyDown(int keyCode)
+  endevent
+  
+  event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile, Bool abPowerattack, Bool abSneakAttack, Bool abBashAttack, Bool abHitBlocked)
+  endevent
+
+  event OnObjectEquipped(Form akBaseObject, ObjectReference akReference)
+  endevent
+
+  event OnObjectUnequipped(Form akBaseObject, ObjectReference akReference)
+  endevent
+
+  event OnPlayerLoadGame()
+    ConfigMenu.checkMods()
+    if PermaDeathScript.bCheckPermaDeath()
+      return
+    endif
+    SetGameVars()
+    if bPlayerIsVoiceless
+      PlayerRef.SetVoiceRecoveryTime(9999999.0)
+    endif
+  endevent
+
+  event OnEnterBleedout()
+  endEvent
+  
+  Function checkHealth()
+  endfunction
 endstate

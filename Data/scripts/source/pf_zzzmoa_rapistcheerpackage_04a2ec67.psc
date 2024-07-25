@@ -1,6 +1,6 @@
 ;BEGIN FRAGMENT CODE - Do not edit anything between this and the end comment
 ;NEXT FRAGMENT INDEX 2
-Scriptname PF_zzzmoa_RapistCheerPackage_04A2EC67 Extends Package Hidden
+Scriptname PF_zzzmoa_rapistcheerpackage_04a2ec67 Extends Package Hidden
 
 ;BEGIN FRAGMENT Fragment_0
 Function Fragment_0(Actor akActor)

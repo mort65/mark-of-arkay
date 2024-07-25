@@ -10,6 +10,10 @@ Quest property moaRetrieveLostItems auto
 Quest property moaRetrieveLostItems01 auto
 
 event OnActivate(ObjectReference akActionRef)
+  if ReviveScript.bSoulMarkActivated
+    return
+  endif
+  ReviveScript.bSoulMarkActivated = True
   if !PlayerRef.IsGhost()
     PlayerRef.SetGhost(True)
   endif
@@ -33,5 +37,6 @@ event OnActivate(ObjectReference akActionRef)
       Self.Disable()
     endif
   endif
+  ReviveScript.bSoulMarkActivated = False
   PlayerRef.SetGhost(False)
 endevent

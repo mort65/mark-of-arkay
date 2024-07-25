@@ -130,6 +130,10 @@ Quest property moaFollowerDetector auto
 Quest property moaGuardDetector auto
 Quest property moaHostileNPCDetector auto
 Quest property moaHostileNPCDetector01 auto
+Formlist property AdultNPCRaces Auto
+Formlist property AsultNPCVampireRaces Auto
+FormList Property hostileFactions Auto
+Formlist property checkedActors Auto
 
 function DetectFollowers()
   ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Detecting followers...")
@@ -959,11 +963,85 @@ Bool function bCanSendToCidhna()
   return (!MS01.IsCompleted() || MS02.IsCompleted())
 endfunction
 
-Bool function bCanSteal(Actor ActorRef)
-  if ActorRef
-    return ((ActorRef != PlayerRef) && !ActorRef.HasSpell(WontSteal) && !(ActorRef.IsDead() || (ActorRef.GetActorValue("Health") <= 0)) && !ActorRef.IsDisabled() && !ActorRef.IsEssential() && !ActorRef.GetActorBase().IsProtected() && !ActorRef.GetActorBase().IsInvulnerable() && !ActorRef.IsGhost() && !ActorRef.IsCommandedActor() && !ActorRef.IsGuard() && ((ActorRef.HasKeywordString("actortypenpc") && !ActorRef.HasKeywordString("actortypecreature") && (!ConfigMenu.bMoralityMatters || (ActorRef.GetActorValue("Morality") < 3))) || (ConfigMenu.bCreaturesCanSteal && ActorRef.HasKeywordString("actortypecreature") && (!ActorRef.HasKeywordString("actortypeanimal") || (ActorRef.IsInFaction(SpiderFaction) || ActorRef.IsInFaction(ChaurusFaction))))) && ((ReviveScript.Attacker && (ReviveScript.Attacker == ActorRef)) || (ActorRef.GetFactionReaction(PlayerRef) == 1) || ActorRef.IsHostileToActor(PlayerRef) || (ActorRef.GetRelationshipRank(PlayerRef) < 0)) && (ActorRef.HasLOS(PlayerRef) || (ReviveScript.Attacker && (ReviveScript.Attacker == ActorRef)) || (ActorRef.GetDistance(PlayerRef) <= 100.0)) && (!ConfigMenu.moaNPCHasLevelRange || ((ActorRef.GetLevel() >= ConfigMenu.moaLowerNPCMaxLvlDiff.GetValue()) && (ActorRef.GetLevel() <= ConfigMenu.moaHigherNPCMaxLvlDiff.GetValue()))))
+Bool Function bIsHostile(Actor ActorRef)
+  if !ActorRef
+    return False
+  endif
+  if ActorRef.HasSpell(WontSteal)
+  elseif ActorRef == PlayerRef
+  elseif bIsDying(ActorRef) || ActorRef.IsDisabled()
+  elseif ActorRef.IsCommandedActor() || ActorRef.IsGuard()
+  else
+    if isCreature(ActorRef)
+      if !ConfigMenu.bCreaturesCanSteal
+        return false
+      elseif ActorRef.HasKeywordString("actortypeanimal")
+        if (!ActorRef.IsInFaction(SpiderFaction) && !ActorRef.IsInFaction(ChaurusFaction))
+          return false
+        endif
+      endif
+    elseif ConfigMenu.bMoralityMatters && (ActorRef.GetActorValue("Morality") > 2)
+      return false
+    endif
+    if (ReviveScript.Attacker && (ReviveScript.Attacker == ActorRef))
+      return true
+    elseif ActorRef.GetRelationshipRank(PlayerRef) < 1
+      if ActorRef.GetRelationshipRank(PlayerRef) < 0
+        return true
+      elseif ActorRef.GetFactionReaction(PlayerRef) < 2
+        return true
+      elseif ActorRef.IsHostileToActor(PlayerRef)
+        return true
+      elseif bIsInHostileFaction(ActorRef)
+        return true
+      endif
+    endif
   endif
   return False
+endfunction
+
+Bool function bCanSteal(Actor ActorRef)
+  if !ActorRef
+    return false
+  endif
+  bool bRejected = checkedActors.hasForm(ActorRef)
+  Actorbase theActorBase = ActorRef.GetLeveledActorBase()
+
+  if bIsDying(ActorRef) || ActorRef.IsDisabled() || bRejected
+  elseif !bIsHostile(ActorRef)
+  elseif theActorBase.isUnique()
+  elseif bIsFollower(ActorRef)
+  elseif isActorChild(ActorRef)
+  elseif ActorRef.IsEssential() || theActorBase.IsProtected() || theActorBase.IsInvulnerable() || ActorRef.IsGhost()
+  elseif ((ConfigMenu.moaNPCHasLevelRange.GetValueInt() != 0) && \
+    ((ActorRef.GetLevel() < ConfigMenu.moaLowerNPCMaxLvlDiff.GetValue()) || (ActorRef.GetLevel() > ConfigMenu.moaHigherNPCMaxLvlDiff.GetValue())))
+  else
+    if ReviveScript.Attacker && (ReviveScript.Attacker == ActorRef)
+      return true
+    elseif ActorRef.HasLOS(PlayerRef)
+      return true
+    elseif (ActorRef.GetDistance(PlayerRef) <= 500.0)
+      return true
+    else ;Not added to checkedActors so they can be checked again
+      return false
+    endif
+  endif
+  checkedActors.addform(ActorRef)
+  return False
+endfunction
+
+Bool Function isCreature(Actor ActorRef)
+  race actorRace = ActorRef.GetRace()
+  if actorRace && (AdultNPCRaces.hasForm(actorRace) || AsultNPCVampireRaces.hasForm(actorRace))
+    return False
+  elseif ActorRef.IsInFaction(CreatureFaction)
+    Return true
+  elseif ActorRef.HasKeywordString("actortypenpc")
+    if (!ActorRef.HasKeywordString("actortypecreature") && !ActorRef.HasKeywordString("actortypeanimal"))
+      return False
+    endif
+  endif
+  return true
 endfunction
 
 Form[] function bCloneActor(Actor akActor, ObjectReference akMarker, Int aiCount=1, Int aiLevel=2, Bool abDead=False)
@@ -1073,11 +1151,36 @@ Bool function bIsFollower(Actor ActorRef)
   return False
 endfunction
 
-Bool function bIsHostile(Actor ActorRef)
-  if ActorRef
-    return ((ActorRef != PlayerRef) && !ActorRef.HasSpell(WontSteal) && !(ActorRef.IsDead() || (ActorRef.GetActorValue("Health") <= 0)) && !ActorRef.IsDisabled() && !ActorRef.IsCommandedActor() && !ActorRef.IsGuard() && ((ActorRef.HasKeywordString("actortypenpc") && !ActorRef.HasKeywordString("actortypecreature")) || (ConfigMenu.bCreaturesCanSteal && ActorRef.HasKeywordString("actortypecreature") && (!ActorRef.HasKeywordString("actortypeanimal") || (ActorRef.IsInFaction(SpiderFaction) || ActorRef.IsInFaction(ChaurusFaction))))) && ((ReviveScript.Attacker && (ReviveScript.Attacker == ActorRef)) || (ActorRef.GetFactionReaction(PlayerRef) == 1) || ActorRef.IsHostileToActor(PlayerRef) || (ActorRef.GetRelationshipRank(PlayerRef) < 0)))
+Bool function bPlayerCanSurrenderToActor(Actor ActorRef)
+  faction crimeFaction
+  if !ActorRef
+  elseif (ActorRef == PlayerRef) 
+  elseif ActorRef.IsDisabled()
+  elseif ActorRef.IsCommandedActor()
+  elseif bIsDying(ActorRef)
+  elseif bIsFollower(ActorRef)
+  elseif isActorChild(ActorRef)
+  elseif !ConfigMenu.bOnlyHostilesRape
+    return true
+  elseif ReviveScript.Attacker && (ReviveScript.Attacker == ActorRef)
+    return true
+  elseif ActorRef.GetRelationshipRank(PlayerRef) < 1
+    if ActorRef.GetRelationshipRank(PlayerRef) < 0
+      return true
+    elseif ActorRef.GetFactionReaction(PlayerRef) < 2
+      return true
+    elseif ActorRef.IsHostileToActor(PlayerRef)
+      return true
+    elseif bIsInHostileFaction(ActorRef)
+      return True
+    elseif ActorRef.IsGuard()
+      crimeFaction = ActorRef.GetCrimeFaction()
+      if CrimeFaction && (CrimeFaction.GetCrimeGold() > 0)
+        return true
+      endif
+    endif
   endif
-  return False
+  return false
 endfunction
 
 Bool function bIsHostileNPCNearby()
@@ -1261,5 +1364,35 @@ Int function iInBeastForm()
 endfunction
 
 Bool function isActorChild(Actor actorRef)
-  return (actorRef.isChild() || (actorRef.GetRace() && childRaces.find(actorRef.GetRace()) > -1))
+  if !actorRef
+    return false
+  endif
+  if actorRef.isChild()
+    return true
+  endif
+  race actorRace = actorRef.GetRace() 
+  if actorRace
+    if childRaces.find(actorRace) > -1
+      return true
+    else
+      string actorRaceName = actorRace.GetName()
+      if actorRaceName && (stringUtil.Find(actorRaceName, "Child") > -1)
+        return true
+      endif
+    endif
+  endif
+  return false
+endfunction
+
+Bool function bIsInHostileFaction(Actor actorRef)
+  int i = hostileFactions.GetSize()
+  While i > 0
+    i -= 1
+    if hostileFactions.GetAt(i) as Faction
+      if actorRef.IsInFaction(hostileFactions.GetAt(i) as Faction)
+        return true
+      endif
+    endif
+  endwhile
+  return false
 endfunction

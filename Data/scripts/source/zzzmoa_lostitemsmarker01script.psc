@@ -9,13 +9,11 @@ EffectShader property TurnUnDisintegrate01FXS auto
 Quest property moaRetrieveLostItems auto
 Quest property moaRetrieveLostItems01 auto
 
-Bool bIsActive
-
 event OnActivate(ObjectReference akActionRef)
-  if bIsActive
+  if ConfigMenu.ReviveScript.bSoulMarkActivated
     return
   endif
-  bIsActive = True
+  ConfigMenu.ReviveScript.bSoulMarkActivated = True
   if !PlayerRef.IsGhost()
     PlayerRef.SetGhost(True)
   endif
@@ -42,7 +40,7 @@ event OnActivate(ObjectReference akActionRef)
       endif
     endif
   endif
-  bIsActive = False
+  ConfigMenu.ReviveScript.bSoulMarkActivated = False
   PlayerRef.SetGhost(False)
 endevent
 

@@ -421,9 +421,11 @@ Bool function rapePlayer(Actor[] rapists)
   RapistsList.revert()
   string interface = getInteface()
   keepControlsDisabled(0.2, true, true, true, false, true, true, true, false, true)
-  ReviveScript.FastFadeOut.Apply()
-  utility.Wait(1.0)
-  ReviveScript.FastFadeOut.PopTo(ReviveScript.BlackScreen)
+  if ConfigMenu.bFadeToBlack
+    ReviveScript.FastFadeOut.Apply()
+    utility.Wait(1.0)
+    ReviveScript.FastFadeOut.PopTo(ReviveScript.BlackScreen)
+  endif
   If ConfigMenu.bPO3Ok
 	PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
 	PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
@@ -539,10 +541,13 @@ Bool function rapePlayer(Actor[] rapists)
     endif
   endwhile
   keepControlsDisabled(3.0, true, true, true, false, true, true, true, false, true)
-  ReviveScript.BlackScreen.PopTo(ReviveScript.FadeIn)
   removeCrime()
   Victim1.ForceRefTo(PlayerRef)
   PlayerRef.EvaluatePackage()
+  utility.wait(1.0)
+  if ConfigMenu.bFadeToBlack
+    ReviveScript.BlackScreen.PopTo(ReviveScript.FadeIn)
+  endif
   Bool result = False
   Game.SetPlayerAIDriven(True)
   if interface == "sexlab"

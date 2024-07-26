@@ -63,7 +63,7 @@ state Installed
   endevent
 
   function checkVars()
-    if !OSexIntegrationMainQuest
+    if OSexIntegrationMainQuest == None
       OSexIntegrationMainQuest = Game.GetFormFromFile(0x000801, "OStim.esp") as Quest
     endif
   endfunction

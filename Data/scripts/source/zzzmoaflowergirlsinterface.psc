@@ -92,10 +92,10 @@ state Installed
   endevent
 
   function checkVars()
-    if !FlowerGirls
+    if FlowerGirls == None
        FlowerGirls = Game.GetFormFromFile(0x0012C5, "FlowerGirls SE.esm") as Quest
     endif
-    if !AnimatingFaction
+    if AnimatingFaction == None
       AnimatingFaction = Game.GetFormFromFile(0x5bef2c, "FlowerGirls SE.esm") as Faction
     endif
   endfunction
@@ -114,6 +114,5 @@ state Installed
     endif
     Return act.isInfaction(AnimatingFaction)
   endfunction
-
 
 endstate

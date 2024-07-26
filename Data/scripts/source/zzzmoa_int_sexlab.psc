@@ -21,7 +21,7 @@ Actor function FindRapistSL(Quest SexLabQuestFramework, ObjectReference CenterRe
 endfunction
 
 Bool function IsActorActiveSL(Quest SexLabQuestFramework, Actor ActorRef) Global
-  SexLabFramework SLFramework = SexLabQuestFramework as SexLabFramework ; Here it should be safe to cast to an external type and access external script variables and functions
+  SexLabFramework SLFramework = SexLabQuestFramework as SexLabFramework
   return SLFramework.IsActorActive(ActorRef)
 endfunction
 

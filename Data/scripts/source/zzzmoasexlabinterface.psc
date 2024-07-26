@@ -92,7 +92,7 @@ state Installed
   endevent
 
   function checkVars()
-    if !SexLabQuestFramework
+    if SexLabQuestFramework == None
       SexLabQuestFramework = Game.GetFormFromFile(0x000d62, "SexLab.esm") as Quest
     endif
   endfunction
@@ -113,7 +113,6 @@ state Installed
     return zzzmoa_int_sexlab.FindRapistCreatureSL(SexLabQuestFramework, RaceKey, CenterRef, Radius, FindGender, IgnoreRef1, IgnoreRef2, IgnoreRef3, IgnoreRef4)
   endfunction
 
-  ; SexLab IS installed. Now call the global script and get functions. Pass in SexLabFramework just to save some time
   Bool function IsActorActive(Actor ActorRef)
     return zzzmoa_int_sexlab.IsActorActiveSL(SexLabQuestFramework, ActorRef)
   endfunction

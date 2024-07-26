@@ -61,10 +61,10 @@ state Installed
   endevent
 
   Function checkVars()
-    if !DreamQuest
+    if DreamQuest == None
       DreamQuest = Game.GetFormFromFile(0x03e470, "sanguinesDebauchery.esp") as Quest
     endif
-    if !Dreamworld
+    if Dreamworld == None
       Dreamworld = Game.GetFormFromFile(0x1ed39c, "sanguinesDebauchery.esp") as Location
     endif
   endfunction

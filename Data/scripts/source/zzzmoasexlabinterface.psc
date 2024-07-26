@@ -1,5 +1,7 @@
 Scriptname zzzmoasexlabinterface extends Quest
 
+import zzzmoautilscript
+
 Quest SexLabQuestFramework
 
 event OnEndState()
@@ -56,15 +58,20 @@ function PlayerLoadsGame()
   Debug.trace("MarkofArkay: PlayerLoadsGame() triggered for " + self)
 
   ; Is the soft dependency installed and is our script in the right state? If not change state.
-  if Game.GetModByName("SexLab.esm") != 255
+  if isPluginFound("SexLab.esm")
     if GetState() != "Installed"
       GoToState("Installed")
+    else
+      checkVars()
     endif
   else
     if GetState() != ""
       GoToState("")
     endif
   endif
+endfunction
+
+function checkVars()
 endfunction
 
 String function getRaceKey(Actor ActorRef)
@@ -83,6 +90,12 @@ state Installed
   event On_MOA_Int_PlayerLoadsGame(string eventName, string strArg, float numArg, Form sender)
     PlayerLoadsGame()
   endevent
+
+  function checkVars()
+    if !SexLabQuestFramework
+      SexLabQuestFramework = Game.GetFormFromFile(0x000d62, "SexLab.esm") as Quest
+    endif
+  endfunction
 
   Bool function AllowedCreature(Race CreatureRace)
     return zzzmoa_int_sexlab.AllowedCreatureSL(SexLabQuestFramework, CreatureRace)

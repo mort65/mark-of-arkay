@@ -5,16 +5,23 @@ Bool function StartSceneOS(Quest OSexIntegrationMainQuest, Actor Dom, Actor Sub,
   return OSexMainQuest.StartScene(Dom, Sub, zUndressDom, zUndressSub, zAnimateUndress, zStartingAnimation, zThirdActor, Bed, Aggressive, AggressingActor)
 endfunction
 
-
 Bool Function IsSceneAggressiveOS(String SceneID) Global
+    if OMetadata.HasAnySceneTagCSV(SceneID, "aggressive,forced,rough,")
+      Return true
+    endif
     int aiIndex = OMetadata.GetActorCount(SceneID)
     While aiIndex > 0
         aiIndex -= 1
-        If OMetadata.HasActorTag(SceneID, aiIndex, "aggressor")
-            Return true
+        if OMetadata.HasAnyActorTagCSV(SceneID, aiIndex, "aggressor,dominant,")
+          Return true
         EndIf
     EndWhile
     Return false
+EndFunction
+
+Bool function isActorActiveOS(Quest OSexIntegrationMainQuest, Actor act) Global
+  OSexIntegrationMain OSexMainQuest = OSexIntegrationMainQuest as OSexIntegrationMain
+  return OSexMainQuest.IsActorActive(act)
 EndFunction
 
 Bool function StartSexOS(Quest OSexIntegrationMainQuest, Actor[] actors, Actor partner) Global

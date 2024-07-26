@@ -613,3 +613,10 @@ function transferItemsWithExclusions(ObjectReference akInContainer, ObjectRefere
     endif
   endwhile
 endfunction
+
+Bool function isPluginFound(string pluginName) Global
+  if SKSE.GetVersion() < 2
+    return (Game.GetModByName(pluginName) != 255)
+  endif
+  return Game.IsPluginInstalled(pluginName)
+endfunction

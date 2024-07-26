@@ -1,5 +1,7 @@
 Scriptname zzzmoa_sd_interface extends Quest
 
+import zzzmoautilscript
+
 Quest DreamQuest
 Location Dreamworld
 
@@ -29,15 +31,20 @@ function PlayerLoadsGame()
   Debug.trace("MarkofArkay: PlayerLoadsGame() triggered for " + self)
 
   ; Is the soft dependency installed and is our script in the right state? If not change state.
-  if Game.GetModByName("sanguinesDebauchery.esp") != 255
+  if isPluginFound("sanguinesDebauchery.esp")
     if GetState() != "Installed"
       GoToState("Installed")
+    else
+      checkVars()
     endif
   else
     if GetState() != ""
       GoToState("")
     endif
   endif
+endfunction
+
+Function checkVars()
 endfunction
 
 Bool function isDreamed()
@@ -52,6 +59,15 @@ state Installed
   event On_MOA_Int_PlayerLoadsGame(string eventName, string strArg, float numArg, Form sender)
     PlayerLoadsGame()
   endevent
+
+  Function checkVars()
+    if !DreamQuest
+      DreamQuest = Game.GetFormFromFile(0x03e470, "sanguinesDebauchery.esp") as Quest
+    endif
+    if !Dreamworld
+      Dreamworld = Game.GetFormFromFile(0x1ed39c, "sanguinesDebauchery.esp") as Location
+    endif
+  endfunction
 
   Bool function isDreamed()
     return zzzmoa_int_sd.isDreamed(DreamQuest)

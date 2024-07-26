@@ -1200,9 +1200,11 @@ function RevivePlayer(Bool bRevive)
           bSendToDreamWorld = false
         endif
       endif
-      FastFadeOut.Apply()
-      Utility.Wait(1.0)
-      FastFadeOut.PopTo(BlackScreen)
+      if ConfigMenu.bFadeToBlack
+        FastFadeOut.Apply()
+        Utility.Wait(1.0)
+        FastFadeOut.PopTo(BlackScreen)
+      endif
       Restore(iRevivePlayer=1, bReviveFollower=1, bEffect=False, sTrace=("MarkOfArkay: Player is enslaved by " + Attacker))
       if bSendToSlavery
         Debug.TraceConditional("MarkOfArkay: Player enslaved.", ConfigMenu.bIsLoggingEnabled)
@@ -1212,7 +1214,9 @@ function RevivePlayer(Bool bRevive)
         sendModEvent("SDDreamworldPull")
       endif
       utility.wait(6.0)
-      BlackScreen.PopTo(FadeIn)
+      if ConfigMenu.bFadeToBlack
+        BlackScreen.PopTo(FadeIn)
+      endif
     endif
     return
   else
@@ -2362,10 +2366,10 @@ Event OnKeyDown(int keyCode)
   if !bCanSurrender()
     bSurrendering = False
     GoToState("")
+    moaBleedoutHandlerState.SetValue(0)
     If !PlayerRef.HasMagicEffect(VoiceMakeEthereal)
       PlayerRef.setGhost(False)
     Endif
-    moaBleedoutHandlerState.SetValue(0)
     return
   endif
   if PlayerRef.IsOnMount()

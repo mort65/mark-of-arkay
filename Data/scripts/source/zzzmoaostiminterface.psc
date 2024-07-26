@@ -1,5 +1,7 @@
 Scriptname zzzmoaostiminterface extends Quest
 
+import zzzmoautilscript
+
 Quest OSexIntegrationMainQuest
 
 event OnEndState()
@@ -27,15 +29,20 @@ function PlayerLoadsGame()
   Debug.trace("MarkofArkay: PlayerLoadsGame() triggered for " + self)
 
   ; Is the soft dependency installed and is our script in the right state? If not change state.
-  if Game.GetModByName("OStim.esp") != 255
+  if isPluginFound("OStim.esp")
     if GetState() != "Installed"
       GoToState("Installed")
+    else
+      checkVars()
     endif
   else
     if GetState() != ""
       GoToState("")
     endif
   endif
+endfunction
+
+function checkVars()
 endfunction
 
 Bool function StartScene(Actor Dom, Actor Sub, Bool zUndressDom=False, Bool zUndressSub=False, Bool zAnimateUndress=False, String zStartingAnimation="", Actor zThirdActor=None, ObjectReference Bed=None, Bool Aggressive=False, Actor AggressingActor=None)
@@ -46,10 +53,20 @@ Bool function StartSex(Actor[] Actors, Actor partner)
   return False
 endfunction
 
+Bool Function isActorActive(Actor act)
+  return False
+endfunction
+
 state Installed
   event On_MOA_Int_PlayerLoadsGame(string eventName, string strArg, float numArg, Form sender)
     PlayerLoadsGame()
   endevent
+
+  function checkVars()
+    if !OSexIntegrationMainQuest
+      OSexIntegrationMainQuest = Game.GetFormFromFile(0x000801, "OStim.esp") as Quest
+    endif
+  endfunction
 
   Bool function StartScene(Actor Dom, Actor Sub, Bool zUndressDom=False, Bool zUndressSub=False, Bool zAnimateUndress=False, String zStartingAnimation="", Actor zThirdActor=None, ObjectReference Bed=None, Bool Aggressive=False, Actor AggressingActor=None)
     return zzzmoa_int_ostim.StartSceneOS(OSexIntegrationMainQuest, Dom, Sub, zUndressDom, zUndressSub, zAnimateUndress, zStartingAnimation, zThirdActor, Bed, Aggressive, AggressingActor)
@@ -58,4 +75,9 @@ state Installed
   Bool function StartSex(Actor[] Actors, Actor partner)
     return zzzmoa_int_ostim.StartSexOS(OSexIntegrationMainQuest, Actors, partner)
   endfunction
+
+  Bool Function isActorActive(Actor act)
+    return zzzmoa_int_ostim.isActorActiveOS(OSexIntegrationMainQuest, act)
+  endfunction
+
 endstate

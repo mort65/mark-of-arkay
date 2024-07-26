@@ -512,6 +512,7 @@ Int oidTriggerOnBleedout
 Int oidTriggerOnHealthPerc
 Int oidVoicelessCurse
 Int oidSurrenderKeyMap
+Int oidClearHotkeys
 
 event OnConfigInit()
   Utility.Wait(0.1)
@@ -1358,6 +1359,8 @@ event OnOptionHighlight(Int option)
     SetInfoText("$mrt_MarkofArkay_DESC_Reset")
   elseif (option == oidResetPlayer)
     SetInfoText("$mrt_MarkofArkay_DESC_ResetPlayer")
+  elseif (option == oidClearHotkeys)
+  	SetInfoText("$mrt_MarkofArkay_DESC_ClearHotkeys")
   elseif (option == oidNoTradingAftermath_M)
     SetInfoText("$mrt_MarkofArkay_DESC_NoTradingAftermath_M")
   elseif (option == oidTeleportLocation_M)
@@ -2573,6 +2576,13 @@ event OnOptionSelect(Int option)
     Utility.Wait(1)
     moaStart()
     moaIsBusy.SetValueInt(0)
+  elseif (option == oidClearHotkeys)
+  	if _ShowMessage("$Are_You_Sure", True, "$Yes", "$No")
+  		revivescript.UnregisterForAllKeys()
+  		iSurrenderKey = 0
+  		SetKeymapOptionValue(oidSurrenderKeyMap, iSurrenderKey)
+  		forcePageReset()
+  	endif
   elseif (option == oidResetPlayer)
     if !_ShowMessage("$Are_You_Sure", True, "$Yes", "$No")
       return
@@ -3727,6 +3737,7 @@ event OnPageReset(String page)
       flags = OPTION_FLAG_DISABLED
     endif
     oidSurrenderKeyMap = AddKeyMapOption("$mrt_MarkofArkay_Surrender_KeyMap",iSurrenderKey,flags)
+    oidClearHotkeys = _AddTextOption("$mrt_MarkofArkay_ClearHotkeys", "", flags)
 	addEmptyOption()
     _AddHeaderOption("$Follower")
     if (moaState.getValue() == 1) 
@@ -6732,7 +6743,7 @@ Event OnoptionKeyMapChange(Int option, Int keyCode, string conflictControl, stri
 			Else
 				msg = "This key is already mapped to:\n'" + conflictControl + "'\n\nAre you sure you want to continue?"
 			EndIf
-			Continue = ShowMessage(msg, True, "$Yes", "$No")
+			Continue = _ShowMessage(msg, True, "$Yes", "$No")
 		EndIf
 		If (Continue)
 			iSurrenderKey = keyCode

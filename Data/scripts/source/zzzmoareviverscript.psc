@@ -1109,62 +1109,7 @@ function RevivePlayer(Bool bRevive)
   bIsraped = False
   bWasraped = False
   if !bRevive && bRape()
-    Game.SetPlayerAIDriven(True)
-    PlayerRef.setGhost(True)
-    If ConfigMenu.bPO3Ok
-     PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
-     PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
-    Endif
-    CrimeGold = 0
-    CrimeGoldViolent = 0
-    CrimeFaction = None
-    Actor[] rapistActors = RapeScript.getRapists(PlayerRef, Attacker, true)
-    bIsraped = RapeScript.rapePlayer(rapistActors)
-    if bIsraped
-      PlayerRef.setGhost(True)
-      If ConfigMenu.bPO3Ok
-        PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
-        PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
-      Endif
-      int i = Utility.randomInt(0, (ConfigMenu.fMaxRapes - 1) As int)
-      while bIsraped && (i > 0)
-        Game.DisablePlayerControls(abMovement=True, abFighting=True, abCamSwitch=True, abLooking=False, abSneaking=True, abMenu=True, abActivate=True, abJournalTabs=False)
-        if (!rapistActors || !rapistActors.Length)
-          rapistActors = RapeScript.getRapists(PlayerRef, Attacker, false)
-        else
-          int j = rapistActors.Length
-          int c = 0
-          while j > 0
-            j -= 1
-            if (!rapistActors[j] || (rapistActors[j] == None))
-              c += 1
-            endif
-          endwhile
-          if (((ConfigMenu.fMaxRapists > 1.0) && (c < 2)) || ((ConfigMenu.fMaxRapists > 2.0) && (c < 3)) || ((ConfigMenu.fMaxRapists > 3.0) && (c < 4)))
-            rapistActors = RapeScript.getRapists(PlayerRef, Attacker, false)
-          endif
-        endif
-        RapeScript.shuffleActorArray(rapistActors)
-        bIsraped = RapeScript.rapePlayer(rapistActors)
-        PlayerRef.setGhost(True)
-        If ConfigMenu.bPO3Ok
-          PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
-          PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
-        Endif
-        i -= 1
-      endwhile
-      bIsraped = true
-    endif
-    If !PlayerRef.HasMagicEffect(VoiceMakeEthereal)
-      PlayerRef.setGhost(False)
-    Endif
-    PlayerRef.RemoveFromFaction(RapeScript.CalmFaction)
-    Attacker && Attacker.RemoveFromFaction(RapeScript.CalmFaction)
-    Game.DisablePlayerControls(abMovement=True, abFighting=True, abCamSwitch=True, abLooking=False, abSneaking=True, abMenu=True, abActivate=True, abJournalTabs=False)
-    PlayerRef.SetDontMove(True)
-    restoreCrime()
-    ConfigMenu.bIsLoggingEnabled && Debug.trace("MarkOfArkay: Player raped = " + bIsraped)
-    bWasraped = bIsraped
+    rapeHandler()
   endif
   Bool bSendToSlavery = (!bRevive && bSendToSlavery())
   Bool bSendToDreamWorld = (!bRevive && bSendToDreamWorld())
@@ -1223,6 +1168,66 @@ function RevivePlayer(Bool bRevive)
     aftermathHandler()
   endif
 endfunction
+
+function rapeHandler()
+  RapeScript.sAnimInterface = RapeScript.getInterface()
+  Game.SetPlayerAIDriven(True)
+  PlayerRef.setGhost(True)
+  If ConfigMenu.bPO3Ok
+   PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
+   PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
+  Endif
+  CrimeGold = 0
+  CrimeGoldViolent = 0
+  CrimeFaction = None
+  Actor[] rapistActors = RapeScript.getRapists(PlayerRef, Attacker, true)
+  bIsraped = RapeScript.rapePlayer(rapistActors)
+  if bIsraped
+    PlayerRef.setGhost(True)
+    If ConfigMenu.bPO3Ok
+      PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
+      PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
+    Endif
+    int i = Utility.randomInt(0, (ConfigMenu.fMaxRapes - 1) As int)
+    while bIsraped && (i > 0)
+      Game.DisablePlayerControls(abMovement=True, abFighting=True, abCamSwitch=True, abLooking=False, abSneaking=True, abMenu=True, abActivate=True, abJournalTabs=False)
+      if (!rapistActors || !rapistActors.Length)
+        rapistActors = RapeScript.getRapists(PlayerRef, Attacker, false)
+      else
+        int j = rapistActors.Length
+        int c = 0
+        while j > 0
+          j -= 1
+          if (!rapistActors[j] || (rapistActors[j] == None))
+            c += 1
+          endif
+        endwhile
+        if (((ConfigMenu.fMaxRapists > 1.0) && (c < 2)) || ((ConfigMenu.fMaxRapists > 2.0) && (c < 3)) || ((ConfigMenu.fMaxRapists > 3.0) && (c < 4)))
+          rapistActors = RapeScript.getRapists(PlayerRef, Attacker, false)
+        endif
+      endif
+      RapeScript.shuffleActorArray(rapistActors)
+      bIsraped = RapeScript.rapePlayer(rapistActors)
+      PlayerRef.setGhost(True)
+      If ConfigMenu.bPO3Ok
+        PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
+        PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
+      Endif
+      i -= 1
+    endwhile
+    bIsraped = true
+  endif
+  If !PlayerRef.HasMagicEffect(VoiceMakeEthereal)
+    PlayerRef.setGhost(False)
+  Endif
+  PlayerRef.RemoveFromFaction(RapeScript.CalmFaction)
+  Attacker && Attacker.RemoveFromFaction(RapeScript.CalmFaction)
+  Game.DisablePlayerControls(abMovement=True, abFighting=True, abCamSwitch=True, abLooking=False, abSneaking=True, abMenu=True, abActivate=True, abJournalTabs=False)
+  PlayerRef.SetDontMove(True)
+  restoreCrime()
+  ConfigMenu.bIsLoggingEnabled && Debug.trace("MarkOfArkay: Player raped = " + bIsraped)
+  bWasraped = bIsraped
+endFunction
 
 
 function aftermathHandler()

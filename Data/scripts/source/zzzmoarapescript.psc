@@ -26,8 +26,7 @@ ReferenceAlias property Victim1 auto
 Bool property bIsBusy=False auto Hidden
 Faction property calmFaction auto
 Actor property playerRef auto
-
-String[] _anim_interfaces
+String property sAnimInterface Auto Hidden
 
 event OnInit()
   RegisterForModEvent("MOA_Int_PlayerLoadsGame", "On_MOA_Int_PlayerLoadsGame")
@@ -260,7 +259,7 @@ Int function getActorSex(Actor act)
   return act.GetLeveledActorBase().GetSex()
 endfunction
 
-String function getInteface()
+String function getInterface()
   Int interf = ConfigMenu.iGetCurSexInterface()
   if interf == 0
     return "sexlab"
@@ -283,7 +282,7 @@ Actor[] function getRapists(Actor Victim, Actor Attacker, Bool bReset=False)
   endif
   Bool bCreature = False
   if ConfigMenu.bAllowCreatureRape
-    bCreature = ((getInteface() == "sexlab") && !Attacker.HasKeywordString("actortypenpc") && ReviveScript.SexLabInterface.IsCreaturesAllowed() && ReviveScript.SexLabInterface.AllowedCreature(Attacker.GetLeveledActorBase().GetRace()))
+    bCreature = ((sAnimInterface == "sexlab") && !Attacker.HasKeywordString("actortypenpc") && ReviveScript.SexLabInterface.IsCreaturesAllowed() && ReviveScript.SexLabInterface.AllowedCreature(Attacker.GetLeveledActorBase().GetRace()))
   endif
   CreatureRape.SetValueInt(bCreature As Int)
   NPCPacifier.Start()
@@ -293,7 +292,6 @@ Actor[] function getRapists(Actor Victim, Actor Attacker, Bool bReset=False)
   rapists[2] = None
   rapists[3] = None
   Actor rapist
-  string interface = getInteface()
   Int RapistCount = iMax(1, ConfigMenu.fMaxRapists As Int)
   int i = 0
   int j = 0
@@ -308,7 +306,7 @@ Actor[] function getRapists(Actor Victim, Actor Attacker, Bool bReset=False)
     if (i == 0) && isRapistValid(Attacker)
       rapists[0] = Attacker
     else
-      if interface == "sexlab"
+      if sAnimInterface == "sexlab"
         if bCreature
           String raceKey = ReviveScript.SexLabInterface.getRaceKey(rapists[0])
           if raceKey != ""
@@ -369,7 +367,7 @@ endfunction
 
 Bool function isRapistValid(Actor rapist)
   if rapist && (rapist != None) && !rapist.IsDead() && !(rapist.GetActorValue("Paralysis") As Bool) && !ReviveScript.NPCScript.isActorInSexAnimation(rapist)
-    if (getInteface() != "sexlab") ;sexlab's IsValidActor check for these
+    if (sAnimInterface != "sexlab") ;sexlab's IsValidActor check for these
       if !rapist.Is3DLoaded()
         Utility.WaitMenuMode(2.0)
         if !rapist.Is3DLoaded()
@@ -396,7 +394,7 @@ Bool function isRapistValid(Actor rapist)
           if (!rapist.IsGuard() || !ConfigMenu.bOnlyHostilesRape)
             if !rapist.IsPlayerTeammate()
               if !rapist.IsCommandedActor()
-                if ((getInteface() != "sexlab") || ReviveScript.SexLabInterface.IsValidActor(rapist))
+                if ((sAnimInterface != "sexlab") || ReviveScript.SexLabInterface.IsValidActor(rapist))
                   return True
                 endif
               endif
@@ -419,7 +417,6 @@ Bool function rapePlayer(Actor[] rapists)
     return False
   endif
   RapistsList.revert()
-  string interface = getInteface()
   keepControlsDisabled(0.2, true, true, true, false, true, true, true, false, true)
   if ConfigMenu.bFadeToBlack
     ReviveScript.FastFadeOut.Apply()
@@ -435,7 +432,7 @@ Bool function rapePlayer(Actor[] rapists)
   PacifyNPC.SetValueInt(1)
   Bool bSwim = False
   bSwim = PlayerRef.IsSwimming() || (ConfigMenu.bPO3Ok && (PO3_SKSEFunctions.IsActorUnderwater(PlayerRef) || PO3_SKSEFunctions.IsActorInWater(PlayerRef)))
-  if bSwim || (getInteface() != "sexlab")
+  if bSwim || (sAnimInterface != "sexlab")
     ObjectReference bedRef = FindBed(playerRef as ObjectReference, 2000.0)
     if bedRef
       playerRef.SetPosition(bedRef.GetPositionX(), bedRef.GetPositiony(), bedRef.GetPositionz() + 5.0)
@@ -550,7 +547,7 @@ Bool function rapePlayer(Actor[] rapists)
   endif
   Bool result = False
   Game.SetPlayerAIDriven(True)
-  if interface == "sexlab"
+  if sAnimInterface == "sexlab"
     if playerRef.IsBleedingOut()
       PlayerRef.DispelSpell(ReviveScript.Bleed)
       playerRef.ResetHealthAndLimbs()
@@ -577,7 +574,7 @@ Bool function rapePlayer(Actor[] rapists)
       endwhile
       result = True
     endif
-  elseif interface == "ostim"
+  elseif sAnimInterface == "ostim"
     if playerRef.IsBleedingOut()
       PlayerRef.DispelSpell(ReviveScript.Bleed)
       playerRef.ResetHealthAndLimbs()
@@ -605,7 +602,7 @@ Bool function rapePlayer(Actor[] rapists)
     endif
     Victim1.ForceRefTo(PlayerRef)
     result = sceneStarted
-  elseif interface == "fg"
+  elseif sAnimInterface == "fg"
     if playerRef.IsBleedingOut()
       PlayerRef.DispelSpell(ReviveScript.Bleed)
       playerRef.ResetHealthAndLimbs()

@@ -2442,8 +2442,9 @@ State Surrender
 
   Bool Function bCanSurrender()
     If moaState.getValue() != 1
-    ElseIf Utility.IsInMenuMode() 
+    ElseIf Utility.IsInMenuMode()
     ElseIf (ConfigMenu.iNotTradingAftermath != 1)
+    elseif NPCScript.isActorInSexAnimation(playerRef)
     Elseif playerRef.IsFlying()
     Elseif playerRef.IsSwimming() 
     ElseIf !PlayerRef.IsInCombat()

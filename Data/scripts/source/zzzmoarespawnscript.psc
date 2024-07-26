@@ -1429,7 +1429,7 @@ Bool function bIsArrived(ObjectReference akMarker)
       Utility.Wait(0.2)
       i -= 0.2
     endwhile
-    if isActorInSexAnimation(PlayerRef)
+    if ReviveScript.NPCScript.isActorInSexAnimation(PlayerRef)
       Debug.Trace("MarkOfArkay: The player is in a Sexlab/OStim/FlowerGirls animation and cannot teleport.")
       return True
     endif
@@ -1457,10 +1457,6 @@ Bool function bIsArrived(ObjectReference akMarker)
     bFirstTry = False
   endif
   return False
-endfunction
-
-Bool function isActorInSexAnimation(Actor act)
- return  (ReviveScript.SexLabInterface.IsActorActive(act) || ReviveScript.OStimInterface.IsActorActive(act) || ReviveScript.FlowerGirlsInterface.IsActorActive(act)) 
 endfunction
 
 Bool function bIsCurrentCell(int iIndex, Bool bTavernMarker=False)
@@ -1524,7 +1520,7 @@ Bool function bIsTeleportSafe(ObjectReference akMarker)
     bFirstTryFailed = False
     return False
   endif
-  return !(PlayerRef.GetAnimationVariableBool("bIsSynced") || PlayerRef.GetActorValue("paralysis") || isActorInSexAnimation(PlayerRef))
+  return !(PlayerRef.GetAnimationVariableBool("bIsSynced") || PlayerRef.GetActorValue("paralysis") || ReviveScript.NPCScript.isActorInSexAnimation(PlayerRef))
 endfunction
 
 Bool function bSendToCustomMarker(Int iSlot)

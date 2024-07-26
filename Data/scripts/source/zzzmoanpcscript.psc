@@ -1158,6 +1158,7 @@ Bool function bPlayerCanSurrenderToActor(Actor ActorRef)
   elseif bIsDying(ActorRef)
   elseif bIsFollower(ActorRef)
   elseif isActorChild(ActorRef)
+  elseif isActorInSexAnimation(ActorRef)
   elseif !ConfigMenu.bOnlyHostilesRape
     return true
   elseif ReviveScript.Attacker && (ReviveScript.Attacker == ActorRef)
@@ -1393,4 +1394,8 @@ Bool function bIsInHostileFaction(Actor actorRef)
     endif
   endwhile
   return false
+endfunction
+
+Bool function isActorInSexAnimation(Actor act)
+ return (ReviveScript.SexLabInterface.IsActorActive(act) || ReviveScript.OStimInterface.IsActorActive(act) || ReviveScript.FlowerGirlsInterface.IsActorActive(act)) 
 endfunction

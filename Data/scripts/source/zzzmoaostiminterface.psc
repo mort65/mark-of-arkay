@@ -4,6 +4,8 @@ import zzzmoautilscript
 
 Quest OSexIntegrationMainQuest
 
+Bool bIsBusy = False
+
 event OnEndState()
   Utility.Wait(5.0) ; Wait before entering active state to help avoid making function calls to scripts that may not have initialized yet.
   OSexIntegrationMainQuest = Game.GetFormFromFile(0x000801, "OStim.esp") as Quest ; Get quest now
@@ -26,6 +28,10 @@ Bool function GetIsInterfaceActive()
 endfunction
 
 function PlayerLoadsGame()
+  if bIsBusy
+    return
+  endif
+  bIsBusy = True
   Debug.trace("MarkofArkay: PlayerLoadsGame() triggered for " + self)
 
   ; Is the soft dependency installed and is our script in the right state? If not change state.
@@ -40,6 +46,7 @@ function PlayerLoadsGame()
       GoToState("")
     endif
   endif
+  bIsBusy = False
 endfunction
 
 function checkVars()

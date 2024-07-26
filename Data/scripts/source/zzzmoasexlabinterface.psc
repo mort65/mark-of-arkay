@@ -4,6 +4,8 @@ import zzzmoautilscript
 
 Quest SexLabQuestFramework
 
+Bool bIsBusy = False
+
 event OnEndState()
   Utility.Wait(5.0) ; Wait before entering active state to help avoid making function calls to scripts that may not have initialized yet.
   SexLabQuestFramework = Game.GetFormFromFile(0x000d62, "SexLab.esm") as Quest ; Get quest now
@@ -55,6 +57,10 @@ Bool function IsValidActor(Actor ActorRef)
 endfunction
 
 function PlayerLoadsGame()
+  if bIsBusy
+    return
+  endif
+  bIsBusy = true
   Debug.trace("MarkofArkay: PlayerLoadsGame() triggered for " + self)
 
   ; Is the soft dependency installed and is our script in the right state? If not change state.
@@ -69,6 +75,7 @@ function PlayerLoadsGame()
       GoToState("")
     endif
   endif
+  bIsBusy = false
 endfunction
 
 function checkVars()

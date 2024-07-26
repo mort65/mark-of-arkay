@@ -11,6 +11,8 @@ Bool property isBusy=False auto Hidden
 Faction AnimatingFaction
 Quest FlowerGirls
 
+Bool bIsBusy = False
+
 event OnEndState()
   Utility.Wait(5.0) ; Wait before entering active state to help avoid making function calls to scripts that may not have initialized yet.
   FlowerGirls = Game.GetFormFromFile(0x0012C5, "FlowerGirls SE.esm") as Quest ; Get quest now
@@ -45,6 +47,10 @@ Bool function PlayThreesome(Actor participant1=NONE, Actor participant2=NONE, Ac
 endfunction
 
 function PlayerLoadsGame()
+  if bIsBusy
+    return
+  endif
+  bIsBusy = true
   Debug.trace("MarkofArkay: PlayerLoadsGame() triggered for " + self)
 
   ; Is the soft dependency installed and is our script in the right state? If not change state.
@@ -61,6 +67,7 @@ function PlayerLoadsGame()
   endif
   RegisterForModEvent("MOA_Int_FG_RandomScene", "On_MOA_Int_FG_RandomScene")
   RegisterForModEvent("MOA_Int_FG_PlayThreesome", "On_MOA_Int_FG_PlayThreesome")
+  bIsBusy = false
 endfunction
 
 function checkVars()

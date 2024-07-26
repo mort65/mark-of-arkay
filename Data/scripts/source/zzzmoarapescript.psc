@@ -37,11 +37,13 @@ event OnUpdate()
   ReviveScript.OStimInterface.PlayerLoadsGame()
   ReviveScript.FlowerGirlsInterface.PlayerLoadsGame()
   ReviveScript.SDInterface.PlayerLoadsGame()
+  ReviveScript.DhelplessInterface.PlayerLoadsGame()
   Utility.Wait(10.0)
   ConfigMenu.bIsSexlabActive = ReviveScript.SexLabInterface.GetIsInterfaceActive()
   ConfigMenu.bIsOStimActive = ReviveScript.OStimInterface.GetIsInterfaceActive()
   ConfigMenu.bIsFlowerGirlsActive = ReviveScript.FlowerGirlsInterface.GetIsInterfaceActive()
   ConfigMenu.bIsSDActive = ReviveScript.SDInterface.GetIsInterfaceActive()
+  ConfigMenu.bIsDhelplessActive = ReviveScript.DhelplessInterface.GetIsInterfaceActive()
 endevent
 
 event On_MOA_Int_PlayerLoadsGame(string eventName, string strArg, float numArg, Form sender)

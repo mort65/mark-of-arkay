@@ -68,6 +68,7 @@ Spell property MassRevival auto
 Spell property MoveCustomMarker auto
 zzzmoanpcscript property NPCScript auto Hidden
 zzzmoaostiminterface property OStimInterface auto
+zzzmoa_dhelpless_interface property DhelplessInterface Auto
 Quest property PermaDeathQuest auto
 zzzmoaPermaDeathScript property PermaDeathScript auto Hidden
 Faction property PlayerEnemyFaction auto
@@ -518,6 +519,7 @@ event OnUpdate()
 		  PO3_SKSEFunctions.ResetActorDetection(PlayerRef)
 		  PO3_SKSEFunctions.ResetActorDetection(PlayerRef)
     Endif
+    SendModEvent("dhlp-Resume")
   endif
 endevent
 
@@ -707,6 +709,7 @@ function BleedoutHandler(String CurrentState)
     bWasSwimming = False
   endif
   moaBleedoutHandlerState.SetValue(1)
+  SendModEvent("dhlp-Suspend")
   LowHealthImod.Remove()
   SetVars()
   NPCScript.DetectFollowers()
@@ -2377,6 +2380,7 @@ Event OnKeyDown(int keyCode)
     Endif
     return
   endif
+  SendModEvent("dhlp-Suspend") ;pause devious helpless scenes
   if PlayerRef.IsOnMount()
     PlayerRef.Dismount()
     utility.wait(3.0)
@@ -2457,6 +2461,7 @@ State Surrender
     ElseIf bInBleedoutAnim 
     ElseIf bInBleedout
     Elseif bSoulMarkActivated
+    elseif DhelplessInterface.IsSceneRunning()
     else
       return true
     endif

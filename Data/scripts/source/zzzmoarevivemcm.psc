@@ -69,6 +69,7 @@ Bool property bIsBSoulGemEnabled=True auto Hidden
 Bool property bIsDragonSoulEnabled=True auto Hidden
 Bool property bIsEffectEnabled=False auto Hidden
 Bool property bIsFlowerGirlsActive=False auto Hidden
+Bool Property bIsDhelplessActive=False Auto Hidden
 Bool property bIsGSoulGemEnabled=True auto Hidden
 Bool property bIsGoldEnabled=True auto Hidden
 Bool property bIsHistoryEnabled=False auto Hidden

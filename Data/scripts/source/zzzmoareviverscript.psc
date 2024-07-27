@@ -155,8 +155,6 @@ GlobalVariable property moaSeptimRevive auto
 Quest property moaSoulMark01 auto
 GlobalVariable property moaState auto
 Quest property moaThiefNPC01 auto
-Idle Property SurrenderIdle Auto
-Idle Property BoundStandingCut Auto
 Bool Property bSoulMarkActivated = False Auto Hidden
 
 Float[] PriorityArray
@@ -222,6 +220,7 @@ event OnEnterBleedout()
     bInBleedout = True
     bInBleedoutAnim = False
     Game.DisablePlayerControls()
+    SendModEvent("dhlp-Suspend")
     fHealrate = PlayerRef.GetActorValue("HealRate")
     PlayerRef.SetActorValue("HealRate", 0.0)
     PlayerRef.RemoveSpell(Bleed)
@@ -483,10 +482,7 @@ event OnUpdate()
   endif
   if bRevived && (GetState() == "")
     if bWasraped
-      if !NPCScript.iInBeastForm() && !PlayerRef.IsWeaponDrawn()
-        playerRef.playIdle(BoundStandingCut)
-        Utility.wait(2.0)
-      endif
+        RapeScript.Victimized01.clear()
     endif
     PlayerRef.SetDontMove(False)
     Game.EnablePlayerControls()
@@ -519,6 +515,7 @@ event OnUpdate()
 		  PO3_SKSEFunctions.ResetActorDetection(PlayerRef)
 		  PO3_SKSEFunctions.ResetActorDetection(PlayerRef)
     Endif
+    RapeScript.PacifyNPC.SetValueInt(0)
     SendModEvent("dhlp-Resume")
   endif
 endevent
@@ -709,7 +706,6 @@ function BleedoutHandler(String CurrentState)
     bWasSwimming = False
   endif
   moaBleedoutHandlerState.SetValue(1)
-  SendModEvent("dhlp-Suspend")
   LowHealthImod.Remove()
   SetVars()
   NPCScript.DetectFollowers()
@@ -1230,6 +1226,10 @@ function rapeHandler()
   restoreCrime()
   ConfigMenu.bIsLoggingEnabled && Debug.trace("MarkOfArkay: Player raped = " + bIsraped)
   bWasraped = bIsraped
+  if bWasraped
+    RapeScript.Victimized01.ForceRefTo(playerRef)
+    playerRef.EvaluatePackage()
+  endif
 endFunction
 
 
@@ -1404,7 +1404,7 @@ function respawnHandler()
     skillCurseHandler()
   endif
   if (PlayerRef.GetParentCell() != DefaultCell)
-  soulMarkHandler()
+    soulMarkHandler()
   endif
   if moaBossChest01.IsRunning() && moaThiefNPC01.IsRunning()
     ;if no physical item is removed boss chest quest not needed
@@ -1434,6 +1434,9 @@ function respawnHandler()
   while bInfectingPlayer
     Utility.WaitMenuMode(0.2)
   endwhile
+  if (ConfigMenu.bRespawnNaked && !NPCScript.bInBeastForm())
+    ItemScript.undressActor(playerRef, true)
+  endif
   bReadyForRespawn = True ;allowing bIsArrived in respawnscript to teleport player
   while bReadyForRespawn
     Utility.WaitMenuMode(0.2)
@@ -1451,9 +1454,6 @@ function respawnHandler()
   endif
   Utility.Wait(1.0)
   NPCScript.ToggleFollower(True)
-  if (ConfigMenu.bRespawnNaked && !NPCScript.bInBeastForm())
-    ItemScript.undressActor(playerRef, true)
-  endif
   arkayCurseHandler()
   if ConfigMenu.bGhostCurse
     if moaPlayerVoicelessQuest.IsRunning()
@@ -2127,8 +2127,9 @@ function checkHealth()
       if !bInBleedout && !moaIgnoreBleedout.GetValue() && !bSurrendering
         bInBleedout = True
         Game.DisablePlayerControls()
-         bfastTravel = Game.IsFastTravelEnabled()
-         Game.EnableFastTravel(False)
+        SendModEvent("dhlp-Suspend")
+        bfastTravel = Game.IsFastTravelEnabled()
+        Game.EnableFastTravel(False)
         ;Game.DisablePlayerControls(abMovement = True, abFighting = True, abCamSwitch = False, abLooking = False, abSneaking = True, abMenu = True, abActivate = True, abJournalTabs = False, aiDisablePOVType = 0)
         PlayerRef.DamageActorValue("Health", 9999.0)
         fHealrate = PlayerRef.GetActorValue("HealRate")
@@ -2294,11 +2295,18 @@ function surrenderHandler()
   bSurrendering = True
   PlayerRef.SetGhost(True)
   PlayerRef.AddPerk(Invulnerable)
+  bfastTravel = Game.IsFastTravelEnabled()
+  Game.EnableFastTravel(false)
   if !bCanSurrender()
+    Debug.Notification("$mrt_MarkofArkay_Notification_CannotSurrender")
     bSurrendering = False
+    PlayerRef.RemovePerk(Invulnerable)
     If !PlayerRef.HasMagicEffect(VoiceMakeEthereal)
       PlayerRef.setGhost(False)
     Endif
+    if bfastTravel
+      Game.EnableFastTravel(True)
+    endif
     return
   endif
   if getstate() == ""
@@ -2339,17 +2347,16 @@ function surrenderHandler()
     AttackerActor.ForceRefTo(Attacker)
     AttackerActor01.ForceRefTo(Attacker)
   endif
-  bfastTravel = Game.IsFastTravelEnabled()
-  Game.EnableFastTravel(false)
-  if !NPCScript.iInBeastForm() && !PlayerRef.GetActorValue("paralysis") && !PlayerRef.IsWeaponDrawn()
-    playerRef.playIdle(SurrenderIdle)
-    utility.wait(1.0)
-  endif
+  RapeScript.Surrendered01.ForceRefTo(PlayerRef)
+  PlayerRef.EvaluatePackage()
+  utility.wait(1.0)
   if ConfigMenu.bPO3Ok
     PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
     PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
   endif 
   PlayerRef.StopCombatAlarm()
+  RapeScript.NPCPacifier.start()
+  RapeScript.PacifyNPC.SetValueInt(1)
   Game.DisablePlayerControls(abMovement=True, abFighting=True, abCamSwitch=True, abLooking=False, abSneaking=True, abMenu=True, abActivate=True, abJournalTabs=False)
   stopAndConfirm(moaHostileNPCDetector)
   stopAndConfirm(moaHostileNPCDetector01)
@@ -2367,7 +2374,9 @@ function surrenderHandler()
   elseif ConfigMenu.iHostileOption == 1
     moaHostileNPCDetector01.Start()
   endif
+  RapeScript.Surrendered01.clear()
   RevivePlayer(False)
+  RapeScript.NPCPacifier.stop()
   GoToState("")
   bSurrendering = False
   RegisterForSingleUpdate(3.0)
@@ -2382,7 +2391,7 @@ Bool Function bCanSurrender()
   Elseif playerRef.IsFlying()
   Elseif playerRef.IsSwimming() 
   ElseIf !PlayerRef.IsInCombat()
-  ElseIf bInBleedoutAnim 
+  Elseif NPCScript.iInBeastForm()
   ElseIf bInBleedout
   Elseif bSoulMarkActivated
   elseif DhelplessInterface.IsSceneRunning()
@@ -2403,6 +2412,7 @@ state Bleedout1
   endevent
 
   event OnPlayerLoadGame()
+    SendModEvent("dhlp-Suspend")
     ConfigMenu.checkMods()
     if PermaDeathScript.bCheckPermaDeath()
       return
@@ -2434,6 +2444,7 @@ state Bleedout2
   endevent
 
   event OnPlayerLoadGame()
+    SendModEvent("dhlp-Suspend")
     ConfigMenu.checkMods()
     if PermaDeathScript.bCheckPermaDeath()
       return
@@ -2477,6 +2488,7 @@ State Surrender
   endevent
 
   event OnPlayerLoadGame()
+    SendModEvent("dhlp-Suspend")
     ConfigMenu.checkMods()
     if PermaDeathScript.bCheckPermaDeath()
       return

@@ -23,6 +23,8 @@ ReferenceAlias property Rapist9 auto
 FormList property RapistsList auto
 zzzmoaReviverScript property ReviveScript auto
 ReferenceAlias property Victim1 auto
+ReferenceAlias property Victimized01 auto
+ReferenceAlias property Surrendered01 auto
 Bool property bIsBusy=False auto Hidden
 Faction property calmFaction auto
 Actor property playerRef auto
@@ -409,6 +411,93 @@ Bool function isRapistValid(Actor rapist)
   return False
 endfunction
 
+Function addRapistActor(actor rapistActor, actor victimActor, Bool bExtra = False)
+  if rapistActor == None
+    return
+  endif
+  ReferenceAlias rapistAlias
+  if bExtra
+    if !Rapist5.GetActorRef()
+      rapistAlias = Rapist5
+    elseif !Rapist6.GetActorRef()
+      rapistAlias = Rapist6
+    elseif !Rapist7.GetActorRef()
+      rapistAlias = Rapist7
+    elseif !Rapist8.GetActorRef()
+      rapistAlias = Rapist8
+    elseif !Rapist9.GetActorRef()
+      rapistAlias = Rapist9
+    elseif !Rapist10.GetActorRef()
+      rapistAlias = Rapist10
+    else
+      return
+    endif
+  else
+    if !Rapist1.GetActorRef()
+      rapistAlias = Rapist1
+    elseif !Rapist2.GetActorRef()
+      rapistAlias = Rapist2
+    elseif !Rapist3.GetActorRef()
+      rapistAlias = Rapist3
+    elseif !Rapist4.GetActorRef()
+      rapistAlias = Rapist4
+    else
+      return
+    endif
+  endif
+  if !bExtra && rapistActor.GetDistance(victimActor) > 1000.0
+    Float z = victimActor.GetAnglez() + 180.0
+    if z > 360.0
+      z = z - 360.0
+    endif
+    rapistActor.disable()
+    rapistActor.MoveTo(victimActor)
+    rapistActor.SetPosition(victimActor.GetPositionx() + Utility.RandomInt(75, 100), victimActor.GetPositiony() + Utility.RandomInt(75, 100), victimActor.GetPositionz())
+    rapistActor.SetAngle(victimActor.GetAngleX(), victimActor.GetAngleY(), z)
+    rapistActor.enable()
+  endif
+  RapistsList.AddForm(rapistActor)
+  rapistAlias.ForceRefTo(rapistActor)
+  rapistActor.EvaluatePackage()
+endfunction
+
+Function clearRapists()
+  ;if aliasNotHere(Rapist1)
+    Rapist1.Clear()
+  ;endif
+  ;if aliasNotHere(Rapist2)
+    Rapist2.Clear()
+  ;endif
+  ;if aliasNotHere(Rapist3)
+    Rapist3.Clear()
+  ;endif
+  ;if aliasNotHere(Rapist4)
+    Rapist4.Clear()
+  ;endif
+  ;if aliasNotHere(Rapist5)
+    Rapist5.Clear()
+  ;endif
+  ;if aliasNotHere(Rapist6)
+    Rapist6.Clear()
+  ;endif
+  ;if aliasNotHere(Rapist7)
+    Rapist7.Clear()
+  ;endif
+  ;if aliasNotHere(Rapist8)
+    Rapist8.Clear()
+  ;endif
+  ;if aliasNotHere(Rapist9)
+    Rapist9.Clear()
+  ;endif
+  ;if aliasNotHere(Rapist10)
+    Rapist10.Clear()
+  ;endif
+endfunction
+
+;Bool function aliasNotHere(ReferenceAlias aliasActor)
+;  Return aliasActor.getActorRef() && !aliasActor.getActorRef().Is3DLoaded()
+;endfunction
+
 Bool function rapePlayer(Actor[] rapists)
   if (ReviveScript.moaPlayerGhostQuest.IsRunning() || !rapists || rapists.Length < 1)
     return False
@@ -443,65 +532,20 @@ Bool function rapePlayer(Actor[] rapists)
       return False
     endif
   endif
-  Float z = PlayerRef.GetAnglez() + 180.0
-  if z > 360.0
-    z = z - 360.0
-  endif
-  if rapistArray[0].GetDistance(PlayerRef) > 1000.0
-    rapistArray[0].disable()
-    rapistArray[0].MoveTo(PlayerRef)
-    rapistArray[0].SetPosition(PlayerRef.GetPositionx() + Utility.RandomInt(75, 100), PlayerRef.GetPositiony() + Utility.RandomInt(75, 100), PlayerRef.GetPositionz())
-    rapistArray[0].SetAngle(PlayerRef.GetAngleX(), PlayerRef.GetAngleY(), z)
-    rapistArray[0].enable()
-  endif
-  RapistsList.AddForm(rapistArray[0])
-  Rapist1.ForceRefTo(rapistArray[0])
-  rapistArray[0].EvaluatePackage()
+  clearRapists()
+  addRapistActor(rapistArray[0], PlayerRef)
   if rapistArray.Length > 1 && rapistArray[1]
-    if rapistArray[1].GetDistance(PlayerRef) > 1000.0
-      rapistArray[1].disable()
-      rapistArray[1].MoveTo(PlayerRef)
-      rapistArray[1].SetPosition(PlayerRef.GetPositionx() + Utility.RandomInt(75, 100), PlayerRef.GetPositiony() + Utility.RandomInt(75, 100), PlayerRef.GetPositionz())
-      rapistArray[1].SetAngle(PlayerRef.GetAngleX(), PlayerRef.GetAngleY(), z)
-      rapistArray[1].enable()
-    endif
-    RapistsList.AddForm(rapistArray[1])
-    Rapist2.ForceRefTo(rapistArray[1])
-    rapistArray[1].EvaluatePackage()
-  else
-    Rapist2.Clear()
+    addRapistActor(rapistArray[1], PlayerRef)
   endif
   if rapistArray.Length > 2 && rapistArray[2]
-    if rapistArray[2].GetDistance(PlayerRef) > 1000.0
-      rapistArray[2].disable()
-      rapistArray[2].MoveTo(PlayerRef)
-      rapistArray[2].SetPosition(PlayerRef.GetPositionx() + Utility.RandomInt(75, 100), PlayerRef.GetPositiony() + Utility.RandomInt(75, 100), PlayerRef.GetPositionz())
-      rapistArray[2].SetAngle(PlayerRef.GetAngleX(), PlayerRef.GetAngleY(), z)
-      rapistArray[2].enable()
-    endif
-    RapistsList.AddForm(rapistArray[2])
-    Rapist3.ForceRefTo(rapistArray[2])
-    rapistArray[2].EvaluatePackage()
-  else
-    Rapist3.Clear()
+    addRapistActor(rapistArray[2], PlayerRef)
   endif
   if rapistArray.Length > 3 && rapistArray[3]
-    if rapistArray[3].GetDistance(PlayerRef) > 1000.0
-      rapistArray[3].disable()
-      rapistArray[3].MoveTo(PlayerRef)
-      rapistArray[3].SetPosition(PlayerRef.GetPositionx() + Utility.RandomInt(75, 100), PlayerRef.GetPositiony() + Utility.RandomInt(75, 100), PlayerRef.GetPositionz())
-      rapistArray[3].SetAngle(PlayerRef.GetAngleX(), PlayerRef.GetAngleY(), z)
-      rapistArray[3].enable()
-    endif
-    RapistsList.AddForm(rapistArray[3])
-    Rapist4.ForceRefTo(rapistArray[3])
-    rapistArray[3].EvaluatePackage()
-  else
-    Rapist4.Clear()
+    addRapistActor(rapistArray[3], PlayerRef)
   endif
   if !NPCPacifier.IsRunning()
     NPCPacifier.Start()
-    keepControlsDisabled(1.0, true, true, true, false, true, true, true, false, true)
+    keepControlsDisabled(2.0, true, true, true, false, true, true, true, false, true)
   endif
   (NPCPacifier As zzzmoa_npc_pacifier_quest_script).ToggleTeamMates(False)
   Actor extraRapist = None
@@ -511,31 +555,7 @@ Bool function rapePlayer(Actor[] rapists)
     extraRapist = PacifiedHostiles.getAt(i) as Actor
     if rapistArray.find(extraRapist) < 0
       if isRapistValid(extraRapist)
-        if !Rapist5.GetActorRef()
-          Rapist5.ForceRefTo(extraRapist)
-          Rapist5.GetActorReference().EvaluatePackage()
-        endif
-        if !Rapist6.GetActorRef()
-          Rapist6.ForceRefTo(extraRapist)
-          Rapist6.GetActorReference().EvaluatePackage()
-        endif
-        if !Rapist7.GetActorRef()
-          Rapist7.ForceRefTo(extraRapist)
-          Rapist7.GetActorReference().EvaluatePackage()
-        endif
-        if !Rapist8.GetActorRef()
-          Rapist8.ForceRefTo(extraRapist)
-          Rapist8.GetActorReference().EvaluatePackage()
-        endif
-        if !Rapist9.GetActorRef()
-          Rapist9.ForceRefTo(extraRapist)
-          Rapist9.GetActorReference().EvaluatePackage()
-        endif
-        if !Rapist10.GetActorRef()
-          Rapist10.ForceRefTo(extraRapist)
-          Rapist10.GetActorReference().EvaluatePackage()
-        endif
-        RapistsList.AddForm(extraRapist)
+        addRapistActor(extraRapist, PlayerRef, true)
       endif
     endif
   endwhile
@@ -565,7 +585,7 @@ Bool function rapePlayer(Actor[] rapists)
       while bIsBusy
         if !NPCPacifier.Isrunning()
           NPCPacifier.Start()
-          Utility.Wait(1.0)
+          Utility.Wait(2.0)
         endif
         NPCPacifier.Stop()
         i = 0
@@ -592,7 +612,7 @@ Bool function rapePlayer(Actor[] rapists)
       while bIsBusy
         if !NPCPacifier.Isrunning()
           NPCPacifier.Start()
-          Utility.Wait(1.0)
+          Utility.Wait(2.0)
         endif
         NPCPacifier.Stop()
         i = 0
@@ -658,7 +678,7 @@ Bool function rapePlayer(Actor[] rapists)
     while ReviveScript.FlowerGirlsInterface.isBusy
       if !NPCPacifier.Isrunning()
         NPCPacifier.Start()
-        Utility.Wait(1.0)
+        Utility.Wait(2.0)
       endif
       NPCPacifier.Stop()
       i = 0

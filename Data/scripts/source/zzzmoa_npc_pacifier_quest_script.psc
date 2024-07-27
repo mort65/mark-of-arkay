@@ -28,8 +28,8 @@ function Pacify()
         curPackage = ac.GetCurrentPackage()
         if (curPackage != RapistCheerPackage) && (curPackage != RapistStayPackage) && (curPackage != RapistWaitPackage) && (curPackage != RapistApproachPackage)
           ActorUtil.AddPackageOverride(ac, RapistApproachPackage, 100)
-		  ActorUtil.AddPackageOverride(ac, RapistStayPackage, 100)
-		  ActorUtil.AddPackageOverride(ac, RapistCheerPackage, 100)
+          ActorUtil.AddPackageOverride(ac, RapistStayPackage, 100)
+          ActorUtil.AddPackageOverride(ac, RapistCheerPackage, 100)
         endif
       endif
       ac.EvaluatePackage()

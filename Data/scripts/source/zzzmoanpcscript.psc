@@ -982,8 +982,6 @@ Bool Function bIsHostile(Actor ActorRef)
       endif
     elseif ActorRef.HasKeywordString("actortypeanimal")
       return false
-    elseif ConfigMenu.bMoralityMatters && (ActorRef.GetActorValue("Morality") > 2)
-      return false
     endif
     if (ReviveScript.Attacker && (ReviveScript.Attacker == ActorRef))
       return true
@@ -1011,6 +1009,7 @@ Bool function bCanSteal(Actor ActorRef)
 
   if bIsDying(ActorRef) || ActorRef.IsDisabled() || bRejected
   elseif !bIsHostile(ActorRef)
+  elseif ConfigMenu.bMoralityMatters && (ActorRef.GetActorValue("Morality") > 2)
   elseif theActorBase.isUnique()
   elseif bIsFollower(ActorRef)
   elseif isActorChild(ActorRef)

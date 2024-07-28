@@ -620,3 +620,4 @@ Bool function isPluginFound(string pluginName) Global
   endif
   return Game.IsPluginInstalled(pluginName)
 endfunction
+

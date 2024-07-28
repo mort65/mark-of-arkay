@@ -2,8 +2,9 @@ Scriptname zzzmoarapescript extends Quest
 
 import zzzmoautilscript
 
-FormList property BedsList auto
+zzzmoa_npc_pacifier_quest_script property pacifierScript auto
 zzzmoaReviveMCM property ConfigMenu auto
+FormList property BedsList auto
 GlobalVariable property CreatureRape auto
 Form[] property Equipment auto Hidden
 Quest property NPCPacifier auto
@@ -20,7 +21,6 @@ ReferenceAlias property Rapist6 auto
 ReferenceAlias property Rapist7 auto
 ReferenceAlias property Rapist8 auto
 ReferenceAlias property Rapist9 auto
-FormList property RapistsList auto
 zzzmoaReviverScript property ReviveScript auto
 ReferenceAlias property Victim1 auto
 ReferenceAlias property Victimized01 auto
@@ -29,6 +29,8 @@ Bool property bIsBusy=False auto Hidden
 Faction property calmFaction auto
 Actor property playerRef auto
 String property sAnimInterface Auto Hidden
+Formlist Property RapistsList Auto
+FormList property PrevRapists auto
 
 event OnInit()
   RegisterForModEvent("MOA_Int_PlayerLoadsGame", "On_MOA_Int_PlayerLoadsGame")
@@ -199,7 +201,25 @@ function Unpacify()
     endif
     Rapist10.Clear()
   endif
-  (NPCPacifier As zzzmoa_npc_pacifier_quest_script).Unpacify()
+  
+  int i = PrevRapists.GetSize()
+  while i > 0
+    i -= 1
+    act = PrevRapists.getAt(i) As actor
+    if act
+      act.RemoveFromFaction(calmFaction)
+      if ConfigMenu.bPUOK
+        ActorUtil.RemovePackageOverride(act, pacifierScript.RapistCheerPackage)
+        ActorUtil.RemovePackageOverride(act, pacifierScript.RapistStayPackage)
+        ActorUtil.RemovePackageOverride(act, pacifierScript.RapistWaitPackage)
+        ActorUtil.RemovePackageOverride(act, pacifierScript.RapistApproachPackage)
+      endif
+      act.EvaluatePackage()
+    endif
+  endwhile
+  PrevRapists.revert()
+  
+  pacifierScript.Unpacify()
 endfunction
 
 Actor[] function fixActorArray(Actor[] Actors, Bool bRandomLen=False)
@@ -275,20 +295,21 @@ String function getInterface()
   return ""
 endfunction
 
-Actor[] function getRapists(Actor Victim, Actor Attacker, Bool bReset=False)
+Actor[] function getRapists(Actor Victim, Actor Attacker)
   Actor[] rapists
   if (!Attacker || (Attacker == None) || (Attacker.GetDistance(Victim) > 5000.0))
     return rapists
   endif
-  if bReset
-    Unpacify()
-    keepControlsDisabled(1.0, true, true, true, false, true, true, true, false, true)
-  endif
+  ;if bReset
+  ;  clearRapists()
+  ;  keepControlsDisabled(1.0, true, true, true, false, true, true, true, false, true)
+  ;endif
   Bool bCreature = False
   if ConfigMenu.bAllowCreatureRape
     bCreature = ((sAnimInterface == "sexlab") && !Attacker.HasKeywordString("actortypenpc") && ReviveScript.SexLabInterface.IsCreaturesAllowed() && ReviveScript.SexLabInterface.AllowedCreature(Attacker.GetLeveledActorBase().GetRace()))
   endif
   CreatureRape.SetValueInt(bCreature As Int)
+  stopandconfirm(NPCPacifier)
   NPCPacifier.Start()
   rapists = new Actor[4]
   rapists[0] = None
@@ -461,42 +482,43 @@ Function addRapistActor(actor rapistActor, actor victimActor, Bool bExtra = Fals
   rapistActor.EvaluatePackage()
 endfunction
 
-Function clearRapists()
-  ;if aliasNotHere(Rapist1)
-    Rapist1.Clear()
-  ;endif
-  ;if aliasNotHere(Rapist2)
-    Rapist2.Clear()
-  ;endif
-  ;if aliasNotHere(Rapist3)
-    Rapist3.Clear()
-  ;endif
-  ;if aliasNotHere(Rapist4)
-    Rapist4.Clear()
-  ;endif
-  ;if aliasNotHere(Rapist5)
-    Rapist5.Clear()
-  ;endif
-  ;if aliasNotHere(Rapist6)
-    Rapist6.Clear()
-  ;endif
-  ;if aliasNotHere(Rapist7)
-    Rapist7.Clear()
-  ;endif
-  ;if aliasNotHere(Rapist8)
-    Rapist8.Clear()
-  ;endif
-  ;if aliasNotHere(Rapist9)
-    Rapist9.Clear()
-  ;endif
-  ;if aliasNotHere(Rapist10)
-    Rapist10.Clear()
-  ;endif
+Function storeRapist(Actor rapist)
+  if rapist && !PrevRapists.hasform(rapist)
+    PrevRapists.AddForm(rapist)
+  endif
 endfunction
 
-;Bool function aliasNotHere(ReferenceAlias aliasActor)
-;  Return aliasActor.getActorRef() && !aliasActor.getActorRef().Is3DLoaded()
-;endfunction
+Function clearRapists()
+    storeRapist(Rapist1.getActorReference())
+    Rapist1.Clear()
+    
+    storeRapist(Rapist2.getActorReference())
+    Rapist2.Clear()
+    
+    storeRapist(Rapist3.getActorReference())
+    Rapist3.Clear()
+
+    storeRapist(Rapist4.getActorReference())
+    Rapist4.Clear()
+
+    storeRapist(Rapist5.getActorReference())
+    Rapist5.Clear()
+
+    storeRapist(Rapist6.getActorReference())
+    Rapist6.Clear()
+
+    storeRapist(Rapist7.getActorReference())
+    Rapist7.Clear()
+
+    storeRapist(Rapist8.getActorReference())
+    Rapist8.Clear()
+
+    storeRapist(Rapist9.getActorReference())
+    Rapist9.Clear()
+
+    storeRapist(Rapist10.getActorReference())
+    Rapist10.Clear()
+endfunction
 
 Bool function rapePlayer(Actor[] rapists)
   if (ReviveScript.moaPlayerGhostQuest.IsRunning() || !rapists || rapists.Length < 1)
@@ -523,11 +545,11 @@ Bool function rapePlayer(Actor[] rapists)
   PacifyNPC.SetValueInt(1)
   Bool bSwim = False
   bSwim = PlayerRef.IsSwimming() || (ConfigMenu.bPO3Ok && (PO3_SKSEFunctions.IsActorUnderwater(PlayerRef) || PO3_SKSEFunctions.IsActorInWater(PlayerRef)))
-  if bSwim || (sAnimInterface != "sexlab")
+  if bSwim
     ObjectReference bedRef = FindBed(playerRef as ObjectReference, 2000.0)
     if bedRef
       playerRef.SetPosition(bedRef.GetPositionX(), bedRef.GetPositiony(), bedRef.GetPositionz() + 5.0)
-    elseif bSwim
+    else
       ConfigMenu.bIsLoggingEnabled && Debug.trace("MarkOfArkay: Player Can't be raped while swimming.")
       return False
     endif
@@ -547,7 +569,7 @@ Bool function rapePlayer(Actor[] rapists)
     NPCPacifier.Start()
     keepControlsDisabled(2.0, true, true, true, false, true, true, true, false, true)
   endif
-  (NPCPacifier As zzzmoa_npc_pacifier_quest_script).ToggleTeamMates(False)
+  pacifierScript.ToggleTeamMates(False)
   Actor extraRapist = None
   Int i = PacifiedHostiles.GetSize()
   while i > 0
@@ -689,7 +711,7 @@ Bool function rapePlayer(Actor[] rapists)
     endwhile
     result = ReviveScript.FlowerGirlsInterface.Result
   endif
-  (NPCPacifier As zzzmoa_npc_pacifier_quest_script).ToggleTeamMates(True)
+  pacifierScript.ToggleTeamMates(True)
   Game.DisablePlayerControls(abMovement=True, abFighting=True, abCamSwitch=True, abLooking=False, abSneaking=True, abMenu=True, abActivate=True, abJournalTabs=False)
   Game.SetPlayerAIDriven(False)
   Game.SetPlayerAIDriven(True)

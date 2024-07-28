@@ -179,6 +179,9 @@ Int iIsBeast = 0
 Int iRespawnPointsCount
 String strRemovedItem
 
+Bool bThisTimeItemRemoved
+Bool bThisTimeSoulRemoved
+
 event OnCellLoad()
   if (Getstate() == "")
     CellLoadMarker2.Enable()
@@ -483,25 +486,14 @@ event OnUpdate()
   if bRevived && (GetState() == "")
     if bWasraped
         RapeScript.Victimized01.clear()
+        debug.SendAnimationEvent(PlayerRef, "OffsetBoundStandingStart")
+        utility.wait(1.0)
     endif
     PlayerRef.SetDontMove(False)
     Game.EnablePlayerControls()
     if bfastTravel
       Game.EnableFastTravel(True)
     endif
-    if !bInBleedoutAnim  ;auto fix for can't draw weapon, jump,.. after paralysis
-      Form rw = PlayerRef.GetEquippedObject(1)
-      if rw
-        PlayerRef.UnequipItemEx(rw, equipSlot=1, preventEquip=False)
-        PlayerRef.EquipItemEx(rw, equipSlot=1, preventUnequip=False, equipSound=True)
-      else
-        playerRef.AddItem(DummySword As form, abSilent=True)
-        PlayerRef.EquipItemEx(DummySword, equipSlot=1, preventUnequip=True, equipSound=True)
-        PlayerRef.UnequipItemEx(DummySword, equipSlot=1, preventEquip=True)
-        PlayerRef.RemoveItem(DummySword As Form, PlayerRef.GetItemCount(DummySword As Form), abSilent=True)
-      endif    
-    endif
-    PlayerRef.DrawWeapon()
     bRevived = false
     bWasraped = False
     bfastTravel = False
@@ -648,7 +640,7 @@ function BleedoutHandler(String CurrentState)
     GoToState("")
     return
   elseif !ConfigMenu.bCanbeKilledbyUnarmed && UnarmedAttacker && Attacker && Attacker.HasKeyWordString("ActorTypeNPC")
-    PlayerRef.ResetHealthAndLimbs()
+    restoreActorHealth(playerRef, false)
     !moaPlayerGhostQuest.IsRunning() && PlayerRef.StopCombatAlarm()
     ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Player revived after being defeated by an unarmed NPC: " + Attacker)
     GoToState("")
@@ -1168,18 +1160,49 @@ function RevivePlayer(Bool bRevive)
   endif
 endfunction
 
+function restoreActorHealth(Actor act, Bool bFullHealth = true)
+  if act
+    act.DispelSpell(Bleed)
+    act.ResetHealthAndLimbs()
+    act.RestoreActorValue("health", 10000)
+    if !bFullHealth
+      utility.wait(0.5)
+      Float fOldHP = act.GetActorValue("Health")
+      Float fNewHP = fMax(60.0, ((act.GetBaseActorValue("Health") * 0.5) + 10.0))
+      if fOldHP > fNewHP
+        act.DamageActorValue("Health", fOldHP - fNewHP)
+      else
+        act.RestoreActorValue("Health", fNewHP - fOldHP)
+      endif
+    endif
+  endif
+endFunction
+
 function rapeHandler()
-  RapeScript.sAnimInterface = RapeScript.getInterface()
-  Game.SetPlayerAIDriven(True)
   PlayerRef.setGhost(True)
   If ConfigMenu.bPO3Ok
    PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
    PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
   Endif
+  if ConfigMenu.bFadeToBlack
+    FastFadeOut.Apply()
+    Utility.Wait(1.0)
+    FastFadeOut.PopTo(BlackScreen)
+  endif
+  restoreActorHealth(playerRef, bSurrendering)
+  unParalyzeActor(PlayerRef)
+  RapeScript.Victim1.ForceRefTo(PlayerRef)
+  PlayerRef.EvaluatePackage()
+  utility.wait(1.0)
+  if ConfigMenu.bFadeToBlack
+    BlackScreen.PopTo(FadeIn)
+  endif
+  Game.SetPlayerAIDriven(True)
+  RapeScript.sAnimInterface = RapeScript.getInterface()
   CrimeGold = 0
   CrimeGoldViolent = 0
   CrimeFaction = None
-  Actor[] rapistActors = RapeScript.getRapists(PlayerRef, Attacker, true)
+  Actor[] rapistActors = RapeScript.getRapists(PlayerRef, Attacker)
   bIsraped = RapeScript.rapePlayer(rapistActors)
   if bIsraped
     PlayerRef.setGhost(True)
@@ -1191,19 +1214,45 @@ function rapeHandler()
     while bIsraped && (i > 0)
       Game.DisablePlayerControls(abMovement=True, abFighting=True, abCamSwitch=True, abLooking=False, abSneaking=True, abMenu=True, abActivate=True, abJournalTabs=False)
       if (!rapistActors || !rapistActors.Length)
-        rapistActors = RapeScript.getRapists(PlayerRef, Attacker, false)
-      else
+        rapistActors = RapeScript.getRapists(PlayerRef, Attacker)
+      elseif (rapistActors.find(none) > -1)
+        NPCScript.checkedActors.revert()
         int j = rapistActors.Length
         int c = 0
         while j > 0
           j -= 1
           if (!rapistActors[j] || (rapistActors[j] == None))
             c += 1
+          else
+            NPCScript.checkedActors.addform(rapistActors[j])
           endif
         endwhile
         if (((ConfigMenu.fMaxRapists > 1.0) && (c < 2)) || ((ConfigMenu.fMaxRapists > 2.0) && (c < 3)) || ((ConfigMenu.fMaxRapists > 3.0) && (c < 4)))
-          rapistActors = RapeScript.getRapists(PlayerRef, Attacker, false)
+          rapistActors = RapeScript.getRapists(PlayerRef, Attacker)
+          if (rapistActors.find(none) > -1)
+            int cc = 0
+            i = rapistActors.Length
+            while i > 0
+              i -= 1
+              if (!rapistActors[i] || (rapistActors[i] == None))
+                cc += 1
+              endif
+            endWhile
+            if cc > c
+              actor act
+              i = NPCScript.checkedActors.getSize()
+              while i > 0 && (rapistActors.find(none) > -1)
+                i -= 1
+                j = rapistActors.find(none)
+                act = NPCScript.checkedActors.getAt(i) as actor
+                if (j > -1) && act && (rapistActors.find(act) == -1) && !act.isdead() && !act.IsDisabled() && act.IS3dLoaded()
+                  rapistActors[j] = act
+                endif
+              endWhile
+            endif
+          endif
         endif
+        NPCScript.checkedActors.revert()
       endif
       RapeScript.shuffleActorArray(rapistActors)
       bIsraped = RapeScript.rapePlayer(rapistActors)
@@ -1226,9 +1275,12 @@ function rapeHandler()
   restoreCrime()
   ConfigMenu.bIsLoggingEnabled && Debug.trace("MarkOfArkay: Player raped = " + bIsraped)
   bWasraped = bIsraped
+  RapeScript.unPacify()
   if bWasraped
+    debug.SendAnimationEvent(PlayerRef, "OffsetBoundStandingStart")
     RapeScript.Victimized01.ForceRefTo(playerRef)
-    playerRef.EvaluatePackage()
+  else
+    debug.SendAnimationEvent(PlayerRef, "OffsetBoundStandingCut")
   endif
 endFunction
 
@@ -1419,9 +1471,7 @@ function respawnHandler()
       StopAndConfirm(moaThiefNPC01, 3, 25)
     endif
   endif
-  PlayerRef.DispelSpell(Bleed)
-  PlayerRef.ResetHealthAndLimbs()
-  PlayerRef.RestoreActorValue("health", 10000)
+  restoreActorHealth(playerRef, true)
   if ConfigMenu.bPlayerProtectFollower
     NPCScript.ResurrectFollowers()
   endif
@@ -1435,7 +1485,9 @@ function respawnHandler()
     Utility.WaitMenuMode(0.2)
   endwhile
   if (ConfigMenu.bRespawnNaked && !NPCScript.bInBeastForm())
-    ItemScript.undressActor(playerRef, true)
+    if !Configmenu.bRespawnNakedOnlyIfRapedOrRobbed || (bThisTimeItemRemoved || bThisTimeSoulRemoved || bWasraped)
+      ItemScript.undressActor(playerRef, true)
+    endif
   endif
   bReadyForRespawn = True ;allowing bIsArrived in respawnscript to teleport player
   while bReadyForRespawn
@@ -1470,13 +1522,7 @@ function respawnHandler()
     PlayerRef.SetVoiceRecoveryTime(9999999.0)
     bPlayerIsVoiceless = True
   endif
-  if PlayerRef.GetActorValue("paralysis")
-    PlayerRef.SetActorValue("paralysis", 0)
-    if PlayerRef.GetActorValue("paralysis")
-      PlayerRef.ForceActorValue("paralysis", 0)
-    endif
-    Utility.Wait(6.5)
-  endif
+  unParalyzeActor(PlayerRef)
   if (ConfigMenu.bFadeToBlack || ConfigMenu.bInvisibility || ConfigMenu.fRespawnTimeSlider)
     RespawnScript.PassTime(ConfigMenu.fRespawnTimeSlider, 6.0)
   endif
@@ -1537,7 +1583,6 @@ function respawnHandler()
   endif
   moaHostileNPCDetector.Stop()
   moaHostileNPCDetector01.Stop()
-  RapeScript.unPacify()
   if !bIsCameraStateSafe()
     Game.ForceThirdPerson()
   endif
@@ -1614,8 +1659,15 @@ endFunction
 
 function itemCurseHandler()
    Debug.TraceConditional("MarkOfArkay: Removing items from the player...", ConfigMenu.bIsLoggingEnabled)
+    Int totalDragonSouls = PlayerRef.GetActorValue("DragonSouls") as Int
+    if !Configmenu.bLoseForever
+      LostItemsChest.RemoveAllItems(ItemScript.PrevLostItemsChest, true, true)
+    endif
     Float fStart = Utility.GetCurrentRealTime()
     ItemScript.loseItems()
+    bThisTimeItemRemoved = (LostItemsChest.GetNumItems() > 0)
+    bThisTimeSoulRemoved = ((PlayerRef.GetActorValue("DragonSouls") as Int) < totalDragonSouls)
+    ItemScript.PrevLostItemsChest.RemoveAllItems(LostItemsChest, true, true)
     Debug.TraceConditional("MarkOfArkay: Removing items from the player finished in " + (Utility.GetCurrentRealTime() - fStart) + " seconds.", ConfigMenu.bIsLoggingEnabled)
     if ConfigMenu.bIsLoggingEnabled
       Int c = LostItemsChest.GetNumItems()
@@ -2076,16 +2128,17 @@ Bool function bItemRemoved()
 endfunction
 
 Bool function bRape()
-  if !Attacker || (Attacker == None) || playerRef.IsFlying() || playerRef.IsOnMount()
+  if (Attacker == None) || playerRef.IsFlying() || playerRef.IsOnMount()
     return False
   endif
-  if !ConfigMenu.bOnlyHostilesRape || (Attacker.IsHostileToActor(PlayerRef) || (Attacker.GetFactionReaction(PlayerRef) == 1))
+  if !ConfigMenu.bOnlyHostilesRape || NPCScript.bIsHostile(Attacker)
     if Utility.RandomInt(0, 99) < ConfigMenu.fRapeChanceSlider
       if (PlayerRef.GetDistance(Attacker) < 5000.0) || (Attacker.GetParentCell() == PlayerRef.GetParentCell())
         return True
       endif
     endif
   endif
+  ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Cannot raped by " + attacker.GetActorBase().GetName() + " = " + Attacker)
   return False
 endfunction
 
@@ -2205,20 +2258,10 @@ function restore(Int iRevivePlayer=1, Bool bReviveFollower=True, Bool bEffect=Fa
       moaReviveAfterEffect.Cast(PlayerRef)
     endif
     RequipSpells()
-    PlayerRef.DispelSpell(Bleed)
-    if iRevivePlayer != 0
-      PlayerRef.ResetHealthAndLimbs()
-      PlayerRef.RestoreActorValue("health", 10000)
-    endif
-    if iRevivePlayer == 2
-      Utility.Wait(0.5)
-      Float fOldHP = PlayerRef.GetActorValue("Health")
-      Float fNewHP = fMax(60.0, ((PlayerRef.GetBaseActorValue("Health") * 0.5) + 10.0))
-      if fOldHP > fNewHP
-        PlayerRef.DamageActorValue("Health", fOldHP - fNewHP)
-      else
-        PlayerRef.RestoreActorValue("Health", fNewHP - fOldHP)
-      endif
+    if iRevivePlayer == 1
+      restoreActorHealth(playerRef, true)
+    elseif iRevivePlayer == 2
+      restoreActorHealth(playerRef, false)
     endif
     if iPotionIndex > -1
       Utility.Wait(0.1)
@@ -2243,7 +2286,7 @@ function restore(Int iRevivePlayer=1, Bool bReviveFollower=True, Bool bEffect=Fa
     if PlayerRef.GetActorValue("paralysis")
       PlayerRef.ForceActorValue("paralysis", 0)
     endif
-    Utility.Wait(5.0)
+    Utility.Wait(6.0)
   endif
   if bEffect && (iRevivePlayer == 1) && !PlayerRef.IsDead()
     BleedoutProtection.Cast(PlayerRef)
@@ -2314,13 +2357,15 @@ function surrenderHandler()
   else
     return
   endif
+  ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Surrendering...")
   moaBleedoutHandlerState.SetValue(2)
   SendModEvent("dhlp-Suspend") ;pause devious helpless scenes
   if PlayerRef.IsOnMount()
     PlayerRef.Dismount()
     utility.wait(3.0)
   endif
-  if !Attacker || !Attacker.IS3dLoaded() || (Attacker.GetDistance(playerRef) > 2000.0) || (attacker == playerRef)
+  if !Attacker || !Attacker.IS3dLoaded() || (Attacker.GetDistance(playerRef) > 3000.0) || (attacker == playerRef)
+    ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: searching for npc to surrender to...")
     Bool bFound = False
     Actor npc = Game.FindClosestActorFromRef(PlayerRef, 2000.0)
     if NPCScript.bPlayerCanSurrenderToActor(npc)
@@ -2328,22 +2373,28 @@ function surrenderHandler()
       bfound = true
     elseif npc
       actor npc2
-      int i = 15
+      NPCScript.checkedActors.revert()
+      int i = 30
       bFound = False
       while i > 0 && !bFound
         i -= 1
         npc2 = Game.FindRandomActorFromRef(PlayerRef, 2000.0)
-        if NPCScript.bPlayerCanSurrenderToActor(npc2)
+        if !NPCScript.checkedActors.hasform(npc2) && NPCScript.bPlayerCanSurrenderToActor(npc2)
           Attacker = npc2
           bFound = True
+        else
+           NPCScript.checkedActors.addform(npc2)
         endif
       endWhile
+      NPCScript.checkedActors.revert()
     endif
     if bFound
+      ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: NPC for surrendering found: " + Attacker.GetActorBase().GetName() + " = " + Attacker)
       AttackerActor.ForceRefTo(Attacker)
       AttackerActor01.ForceRefTo(Attacker)
     endif
   else
+    ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Surrender to: " + Attacker.GetActorBase().GetName() + " = " + Attacker)
     AttackerActor.ForceRefTo(Attacker)
     AttackerActor01.ForceRefTo(Attacker)
   endif
@@ -2506,3 +2557,13 @@ State Surrender
   Function checkHealth()
   endfunction
 endstate
+
+Function unParalyzeActor(Actor act)
+  if act && act.GetActorValue("paralysis")
+    act.SetActorValue("paralysis", 0)
+    if act.GetActorValue("paralysis")
+      act.ForceActorValue("paralysis", 0)
+    endif
+    Utility.Wait(6.0)
+  endif
+endFunction

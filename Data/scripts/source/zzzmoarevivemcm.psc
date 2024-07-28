@@ -138,6 +138,7 @@ Bool property bRecallByArkayMark=False auto Hidden ;
 Bool property bRespawnCounter=False auto Hidden
 Bool property bRespawnMenu=False auto Hidden
 Bool property bRespawnNaked=False auto Hidden
+Bool Property bRespawnNakedOnlyIfRapedOrRobbed = False Auto Hidden
 Bool[] property bRespawnPointsFlags auto Hidden
 Bool property bResurrectActors=False auto Hidden
 Bool property bRetrySpawnWithoutLocation=True auto Hidden
@@ -451,6 +452,7 @@ Int oidRespawnBlackListLocation
 Int oidRespawnCounter
 Int oidRespawnMenu
 Int oidRespawnNaked
+Int oidRespawnNakedOnlyIfRapedOrRobbed
 Int oidRespawnPoint0
 Int oidRespawnPoint1
 Int oidRespawnPoint2
@@ -779,6 +781,9 @@ event OnOptionDefault(Int option)
   elseif (option == oidRespawnNaked)
     bRespawnNaked = False
     _SetToggleOptionValue(oidRespawnNaked, bRespawnNaked)
+  elseif (option == oidRespawnNakedOnlyIfRapedOrRobbed)
+    bRespawnNakedOnlyIfRapedOrRobbed = False
+    _SetToggleOptionValue(oidRespawnNakedOnlyIfRapedOrRobbed, bRespawnNakedOnlyIfRapedOrRobbed)
   elseif (option == oidCorpseAsSoulMark)
     bCorpseAsSoulMark = False
     _SetToggleOptionValue(oidCorpseAsSoulMark, bCorpseAsSoulMark)
@@ -1389,6 +1394,8 @@ event OnOptionHighlight(Int option)
     SetInfoText("$mrt_MarkofArkay_DESC_RespawnPoint9")
   elseif (option == oidRespawnNaked)
     SetInfoText("$mrt_MarkofArkay_DESC_RespawnNaked")
+  elseif (option == oidRespawnNakedOnlyIfRapedOrRobbed)
+    SetInfoText("$mrt_MarkofArkay_DESC_RespawnNakedOnlyIfRapedOrRobbed")
   elseif (option == oidCorpseAsSoulMark)
     SetInfoText("$mrt_MarkofArkay_DESC_CorpseAsSoulMark")
   elseif (option == oidRespawnMenu)
@@ -2078,6 +2085,9 @@ event OnOptionSelect(Int option)
   elseif (option == oidRespawnNaked)
     bRespawnNaked = !bRespawnNaked
     _SetToggleOptionValue(oidRespawnNaked, bRespawnNaked)
+  elseif (option == oidRespawnNakedOnlyIfRapedOrRobbed)
+    bRespawnNakedOnlyIfRapedOrRobbed = !bRespawnNakedOnlyIfRapedOrRobbed
+    _SetToggleOptionValue(oidRespawnNakedOnlyIfRapedOrRobbed, bRespawnNakedOnlyIfRapedOrRobbed)
   elseif (option == oidCorpseAsSoulMark)
     bCorpseAsSoulMark = !bCorpseAsSoulMark
     _SetToggleOptionValue(oidCorpseAsSoulMark, bCorpseAsSoulMark)
@@ -3309,6 +3319,12 @@ event OnPageReset(String page)
       flags = OPTION_FLAG_DISABLED
     endif
     oidRespawnNaked = AddToggleOption("$mrt_MarkofArkay_RespawnNaked", bRespawnNaked, flags)
+    if ((moaState.getValue() == 1) && (iNotTradingAftermath == 1) && bRespawnNaked)
+      flags = OPTION_FLAG_NONE
+    else
+      flags = OPTION_FLAG_DISABLED
+    endif    
+    oidRespawnNakedOnlyIfRapedOrRobbed = AddToggleOption("$mrt_MarkofArkay_RespawnNakedOnlyIfRapedOrRobbed", bRespawnNakedOnlyIfRapedOrRobbed, flags)
     oidJail = AddToggleOption("$mrt_MarkofArkay_Jail", bSendToJail, flags)
     oidShowRaceMenu = AddToggleOption("$mrt_MarkofArkay_ShowRaceMenu", bShowRaceMenu, flags)
     oidKillIfCantRespawn = AddToggleOption("$mrt_MarkofArkay_KillIfCantRespawn", bKillIfCantRespawn, flags)
@@ -5100,6 +5116,7 @@ Bool function bLoadUserSettings(String sFileName)
   iNotTradingAftermath = checkInt(fiss.loadInt("iNotTradingAftermath"), 0, sGetAftermathOptions().Length - 1, 1)
   iArkayCurse = checkInt(fiss.loadInt("iArkayCurse"), 0, sGetArkayCurses().Length - 1, 0)
   bRespawnNaked = fiss.loadBool("bRespawnNaked")
+  bRespawnNakedOnlyIfRapedOrRobbed = fiss.loadBool("bRespawnNakedOnlyIfRapedOrRobbed")
   bCorpseAsSoulMark = fiss.loadBool("bCorpseAsSoulMark")
   bSendToJail = fiss.loadBool("bSendToJail")
   bKillIfCantRespawn = fiss.loadBool("bKillIfCantRespawn")
@@ -5372,6 +5389,7 @@ bool function bSaveUserSettings(String sFileName)
   fiss.saveInt("iNotTradingAftermath", iNotTradingAftermath)
   fiss.saveInt("iArkayCurse", iArkayCurse)
   fiss.saveBool("bRespawnNaked", bRespawnNaked)
+  fiss.saveBool("bRespawnNakedOnlyIfRapedOrRobbed", bRespawnNakedOnlyIfRapedOrRobbed)
   fiss.saveBool("bCorpseAsSoulMark", bCorpseAsSoulMark)
   fiss.saveBool("bSendToJail", bSendToJail)
   fiss.saveBool("bKillIfCantRespawn", bKillIfCantRespawn)

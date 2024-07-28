@@ -21,6 +21,7 @@ zzzmoaitemcheckerscriptH property ItemcheckerH auto
 zzzmoaitemcheckerscriptI property ItemcheckerI auto
 zzzmoaitemcheckerscriptJ property ItemcheckerJ auto
 ObjectReference property LostItemsChest auto
+ObjectReference property PrevLostItemsChest auto
 MiscObject property MarkOfArkay auto
 Faction property PlayerEnemyFaction auto
 Actor property PlayerRef auto

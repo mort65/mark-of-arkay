@@ -3,12 +3,16 @@ Scriptname zzzmoa_dhelpless_interface extends Quest
 import zzzmoautilscript
 
 Faction helplessFaction 
+Spell dhCloakSpell
+Actor player
 
 Bool bIsBusy = False
 
 event OnEndState()
   Utility.Wait(5.0)
   helplessFaction = Game.GetFormFromFile(0x005379, "DeviouslyHelpless.esp") as Faction
+  dhCloakSpell = Game.GetFormFromFile(0x000D68, "DeviouslyHelpless.esp") as Spell
+  player = game.GetPlayer()
 endevent
 
 event OnInit()
@@ -56,6 +60,10 @@ Bool Function IsSceneRunning()
 	return False
 endfunction
 
+Bool function IsEnabled()
+  return False
+endfunction
+
 state Installed
 
   event On_MOA_Int_PlayerLoadsGame(string eventName, string strArg, float numArg, Form sender)
@@ -66,9 +74,19 @@ state Installed
     if helplessFaction == None
       helplessFaction = Game.GetFormFromFile(0x005379, "DeviouslyHelpless.esp") as Faction
     endIf
+	if dhCloakSpell == None
+	  dhCloakSpell = Game.GetFormFromFile(0x000D68, "DeviouslyHelpless.esp") as Spell
+	endif
+	if player == None
+      player = game.GetPlayer()
+	endif
   endfunction
 
   Bool function IsSceneRunning()
-  	return Game.getplayer().isInfaction(helplessFaction)
+  	return player.isInfaction(helplessFaction)
+  endfunction
+
+  Bool function IsEnabled()
+    return player.hasSpell(dhCloakSpell)
   endfunction
 endstate

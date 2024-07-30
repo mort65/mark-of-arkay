@@ -781,6 +781,7 @@ event OnOptionDefault(Int option)
   elseif (option == oidRespawnNaked)
     bRespawnNaked = False
     _SetToggleOptionValue(oidRespawnNaked, bRespawnNaked)
+    forcePageReset()
   elseif (option == oidRespawnNakedOnlyIfRapedOrRobbed)
     bRespawnNakedOnlyIfRapedOrRobbed = False
     _SetToggleOptionValue(oidRespawnNakedOnlyIfRapedOrRobbed, bRespawnNakedOnlyIfRapedOrRobbed)
@@ -2085,6 +2086,7 @@ event OnOptionSelect(Int option)
   elseif (option == oidRespawnNaked)
     bRespawnNaked = !bRespawnNaked
     _SetToggleOptionValue(oidRespawnNaked, bRespawnNaked)
+    forcePageReset()
   elseif (option == oidRespawnNakedOnlyIfRapedOrRobbed)
     bRespawnNakedOnlyIfRapedOrRobbed = !bRespawnNakedOnlyIfRapedOrRobbed
     _SetToggleOptionValue(oidRespawnNakedOnlyIfRapedOrRobbed, bRespawnNakedOnlyIfRapedOrRobbed)
@@ -3325,6 +3327,11 @@ event OnPageReset(String page)
       flags = OPTION_FLAG_DISABLED
     endif    
     oidRespawnNakedOnlyIfRapedOrRobbed = AddToggleOption("$mrt_MarkofArkay_RespawnNakedOnlyIfRapedOrRobbed", bRespawnNakedOnlyIfRapedOrRobbed, flags)
+    if ((moaState.getValue() == 1) && (iNotTradingAftermath == 1))
+      flags = OPTION_FLAG_NONE
+    else
+      flags = OPTION_FLAG_DISABLED
+    endif
     oidJail = AddToggleOption("$mrt_MarkofArkay_Jail", bSendToJail, flags)
     oidShowRaceMenu = AddToggleOption("$mrt_MarkofArkay_ShowRaceMenu", bShowRaceMenu, flags)
     oidKillIfCantRespawn = AddToggleOption("$mrt_MarkofArkay_KillIfCantRespawn", bKillIfCantRespawn, flags)

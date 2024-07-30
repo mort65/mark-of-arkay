@@ -115,9 +115,7 @@ Bool property bFinished=False auto Hidden
 Bool property bInBleedout=False auto Hidden
 Bool property bInBleedoutAnim=False auto Hidden
 Bool property bInfectingPlayer=False auto Hidden
-Bool property bIsConditionSafe=False auto Hidden
-Bool property bIsraped=False auto Hidden
-Bool property bWasraped=False auto Hidden
+Bool property bIsRaped=False auto Hidden
 Bool property bPlayerIsVoiceless=False auto Hidden
 Bool property bReadyForRespawn=False auto Hidden
 Bool property bRemoveItems auto Hidden
@@ -157,6 +155,9 @@ GlobalVariable property moaState auto
 Quest property moaThiefNPC01 auto
 Bool Property bSoulMarkActivated = False Auto Hidden
 
+Bool bAnyItemRemoved_ThisRespawn
+Bool bAnySoulRemoved_ThisRespawn
+
 Float[] PriorityArray
 Bool UnarmedAttacker = False
 Bool bArkayMarkRevive
@@ -175,12 +176,9 @@ Bool bWasSwimming
 Bool bfastTravel
 Float fHealrate = 0.0
 Int iChoice
-Int iIsBeast = 0
+Bool isBeast = False
 Int iRespawnPointsCount
 String strRemovedItem
-
-Bool bThisTimeItemRemoved
-Bool bThisTimeSoulRemoved
 
 event OnCellLoad()
   if (Getstate() == "")
@@ -194,6 +192,8 @@ event OnCellLoad()
     CellLoadMarker.SetAngle(0.0, 0.0, PlayerRef.GetAngleZ())
     if (ConfigMenu.iSaveOption > 1)
       Game.SetInChargen(abDisableSaving=True, abDisableWaiting=False, abShowControlsDisabledMessage=True)
+    elseif (ConfigMenu.iSaveOption == 1)
+      Game.SetInChargen(abDisableSaving=False, abDisableWaiting=False, abShowControlsDisabledMessage=False)
     endif
   endif
 endevent
@@ -232,7 +232,7 @@ event OnEnterBleedout()
     Debug.SetGodMode(True)
     bfastTravel = Game.IsFastTravelEnabled()
     Game.EnableFastTravel(False)
-    iIsBeast = NPCScript.iInBeastForm()
+    isBeast = NPCScript.iInBeastForm()
     BleedoutHandler(ToggleState())
     if GetState() == ""
       Attacker = None
@@ -319,6 +319,8 @@ event OnLocationChange(Location akOldLoc, Location akNewLoc)
     LocationMarker.SetAngle(0.0, 0.0, PlayerRef.GetAngleZ())
     if (ConfigMenu.iSaveOption > 1)
       Game.SetInChargen(abDisableSaving=True, abDisableWaiting=False, abShowControlsDisabledMessage=True)
+    elseif (ConfigMenu.iSaveOption == 1)
+      Game.SetInChargen(abDisableSaving=False, abDisableWaiting=False, abShowControlsDisabledMessage=False)
     endif
     if ConfigMenu.bTriggerOnBleedout && !PlayerRef.IsEssential()
       PlayerRef.GetActorBase().SetEssential(True)
@@ -431,6 +433,8 @@ event OnPlayerLoadGame()
   ConfigMenu.OnGameReload()
   if (ConfigMenu.iSaveOption > 1)
     Game.SetInChargen(abDisableSaving=True, abDisableWaiting=False, abShowControlsDisabledMessage=True)
+  elseif (ConfigMenu.iSaveOption == 1)
+    Game.SetInChargen(abDisableSaving=False, abDisableWaiting=False, abShowControlsDisabledMessage=False)
   endif
   if ConfigMenu.bIsEffectEnabled
     PlayerRef.AddPerk(Invulnerable) ;because when loading a save game usually npcs start moving before player
@@ -482,9 +486,11 @@ endevent
 event OnUpdate()
   if (ConfigMenu.iSaveOption > 1)
     Game.SetInChargen(abDisableSaving=True, abDisableWaiting=False, abShowControlsDisabledMessage=True)
+  elseif (ConfigMenu.iSaveOption == 1)
+    Game.SetInChargen(abDisableSaving=False, abDisableWaiting=False, abShowControlsDisabledMessage=False)
   endif
   if bRevived && (GetState() == "")
-    if bWasraped
+    if bIsRaped && !NPCScript.isActorInSexAnimation(PlayerRef)
         RapeScript.Victimized01.clear()
         debug.SendAnimationEvent(PlayerRef, "OffsetBoundStandingStart")
         utility.wait(1.0)
@@ -495,7 +501,6 @@ event OnUpdate()
       Game.EnableFastTravel(True)
     endif
     bRevived = false
-    bWasraped = False
     bfastTravel = False
     moaBleedoutHandlerState.SetValue(0)
     PlayerRef.RemovePerk(Invulnerable)
@@ -650,9 +655,11 @@ function BleedoutHandler(String CurrentState)
     Game.ForceThirdPerson()
   endif
   Game.DisablePlayerControls(abMovement=True, abFighting=True, abCamSwitch=False, abLooking=False, abSneaking=True, abMenu=True, abActivate=True, abJournalTabs=False, aiDisablePOVType=0)
-  if ConfigMenu.bIsRagdollEnabled && (!PlayerRef.GetActorValue("paralysis") && !iIsBeast && !PlayerRef.GetAnimationVariableBool("bIsSynced"))
-    PlayerRef.PushActorAway(PlayerRef, 0)
-    PlayerRef.SetActorValue("paralysis", 1)
+  if ConfigMenu.bIsRagdollEnabled
+    if bIsConditionSafe()
+      PlayerRef.PushActorAway(PlayerRef, 0)
+      PlayerRef.SetActorValue("paralysis", 1)
+    endif
   endif
   ToggleSaving(False)
   if ConfigMenu.iTotalBleedOut < 99999999
@@ -687,9 +694,8 @@ function BleedoutHandler(String CurrentState)
   elseif ConfigMenu.iHostileOption == 1
     moaHostileNPCDetector01.Start()
   endif
-  bIsConditionSafe = bIsConditionSafe()
   if PlayerRef.IsSwimming() ;SKSE
-    if bIsConditionSafe && ConfigMenu.bDeathEffect && (ConfigMenu.bInvisibility || ConfigMenu.bFadeToBlack)
+    if bIsConditionSafe() && ConfigMenu.bDeathEffect && (ConfigMenu.bInvisibility || ConfigMenu.bFadeToBlack)
       PlayerRef.PushActorAway(PlayerRef, 0)
     endif
     bWasSwimming = True
@@ -1084,10 +1090,12 @@ function RequipSpells()
 endfunction
 
 function ResetPlayer()
-  if PlayerRef.IsSwimming()
-    Debug.SendAnimationEvent(PlayerRef, "SwimStart")
-  elseif bWasSwimming
-    Debug.SendAnimationEvent(PlayerRef, "SwimStop")
+  if !NPCScript.isActorInSexAnimation(PlayerRef)
+    if PlayerRef.IsSwimming()
+      Debug.SendAnimationEvent(PlayerRef, "SwimStart")
+    elseif bWasSwimming
+      Debug.SendAnimationEvent(PlayerRef, "SwimStop")
+    endif
   endif
   PlayerRef.ClearExtraArrows()
   if PlayerRef.IsWeaponDrawn()
@@ -1097,8 +1105,7 @@ function ResetPlayer()
 endfunction
 
 function RevivePlayer(Bool bRevive)
-  bIsraped = False
-  bWasraped = False
+  bIsRaped = False
   if !bRevive && bRape()
     rapeHandler()
   endif
@@ -1108,6 +1115,7 @@ function RevivePlayer(Bool bRevive)
     if ConfigMenu.bShiftBack
       ShiftBack()
     endif
+    isBeast = NPCScript.bInBeastForm()
     if !bHasAutoReviveEffect || bSacrifice
       PlayerRef.DispelSpell(ArkayCurseTemp)
       PlayerRef.DispelSpell(ArkayCurseTempAlt)
@@ -1203,15 +1211,15 @@ function rapeHandler()
   CrimeGoldViolent = 0
   CrimeFaction = None
   Actor[] rapistActors = RapeScript.getRapists(PlayerRef, Attacker)
-  bIsraped = RapeScript.rapePlayer(rapistActors)
-  if bIsraped
+  bIsRaped = RapeScript.rapePlayer(rapistActors)
+  if bIsRaped
     PlayerRef.setGhost(True)
     If ConfigMenu.bPO3Ok
       PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
       PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
     Endif
     int i = Utility.randomInt(0, (ConfigMenu.fMaxRapes - 1) As int)
-    while bIsraped && (i > 0)
+    while bIsRaped && (i > 0)
       Game.DisablePlayerControls(abMovement=True, abFighting=True, abCamSwitch=True, abLooking=False, abSneaking=True, abMenu=True, abActivate=True, abJournalTabs=False)
       if (!rapistActors || !rapistActors.Length)
         rapistActors = RapeScript.getRapists(PlayerRef, Attacker)
@@ -1255,7 +1263,7 @@ function rapeHandler()
         NPCScript.checkedActors.revert()
       endif
       RapeScript.shuffleActorArray(rapistActors)
-      bIsraped = RapeScript.rapePlayer(rapistActors)
+      bIsRaped = RapeScript.rapePlayer(rapistActors)
       PlayerRef.setGhost(True)
       If ConfigMenu.bPO3Ok
         PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
@@ -1263,7 +1271,7 @@ function rapeHandler()
       Endif
       i -= 1
     endwhile
-    bIsraped = true
+    bIsRaped = true
   endif
   If !PlayerRef.HasMagicEffect(VoiceMakeEthereal)
     PlayerRef.setGhost(False)
@@ -1273,14 +1281,15 @@ function rapeHandler()
   Game.DisablePlayerControls(abMovement=True, abFighting=True, abCamSwitch=True, abLooking=False, abSneaking=True, abMenu=True, abActivate=True, abJournalTabs=False)
   PlayerRef.SetDontMove(True)
   restoreCrime()
-  ConfigMenu.bIsLoggingEnabled && Debug.trace("MarkOfArkay: Player raped = " + bIsraped)
-  bWasraped = bIsraped
+  ConfigMenu.bIsLoggingEnabled && Debug.trace("MarkOfArkay: Player raped = " + bIsRaped)
   RapeScript.unPacify()
-  if bWasraped
-    debug.SendAnimationEvent(PlayerRef, "OffsetBoundStandingStart")
-    RapeScript.Victimized01.ForceRefTo(playerRef)
-  else
-    debug.SendAnimationEvent(PlayerRef, "OffsetBoundStandingCut")
+  if !NPCScript.isActorInSexAnimation(PlayerRef)
+    if bIsRaped
+      debug.SendAnimationEvent(PlayerRef, "OffsetBoundStandingStart")
+      RapeScript.Victimized01.ForceRefTo(playerRef)
+    else
+      debug.SendAnimationEvent(PlayerRef, "OffsetBoundStandingCut")
+    endif
   endif
 endFunction
 
@@ -1347,7 +1356,7 @@ function respawnHandler()
     RespawnScript.SelectRespawnPointbyMenu()
   endif
   startRespawning()
-  if (!bWasSwimming && bIsConditionSafe)
+  if (!bWasSwimming && bIsConditionSafe())
     if (ConfigMenu.bInvisibility || ConfigMenu.bFadeToBlack)
       if ConfigMenu.bDeathEffect && !moaPlayerGhostQuest.IsRunning() && !moaPlayerVoicelessQuest.IsRunning()
         RespawnScript.PlayerMarker.Enable()
@@ -1355,7 +1364,7 @@ function respawnHandler()
         RespawnScript.PlayerMarker.SetPosition(PlayerRef.GetPositionx(), PlayerRef.GetPositiony(), PlayerRef.GetPositionz())
         RespawnScript.PlayerMarker.SetAngle(0.0, 0.0, PlayerRef.GetAnglez())
         Utility.Wait(0.5)
-        if !bIsraped
+        if !bIsRaped
           PlayerRef.PushActorAway(PlayerRef, 0)
           Utility.Wait(0.1)
           RespawnScript.PlayerMarker.Say(DeathTopic, PlayerRef, True)
@@ -1389,6 +1398,7 @@ function respawnHandler()
   if ConfigMenu.bShiftBackRespawn
     ShiftBack()
   endif
+  isBeast = NPCScript.bInBeastForm()
   if ConfigMenu.bLoseForever
     ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Destroying previously lost items...")
     if ((LostItemsChest.GetNumItems() > 0) || (ItemScript.fLostSouls > 0.0) || SkillScript.bSkillReduced())
@@ -1429,9 +1439,8 @@ function respawnHandler()
   endif
   bSoulMark = bSoulMark()
   Bool bRemoveItemTemp = True
-  Bool bInBeastForm = NPCScript.bInBeastForm()
-  if bInBeastForm || ((ConfigMenu.iHostileOption == 2 && (moaSoulMark01.IsRunning() || !moaThiefNPC01.IsRunning() || moaThiefNPC01.GetStage() != 1)) || (ConfigMenu.iHostileOption != 2 && (moaThiefNPC01.IsRunning() || (ConfigMenu.iHostileOption == 1 && !NPCScript.bIsHostileNPCNearby()))) || (PlayerRef.GetParentCell() == DefaultCell))
-    if (moaBossChest01.IsRunning() && moaBossChest01.GetStage() == 0) && !bInBeastForm
+  if isBeast || ((ConfigMenu.iHostileOption == 2 && (moaSoulMark01.IsRunning() || !moaThiefNPC01.IsRunning() || moaThiefNPC01.GetStage() != 1)) || (ConfigMenu.iHostileOption != 2 && (moaThiefNPC01.IsRunning() || (ConfigMenu.iHostileOption == 1 && !NPCScript.bIsHostileNPCNearby()))) || (PlayerRef.GetParentCell() == DefaultCell))
+    if (moaBossChest01.IsRunning() && moaBossChest01.GetStage() == 0) && !isBeast
       bRemoveItemTemp = False
     else
       bRemoveItems = False
@@ -1440,6 +1449,8 @@ function respawnHandler()
       endif
     endif
   endif
+  bAnyItemRemoved_ThisRespawn = False
+  bAnySoulRemoved_ThisRespawn = False
   if bRemoveItems
     itemCurseHandler()
   endif
@@ -1484,8 +1495,8 @@ function respawnHandler()
   while bInfectingPlayer
     Utility.WaitMenuMode(0.2)
   endwhile
-  if (ConfigMenu.bRespawnNaked && !NPCScript.bInBeastForm())
-    if !Configmenu.bRespawnNakedOnlyIfRapedOrRobbed || (bThisTimeItemRemoved || bThisTimeSoulRemoved || bWasraped)
+  if (ConfigMenu.bRespawnNaked && !isBeast)
+    if !Configmenu.bRespawnNakedOnlyIfRapedOrRobbed || (bAnyItemRemoved_ThisRespawn || bAnySoulRemoved_ThisRespawn || bIsRaped)
       ItemScript.undressActor(playerRef, true)
     endif
   endif
@@ -1665,8 +1676,8 @@ function itemCurseHandler()
     endif
     Float fStart = Utility.GetCurrentRealTime()
     ItemScript.loseItems()
-    bThisTimeItemRemoved = (LostItemsChest.GetNumItems() > 0)
-    bThisTimeSoulRemoved = ((PlayerRef.GetActorValue("DragonSouls") as Int) < totalDragonSouls)
+    bAnyItemRemoved_ThisRespawn = (LostItemsChest.GetNumItems() > 0)
+    bAnySoulRemoved_ThisRespawn = ((PlayerRef.GetActorValue("DragonSouls") as Int) < totalDragonSouls)
     ItemScript.PrevLostItemsChest.RemoveAllItems(LostItemsChest, true, true)
     Debug.TraceConditional("MarkOfArkay: Removing items from the player finished in " + (Utility.GetCurrentRealTime() - fStart) + " seconds.", ConfigMenu.bIsLoggingEnabled)
     if ConfigMenu.bIsLoggingEnabled
@@ -2067,13 +2078,15 @@ function ToggleSaving(Bool bSave)
 endfunction
 
 String function ToggleState() ;prevents double menu when player revived with potion and returns to bleedout while previous bleedout event is not finished
+  string sNewState
   if (GetState() == "Bleedout1")
-    GoToState("Bleedout2")
-    return "Bleedout2"
+    sNewState = "Bleedout2"
   else
-    GoToState("Bleedout1")
-    return "Bleedout1"
+    sNewState = "Bleedout1"
   endif
+  GoToState(sNewState)
+  RegisterForSingleUpdate(3.0)
+  return sNewState
 endfunction
 
 Bool function bCursed()
@@ -2090,7 +2103,15 @@ Bool function bIsCameraStateSafe()
 endfunction
 
 Bool function bIsConditionSafe()
-  return !(iIsBeast || PlayerRef.GetActorValue("paralysis") || PlayerRef.GetAnimationVariableBool("bIsSynced"))
+  if isBeast
+  elseif PlayerRef.GetActorValue("paralysis")
+  elseif PlayerRef.GetAnimationVariableBool("bIsSynced")
+  elseif NPCScript.isActorInSexAnimation(PlayerRef)
+  elseif DhelplessInterface.isEnabled()
+  else
+    return true
+  endif
+  return False
 endfunction
 
 Bool function bIsEquipedFromFormlist(FormList ItemList)
@@ -2131,6 +2152,14 @@ Bool function bRape()
   if (Attacker == None) || playerRef.IsFlying() || playerRef.IsOnMount()
     return False
   endif
+  if NPCScript.isActorInSexAnimation(playerRef)
+    ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Cannot get raped while already in a sex animation.")
+    return False
+  endif
+  if DhelplessInterface.GetIsInterfaceActive() && DhelplessInterface.IsSceneRunning()
+    ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Cannot get raped while dhelpless scene is running.")
+    Return False
+  endif
   if !ConfigMenu.bOnlyHostilesRape || NPCScript.bIsHostile(Attacker)
     if Utility.RandomInt(0, 99) < ConfigMenu.fRapeChanceSlider
       if (PlayerRef.GetDistance(Attacker) < 5000.0) || (Attacker.GetParentCell() == PlayerRef.GetParentCell())
@@ -2143,10 +2172,10 @@ Bool function bRape()
 endfunction
 
 Bool function bSendToDreamWorld()
-  if ((ConfigMenu.bShiftBack || !NPCScript.bInBeastForm()) && !bSacrifice && !bHasAutoReviveEffect)
+  if ((ConfigMenu.bShiftBack || !isBeast) && !bSacrifice && !bHasAutoReviveEffect)
     if ConfigMenu.bIsSDActive && SDInterface.isDreamed() && !SDInterface.isDreaming()
       if Utility.RandomInt(0, 99) < ConfigMenu.fSDreamWorldChanceSlider
-        if bIsraped || !ConfigMenu.bSlaveryOnlyAfterRape
+        if bIsRaped || !ConfigMenu.bSlaveryOnlyAfterRape
           return True
         endif
       endif
@@ -2156,11 +2185,11 @@ Bool function bSendToDreamWorld()
 endfunction
 
 Bool function bSendToSlavery()
-  if ((Attacker != None) && (ConfigMenu.bShiftBack || !NPCScript.bInBeastForm()) && !bSacrifice && !bHasAutoReviveEffect)
+  if ((Attacker != None) && (ConfigMenu.bShiftBack || !isBeast) && !bSacrifice && !bHasAutoReviveEffect)
     if Utility.RandomInt(0, 99) < ConfigMenu.fSimpleSlaveryChanceSlider
       if (PlayerRef.GetDistance(Attacker) < 10000.0) || (Attacker.GetParentCell() == PlayerRef.GetParentCell())
-        if bIsraped || !ConfigMenu.bSlaveryOnlyAfterRape
-          if !ConfigMenu.bOnlyEnslavedByEnemyFaction || bIsraped || (PlayerRef.GetFactionReaction(Attacker) == 1)
+        if bIsRaped || !ConfigMenu.bSlaveryOnlyAfterRape
+          if !ConfigMenu.bOnlyEnslavedByEnemyFaction || bIsRaped || (PlayerRef.GetFactionReaction(Attacker) == 1)
             return True
           endif
         endif
@@ -2190,11 +2219,11 @@ function checkHealth()
         PlayerRef.AddPerk(Invulnerable)
         Debug.SetGodMode(True) ;still needed for when dying because of traps
         bInBleedoutAnim = True
-        iIsBeast = NPCScript.iInBeastForm()
+        isBeast = NPCScript.iInBeastForm()
         if ConfigMenu.bIsRagdollEnabled
           BleedoutHandler(ToggleState())
         else
-          Bool bSafe = (!iIsBeast && !PlayerRef.GetActorValue("paralysis") && !PlayerRef.GetAnimationVariableBool("bIsSynced"))
+          Bool bSafe = (!isBeast && !PlayerRef.GetActorValue("paralysis") && !PlayerRef.GetAnimationVariableBool("bIsSynced") && !NPCScript.isActorInSexAnimation(PlayerRef))
           bSafe && Debug.SendAnimationEvent(PlayerRef, "BleedoutStart")
           Utility.Wait(2.0)
           BleedoutHandler(ToggleState())
@@ -2359,7 +2388,8 @@ function surrenderHandler()
   endif
   ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Surrendering...")
   moaBleedoutHandlerState.SetValue(2)
-  SendModEvent("dhlp-Suspend") ;pause devious helpless scenes
+  isBeast = False
+  RegisterForSingleUpdate(3.0)
   if PlayerRef.IsOnMount()
     PlayerRef.Dismount()
     utility.wait(3.0)
@@ -2438,6 +2468,8 @@ Bool Function bCanSurrender()
   If moaState.getValue() != 1
   ElseIf Utility.IsInMenuMode()
   ElseIf (ConfigMenu.iNotTradingAftermath != 1)
+  elseif DhelplessInterface.isEnabled() || DhelplessInterface.IsSceneRunning()
+    Debug.Notification("$mrt_MarkofArkay_Notification_Surrender_Dhelpless_Error")
   elseif NPCScript.isActorInSexAnimation(playerRef)
   Elseif playerRef.IsFlying()
   Elseif playerRef.IsSwimming() 
@@ -2445,11 +2477,20 @@ Bool Function bCanSurrender()
   Elseif NPCScript.iInBeastForm()
   ElseIf bInBleedout
   Elseif bSoulMarkActivated
-  elseif DhelplessInterface.IsSceneRunning()
   else
     return true
   endif
   return false
+endFunction
+
+Function unParalyzeActor(Actor act)
+  if act && act.GetActorValue("paralysis")
+    act.SetActorValue("paralysis", 0)
+    if act.GetActorValue("paralysis")
+      act.ForceActorValue("paralysis", 0)
+    endif
+    Utility.Wait(6.0)
+  endif
 endFunction
 
 state Bleedout1
@@ -2463,7 +2504,9 @@ state Bleedout1
   endevent
 
   event OnPlayerLoadGame()
-    SendModEvent("dhlp-Suspend")
+    if DhelplessInterface.GetIsInterfaceActive() && DhelplessInterface.IsSceneRunning()
+      SendModEvent("dhlp-Suspend")
+    endif
     ConfigMenu.checkMods()
     if PermaDeathScript.bCheckPermaDeath()
       return
@@ -2482,6 +2525,16 @@ state Bleedout1
 
   Event OnKeyDown(int keyCode)
   endevent
+
+  event OnUpdate()
+    if (ConfigMenu.iSaveOption > 0)
+      Game.SetInChargen(abDisableSaving=True, abDisableWaiting=False, abShowControlsDisabledMessage=True)
+    endif
+    if DhelplessInterface.GetIsInterfaceActive() && DhelplessInterface.IsSceneRunning()
+      SendModEvent("dhlp-Suspend")
+    endif
+    RegisterForSingleUpdate(3.0)
+  endEvent
 endstate
 
 state Bleedout2
@@ -2495,7 +2548,9 @@ state Bleedout2
   endevent
 
   event OnPlayerLoadGame()
-    SendModEvent("dhlp-Suspend")
+    if DhelplessInterface.GetIsInterfaceActive() && DhelplessInterface.IsSceneRunning()
+      SendModEvent("dhlp-Suspend")
+    endif
     ConfigMenu.checkMods()
     if PermaDeathScript.bCheckPermaDeath()
       return
@@ -2514,6 +2569,16 @@ state Bleedout2
 
   Event OnKeyDown(int keyCode)
   endevent
+
+  event OnUpdate()
+    if (ConfigMenu.iSaveOption > 0)
+      Game.SetInChargen(abDisableSaving=True, abDisableWaiting=False, abShowControlsDisabledMessage=True)
+    endif
+    if DhelplessInterface.GetIsInterfaceActive() && DhelplessInterface.IsSceneRunning()
+      SendModEvent("dhlp-Suspend")
+    endif
+    RegisterForSingleUpdate(3.0)
+  endEvent
 
 endstate
 
@@ -2539,7 +2604,6 @@ State Surrender
   endevent
 
   event OnPlayerLoadGame()
-    SendModEvent("dhlp-Suspend")
     ConfigMenu.checkMods()
     if PermaDeathScript.bCheckPermaDeath()
       return
@@ -2556,14 +2620,11 @@ State Surrender
   
   Function checkHealth()
   endfunction
-endstate
-
-Function unParalyzeActor(Actor act)
-  if act && act.GetActorValue("paralysis")
-    act.SetActorValue("paralysis", 0)
-    if act.GetActorValue("paralysis")
-      act.ForceActorValue("paralysis", 0)
+  
+  event OnUpdate()
+    if (ConfigMenu.iSaveOption > 0)
+      Game.SetInChargen(abDisableSaving=True, abDisableWaiting=False, abShowControlsDisabledMessage=True)
     endif
-    Utility.Wait(6.0)
-  endif
-endFunction
+    RegisterForSingleUpdate(3.0)
+  endEvent
+endstate

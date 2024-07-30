@@ -57,6 +57,7 @@ Some of the MCM settings can be locked from the debug page. You can set a maximu
     SKSE
     SkyUI
     UIExtensions
+    CrosshairRefEvents script hang fix
 
  
 

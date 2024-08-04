@@ -556,7 +556,7 @@ Float function getBaseVersion()
 endfunction
 
 Float function getCurrentVersion()
-  return getBaseVersion() + 3.50
+  return getBaseVersion() + 3.51
 endfunction
 
 
@@ -1277,7 +1277,12 @@ function rapeHandler()
     PlayerRef.setGhost(False)
   Endif
   PlayerRef.RemoveFromFaction(RapeScript.CalmFaction)
-  Attacker && Attacker.RemoveFromFaction(RapeScript.CalmFaction)
+  if attacker
+    Attacker.RemoveFromFaction(RapeScript.CalmFaction)
+    if Configmenu.bPYOK
+      PyramidUtils.SetActorCalmed(attacker, false)
+    endif
+  endif
   Game.DisablePlayerControls(abMovement=True, abFighting=True, abCamSwitch=True, abLooking=False, abSneaking=True, abMenu=True, abActivate=True, abJournalTabs=False)
   PlayerRef.SetDontMove(True)
   restoreCrime()
@@ -2107,7 +2112,7 @@ Bool function bIsConditionSafe()
   elseif PlayerRef.GetActorValue("paralysis")
   elseif PlayerRef.GetAnimationVariableBool("bIsSynced")
   elseif NPCScript.isActorInSexAnimation(PlayerRef)
-  elseif DhelplessInterface.isEnabled()
+  elseif (DhelplessInterface.isEnabled() || DhelplessInterface.IsSceneRunning())
   else
     return true
   endif
@@ -2160,7 +2165,7 @@ Bool function bRape()
     ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Cannot get raped while dhelpless scene is running.")
     Return False
   endif
-  if !ConfigMenu.bOnlyHostilesRape || NPCScript.bIsHostile(Attacker)
+  if !ConfigMenu.bOnlyHostilesRape || NPCScript.bIsHostile(Attacker, true)
     if Utility.RandomInt(0, 99) < ConfigMenu.fRapeChanceSlider
       if (PlayerRef.GetDistance(Attacker) < 5000.0) || (Attacker.GetParentCell() == PlayerRef.GetParentCell())
         return True

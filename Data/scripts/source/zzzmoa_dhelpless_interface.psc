@@ -10,8 +10,14 @@ Bool bIsBusy = False
 
 event OnEndState()
   Utility.Wait(5.0)
-  helplessFaction = Game.GetFormFromFile(0x005379, "DeviouslyHelpless.esp") as Faction
-  dhCloakSpell = Game.GetFormFromFile(0x000D68, "DeviouslyHelpless.esp") as Spell
+  helplessFaction = Game.GetFormFromFile(0x000802, "DHLP_Redux.esp") as Faction
+  if !isFormValid(helplessFaction)
+    helplessFaction = Game.GetFormFromFile(0x005379, "DeviouslyHelpless.esp") as Faction
+  endif
+  dhCloakSpell = Game.GetFormFromFile(0x000D68, "DHLP_Redux.esp") as Spell
+  if !isFormValid(dhCloakSpell)
+    dhCloakSpell = Game.GetFormFromFile(0x000D68, "DeviouslyHelpless.esp") as Spell
+  endif
   player = game.GetPlayer()
 endevent
 
@@ -39,7 +45,7 @@ function PlayerLoadsGame()
   bIsBusy = true
   Debug.trace("MarkofArkay: PlayerLoadsGame() triggered for " + self)
 
-  if isPluginFound("DeviouslyHelpless.esp")
+  if (isPluginFound("DeviouslyHelpless.esp") || isPluginFound("DHLP_Redux.esp"))
     if GetState() != "Installed"
       GoToState("Installed")
     else
@@ -71,15 +77,21 @@ state Installed
   endevent
 
   function checkVars()
-    if helplessFaction == None
-      helplessFaction = Game.GetFormFromFile(0x005379, "DeviouslyHelpless.esp") as Faction
+    if !isFormValid(helplessFaction)
+      helplessFaction = Game.GetFormFromFile(0x000802, "DHLP_Redux.esp") as Faction
+     if !isFormValid(helplessFaction)
+        HelplessFaction = Game.GetFormFromFile(0x005379, "DeviouslyHelpless.esp") as Faction
+      endif
     endIf
-	if dhCloakSpell == None
-	  dhCloakSpell = Game.GetFormFromFile(0x000D68, "DeviouslyHelpless.esp") as Spell
-	endif
-	if player == None
-      player = game.GetPlayer()
-	endif
+    if !isFormValid(dhCloakSpell)
+      dhCloakSpell = Game.GetFormFromFile(0x000D68, "DHLP_Redux.esp") as Spell
+      if !isFormValid(dhCloakSpell)
+        dhCloakSpell = Game.GetFormFromFile(0x000D68, "DeviouslyHelpless.esp") as Spell
+      endif
+    endif
+	  if !isFormValid(player)
+        player = game.GetPlayer()
+	  endif
   endfunction
 
   Bool function IsSceneRunning()

@@ -24,6 +24,9 @@ function Pacify()
       if !ac.IsInFaction(calmFaction)
         ac.AddToFaction(calmFaction)
       endif
+      if ConfigMenu.bPYOK
+        PyramidUtils.SetActorCalmed(ac, true)
+      endif
       if ConfigMenu.bPUOK
         curPackage = ac.GetCurrentPackage()
         if (curPackage != RapistCheerPackage) && (curPackage != RapistStayPackage) && (curPackage != RapistWaitPackage) && (curPackage != RapistApproachPackage)
@@ -40,8 +43,13 @@ function Pacify()
   l = PacifiedTeamMates.GetSize()
   while i < l
     ac = PacifiedTeamMates.GetAt(i) As Actor
-    if (ac && !ac.IsInFaction(calmFaction))
-      ac.AddToFaction(calmFaction)
+    if ac
+      if !ac.IsInFaction(calmFaction)
+        ac.AddToFaction(calmFaction)
+      endif
+      if ConfigMenu.bPYOK
+        PyramidUtils.SetActorCalmed(ac, true)
+      endif
       ac.EvaluatePackage()
     endif
     i += 1
@@ -77,6 +85,9 @@ function unPacify()
     act = PacifiedHostiles.getAt(i) As actor
     if act
       act.RemoveFromFaction(calmFaction)
+      if ConfigMenu.bPYOK
+        PyramidUtils.SetActorCalmed(act, false)
+      endif
       if ConfigMenu.bPUOK
         ActorUtil.RemovePackageOverride(act, RapistCheerPackage)
         ActorUtil.RemovePackageOverride(act, RapistStayPackage)
@@ -93,6 +104,9 @@ function unPacify()
     act = PacifiedTeamMates.getAt(i) As actor
     if act
       act.RemoveFromFaction(calmFaction)
+      if ConfigMenu.bPYOK
+        PyramidUtils.SetActorCalmed(act, false)
+      endif
       act.EvaluatePackage()
     endif
     i += 1

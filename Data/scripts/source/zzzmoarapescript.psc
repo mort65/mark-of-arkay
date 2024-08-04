@@ -135,6 +135,9 @@ function Unpacify()
     act = Rapist1.GetActorRef()
     if act
       act.RemoveFromFaction(calmFaction)
+      if ConfigMenu.bPYOK
+        PyramidUtils.SetActorCalmed(act, false)
+      endif
     endif
     Rapist1.Clear()
   endif
@@ -142,6 +145,9 @@ function Unpacify()
     act = Rapist2.GetActorRef()
     if act
       act.RemoveFromFaction(calmFaction)
+      if ConfigMenu.bPYOK
+        PyramidUtils.SetActorCalmed(act, false)
+      endif
     endif
     Rapist2.Clear()
   endif
@@ -149,6 +155,9 @@ function Unpacify()
     act = Rapist3.GetActorRef()
     if act
       act.RemoveFromFaction(calmFaction)
+      if ConfigMenu.bPYOK
+        PyramidUtils.SetActorCalmed(act, false)
+      endif
     endif
     Rapist3.Clear()
   endif
@@ -156,6 +165,9 @@ function Unpacify()
     act = Rapist4.GetActorRef()
     if act
       act.RemoveFromFaction(calmFaction)
+      if ConfigMenu.bPYOK
+        PyramidUtils.SetActorCalmed(act, false)
+      endif
     endif
     Rapist4.Clear()
   endif
@@ -163,6 +175,9 @@ function Unpacify()
     act = Rapist5.GetActorRef()
     if act
       act.RemoveFromFaction(calmFaction)
+      if ConfigMenu.bPYOK
+        PyramidUtils.SetActorCalmed(act, false)
+      endif
     endif
     Rapist5.Clear()
   endif
@@ -170,6 +185,9 @@ function Unpacify()
     act = Rapist6.GetActorRef()
     if act
       act.RemoveFromFaction(calmFaction)
+      if ConfigMenu.bPYOK
+        PyramidUtils.SetActorCalmed(act, false)
+      endif
     endif
     Rapist6.Clear()
   endif
@@ -177,6 +195,9 @@ function Unpacify()
     act = Rapist7.GetActorRef()
     if act
       act.RemoveFromFaction(calmFaction)
+      if ConfigMenu.bPYOK
+        PyramidUtils.SetActorCalmed(act, false)
+      endif
     endif
     Rapist7.Clear()
   endif
@@ -184,6 +205,9 @@ function Unpacify()
     act = Rapist8.GetActorRef()
     if act
       act.RemoveFromFaction(calmFaction)
+      if ConfigMenu.bPYOK
+        PyramidUtils.SetActorCalmed(act, false)
+      endif
     endif
     Rapist8.Clear()
   endif
@@ -191,6 +215,9 @@ function Unpacify()
     act = Rapist9.GetActorRef()
     if act
       act.RemoveFromFaction(calmFaction)
+      if ConfigMenu.bPYOK
+        PyramidUtils.SetActorCalmed(act, false)
+      endif
     endif
     Rapist9.Clear()
   endif
@@ -198,6 +225,9 @@ function Unpacify()
     act = Rapist10.GetActorRef()
     if act
       act.RemoveFromFaction(calmFaction)
+      if ConfigMenu.bPYOK
+        PyramidUtils.SetActorCalmed(act, false)
+      endif
     endif
     Rapist10.Clear()
   endif
@@ -208,6 +238,9 @@ function Unpacify()
     act = PrevRapists.getAt(i) As actor
     if act
       act.RemoveFromFaction(calmFaction)
+      if ConfigMenu.bPYOK
+        PyramidUtils.SetActorCalmed(act, false)
+      endif
       if ConfigMenu.bPUOK
         ActorUtil.RemovePackageOverride(act, pacifierScript.RapistCheerPackage)
         ActorUtil.RemovePackageOverride(act, pacifierScript.RapistStayPackage)
@@ -218,8 +251,8 @@ function Unpacify()
     endif
   endwhile
   PrevRapists.revert()
-  
   pacifierScript.Unpacify()
+  sendModEvent("MOA_RemoveCalm")
 endfunction
 
 Actor[] function fixActorArray(Actor[] Actors, Bool bRandomLen=False)

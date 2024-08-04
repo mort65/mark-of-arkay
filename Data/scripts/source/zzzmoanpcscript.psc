@@ -379,6 +379,10 @@ function ReleaseFollowers()
       i -= 1
       if FollowerArr[i]
         FollowerArr[i].RestoreActorValue("Health", 9999)
+        if ConfigMenu.bPYOK
+          PyramidUtils.SetActorCalmed(FollowerArr[i], false)
+        endif
+        FollowerArr[i].RemoveFromFaction(ReviveScript.RapeScript.CalmFaction)
         FollowerArr[i].MoveToMyEditorLocation()
       endif
     endwhile
@@ -420,6 +424,10 @@ function RespawnFollowers()
       i -= 1
       if FollowerArr[i]
         FollowerArr[i].RestoreActorValue("Health", 9999)
+        if ConfigMenu.bPYOK
+          PyramidUtils.SetActorCalmed(FollowerArr[i], false)
+        endif
+        FollowerArr[i].RemoveFromFaction(ReviveScript.RapeScript.CalmFaction)
         FollowerArr[i].MoveTo(PlayerRef)
       endif
     endwhile
@@ -437,6 +445,10 @@ function ResurrectFollowers()
       else
         FollowerArr[i].RestoreActorValue("Health", 9999)
       endif
+      if ConfigMenu.bPYOK
+        PyramidUtils.SetActorCalmed(FollowerArr[i], false)
+      endif
+      FollowerArr[i].RemoveFromFaction(ReviveScript.RapeScript.CalmFaction)
     endif
   endwhile
   ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Resurrection of followers finished.")
@@ -963,7 +975,7 @@ Bool function bCanSendToCidhna()
   return (!MS01.IsCompleted() || MS02.IsCompleted())
 endfunction
 
-Bool Function bIsHostile(Actor ActorRef)
+Bool Function bIsHostile(Actor ActorRef, Bool bCheckForRape = False)
   if !ActorRef
     return False
   endif
@@ -972,7 +984,9 @@ Bool Function bIsHostile(Actor ActorRef)
   elseif bIsDying(ActorRef) || ActorRef.IsDisabled()
   elseif ActorRef.IsCommandedActor() || ActorRef.IsGuard()
   else
-    if isCreature(ActorRef)
+    bool bCreature = isCreature(ActorRef)
+    if bCheckForRape
+    elseif bCreature
       if !ConfigMenu.bCreaturesCanSteal
         return false
       elseif ActorRef.HasKeywordString("actortypeanimal")
@@ -983,7 +997,7 @@ Bool Function bIsHostile(Actor ActorRef)
     elseif ActorRef.HasKeywordString("actortypeanimal")
       return false
     endif
-    if (ReviveScript.Attacker && (ReviveScript.Attacker == ActorRef))
+    if bCreature || (ReviveScript.Attacker && (ReviveScript.Attacker == ActorRef))
       return true
     elseif ActorRef.GetRelationshipRank(PlayerRef) < 1
       if ActorRef.GetRelationshipRank(PlayerRef) < 0
@@ -1295,8 +1309,9 @@ function bringDeadClone()
   Form[] Clones = bCloneActor(PlayerRef, ReviveScript.LostItemsChest, abDead=False)
   Actor Clone = Clones[0] As Actor
   DeadClone = Clone
-  Clone.AddSpell(WontSteal)
   Clone.RemoveAllItems()
+  Clone.AddSpell(WontSteal)
+  Bool bNakedClone = true
   Int i = MyEquipment.Length
   while i > 0
     i -= 1
@@ -1305,6 +1320,7 @@ function bringDeadClone()
         if !MyEquipment[i].HasKeywordString("ArmorShield")
           Clone.AddItem(MyEquipment[i])
           Clone.EquipItemEx(MyEquipment[i])
+          bNakedClone = False
         endif
       endif
     endif
@@ -1322,6 +1338,13 @@ function bringDeadClone()
   Clone.SetGhost(True)
   Clone.SetActorValue("Sneak", 100.0)
   Clone.Enable()
+  If ConfigMenu.bPO3Ok
+    PO3_SKSEFunctions.PreventActorDetection(Clone)
+    PO3_SKSEFunctions.PreventActorDetection(Clone)
+  Endif
+  if bNakedClone
+    Clone.unequipall()
+  endif
   if !ReviveScript.moaSoulMark01.IsRunning()
     ReviveScript.moaSoulMark01.Start()
   endif

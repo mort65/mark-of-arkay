@@ -5,293 +5,294 @@ import Game
 import StringUtil
 import zzzmoautilscript
 
-Spell property ArkayBlessing auto
-Spell property ArkayCurse auto
-Spell property ArkayCurseAlt auto
-Spell property ArkayCurseTemp auto
-Spell property ArkayCurseTempAlt auto
-Objectreference property CellLoadMarker auto
-Objectreference property CellLoadMarker2 auto
-Message property ConfirmMenu auto
-FormList property CustomRespawnPoints auto
-ObjectReference property DetachMarker1 auto
-ObjectReference property DetachMarker2 auto
-ObjectReference property DetachMarker3 auto
-Formlist property ExternalMarkerList auto
-Spell property GhostVisual auto
-ObjectReference property LocationMarker auto
-Objectreference property LocationMarker2 auto
-ObjectReference property LostItemsChest auto
-ObjectReference property LostItemsMarker auto
-FormList property MarkerList auto
-Formlist property MergedExternalMarkerList auto
-Message property ModVersionError auto
-Spell property MoveCustomMarker auto
-Actor property PlayerRef auto
-Spell property RecallMarker auto
-Spell property RevivalPower auto
-zzzmoaReviverScript property ReviveScript auto
-Spell property SacrificePower auto
-ObjectReference property SleepMarker auto
-ObjectReference property ThiefMarker auto
-Bool property bARCCOK auto Hidden ;ARCC
-Bool property bAllowCreatureRape=False auto Hidden
-Bool property bAltEyeFix=False auto Hidden
-Bool property bAlwaysSpawn=False auto Hidden
-Bool property bArkayCurse=False auto Hidden
-Bool property bAutoDrinkPotion=False auto Hidden
-Bool property bAutoSwitchRP=False auto Hidden
-Bool property bBossChestNotInClearedLoc=True auto Hidden
-Bool property bBossChestOnlyCurLoc=False auto Hidden
-Bool property bCanbeKilledbyUnarmed=True auto Hidden
-Bool property bCheckKeyword=True auto Hidden
-Bool property bCheckWeight=True auto Hidden
-Bool property bClone=True auto Hidden
-Bool property bCorpseAsSoulMark=False auto Hidden
-Bool property bCreaturesCanSteal=False auto Hidden
-Bool property bCureDisIfHasBlessing=False auto Hidden
-Bool property bCurseLock=False auto Hidden
-Bool property bDLIEOK auto Hidden ;Level Up Event Plugin
-Bool property bDeathEffect=True auto Hidden
-Bool property bDisableUnsafe=True auto Hidden
-Bool property bDiseaseCurse=False auto Hidden
-Bool property bDoNotStopCombat=False auto Hidden
-Bool property bDoNotStopCombatAfterRevival=True auto Hidden
-Bool property bExcludeQuestItems=True auto Hidden
-Bool property bFISSOK auto Hidden ;FISS
-Bool property bFadeToBlack=True auto Hidden
-Bool property bFollowerProtectPlayer=False auto Hidden
-Bool property bGhostCurse=False auto Hidden
-Bool property bHealActors=False auto Hidden
-Bool property bInvisibility=False auto Hidden
-Bool property bIsArkayCurseTemporary=False auto Hidden
-Bool property bIsBSoulGemEnabled=True auto Hidden
-Bool property bIsDragonSoulEnabled=True auto Hidden
-Bool property bIsEffectEnabled=False auto Hidden
-Bool property bIsFlowerGirlsActive=False auto Hidden
+Spell property ArkayBlessing Auto
+Spell property ArkayCurse Auto
+Spell property ArkayCurseAlt Auto
+Spell property ArkayCurseTemp Auto
+Spell property ArkayCurseTempAlt Auto
+Objectreference property CellLoadMarker Auto
+Objectreference property CellLoadMarker2 Auto
+Message property ConfirmMenu Auto
+FormList property CustomRespawnPoints Auto
+ObjectReference property DetachMarker1 Auto
+ObjectReference property DetachMarker2 Auto
+ObjectReference property DetachMarker3 Auto
+Formlist property ExternalMarkerList Auto
+Spell property GhostVisual Auto
+ObjectReference property LocationMarker Auto
+Objectreference property LocationMarker2 Auto
+ObjectReference property LostItemsChest Auto
+ObjectReference property LostItemsMarker Auto
+FormList property MarkerList Auto
+Formlist property MergedExternalMarkerList Auto
+Message property ModVersionError Auto
+Spell property MoveCustomMarker Auto
+Actor property PlayerRef Auto
+Spell property RecallMarker Auto
+Spell property RevivalPower Auto
+zzzmoaReviverScript property ReviveScript Auto
+Spell property SacrificePower Auto
+ObjectReference property SleepMarker Auto
+ObjectReference property ThiefMarker Auto
+Bool property bARCCOK Auto Hidden ;ARCC
+Bool property bAllowCreatureRape=False Auto Hidden
+Bool property bAltEyeFix=False Auto Hidden
+Bool property bAlwaysSpawn=False Auto Hidden
+Bool property bArkayCurse=False Auto Hidden
+Bool property bAutoDrinkPotion=False Auto Hidden
+Bool property bAutoSwitchRP=False Auto Hidden
+Bool property bBossChestNotInClearedLoc=True Auto Hidden
+Bool property bBossChestOnlyCurLoc=False Auto Hidden
+Bool property bCanbeKilledbyUnarmed=True Auto Hidden
+Bool property bCheckKeyword=True Auto Hidden
+Bool property bCheckWeight=True Auto Hidden
+Bool property bClone=True Auto Hidden
+Bool property bCorpseAsSoulMark=False Auto Hidden
+Bool property bCreaturesCanSteal=False Auto Hidden
+Bool property bCureDisIfHasBlessing=False Auto Hidden
+Bool property bCurseLock=False Auto Hidden
+Bool property bDLIEOK Auto Hidden ;Level Up Event Plugin
+Bool property bDeathEffect=True Auto Hidden
+Bool property bDisableUnsafe=True Auto Hidden
+Bool property bDiseaseCurse=False Auto Hidden
+Bool property bDoNotStopCombat=False Auto Hidden
+Bool property bDoNotStopCombatAfterRevival=True Auto Hidden
+Bool property bExcludeQuestItems=True Auto Hidden
+Bool property bFISSOK Auto Hidden ;FISS
+Bool property bFadeToBlack=True Auto Hidden
+Bool property bFollowerProtectPlayer=False Auto Hidden
+Bool property bGhostCurse=False Auto Hidden
+Bool property bHealActors=False Auto Hidden
+Bool property bInvisibility=False Auto Hidden
+Bool property bIsArkayCurseTemporary=False Auto Hidden
+Bool property bIsBSoulGemEnabled=True Auto Hidden
+Bool property bIsDragonSoulEnabled=True Auto Hidden
+Bool property bIsEffectEnabled=False Auto Hidden
+Bool property bIsFlowerGirlsActive=False Auto Hidden
 Bool Property bIsDhelplessActive=False Auto Hidden
-Bool property bIsGSoulGemEnabled=True auto Hidden
-Bool property bIsGoldEnabled=True auto Hidden
-Bool property bIsHistoryEnabled=False auto Hidden
-Bool property bIsInfoEnabled=True auto Hidden
-Bool property bIsLoggingEnabled=False auto Hidden
-Bool property bIsMarkEnabled=True auto Hidden
-Bool property bIsMenuEnabled=True auto Hidden
-Bool property bIsNoFallDamageEnabled=False auto Hidden
-Bool property bIsNotificationEnabled=False auto Hidden
-Bool property bIsOStimActive=False auto Hidden
-Bool property bIsPotionEnabled=False auto Hidden
-Bool property bIsQuitToMainMenuEnabled=False auto Hidden
-Bool property bIsRagdollEnabled=False auto Hidden
-Bool property bIsRecallRestricted=True auto Hidden
-Bool property bIsRevivalRequiresBlessing=False auto Hidden
-Bool property bIsSDActive=False auto hidden
-Bool property bIsSexlabActive=False auto Hidden
-Bool property bIsTradeEnabled=True auto Hidden
-Bool property bIsUpdating=False auto Hidden
-Bool property bKillIfCantRespawn=False auto Hidden
-Bool property bLevelReduce=False auto Hidden
-Bool property bLiteGhostCurse auto Hidden
-Bool property bLockPermaDeath=False auto Hidden
-Bool property bLootChanceLock=False auto Hidden
-Bool property bLoseAmmo=False auto Hidden
-Bool property bLoseArkayMark=False auto Hidden
-Bool property bLoseArkayMarkAll=False auto Hidden
-Bool property bLoseArmor=True auto Hidden
-Bool property bLoseBlackSoulGem=False auto Hidden
-Bool property bLoseBlackSoulGemAll=False auto Hidden
-Bool property bLoseBook=False auto Hidden
-Bool property bLoseDragonSoul=False auto Hidden
-Bool property bLoseDragonSoulAll=False auto Hidden
-Bool property bLoseForever=False auto Hidden
-Bool property bLoseGold=True auto Hidden
-Bool property bLoseGoldAll=False auto Hidden
-Bool property bLoseGrandSoulGem=False auto Hidden
-Bool property bLoseGrandSoulGemAll=False auto Hidden
-Bool property bLoseIngredient=False auto Hidden
-Bool property bLoseItem=False auto Hidden
-Bool property bLoseKey=False auto Hidden
-Bool property bLoseMisc=False auto Hidden
-Bool property bLoseOthers=False auto Hidden
-Bool property bLosePotion=False auto Hidden
-Bool property bLoseScroll=False auto Hidden
-Bool property bLoseSkillForever=False auto Hidden
-Bool property bLoseSoulgem=False auto Hidden
-Bool property bLoseWeapon=True auto Hidden
-Bool property bLostItemQuest=True auto Hidden
-Bool property bMarkRecallCostLock=False auto Hidden
-Bool property bMoralityMatters=False auto Hidden
-Bool property bMoreRandomRespawn=False auto Hidden
-Bool property bMultipleDis=True auto Hidden
-Bool property bMultipleDisProg=True auto Hidden
-Bool property bNPCHasLevelRange=False auto Hidden
-Bool property bOnlyEnslavedByEnemyFaction=False auto Hidden
-Bool property bOnlyHostilesRape=True auto Hidden
-Bool property bOnlyInfectIfHasBaseDis=False auto Hidden
-Bool property bOnlyLoseSkillXP=False auto Hidden
-Bool property bOnlySpawn=False auto Hidden
-Bool property bPO3OK auto Hidden ;PO3 Extender
-Bool property bPUOK auto Hidden ;papyrusutil
-Bool property bPlayerProtectFollower=False auto Hidden
-Bool property bRandomItemCurse=False auto Hidden
-Bool property bRecallByArkayMark=False auto Hidden ;
-Bool property bRespawnCounter=False auto Hidden
-Bool property bRespawnMenu=False auto Hidden
-Bool property bRespawnNaked=False auto Hidden
+Bool property bIsGSoulGemEnabled=True Auto Hidden
+Bool property bIsGoldEnabled=True Auto Hidden
+Bool property bIsHistoryEnabled=False Auto Hidden
+Bool property bIsInfoEnabled=True Auto Hidden
+Bool property bIsLoggingEnabled=False Auto Hidden
+Bool property bIsMarkEnabled=True Auto Hidden
+Bool property bIsMenuEnabled=True Auto Hidden
+Bool property bIsNoFallDamageEnabled=False Auto Hidden
+Bool property bIsNotificationEnabled=False Auto Hidden
+Bool property bIsOStimActive=False Auto Hidden
+Bool property bIsPotionEnabled=False Auto Hidden
+Bool property bIsQuitToMainMenuEnabled=False Auto Hidden
+Bool property bIsRagdollEnabled=False Auto Hidden
+Bool property bIsRecallRestricted=True Auto Hidden
+Bool property bIsRevivalRequiresBlessing=False Auto Hidden
+Bool property bIsSDActive=False Auto hidden
+Bool property bIsSexlabActive=False Auto Hidden
+Bool property bIsTradeEnabled=True Auto Hidden
+Bool property bIsUpdating=False Auto Hidden
+Bool property bKillIfCantRespawn=False Auto Hidden
+Bool property bLevelReduce=False Auto Hidden
+Bool property bLiteGhostCurse Auto Hidden
+Bool property bLockPermaDeath=False Auto Hidden
+Bool property bLootChanceLock=False Auto Hidden
+Bool property bLoseAmmo=False Auto Hidden
+Bool property bLoseArkayMark=False Auto Hidden
+Bool property bLoseArkayMarkAll=False Auto Hidden
+Bool property bLoseArmor=True Auto Hidden
+Bool property bLoseBlackSoulGem=False Auto Hidden
+Bool property bLoseBlackSoulGemAll=False Auto Hidden
+Bool property bLoseBook=False Auto Hidden
+Bool property bLoseDragonSoul=False Auto Hidden
+Bool property bLoseDragonSoulAll=False Auto Hidden
+Bool property bLoseForever=False Auto Hidden
+Bool property bLoseGold=True Auto Hidden
+Bool property bLoseGoldAll=False Auto Hidden
+Bool property bLoseGrandSoulGem=False Auto Hidden
+Bool property bLoseGrandSoulGemAll=False Auto Hidden
+Bool property bLoseIngredient=False Auto Hidden
+Bool property bLoseItem=False Auto Hidden
+Bool property bLoseKey=False Auto Hidden
+Bool property bLoseMisc=False Auto Hidden
+Bool property bLoseOthers=False Auto Hidden
+Bool property bLosePotion=False Auto Hidden
+Bool property bLoseScroll=False Auto Hidden
+Bool property bLoseSkillForever=False Auto Hidden
+Bool property bLoseSoulgem=False Auto Hidden
+Bool property bLoseWeapon=True Auto Hidden
+Bool property bLostItemQuest=True Auto Hidden
+Bool property bMarkRecallCostLock=False Auto Hidden
+Bool property bMoralityMatters=False Auto Hidden
+Bool property bMoreRandomRespawn=False Auto Hidden
+Bool property bMultipleDis=True Auto Hidden
+Bool property bMultipleDisProg=True Auto Hidden
+Bool property bNPCHasLevelRange=False Auto Hidden
+Bool property bOnlyEnslavedByEnemyFaction=False Auto Hidden
+Bool property bOnlyHostilesRape=True Auto Hidden
+Bool property bOnlyInfectIfHasBaseDis=False Auto Hidden
+Bool property bOnlyLoseSkillXP=False Auto Hidden
+Bool property bOnlySpawn=False Auto Hidden
+Bool property bPO3OK Auto Hidden ;PO3 Extender
+Bool property bPUOK Auto Hidden ;Papyrusutil
+Bool property bPYOK Auto Hidden ;Pyramid Utils
+Bool property bPlayerProtectFollower=False Auto Hidden
+Bool property bRandomItemCurse=False Auto Hidden
+Bool property bRecallByArkayMark=False Auto Hidden ;
+Bool property bRespawnCounter=False Auto Hidden
+Bool property bRespawnMenu=False Auto Hidden
+Bool property bRespawnNaked=False Auto Hidden
 Bool Property bRespawnNakedOnlyIfRapedOrRobbed = False Auto Hidden
-Bool[] property bRespawnPointsFlags auto Hidden
-Bool property bResurrectActors=False auto Hidden
-Bool property bRetrySpawnWithoutLocation=True auto Hidden
-Bool property bSKSELoaded auto Hidden
-Bool property bSKSEOK auto Hidden
-Bool property bSaveLock=False auto Hidden
-Bool property bSendToJail=False auto Hidden
-Bool property bShiftBack=False auto Hidden
-Bool property bShiftBackRespawn=False auto Hidden
-Bool property bShowBleedoutTimeWarning=True auto Hidden
-Bool property bShowRaceMenu=False auto Hidden
-Bool property bShowRagdollWarning=True auto Hidden
-Bool property bShowTimeScaleWarning=True auto Hidden
-Bool property bSkillReduceRandomVal=False auto Hidden
-Bool property bSlaveryOnlyAfterRape=False auto Hidden
-Bool property bSoulMarkCureDiseases=False auto Hidden
-Bool property bSoulMarkStay=False auto Hidden
-Bool property bSpawnBringAllies=True auto Hidden
-Bool property bSpawnByLocation=True auto Hidden
-Bool property bSpawnCheckRelation=True auto Hidden
-Bool property bSpawnHostile=False auto Hidden
-Bool property bTeleportMenu=True auto Hidden
-Bool property bTradeLock=False auto Hidden
-Bool property bTriggerOnBleedout=True auto Hidden
-Bool property bTriggerOnHealthPerc=False auto Hidden
-Bool property bUIEOK auto Hidden ;uiextensions
-Bool property bVoicelessCurse=False auto Hidden
-Float property fBSoulgemPSlider=1.0 auto Hidden
-Float property fBleedoutTimeSlider=6.0 auto Hidden
-Float property fBossChestChanceSlider=0.0 auto Hidden
-Float property fDisChanceSlider=25.0 auto Hidden
-Float property fDisPriceMultSlider=0.5 auto Hidden
-Float property fDisPriceSlider=100.0 auto Hidden
-Float property fDisProgChanceSlider=50.0 auto Hidden
-Float property fDragonSoulPSlider=3.0 auto Hidden
-Float property fGSoulgemPSlider=2.0 auto Hidden
-Float property fGoldPSlider=4.0 auto Hidden
-Float property fHealthPercTrigger=0.00 auto Hidden
-Float property fHigherNPCMaxLvlDiff=10.0 auto Hidden
-Float property fJumpFallHeightMinDefault=600.00 auto Hidden
-Float property fLootChanceSlider=50.0 auto Hidden
-Float property fLoseOtherMinValueSlider=0.0 auto Hidden
-Float property fLoseOtherTotalValueSlider=0.0 auto Hidden
-Float property fLowerNPCMaxLvlDiff=10.0 auto Hidden
-Float property fMarkCastSlider=0.0 auto Hidden
-Float property fMarkPSlider=5.0 auto Hidden
-Float property fMaxItemsToCheckSlider=100.0 auto Hidden
-Float property fMaxLoseArkayMarkSlider=1.0 auto Hidden
-Float property fMaxLoseBlackSoulGemSlider=1.0 auto Hidden
-Float property fMaxLoseDragonSoulSlider=1.0 auto Hidden
-Float property fMaxLoseGoldSlider=250.0 auto Hidden
-Float property fMaxLoseGrandSoulGemSlider=1.0 auto Hidden
-Float property fMaxRapes=1.0 auto Hidden
-Float property fMaxRapists=1.0 auto Hidden
-Float property fMinLoseArkayMarkSlider=0.0 auto Hidden
-Float property fMinLoseBlackSoulGemSlider=0.0 auto Hidden
-Float property fMinLoseDragonSoulSlider=0.0 auto Hidden
-Float property fMinLoseGoldSlider=50.0 auto Hidden
-Float property fMinLoseGrandSoulGemSlider=0.0 auto Hidden
-Float property fRPMinDistanceSlider=500.0 auto Hidden
-Float property fRapeChanceSlider=0.0 auto Hidden
-Float property fRecallCastSlider=0.0 auto Hidden
-Float property fRecoveryTimeSlider=1.0 auto Hidden
-Float property fRespawnCounterSlider=0.0 auto Hidden
-Float property fRespawnTimeSlider=0.0 auto Hidden
-Float property fSDreamWorldChanceSlider=0.0 auto Hidden
-Float property fScrollChanceSlider=25.0 auto Hidden
-Float property fSimpleSlaveryChanceSlider=0.0 auto Hidden
-Float property fSkillReduceMaxValSlider=1.0 auto Hidden
-Float property fSkillReduceMinValSlider=0.0 auto Hidden
-Float property fSkillReduceValSlider=10.0 auto Hidden
-Float property fTotalCustomRPSlotSlider=1.0 auto Hidden
-Float property fValueBSoulGemScaleSlider=0.0 auto Hidden
-Float property fValueBSoulGemSlider=1.0 auto Hidden
-Float property fValueGSoulGemScaleSlider=0.0 auto Hidden
-Float property fValueGSoulGemSlider=1.0 auto Hidden
-Float property fValueGoldScaleSlider=0.0 auto Hidden
-Float property fValueGoldSlider=1000.0 auto Hidden
-Float property fValueMarkScaleSlider=0.0 auto Hidden
-Float property fValueMarkSlider=1.0 auto Hidden
-Float property fValueSnoozeSlider=0.0 auto Hidden
-Float property fValueSoulScaleSlider=0.0 auto Hidden
-Float property fValueSoulSlider=1.0 auto Hidden
-Int property iArkayCurse=0 auto Hidden
-Int property iDestroyedItems=0 auto Hidden
-Int property iExternalIndex=-1 auto Hidden
-Int property iGhostShader=0 auto Hidden
-Int property iHostileOption=0 auto Hidden
-Int property iLoadPreset=0 auto Hidden
-Int property iLoseInclusion=0 auto Hidden
-Int property iNameTagBackup auto Hidden
-Int property iNotTradingAftermath=1 auto Hidden
-Int property iRapistGender=0 auto Hidden
-Int property iReducedSkill=0 auto Hidden
-Int property iRevivesByFollower=0 auto Hidden
-Int property iRevivesByPotion=0 auto Hidden
-Int property iRevivesByRevivalSpell=0 auto Hidden
-Int property iRevivesBySacrificeSpell=0 auto Hidden
-Int property iRevivesByTrade=0 auto Hidden
-Int property iSaveOption=1 auto Hidden
-Int property iSavePreset=0 auto Hidden
-Int property iSelectedCustomRPSlot=0 auto Hidden
-Int property iSexInterface=0 auto Hidden
-Int property iSpawn=0 auto Hidden
-Int[] property iSpawnCounts auto Hidden
-Int property iSpawnMaxLevel=4 auto Hidden
-Int property iSpawnMinLevel=4 auto Hidden
-Int[] property iSpawnWeights auto Hidden
-Int property iTavernIndex=0 auto Hidden
-Int property iTeleportLocation=14 auto Hidden
-Int property iTotalBleedOut=0 auto Hidden
-Int property iTotalRespawn=0 auto Hidden
-Int property iTotalRevives=0 auto Hidden
-Int[] property iValidTypes auto Hidden
-GlobalVariable property moaBleedouAnimation auto
-GlobalVariable property moaBleedoutHandlerState auto
-GlobalVariable property moaBossChestNotInclearedLoc auto
-GlobalVariable property moaCheckingMarkers auto
-GlobalVariable property moaCreaturesCanSteal auto
-GlobalVariable property moaCureDisIfHasBlessing auto
-GlobalVariable property moaERPCount auto
-Quest property moaFollowerDetector auto
-GlobalVariable property moaGhostShader auto
-Quest property moaGuardDetector auto
-Quest property moaHealthMonitor auto
-GlobalVariable property moaHigherNPCMaxLvlDiff auto
-Quest property moaHostileNPCDetector auto
-Quest property moaHostileNPCDetector01 auto
-GlobalVariable property moaIsBusy auto
-Message property moaItemExcludeConfirmMenu auto
-Message property moaItemIncludeConfirmMenu auto
-Message property moaItemIncludeExcludeMenu auto
-GlobalVariable property moaLootChance auto
-Message property moaLostItemMenu auto
-GlobalVariable property moaLowerNPCMaxLvlDiff auto
-GlobalVariable property moaMoralityMatters auto
-GlobalVariable property moaNPCHasLevelRange auto
-GlobalVariable property moaNoKillMoveOnPlayer auto
-GlobalVariable property moaOnlyInCurLocChest auto
-GlobalVariable property moaPraytoSave auto
-GlobalVariable property moaRPMinDistance auto
-Quest property moaRetrieveLostItems auto
-Quest property moaRetrieveLostItems01 auto
-Quest property moaReviverQuest auto
-GlobalVariable property moaScrollChance auto
-GlobalVariable property moaSnoozeState auto
-GlobalVariable property moaState auto
-GlobalVariable property moaUIExtensionStatus auto
-String[] property sCustomRPs auto Hidden
-String[] property sExtraRPs auto Hidden
-String property sResetHistory="" auto Hidden
-String[] property sRespawnPoints auto Hidden
-String[] property sTaverns auto Hidden
+Bool[] property bRespawnPointsFlags Auto Hidden
+Bool property bResurrectActors=False Auto Hidden
+Bool property bRetrySpawnWithoutLocation=True Auto Hidden
+Bool property bSKSELoaded Auto Hidden
+Bool property bSKSEOK Auto Hidden
+Bool property bSaveLock=False Auto Hidden
+Bool property bSendToJail=False Auto Hidden
+Bool property bShiftBack=False Auto Hidden
+Bool property bShiftBackRespawn=False Auto Hidden
+Bool property bShowBleedoutTimeWarning=True Auto Hidden
+Bool property bShowRaceMenu=False Auto Hidden
+Bool property bShowRagdollWarning=True Auto Hidden
+Bool property bShowTimeScaleWarning=True Auto Hidden
+Bool property bSkillReduceRandomVal=False Auto Hidden
+Bool property bSlaveryOnlyAfterRape=False Auto Hidden
+Bool property bSoulMarkCureDiseases=False Auto Hidden
+Bool property bSoulMarkStay=False Auto Hidden
+Bool property bSpawnBringAllies=True Auto Hidden
+Bool property bSpawnByLocation=True Auto Hidden
+Bool property bSpawnCheckRelation=True Auto Hidden
+Bool property bSpawnHostile=False Auto Hidden
+Bool property bTeleportMenu=True Auto Hidden
+Bool property bTradeLock=False Auto Hidden
+Bool property bTriggerOnBleedout=True Auto Hidden
+Bool property bTriggerOnHealthPerc=False Auto Hidden
+Bool property bUIEOK Auto Hidden ;uiextensions
+Bool property bVoicelessCurse=False Auto Hidden
+Float property fBSoulgemPSlider=1.0 Auto Hidden
+Float property fBleedoutTimeSlider=6.0 Auto Hidden
+Float property fBossChestChanceSlider=0.0 Auto Hidden
+Float property fDisChanceSlider=25.0 Auto Hidden
+Float property fDisPriceMultSlider=0.5 Auto Hidden
+Float property fDisPriceSlider=100.0 Auto Hidden
+Float property fDisProgChanceSlider=50.0 Auto Hidden
+Float property fDragonSoulPSlider=3.0 Auto Hidden
+Float property fGSoulgemPSlider=2.0 Auto Hidden
+Float property fGoldPSlider=4.0 Auto Hidden
+Float property fHealthPercTrigger=0.00 Auto Hidden
+Float property fHigherNPCMaxLvlDiff=10.0 Auto Hidden
+Float property fJumpFallHeightMinDefault=600.00 Auto Hidden
+Float property fLootChanceSlider=50.0 Auto Hidden
+Float property fLoseOtherMinValueSlider=0.0 Auto Hidden
+Float property fLoseOtherTotalValueSlider=0.0 Auto Hidden
+Float property fLowerNPCMaxLvlDiff=10.0 Auto Hidden
+Float property fMarkCastSlider=0.0 Auto Hidden
+Float property fMarkPSlider=5.0 Auto Hidden
+Float property fMaxItemsToCheckSlider=100.0 Auto Hidden
+Float property fMaxLoseArkayMarkSlider=1.0 Auto Hidden
+Float property fMaxLoseBlackSoulGemSlider=1.0 Auto Hidden
+Float property fMaxLoseDragonSoulSlider=1.0 Auto Hidden
+Float property fMaxLoseGoldSlider=250.0 Auto Hidden
+Float property fMaxLoseGrandSoulGemSlider=1.0 Auto Hidden
+Float property fMaxRapes=1.0 Auto Hidden
+Float property fMaxRapists=1.0 Auto Hidden
+Float property fMinLoseArkayMarkSlider=0.0 Auto Hidden
+Float property fMinLoseBlackSoulGemSlider=0.0 Auto Hidden
+Float property fMinLoseDragonSoulSlider=0.0 Auto Hidden
+Float property fMinLoseGoldSlider=50.0 Auto Hidden
+Float property fMinLoseGrandSoulGemSlider=0.0 Auto Hidden
+Float property fRPMinDistanceSlider=500.0 Auto Hidden
+Float property fRapeChanceSlider=0.0 Auto Hidden
+Float property fRecallCastSlider=0.0 Auto Hidden
+Float property fRecoveryTimeSlider=1.0 Auto Hidden
+Float property fRespawnCounterSlider=0.0 Auto Hidden
+Float property fRespawnTimeSlider=0.0 Auto Hidden
+Float property fSDreamWorldChanceSlider=0.0 Auto Hidden
+Float property fScrollChanceSlider=25.0 Auto Hidden
+Float property fSimpleSlaveryChanceSlider=0.0 Auto Hidden
+Float property fSkillReduceMaxValSlider=1.0 Auto Hidden
+Float property fSkillReduceMinValSlider=0.0 Auto Hidden
+Float property fSkillReduceValSlider=10.0 Auto Hidden
+Float property fTotalCustomRPSlotSlider=1.0 Auto Hidden
+Float property fValueBSoulGemScaleSlider=0.0 Auto Hidden
+Float property fValueBSoulGemSlider=1.0 Auto Hidden
+Float property fValueGSoulGemScaleSlider=0.0 Auto Hidden
+Float property fValueGSoulGemSlider=1.0 Auto Hidden
+Float property fValueGoldScaleSlider=0.0 Auto Hidden
+Float property fValueGoldSlider=1000.0 Auto Hidden
+Float property fValueMarkScaleSlider=0.0 Auto Hidden
+Float property fValueMarkSlider=1.0 Auto Hidden
+Float property fValueSnoozeSlider=0.0 Auto Hidden
+Float property fValueSoulScaleSlider=0.0 Auto Hidden
+Float property fValueSoulSlider=1.0 Auto Hidden
+Int property iArkayCurse=0 Auto Hidden
+Int property iDestroyedItems=0 Auto Hidden
+Int property iExternalIndex=-1 Auto Hidden
+Int property iGhostShader=0 Auto Hidden
+Int property iHostileOption=0 Auto Hidden
+Int property iLoadPreset=0 Auto Hidden
+Int property iLoseInclusion=0 Auto Hidden
+Int property iNameTagBackup Auto Hidden
+Int property iNotTradingAftermath=1 Auto Hidden
+Int property iRapistGender=0 Auto Hidden
+Int property iReducedSkill=0 Auto Hidden
+Int property iRevivesByFollower=0 Auto Hidden
+Int property iRevivesByPotion=0 Auto Hidden
+Int property iRevivesByRevivalSpell=0 Auto Hidden
+Int property iRevivesBySacrificeSpell=0 Auto Hidden
+Int property iRevivesByTrade=0 Auto Hidden
+Int property iSaveOption=1 Auto Hidden
+Int property iSavePreset=0 Auto Hidden
+Int property iSelectedCustomRPSlot=0 Auto Hidden
+Int property iSexInterface=0 Auto Hidden
+Int property iSpawn=0 Auto Hidden
+Int[] property iSpawnCounts Auto Hidden
+Int property iSpawnMaxLevel=4 Auto Hidden
+Int property iSpawnMinLevel=4 Auto Hidden
+Int[] property iSpawnWeights Auto Hidden
+Int property iTavernIndex=0 Auto Hidden
+Int property iTeleportLocation=14 Auto Hidden
+Int property iTotalBleedOut=0 Auto Hidden
+Int property iTotalRespawn=0 Auto Hidden
+Int property iTotalRevives=0 Auto Hidden
+Int[] property iValidTypes Auto Hidden
+GlobalVariable property moaBleedouAnimation Auto
+GlobalVariable property moaBleedoutHandlerState Auto
+GlobalVariable property moaBossChestNotInclearedLoc Auto
+GlobalVariable property moaCheckingMarkers Auto
+GlobalVariable property moaCreaturesCanSteal Auto
+GlobalVariable property moaCureDisIfHasBlessing Auto
+GlobalVariable property moaERPCount Auto
+Quest property moaFollowerDetector Auto
+GlobalVariable property moaGhostShader Auto
+Quest property moaGuardDetector Auto
+Quest property moaHealthMonitor Auto
+GlobalVariable property moaHigherNPCMaxLvlDiff Auto
+Quest property moaHostileNPCDetector Auto
+Quest property moaHostileNPCDetector01 Auto
+GlobalVariable property moaIsBusy Auto
+Message property moaItemExcludeConfirmMenu Auto
+Message property moaItemIncludeConfirmMenu Auto
+Message property moaItemIncludeExcludeMenu Auto
+GlobalVariable property moaLootChance Auto
+Message property moaLostItemMenu Auto
+GlobalVariable property moaLowerNPCMaxLvlDiff Auto
+GlobalVariable property moaMoralityMatters Auto
+GlobalVariable property moaNPCHasLevelRange Auto
+GlobalVariable property moaNoKillMoveOnPlayer Auto
+GlobalVariable property moaOnlyInCurLocChest Auto
+GlobalVariable property moaPraytoSave Auto
+GlobalVariable property moaRPMinDistance Auto
+Quest property moaRetrieveLostItems Auto
+Quest property moaRetrieveLostItems01 Auto
+Quest property moaReviverQuest Auto
+GlobalVariable property moaScrollChance Auto
+GlobalVariable property moaSnoozeState Auto
+GlobalVariable property moaState Auto
+GlobalVariable property moaUIExtensionStatus Auto
+String[] property sCustomRPs Auto Hidden
+String[] property sExtraRPs Auto Hidden
+String property sResetHistory="" Auto Hidden
+String[] property sRespawnPoints Auto Hidden
+String[] property sTaverns Auto Hidden
 Int Property iSurrenderKey Auto Hidden
 
 Int flags
@@ -4194,6 +4195,7 @@ event OnPageReset(String page)
     _AddHeaderOption("$mrt_MarkofArkay_HEAD_OptionalDependency")
     _AddTextOption("FISSES", bFISSOK As String, flags)
     _AddTextOption("PapyrusUtil ", bPUOK As String, flags)
+    _AddTextOption("Pyramid Utils", bPYOK As String, flags)
     _AddTextOption("PO3 Papyrus Extender", bPO3Ok As String, flags)
     AddTextOption("OStim", bIsOStimActive As String, flags)
     AddTextOption("Flower Girls", bIsFlowerGirlsActive As String, flags)
@@ -5040,6 +5042,8 @@ endfunction
 ;Bool Function bCheckDLIE()
 ;	Return bSKSELoaded && SKSE.GetPluginVersion("DSL Level Up Event Plugin") != -1 && DSL_LevelIncreaseEvent.bIsDLIELoaded()
 ;EndFunction
+
+
 Bool function bCheckPUtil()
   return bSKSELoaded && ((SKSE.GetPluginVersion("papyrusutil plugin") != -1) || (SKSE.GetPluginVersion("papyrusutil") != -1))
 endfunction
@@ -5053,6 +5057,10 @@ Bool function bCheckPreset(FISSInterface fiss, String sFileName)
   endif
   return True
 endfunction
+
+Bool function bCheckPYUtil()
+	return bSKSELoaded && (SKSE.GetPluginVersion("PyramidUtils") != -1) && (PyramidUtils.GetVersion() > 0)
+EndFunction
 
 Bool function bCheckSKSE()
   bSKSELoaded = SKSE.GetVersion()
@@ -5610,6 +5618,7 @@ function checkMods()
   bFISSOK = bCheckFISS()
   bARCCOK = bCheckARCC()
   bPUOK = bCheckPUtil()
+  bPYOK = bCheckPYUtil()
   moaUIExtensionStatus.SetValueInt(bUIEOK As Int)
   bPO3Ok = bCheckPO3()
 endfunction
@@ -5799,7 +5808,6 @@ function moaStop(Bool bReset=False)
     endif
     PlayerRef.DispelSpell(GhostVisual)
     PlayerRef.RemoveSpell(GhostVisual)
-    StopAndConfirm(moaReviverQuest, 3)
     if !ReviveScript.moaPlayerGhostQuest.IsRunning()
       PlayerRef.SetAlpha(1.0)
     endif
@@ -5842,6 +5850,7 @@ function moaStop(Bool bReset=False)
     moaPraytoSave.SetValue(0.0)
     Debug.SetGodMode(False)
     PlayerRef.SetGhost(False)
+    StopAndConfirm(moaReviverQuest, 3)
     Utility.Wait(1.0)
     Debug.notification("$mrt_MarkofArkay_Notification_Stopped")
   endif

@@ -30,6 +30,7 @@ event OnEffectFinish(Actor akTarget, Actor akCaster)
     endif
   endif
   mySelf && mySelf.removeFromFaction(CalmFaction)
+  mySelf && ConfigMenu.bPYOK && PyramidUtils.SetActorCalmed(mySelf, false)
   mySelf && mySelf.EvaluatePackage()
 endevent
 
@@ -40,8 +41,18 @@ event OnEffectStart(Actor akTarget, Actor akCaster)
     ;Debug.trace(self + " effect started for " +mySelf )
     if !mySelf.IsInFaction(CalmFaction)
       mySelf.addToFaction(CalmFaction)
-      mySelf.StopCombatAlarm()
+    endif
+    mySelf.StopCombatAlarm()
+    if ConfigMenu.bPYOK
+      PyramidUtils.SetActorCalmed(mySelf, true)
+    else
       mySelf.StopCombat()
     endif
+    RegisterForModEvent("MOA_RemoveCalm", "RemoveCalm")
   endif
+endevent
+
+Event RemoveCalm(string eventName, string argString, float argNum, form sender)
+  mySelf && ConfigMenu.bPYOK && PyramidUtils.SetActorCalmed(mySelf, false)
+  Dispel()
 endevent

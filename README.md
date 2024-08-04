@@ -61,6 +61,7 @@ Some of the MCM settings can be locked from the debug page. You can set a maximu
  
 
 **Soft Requirements**
+    
     CrosshairRefEvents script hang fix
     PapyrusUtil
     Pyramid Utils

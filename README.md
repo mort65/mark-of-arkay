@@ -57,13 +57,13 @@ Some of the MCM settings can be locked from the debug page. You can set a maximu
     SKSE
     SkyUI
     UIExtensions
-    CrosshairRefEvents script hang fix
 
  
 
 **Soft Requirements**
-
+    CrosshairRefEvents script hang fix
     PapyrusUtil
+    Pyramid Utils
     FISSES
     powerofthree's Papyrus Extender
     SexLab

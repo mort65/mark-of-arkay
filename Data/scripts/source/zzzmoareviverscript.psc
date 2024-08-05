@@ -489,31 +489,33 @@ event OnUpdate()
   elseif (ConfigMenu.iSaveOption == 1)
     Game.SetInChargen(abDisableSaving=False, abDisableWaiting=False, abShowControlsDisabledMessage=False)
   endif
-  if bRevived && (GetState() == "")
-    if bIsRaped && !NPCScript.isActorInSexAnimation(PlayerRef)
-        RapeScript.Victimized01.clear()
-        debug.SendAnimationEvent(PlayerRef, "OffsetBoundStandingStart")
-        utility.wait(1.0)
-    endif
-    PlayerRef.SetDontMove(False)
-    Game.EnablePlayerControls()
-    if bfastTravel
-      Game.EnableFastTravel(True)
-    endif
-    bRevived = false
-    bfastTravel = False
-    moaBleedoutHandlerState.SetValue(0)
+  if GetState() == ""
     PlayerRef.RemovePerk(Invulnerable)
     Debug.SetGodMode(False)
     If !PlayerRef.HasMagicEffect(VoiceMakeEthereal)
       PlayerRef.setGhost(False)
     Endif
-    If ConfigMenu.bPO3Ok
-		  PO3_SKSEFunctions.ResetActorDetection(PlayerRef)
-		  PO3_SKSEFunctions.ResetActorDetection(PlayerRef)
-    Endif
-    RapeScript.PacifyNPC.SetValueInt(0)
-    SendModEvent("dhlp-Resume")
+    if bRevived
+      if bIsRaped && !NPCScript.isActorInSexAnimation(PlayerRef)
+          RapeScript.Victimized01.clear()
+          debug.SendAnimationEvent(PlayerRef, "OffsetBoundStandingStart")
+          utility.wait(1.0)
+      endif
+      PlayerRef.SetDontMove(False)
+      Game.EnablePlayerControls()
+      if bfastTravel
+        Game.EnableFastTravel(True)
+      endif
+      bRevived = false
+      bfastTravel = False
+      moaBleedoutHandlerState.SetValue(0)
+      If ConfigMenu.bPO3Ok
+        PO3_SKSEFunctions.ResetActorDetection(PlayerRef)
+        PO3_SKSEFunctions.ResetActorDetection(PlayerRef)
+      Endif
+      RapeScript.PacifyNPC.SetValueInt(0)
+      SendModEvent("dhlp-Resume")
+    endif
   endif
 endevent
 
@@ -556,7 +558,7 @@ Float function getBaseVersion()
 endfunction
 
 Float function getCurrentVersion()
-  return getBaseVersion() + 3.51
+  return getBaseVersion() + 3.52
 endfunction
 
 
@@ -1197,6 +1199,7 @@ function rapeHandler()
     Utility.Wait(1.0)
     FastFadeOut.PopTo(BlackScreen)
   endif
+  NPCScript.HoldFollowers()
   restoreActorHealth(playerRef, bSurrendering)
   unParalyzeActor(PlayerRef)
   RapeScript.Victim1.ForceRefTo(PlayerRef)
@@ -1296,6 +1299,7 @@ function rapeHandler()
       debug.SendAnimationEvent(PlayerRef, "OffsetBoundStandingCut")
     endif
   endif
+  NPCScript.respawnFollowers()
 endFunction
 
 

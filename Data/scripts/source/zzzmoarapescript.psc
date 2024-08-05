@@ -631,26 +631,17 @@ Bool function rapePlayer(Actor[] rapists)
       Game.EnablePlayerControls(abMovement=False, abFighting=False, abCamSwitch=true, abLooking=true, abSneaking=False, abMenu=False, abActivate=False, abJournalTabs=False)
     endif
     Equipment = revivescript.Itemscript.RegisterEquipments(playerRef, False, False)
+    Victim1.Clear()
     if ReviveScript.SexLabInterface.rape(rapistArray, playerRef, "AnimationEnding,AnimationEnd")
       ReviveScript.RegisterForModEvent("HookAnimationEnding", "zzzmoa_sexlab_Rape_Ending")
       ReviveScript.RegisterForModEvent("HookAnimationEnd", "zzzmoa_sexlab_Rape_End")
       bIsBusy = True
       playerRef.StopCombat()
       playerRef.StopCombatAlarm()
-      while bIsBusy
-        if !NPCPacifier.Isrunning()
-          NPCPacifier.Start()
-          Utility.Wait(2.0)
-        endif
-        NPCPacifier.Stop()
-        i = 0
-        while !NPCPacifier.IsStopped() && i < 50
-          Utility.Wait(0.1)
-          i += 1
-        endwhile
-      endwhile
+      waitForAnimEnd()
       result = True
     endif
+    Victim1.ForceRefTo(PlayerRef)
   elseif sAnimInterface == "ostim"
     if playerRef.IsBleedingOut()
       PlayerRef.DispelSpell(ReviveScript.Bleed)
@@ -664,18 +655,7 @@ Bool function rapePlayer(Actor[] rapists)
       bIsBusy = True
       playerRef.StopCombat()
       playerRef.StopCombatAlarm()
-      while bIsBusy
-        if !NPCPacifier.Isrunning()
-          NPCPacifier.Start()
-          Utility.Wait(2.0)
-        endif
-        NPCPacifier.Stop()
-        i = 0
-        while !NPCPacifier.IsStopped() && i < 50
-          Utility.Wait(0.1)
-          i += 1
-        endwhile
-      endwhile
+      waitForAnimEnd()
     endif
     Victim1.ForceRefTo(PlayerRef)
     result = sceneStarted
@@ -786,6 +766,35 @@ function shuffleActorArray(Actor[] Actors)
       Actor act = Actors[i]
       Actors[i] = Actors[j]
       Actors[j] = act
+    endif
+  endwhile
+endfunction
+
+Function waitForAnimEnd()
+  float fWaitTime = 0.0
+  int i = 0
+  while bIsBusy
+    if !NPCPacifier.Isrunning()
+      NPCPacifier.Start()
+      Utility.Wait(2.0)
+      fWaitTime += 2.0
+    endif
+    NPCPacifier.Stop()
+    i = 0
+    while !NPCPacifier.IsStopped() && i < 50
+      Utility.Wait(0.1)
+      fWaitTime += 0.1
+      i += 1
+    endwhile
+    if (fWaitTime / 60.0) >= 1.0
+      debug.trace("MarkOfArkay: Checking animation state at 1 minute interval...")
+      if Revivescript.NPCScript.isActorInSexAnimation(playerRef)
+        debug.trace("MarkOfArkay: player is still in animation.")
+        fWaitTime = 0.0
+      else
+        debug.trace("MarkOfArkay: player not in animation.")
+        bIsBusy = False
+      endif
     endif
   endwhile
 endfunction

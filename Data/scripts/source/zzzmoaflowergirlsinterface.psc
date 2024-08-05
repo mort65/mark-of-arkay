@@ -108,11 +108,11 @@ state Installed
   endfunction
 
   Bool function PlayThreesome(Actor participant1=NONE, Actor participant2=NONE, Actor participant3=NONE)
-    return zzzmoa_int_flowergirls.PlayThreesomeFG(FlowerGirls, participant1, participant2, participant3)
+    return zzzmoa_int_flowergirls.PlayThreesomeFG(FlowerGirls, participant1, participant2, participant3, AnimatingFaction)
   endfunction
 
   Bool function RandomScene(Actor participant1, Actor participant2)
-    return zzzmoa_int_flowergirls.RandomSceneFG(FlowerGirls, participant1, participant2)
+    return zzzmoa_int_flowergirls.RandomSceneFG(FlowerGirls, participant1, participant2, AnimatingFaction)
   endfunction
 
   Bool Function isActorActive(Actor act)

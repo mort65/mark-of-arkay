@@ -1023,7 +1023,7 @@ Bool function bCanSteal(Actor ActorRef)
 
   if bIsDying(ActorRef) || ActorRef.IsDisabled() || bRejected
   elseif !bIsHostile(ActorRef)
-  elseif ConfigMenu.bMoralityMatters && (ActorRef.GetActorValue("Morality") > 2)
+  elseif ConfigMenu.bMoralityMatters && !bIsInHostileFaction(ActorRef) && (ActorRef.GetActorValue("Morality") > 2)
   elseif theActorBase.isUnique()
   elseif bIsFollower(ActorRef)
   elseif isActorChild(ActorRef)

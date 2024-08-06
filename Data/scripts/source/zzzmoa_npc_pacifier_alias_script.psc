@@ -15,10 +15,8 @@ event OnInit()
        myQuestScript.PacifiedHostiles.AddForm(mySelf)
       endif
     endif
-    if myQuestScript.PacifiedTeamMates.HasForm(mySelf) || myQuestScript.PacifiedHostiles.HasForm(mySelf)
-      if !mySelf.HasSpell(NpcPacifier)
-        mySelf.AddSpell(NpcPacifier)
-      endif
+    if !mySelf.HasSpell(NpcPacifier) ;PacifyNPC globalvalue and MOA_RemoveCalm unpacify everyone
+      mySelf.AddSpell(NpcPacifier)
     endif
   endif
 endevent

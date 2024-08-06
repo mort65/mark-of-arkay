@@ -786,7 +786,7 @@ Function waitForAnimEnd()
       fWaitTime += 0.1
       i += 1
     endwhile
-    if (fWaitTime / 60.0) >= 1.0
+    if fWaitTime >= 60.0
       debug.trace("MarkOfArkay: Checking animation state at 1 minute interval...")
       if Revivescript.NPCScript.isActorInSexAnimation(playerRef)
         debug.trace("MarkOfArkay: player is still in animation.")

@@ -845,7 +845,7 @@ event OnOptionDefault(Int option)
   elseif (option == oidCanbeKilledbyUnarmed)
     bCanbeKilledbyUnarmed = True
     _SetToggleOptionValue(oidCanbeKilledbyUnarmed, bCanbeKilledbyUnarmed)
-ElseIf (option == oidLoseSkillForever)
+  elseif (option == oidLoseSkillForever)
 	bLoseSkillForever = False
 	_SetToggleOptionValue(oidLoseSkillForever,bLoseSkillForever)
   elseif (option == oidHealActors)
@@ -1428,9 +1428,8 @@ event OnOptionHighlight(Int option)
     SetInfoText("$mrt_MarkofArkay_DESC_KillIfCantRespawn")
   elseif (option == oidCanbeKilledbyUnarmed)
     SetInfoText("$mrt_MarkofArkay_DESC_CanbeKilledbyUnarmed")
-
-    ;ElseIf (option == oidLoseSkillForever)
-    ;	SetInfoText("$mrt_MarkofArkay_DESC_LoseSkillForever")
+  ElseIf (option == oidLoseSkillForever)
+  	SetInfoText("$mrt_MarkofArkay_DESC_LoseSkillForever")
   elseif (option == oidHealActors)
     SetInfoText("$mrt_MarkofArkay_DESC_HealActors")
   elseif (option == oidResurrectActors)
@@ -1794,7 +1793,6 @@ event OnOptionMenuAccept(Int option, Int index)
       flags = OPTION_FLAG_DISABLED
       _SetOptionFlags(oidLevelReduce, flags, True)
       _SetOptionFlags(oidOnlyLoseSkillXP, flags, True)
-
       ;_SetOptionFlags(oidLoseSkillForever,flags,True)
       _SetOptionFlags(oidSkillReduceRandomVal, flags, True)
       _SetOptionFlags(oidSkillReduceValSlider, flags, True)

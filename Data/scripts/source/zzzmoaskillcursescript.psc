@@ -61,7 +61,7 @@ event OnLevelIncrease(Int aiNewLevel)
   if toRemove > iPerkPoints
     toRemove = iPerkPoints
   endif
-  ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Has " + iPerkPoints + " points, want to remove " + PerkPointDebt + ", will remove " + toRemove)
+  ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Has " + iPerkPoints + " perk points, want to remove " + PerkPointDebt + ", will remove " + toRemove)
   Game.ModPerkPoints(-toRemove)
   ChangePerkDept(-toRemove)
 endevent

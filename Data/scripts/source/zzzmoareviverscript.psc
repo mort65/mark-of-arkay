@@ -291,10 +291,9 @@ event OnInit()
   SetGameVars(True)
   SetVars()
   RegisterForSleep()
-
-  ;If ConfigMenu.bLevelReduce
-  ;	SkillScript.RegisterForLevel()
-  ;EndIf
+  If ConfigMenu.bLevelReduce
+  	SkillScript.RegisterForLevelUp()
+  EndIf
   DetachMarker2.Enable()
   DetachMarker2.MoveTo(PlayerRef)
   DetachMarker2.SetPosition(PlayerRef.GetPositionX(), PlayerRef.GetPositionY(), PlayerRef.GetPositionZ())
@@ -558,7 +557,7 @@ Float function getBaseVersion()
 endfunction
 
 Float function getCurrentVersion()
-  return getBaseVersion() + 3.52
+  return getBaseVersion() + 3.53
 endfunction
 
 
@@ -1453,7 +1452,7 @@ function respawnHandler()
       bRemoveItemTemp = False
     else
       bRemoveItems = False
-      if !ConfigMenu.bOnlyLoseSkillXP && !(ConfigMenu.bLoseSkillForever && ConfigMenu.bDLIEOK)
+      if !ConfigMenu.bOnlyLoseSkillXP && !(ConfigMenu.bLoseSkillForever && ConfigMenu.bPO3OK)
         iReducedSkill = 0
       endif
     endif
@@ -1466,7 +1465,7 @@ function respawnHandler()
   if (moaBossChest01.IsRunning() && moaBossChest01.GetStage() == 0) && !LostItemsChest.GetNumItems()
     if !bRemoveItemTemp
       bRemoveItems = False ;No phycical item removed and nothing else can be removed
-      if !ConfigMenu.bOnlyLoseSkillXP && !(ConfigMenu.bLoseSkillForever && ConfigMenu.bDLIEOK)
+      if !ConfigMenu.bOnlyLoseSkillXP && !(ConfigMenu.bLoseSkillForever && ConfigMenu.bPO3OK)
         iReducedSkill = 0
       endif
     endif

@@ -51,7 +51,6 @@ Bool property bCorpseAsSoulMark=False Auto Hidden
 Bool property bCreaturesCanSteal=False Auto Hidden
 Bool property bCureDisIfHasBlessing=False Auto Hidden
 Bool property bCurseLock=False Auto Hidden
-Bool property bDLIEOK Auto Hidden ;Level Up Event Plugin
 Bool property bDeathEffect=True Auto Hidden
 Bool property bDisableUnsafe=True Auto Hidden
 Bool property bDiseaseCurse=False Auto Hidden
@@ -842,10 +841,9 @@ event OnOptionDefault(Int option)
   elseif (option == oidCanbeKilledbyUnarmed)
     bCanbeKilledbyUnarmed = True
     _SetToggleOptionValue(oidCanbeKilledbyUnarmed, bCanbeKilledbyUnarmed)
-
-    ;ElseIf (option == oidLoseSkillForever)
-    ;	bLoseSkillForever = False
-    ;	_SetToggleOptionValue(oidLoseSkillForever,bLoseSkillForever)
+ElseIf (option == oidLoseSkillForever)
+	bLoseSkillForever = False
+	_SetToggleOptionValue(oidLoseSkillForever,bLoseSkillForever)
   elseif (option == oidHealActors)
     bHealActors = False
     _SetToggleOptionValue(oidHealActors, bHealActors)
@@ -1758,12 +1756,12 @@ event OnOptionMenuAccept(Int option, Int index)
         _SetOptionFlags(oidLevelReduce, flags, True)
         _SetOptionFlags(oidSkillReduceRandomVal, flags, True)
 
-        ;If bDLIEOK
-        ;	flags =	OPTION_FLAG_NONE
-        ;Else
-        ;	flags =	OPTION_FLAG_DISABLED
-        ;EndIf
-        ;_SetOptionFlags(oidLoseSkillForever,flags,True)
+        If bPO3Ok
+        	flags =	OPTION_FLAG_NONE
+        Else
+        	flags =	OPTION_FLAG_DISABLED
+        EndIf
+        _SetOptionFlags(oidLoseSkillForever,flags,True)
         if !bSkillReduceRandomVal
           flags = OPTION_FLAG_NONE
         else
@@ -2135,10 +2133,9 @@ event OnOptionSelect(Int option)
   elseif (option == oidCanbeKilledbyUnarmed)
     bCanbeKilledbyUnarmed = !bCanbeKilledbyUnarmed
     _SetToggleOptionValue(oidCanbeKilledbyUnarmed, bCanbeKilledbyUnarmed)
-
-    ;ElseIf (option == oidLoseSkillForever)
-    ;	bLoseSkillForever = !bLoseSkillForever
-    ;	_SetToggleOptionValue(oidLoseSkillForever, bLoseSkillForever)
+  elseif (option == oidLoseSkillForever)
+  	bLoseSkillForever = !bLoseSkillForever
+    _SetToggleOptionValue(oidLoseSkillForever, bLoseSkillForever)
   elseif (option == oidHealActors)
     bHealActors = !bHealActors
     _SetToggleOptionValue(oidHealActors, bHealActors)
@@ -2181,9 +2178,9 @@ event OnOptionSelect(Int option)
     bLevelReduce = !bLevelReduce
     _SetToggleOptionValue(oidLevelReduce, bLevelReduce)
 
-    ;If bLevelReduce
-    ;	ReviveScript.SkillScript.RegisterForLevel()
-    ;EndIf
+    If bLevelReduce
+    	ReviveScript.SkillScript.RegisterForLevelUp()
+    endif
   elseif (option == oidOnlyLoseSkillXP)
     bOnlyLoseSkillXP = !bOnlyLoseSkillXP
     _SetToggleOptionValue(oidOnlyLoseSkillXP, bOnlyLoseSkillXP)
@@ -2609,10 +2606,9 @@ event OnOptionSelect(Int option)
         SetTriggerMethod(2)
       endif
       ReviveScript.RegisterForSleep()
-
-      ;If bLevelReduce
-      ;	ReviveScript.SkillScript.RegisterForLevel()
-      ;EndIf
+      If bLevelReduce
+      	ReviveScript.SkillScript.RegisterForLevelUp()
+      EndIf
     else
       setTriggerMethod(0)
     endif
@@ -3519,12 +3515,12 @@ event OnPageReset(String page)
     oidSkillReduceMinValSlider = AddSliderOption("$mrt_MarkofArkay_killReduceMinValSlider_1", fSkillReduceMinValSlider, "{0}", flags)
     oidSkillReduceMaxValSlider = AddSliderOption("$mrt_MarkofArkay_killReduceMaxValSlider_1", fSkillReduceMaxValSlider, "{0}", flags)
 
-    ;If ( moaState.getValue() == 1 ) && ( iNotTradingAftermath == 1 ) && (iReducedSkill != 0) && bDLIEOK && !bOnlyLoseSkillXP && !bCurseLock
-    ;	flags =	OPTION_FLAG_NONE
-    ;Else
-    ;	flags = OPTION_FLAG_DISABLED
-    ;EndIf
-    ;oidLoseSkillForever = AddToggleOption("$mrt_MarkofArkay_LoseSkillForever",bLoseSkillForever, flags)
+    If ( moaState.getValue() == 1 ) && ( iNotTradingAftermath == 1 ) && (iReducedSkill != 0) && bPO3Ok && !bOnlyLoseSkillXP && !bCurseLock
+    	flags =	OPTION_FLAG_NONE
+    Else
+    	flags = OPTION_FLAG_DISABLED
+    EndIf
+    oidLoseSkillForever = AddToggleOption("$mrt_MarkofArkay_LoseSkillForever",bLoseSkillForever, flags)
     addEmptyOption()
     _AddHeaderOption("$mrt_MarkofArkay_HEAD_Other_Curses")
     if (moaState.getValue() == 1) && (iNotTradingAftermath == 1) && !bCurseLock
@@ -5032,17 +5028,8 @@ endfunction
 
 Bool function bCheckPO3()
   Int[] PO3Ver = PO3_SKSEFunctions.GetPapyrusExtenderVersion()
-
-  ;if PO3Ver.Length > 2
-  ;	Debug.trace("powerofthree's Papyrus Extender version: "+PO3Ver[0]+"."+PO3Ver[1]+"."+PO3Ver[2])
-  ;EndIf
   return (PO3Ver.Length > 2 && PO3Ver[0] > 4)
 endfunction
-
-;Bool Function bCheckDLIE()
-;	Return bSKSELoaded && SKSE.GetPluginVersion("DSL Level Up Event Plugin") != -1 && DSL_LevelIncreaseEvent.bIsDLIELoaded()
-;EndFunction
-
 
 Bool function bCheckPUtil()
   return bSKSELoaded && ((SKSE.GetPluginVersion("papyrusutil plugin") != -1) || (SKSE.GetPluginVersion("papyrusutil") != -1))
@@ -5323,9 +5310,9 @@ Bool function bLoadUserSettings(String sFileName)
   bCheckWeight = fiss.loadBool("bCheckWeight")
   bLevelReduce = fiss.loadBool("bLevelReduce")
 
-  ;If bLevelReduce
-  ;	ReviveScript.SkillScript.RegisterForLevel()
-  ;EndIf
+  If bLevelReduce
+  	ReviveScript.SkillScript.RegisterForLevelUp()
+  EndIf
   bOnlyLoseSkillXP = fiss.loadBool("bOnlyLoseSkillXP")
   bSpawnHostile = fiss.loadBool("bSpawnHostile")
   bBossChestOnlyCurLoc = fiss.loadBool("bBossChestOnlyCurLoc")
@@ -5612,8 +5599,6 @@ endfunction
 
 function checkMods()
   bSKSEOK = bCheckSKSE()
-
-  ;bDLIEOK = bCheckDLIE()
   bUIEOK = bCheckUIE()
   bFISSOK = bCheckFISS()
   bARCCOK = bCheckARCC()

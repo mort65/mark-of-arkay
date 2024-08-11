@@ -215,7 +215,7 @@ function DetectThiefNPC()
     if ReviveScript.Thief && !ReviveScript.Thief.IsDisabled() && !ReviveScript.Thief.GetActorBase().IsInvulnerable() && (!ConfigMenu.bLoseForever || bIsDying(ReviveScript.Thief)) ;check previous one
       if (!bIsHostile(ReviveScript.Thief) || PlayerRef.GetDistance(ReviveScript.Thief) > 2000)
         ReviveScript.bRemoveItems = False
-        if !ConfigMenu.bOnlyLoseSkillXP && !(ConfigMenu.bLoseSkillForever && ConfigMenu.bDLIEOK)
+        if !ConfigMenu.bOnlyLoseSkillXP && !(ConfigMenu.bLoseSkillForever && ConfigMenu.bPO3OK)
           ReviveScript.iReducedSkill = 0
         endif
       endif
@@ -223,7 +223,7 @@ function DetectThiefNPC()
       return
     endif
     ReviveScript.bRemoveItems = False ;After location change either a new one will be spawned or quest would stop
-    if !ConfigMenu.bOnlyLoseSkillXP && !(ConfigMenu.bLoseSkillForever && ConfigMenu.bDLIEOK)
+    if !ConfigMenu.bOnlyLoseSkillXP && !(ConfigMenu.bLoseSkillForever && ConfigMenu.bPO3OK)
       ReviveScript.iReducedSkill = 0
     endif
     ReviveScript.Thief = None

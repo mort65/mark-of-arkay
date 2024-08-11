@@ -43,12 +43,14 @@ event OnInit()
   SetVars()
 endevent
 
-;Function RegisterForLevel()
-;	dsl_levelincreaseevent.RegisterForLevelIncrease(Self As Form, "OnLevelIncrease")
-;Endfunction
-;Function UnRegisterForLevel()
-;	dsl_levelincreaseevent.UnregisterForLevelIncrease(Self As Form, "OnLevelIncrease")
-;Endfunction
+Function RegisterForLevelUp()
+  ConfigMenu.bPO3OK && PO3_Events_Form.RegisterForLevelIncrease(Self As Form)
+Endfunction
+
+Function UnRegisterForLevelUp()
+  ConfigMenu.bPO3OK && PO3_Events_Form.UnregisterForLevelIncrease(Self As Form)
+Endfunction
+
 event OnLevelIncrease(Int aiNewLevel)
   if (ReviveScript.moaState.GetValue() == 0)
     return
@@ -283,7 +285,7 @@ Float[] function ReduceSkill(String Skill, Int Percent=-1, Int MinAmount=1, Int 
             endif
             CurrentXP = CurrentXP - fXPToLose
           endif
-          if ConfigMenu.bLoseSkillForever && ConfigMenu.bDLIEOK
+          if ConfigMenu.bLoseSkillForever && ConfigMenu.bPO3OK
             Bool bLevelReduced = False
             Game.SetPlayerExperience(CurrentXP)
             ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Player's XP changed to " + (CurrentXP))
@@ -327,7 +329,7 @@ function ReduceSkills(String Skill="Random", Int Percent=-1, Int MinAmount=1, In
   Float[] fSkillUseMult
   Int i
   if bSkillReduced()
-    if !bOnlyXP && (ConfigMenu.bLoseSkillForever && ConfigMenu.bDLIEOK)
+    if !bOnlyXP && (ConfigMenu.bLoseSkillForever && ConfigMenu.bPO3OK)
       ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Can't lose skills forever when they are already reduced")
       return
     else
@@ -362,7 +364,7 @@ function ReduceSkills(String Skill="Random", Int Percent=-1, Int MinAmount=1, In
   while i > 0
     i -= 1
     skillLevel = PlayerRef.GetBaseActorValue(sSkillName[i]) As Int
-    if (bOnlyXP && skillLevel > 0) || (!bOnlyXP && skillLevel > 1 && ((ConfigMenu.bLoseSkillForever && ConfigMenu.bDLIEOK) || (iSkillCap[i] <= 0 || skillLevel < iSkillCap[i])))
+    if (bOnlyXP && skillLevel > 0) || (!bOnlyXP && skillLevel > 1 && ((ConfigMenu.bLoseSkillForever && ConfigMenu.bPO3OK) || (iSkillCap[i] <= 0 || skillLevel < iSkillCap[i])))
       SkillsFlags[i] = True
       if Skill == "Highest"
         if skillLevel > Max || (skillLevel == Max && Utility.RandomInt(0, 1))

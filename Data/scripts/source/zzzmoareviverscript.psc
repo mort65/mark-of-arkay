@@ -497,8 +497,10 @@ event OnUpdate()
     if bRevived
       if bIsRaped && !NPCScript.isActorInSexAnimation(PlayerRef)
           RapeScript.Victimized01.clear()
-          debug.SendAnimationEvent(PlayerRef, "OffsetBoundStandingStart")
-          utility.wait(1.0)
+          if (ConfigMenu.moaRapeVictimIdleState.GetValue() as Int)
+            debug.SendAnimationEvent(PlayerRef, "OffsetBoundStandingStart")
+            utility.wait(1.0)
+          endif
       endif
       PlayerRef.SetDontMove(False)
       Game.EnablePlayerControls()
@@ -1092,7 +1094,7 @@ endfunction
 
 function ResetPlayer()
   if !NPCScript.isActorInSexAnimation(PlayerRef)
-    if PlayerRef.IsSwimming()
+    if PlayerRef.IsSwimming()    
       Debug.SendAnimationEvent(PlayerRef, "SwimStart")
     elseif bWasSwimming
       Debug.SendAnimationEvent(PlayerRef, "SwimStop")
@@ -1290,7 +1292,7 @@ function rapeHandler()
   restoreCrime()
   ConfigMenu.bIsLoggingEnabled && Debug.trace("MarkOfArkay: Player raped = " + bIsRaped)
   RapeScript.unPacify()
-  if !NPCScript.isActorInSexAnimation(PlayerRef)
+  if !NPCScript.isActorInSexAnimation(PlayerRef) && (ConfigMenu.moaRapeVictimIdleState.GetValue() as Int)
     if bIsRaped
       debug.SendAnimationEvent(PlayerRef, "OffsetBoundStandingStart")
       RapeScript.Victimized01.ForceRefTo(playerRef)

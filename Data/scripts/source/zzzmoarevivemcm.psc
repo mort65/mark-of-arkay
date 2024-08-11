@@ -280,6 +280,8 @@ GlobalVariable property moaNoKillMoveOnPlayer Auto
 GlobalVariable property moaOnlyInCurLocChest Auto
 GlobalVariable property moaPraytoSave Auto
 GlobalVariable property moaRPMinDistance Auto
+GlobalVariable Property moaRapeVictimIdleState Auto
+GlobalVariable Property moaRapistIdleState Auto
 Quest property moaRetrieveLostItems Auto
 Quest property moaRetrieveLostItems01 Auto
 Quest property moaReviverQuest Auto
@@ -515,6 +517,8 @@ Int oidTriggerOnHealthPerc
 Int oidVoicelessCurse
 Int oidSurrenderKeyMap
 Int oidClearHotkeys
+Int oidRapeVictimIdleState
+Int oidRapistIdleState
 
 event OnConfigInit()
   Utility.Wait(0.1)
@@ -934,6 +938,12 @@ ElseIf (option == oidLoseSkillForever)
   elseif (option == oidOnlyHostilesRape)
     bOnlyHostilesRape = True
     _SetToggleOptionValue(oidOnlyHostilesRape, bOnlyHostilesRape)
+  elseif (option == oidRapeVictimIdleState)
+    moaRapeVictimIdleState.SetValue(1.0)
+    _SetToggleOptionValue(oidRapeVictimIdleState, True)
+  elseif (option == oidRapistIdleState)
+    moaRapistIdleState.SetValue(1.0)
+    _SetToggleOptionValue(oidRapistIdleState, True)
   elseif (option == oidAllowCreatureRape)
     bAllowCreatureRape = False
     _SetToggleOptionValue(oidAllowCreatureRape, bAllowCreatureRape)
@@ -1655,6 +1665,10 @@ event OnOptionHighlight(Int option)
     SetInfoText("$mrt_MarkofArkay_DESC_SlaveryOnlyAfterRape")
   elseif (option == oidOnlyHostilesRape)
     SetInfoText("$mrt_MarkofArkay_DESC_OnlyHostilesRape")
+  elseif (option == oidRapeVictimIdleState)
+    SetInfoText("$mrt_MarkofArkay_DESC_RapeVictimIdleState")
+  elseif (option == oidRapistIdleState)
+    SetInfoText("$mrt_MarkofArkay_DESC_RapistIdleState")
   elseif (option == oidAllowCreatureRape)
     SetInfoText("$mrt_MarkofArkay_DESC_AllowCreatureRape")
   elseif (option == oidAlwaysSpawn)
@@ -2268,6 +2282,16 @@ event OnOptionSelect(Int option)
   elseif (option == oidOnlyHostilesRape)
     bOnlyHostilesRape = !bOnlyHostilesRape
     _SetToggleOptionValue(oidOnlyHostilesRape, bOnlyHostilesRape)
+  elseif (option == oidRapeVictimIdleState)
+	bool bRapeVictimIdleState = (moaRapeVictimIdleState.GetValue() as Int) as Bool
+	bRapeVictimIdleState = !bRapeVictimIdleState
+    moaRapeVictimIdleState.SetValue((bRapeVictimIdleState as Int) as Float)
+    _SetToggleOptionValue(oidRapeVictimIdleState, (moaRapeVictimIdleState.GetValue() as Int) as Bool)
+  elseif (option == oidRapistIdleState)
+	bool bRapistIdleState = (moaRapistIdleState.GetValue() as Int) as Bool
+	bRapistIdleState = !bRapistIdleState
+    moaRapistIdleState.SetValue((bRapistIdleState as Int) as Float)
+    _SetToggleOptionValue(oidRapistIdleState, (moaRapistIdleState.GetValue() as Int) as Bool)
   elseif (option == oidAllowCreatureRape)
     bAllowCreatureRape = !bAllowCreatureRape
     _SetToggleOptionValue(oidAllowCreatureRape, bAllowCreatureRape)
@@ -2625,10 +2649,14 @@ event OnOptionSelect(Int option)
       endif
     endif
     ReviveScript.RefreshFace()
-    if PlayerRef.IsSwimming()
-      Debug.SendAnimationEvent(PlayerRef, "SwimStart")
-    else
-      Debug.SendAnimationEvent(PlayerRef, "SwimStop")
+    if !Revivescript.NPCScript.isActorInSexAnimation(PlayerRef)
+    	Bool bSwimming = PlayerRef.IsSwimming()
+	    Debug.SendAnimationEvent(PlayerRef, "IdleForceDefaultState")
+	    if bSwimming
+	      Debug.SendAnimationEvent(PlayerRef, "SwimStart")
+	    else
+	      Debug.SendAnimationEvent(PlayerRef, "SwimStop")
+	    endif
     endif
     PlayerRef.DispelAllSpells()
     PlayerRef.ClearExtraArrows()
@@ -3785,6 +3813,8 @@ event OnPageReset(String page)
     oidRapesMaxSlider = AddSliderOption("$mrt_MarkofArkay_RapesMaxSlider_1", fMaxRapes, "$mrt_MarkofArkay_RapesMaxSlider_2", flags)
     oidRapistsMaxSlider = AddSliderOption("$mrt_MarkofArkay_RapistsMaxSlider_1", fMaxRapists, "$mrt_MarkofArkay_RapistsMaxSlider_2", flags)
     oidOnlyHostilesRape = AddToggleOption("$mrt_MarkofArkay_OnlyHostilesRape", bOnlyHostilesRape, flags)
+    oidRapeVictimIdleState = AddToggleOption("$mrt_MarkofArkay_RapeVictimIdleState", (moaRapeVictimIdleState.GetValue() as Int) as Bool, flags)
+    oidRapistIdleState = AddToggleOption("$mrt_MarkofArkay_RapistIdleState", (moaRapistIdleState.GetValue() as Int) as Bool, flags)
     if (moaState.getValue() == 1) && (iNotTradingAftermath == 1) && (fRapeChanceSlider > 0.0) && (iGetCurSexInterface() == 0)
       flags = OPTION_FLAG_NONE
     else
@@ -4507,6 +4537,7 @@ function LoadDefaultSettings()
   bOnlySpawn = False
   fTotalCustomRPSlotSlider = 1.0
   iSelectedCustomRPSlot = 0
+  moaRapeVictimIdleState.SetValue(1.0)
   setTypes(True)
   revivescript.itemscript.resetChecked()
   setRPFlags(True)
@@ -5001,6 +5032,10 @@ Bool function bCheckFissErrors(String strErrors)
       bSlaveryOnlyAfterRape = False
     elseif strError == "Element bOnlyHostilesRape not found"
       bOnlyHostilesRape = True
+    elseif strError == "Element bRapeVictimIdleState not found"
+      moaRapeVictimIdleState.SetValue(1.0)
+    elseif strError == "Element bRapistIdleState not found"
+      moaRapistIdleState.SetValue(1.0)
     elseif strError == "Element bAllowCreatureRape not found"
       bAllowCreatureRape = False
     elseif strError == "Element bNPCHasLevelRange not found"
@@ -5322,6 +5357,8 @@ Bool function bLoadUserSettings(String sFileName)
   bOnlyEnslavedByEnemyFaction = fiss.loadBool("bOnlyEnslavedByEnemyFaction")
   bSlaveryOnlyAfterRape = fiss.loadBool("bSlaveryOnlyAfterRape")
   bOnlyHostilesRape = fiss.loadBool("bOnlyHostilesRape")
+  moaRapeVictimIdleState.SetValue((fiss.loadBool("bRapeVictimIdleState") as Int) as Float)
+  moaRapistIdleState.SetValue((fiss.loadBool("bRapistIdleState") as Int) as Float)
   bAllowCreatureRape = fiss.loadBool("bAllowCreatureRape")
   bAlwaysSpawn = fiss.loadBool("bAlwaysSpawn")
   bOnlySpawn = fiss.loadBool("bOnlySpawn")
@@ -5584,6 +5621,8 @@ bool function bSaveUserSettings(String sFileName)
   fiss.SaveBool("bOnlyEnslavedByEnemyFaction", bOnlyEnslavedByEnemyFaction)
   fiss.SaveBool("bSlaveryOnlyAfterRape", bSlaveryOnlyAfterRape)
   fiss.SaveBool("bOnlyHostilesRape", bOnlyHostilesRape)
+  fiss.SaveBool("bRapeVictimIdleState", (moaRapeVictimIdleState.GetValue() as Int) as Bool)
+  fiss.SaveBool("bRapistIdleState", (moaRapistIdleState.GetValue() as Int) as Bool)
   fiss.SaveBool("bAllowCreatureRape", bAllowCreatureRape)
   fiss.SaveBool("bAlwaysSpawn", bAlwaysSpawn)
   fiss.SaveBool("bOnlySpawn", bOnlySpawn)

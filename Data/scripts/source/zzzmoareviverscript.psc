@@ -238,7 +238,6 @@ event OnEnterBleedout()
       Attacker = None
       PlayerRef.RemoveSpell(Bleed)
       PlayerRef.SetActorValue("HealRate", fHealrate)
-      ;PlayerRef.SetDontMove(False)
       ;Game.EnablePlayerControls()
       LowHealthImod.Remove()
       RegisterForSingleUpdate(3.0)
@@ -502,8 +501,8 @@ event OnUpdate()
             utility.wait(1.0)
           endif
       endif
-      PlayerRef.SetDontMove(False)
       Game.EnablePlayerControls()
+      Game.SetPlayerAIDriven(abAIDriven = false)
       if bfastTravel
         Game.EnableFastTravel(True)
       endif
@@ -786,7 +785,6 @@ function BleedoutHandler(String CurrentState)
 			    PO3_SKSEFunctions.ResetActorDetection(PlayerRef)
 		    Endif
       else
-        PlayerRef.SetDontMove(False)
         Game.EnablePlayerControls()
         PlayerRef.RemovePerk(Invulnerable)
         Debug.SetGodMode(False)
@@ -1288,7 +1286,6 @@ function rapeHandler()
     endif
   endif
   Game.DisablePlayerControls(abMovement=True, abFighting=True, abCamSwitch=True, abLooking=False, abSneaking=True, abMenu=True, abActivate=True, abJournalTabs=False)
-  PlayerRef.SetDontMove(True)
   restoreCrime()
   ConfigMenu.bIsLoggingEnabled && Debug.trace("MarkOfArkay: Player raped = " + bIsRaped)
   RapeScript.unPacify()
@@ -1341,7 +1338,6 @@ function aftermathHandler()
         return
       endif
       ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Exiting to the Main menu...")
-      PlayerRef.SetDontMove(False)
       Game.EnablePlayerControls()
       Game.EnableFastTravel(True)
       Attacker = None
@@ -2242,7 +2238,6 @@ function checkHealth()
         if GetState() == ""
           Attacker = None
           PlayerRef.SetActorValue("HealRate", fHealrate)
-          ;PlayerRef.SetDontMove(False)
           ;Game.EnablePlayerControls()
           LowHealthImod.Remove()
           RegisterForSingleUpdate(3.0)

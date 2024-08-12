@@ -363,17 +363,41 @@ function kArrayClear(Form[] Arr) Global
 endfunction
 
 function keepControlsDisabled(float fDuration, bool bMovement=true, bool bFighting=true, bool bCamSwitch=false, bool bLooking=false, bool bSneaking=false, bool bMenu=true, bool bActivate=true, bool bJournalTabs=false, bool bFastTravel=false) Global
-{Keeps player controls disabled for the specified duration.}
-  float f = 0.0
-  while f < fDuration
+{Keeps player controls disabled for the specified duration.}  
+  float f = fDuration
+  while f >= 0.0
     if isPlayerControlsEnabled(bMovement, bFighting, bCamSwitch, bLooking, bSneaking, bMenu, bActivate, bJournalTabs, false)
       game.DisablePlayerControls(abMovement=bMovement, abFighting=bFighting, abCamSwitch=bCamSwitch, abLooking=bLooking, abSneaking=bSneaking, abMenu=bMenu, abActivate=bActivate, abJournalTabs=bJournalTabs)
     endif
     if (bFastTravel && Game.IsFastTravelControlsEnabled())
       Game.EnableFastTravel(false)
     endif
-    utility.wait(0.2)
-    f += 0.2
+    if f == 0.0
+      return
+    elseif f < 0.2
+      utility.wait(f)
+      return
+    else
+      utility.wait(0.2)
+      f -= 0.2
+    endif
+  endwhile
+endfunction
+
+function keepAIDriven(float fDuration) Global
+  {Keeps player AI driven for the specified duration.}
+  float f = fDuration
+  while f >= 0.0
+    game.SetPlayerAIDriven(abAIDriven = true)
+    if f == 0.0
+      return
+    elseif f < 0.2
+      utility.wait(f)
+      return
+    else
+      utility.wait(0.2)
+      f -= 0.2
+    endif
   endwhile
 endfunction
 

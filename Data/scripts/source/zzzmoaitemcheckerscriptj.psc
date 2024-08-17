@@ -127,10 +127,18 @@ state Checking
           endif
         endif
       endif
+	  if (!bContinue && (checked == -1))
+        if ConfigMenu.bExcludeEnchantedItems
+           if ((kItem as Armor) && (kItem as Armor).GetEnchantment()) || ((kItem as Weapon) && (kItem as Weapon).GetEnchantment())
+            Debug.TraceConditional("MarkOfArkay: (" + kItem + "," + kItem.GetName() + ") skipped -> isEnchanted()", bIsLoggingEnabled)
+            bContinue = True
+          endif
+        endif
+      endif
       if (!bContinue && (checked == -1))
-        if ConfigMenu.bCheckWeight
-          if !kItem.GetWeight()
-            Debug.TraceConditional("MarkOfArkay: (" + kItem + "," + kItem.GetName() + ") skipped -> NoWeight()", bIsLoggingEnabled)
+        if ConfigMenu.fMinItemWeightToCheckSlider >= 0
+          if kItem.GetWeight() <= ConfigMenu.fMinItemWeightToCheckSlider
+            Debug.TraceConditional("MarkOfArkay: (" + kItem + "," + kItem.GetName() + ") skipped -> LightWeight()", bIsLoggingEnabled)
             bContinue = True
           endif
         endif

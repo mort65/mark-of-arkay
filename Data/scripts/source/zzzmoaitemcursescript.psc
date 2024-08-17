@@ -271,8 +271,42 @@ function LoseOtherItems()
     ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay:  Nothing else can be removed.")
     return
   endif
+ 
   Int iIndex
   Form kItem = None
+  Tradables = new Form[4]
+  Tradables[0] = Gold001 As Form
+  Tradables[1] = MarkOfArkay As Form
+  Tradables[2] = BlackFilledGem As Form
+  Tradables[3] = GrandFilledGem As Form
+  ;tradables excluded because they checked before
+  if ConfigMenu.bMOAUtilOK
+    form[] excludeArr
+	form[] includeArr
+	Formlist excludeList
+    if ConfigMenu.bPUOK
+	  excludeList = ItemBlackList	
+	  excludeArr = moaUtil.MergeFormArrays(Tradables, JsonUtil.FormListToArray("/MarkofArkay/MOA_BlackLists", "ItemBlackList"))
+    else
+      excludeList = ItemBlackList2
+	  excludeArr =  moaUtil.MergeFormArrays(Tradables,ItemBlackList.ToArray())
+	endif
+	if ConfigMenu.iLoseInclusion == 2 ;unequipped only
+	  excludeArr = moaUtil.MergeFormArrays(excludeArr, Equipment)
+	elseif ConfigMenu.iLoseInclusion == 1 ;equipped only
+	  includeArr = Equipment
+	endif
+	int iAmount = -1 ;all
+	if ConfigMenu.bRandomItemCurse
+	  iAmount = 0 ;random
+	endif
+	Int iManVal = ConfigMenu.fLoseOtherMinValueSlider as Int
+	int iExtraRemoved = moaUtil.removeItemsByFilters(PlayerRef, ConfigMenu.iValidTypes, excludeList, excludeArr, includeArr, getInvalidKeywordArr(), ConfigMenu.bExcludeQuestItems, \
+	ConfigMenu.bExcludeEnchantedItems, iAmount, ConfigMenu.fMinItemWeightToCheckSlider, ConfigMenu.fLoseOtherMinValueSlider as Int, ConfigMenu.fLoseOtherTotalValueSlider as Int, LostItemsChest)
+	Debug.TraceConditional("MarkOfArkay: " + iExtraRemoved + " extra item removed.", ConfigMenu.bIsLoggingEnabled)
+	return
+  endif
+  
   QuestItems.Revert()
   if ConfigMenu.bExcludeQuestItems
     if ConfigMenu.bPO3OK
@@ -318,11 +352,6 @@ function LoseOtherItems()
     if bRemoveAll && (ConfigMenu.iLoseInclusion == 0) && (ConfigMenu.fLoseOtherMinValueSlider <= 0) && (ConfigMenu.fLoseOtherTotalValueSlider <= 0) && !ConfigMenu.bRandomItemCurse && !ItemBlackList.GetSize() && !ItemBlackList2.GetSize()
       PlayerRef.RemoveAllItems(LostItemsChest, True, !ConfigMenu.bExcludeQuestItems)
     else
-      Tradables = new Form[4]
-      Tradables[0] = Gold001 As Form
-      Tradables[1] = MarkOfArkay As Form
-      Tradables[2] = BlackFilledGem As Form
-      Tradables[3] = GrandFilledGem As Form
       iCheckLimit = ConfigMenu.fMaxItemsToCheckSlider As Int
       transferItems(ValuableItemsChest, PlayerRef as ObjectReference)
       ValuableItemsChest.RemoveAllItems(playerRef as ObjectReference, true, true)
@@ -537,9 +566,17 @@ function PO3LoseOtherItems() ;Slower
       endif
     endif
     if !bContinue
-      if ConfigMenu.bCheckWeight
-        if !kItem.GetWeight()
-          Debug.TraceConditional("MarkOfArkay: (" + kItem + "," + kItem.GetName() + ") skipped -> NoWeight()", bIsLoggingEnabled)
+      if ConfigMenu.bExcludeEnchantedItems
+        if ((kItem as Armor) && (kItem as Armor).GetEnchantment()) || ((kItem as Weapon) && (kItem as Weapon).GetEnchantment())
+          Debug.TraceConditional("MarkOfArkay: (" + kItem + "," + kItem.GetName() + ") skipped -> isEnchanted()", bIsLoggingEnabled)
+          bContinue = True
+        endif
+      endif
+    endif
+    if !bContinue
+      if ConfigMenu.fMinItemWeightToCheckSlider >= 0
+        if (kItem.GetWeight() <= ConfigMenu.fMinItemWeightToCheckSlider)
+          Debug.TraceConditional("MarkOfArkay: (" + kItem + "," + kItem.GetName() + ") skipped -> LightWeight()", bIsLoggingEnabled)
           bContinue = True
         endif
       endif
@@ -851,9 +888,17 @@ function removeEquipments(ObjectReference akInChest, ObjectReference akOutChest,
       endif
     endif
     if (!bContinue && (checked == -1))
-      if ConfigMenu.bCheckWeight
-        if !kItem.GetWeight()
-          Debug.TraceConditional("MarkOfArkay: (" + kItem + "," + kItem.GetName() + ") skipped -> NoWeight()", bIsLoggingEnabled)
+      if ConfigMenu.bExcludeEnchantedItems
+        if ((kItem as Armor) && (kItem as Armor).GetEnchantment()) || ((kItem as Weapon) && (kItem as Weapon).GetEnchantment())
+          Debug.TraceConditional("MarkOfArkay: (" + kItem + "," + kItem.GetName() + ") skipped -> isEnchanted()", bIsLoggingEnabled)
+          bContinue = True
+        endif
+      endif
+    endif
+    if (!bContinue && (checked == -1))
+       if ConfigMenu.fMinItemWeightToCheckSlider >= 0
+        if (kItem.GetWeight() <= ConfigMenu.fMinItemWeightToCheckSlider)
+          Debug.TraceConditional("MarkOfArkay: (" + kItem + "," + kItem.GetName() + ") skipped -> LightWeight()", bIsLoggingEnabled)
           bContinue = True
         endif
       endif
@@ -973,6 +1018,25 @@ Bool Function hasInvalidKeyword(Form kItem)
     return true
   endif 
   return False
+endfunction
+
+keyword[] Function getInvalidKeywordArr()
+  keyword[] invalidKWs
+  if !ConfigMenu.bCheckKeyword
+    return invalidKWs
+  endif
+  invalidKWs = new keyword[10]
+  invalidKWs[0] = keyword.GetKeyword("zzzmoa_ignoreitem")
+  invalidKWs[1] = keyword.GetKeyword("vendornosale")
+  invalidKWs[2] = keyword.GetKeyword("magicdisallowenchanting")
+  invalidKWs[3] = keyword.GetKeyword("sos_underwear")
+  invalidKWs[4] = keyword.GetKeyword("sos_genitals")
+  invalidKWs[5] = keyword.GetKeyword("zad_questitem")
+  invalidKWs[6] = keyword.GetKeyword("zad_lockable")
+  invalidKWs[7] = keyword.GetKeyword("zad_inventorydevice")
+  invalidKWs[8] = keyword.GetKeyword("zbfworndevice")
+  invalidKWs[9] = keyword.GetKeyword("toystoy")
+  return invalidKWs
 endfunction
 
 Function undressActor(Actor akActor, Bool abCheckItems = true)

@@ -35,6 +35,7 @@ Spell property SacrificePower Auto
 ObjectReference property SleepMarker Auto
 ObjectReference property ThiefMarker Auto
 Bool property bARCCOK Auto Hidden ;ARCC
+Bool Property bMOAUtilOK Auto Hidden
 Bool property bAllowCreatureRape=False Auto Hidden
 Bool property bAltEyeFix=False Auto Hidden
 Bool property bAlwaysSpawn=False Auto Hidden
@@ -45,7 +46,7 @@ Bool property bBossChestNotInClearedLoc=True Auto Hidden
 Bool property bBossChestOnlyCurLoc=False Auto Hidden
 Bool property bCanbeKilledbyUnarmed=True Auto Hidden
 Bool property bCheckKeyword=True Auto Hidden
-Bool property bCheckWeight=True Auto Hidden
+;Bool property bCheckWeight=True Auto Hidden
 Bool property bClone=True Auto Hidden
 Bool property bCorpseAsSoulMark=False Auto Hidden
 Bool property bCreaturesCanSteal=False Auto Hidden
@@ -57,6 +58,7 @@ Bool property bDiseaseCurse=False Auto Hidden
 Bool property bDoNotStopCombat=False Auto Hidden
 Bool property bDoNotStopCombatAfterRevival=True Auto Hidden
 Bool property bExcludeQuestItems=True Auto Hidden
+Bool property bExcludeEnchantedItems = False Auto Hidden
 Bool property bFISSOK Auto Hidden ;FISS
 Bool property bFadeToBlack=True Auto Hidden
 Bool property bFollowerProtectPlayer=False Auto Hidden
@@ -222,6 +224,7 @@ Float property fValueMarkSlider=1.0 Auto Hidden
 Float property fValueSnoozeSlider=0.0 Auto Hidden
 Float property fValueSoulScaleSlider=0.0 Auto Hidden
 Float property fValueSoulSlider=1.0 Auto Hidden
+Float Property fMinItemWeightToCheckSlider = 0.0 Auto Hidden
 Int property iArkayCurse=0 Auto Hidden
 Int property iDestroyedItems=0 Auto Hidden
 Int property iExternalIndex=-1 Auto Hidden
@@ -314,7 +317,8 @@ Int oidBossChestNotClearedLoc
 Int oidBossChestOnlyCurLoc
 Int oidCanbeKilledbyUnarmed
 Int oidCheckKeyword
-Int oidCheckWeight
+;Int oidCheckWeight
+Int oidMinItemWeightToCheckSlider
 Int oidCorpseAsSoulMark
 Int oidCreaturesCanSteal
 Int oidCureDisIfHasBlessing
@@ -395,6 +399,7 @@ Int oidLoseOthers
 Int oidLosePotion
 Int oidLoseScroll
 Int oidLoseSkillForever
+Int oidExcludeEnchantedItems
 Int oidLoseSoulgem
 Int oidLoseWeapon
 Int oidLoseforever
@@ -1023,6 +1028,10 @@ event OnOptionDefault(Int option)
     revivescript.itemscript.resetChecked()
     fLoseOtherMinValueSlider = 0.0
     _SetSliderOptionValue(oidLoseOtherMinValueSlider, fLoseOtherMinValueSlider, "{0}")
+  elseif (option == oidMinItemWeightToCheckSlider)
+    revivescript.itemscript.resetChecked()
+    fMinItemWeightToCheckSlider = 0.0
+    _SetSliderOptionValue(oidMinItemWeightToCheckSlider, fMinItemWeightToCheckSlider, "$mrt_MarkofArkay_MinItemWeightToCheckSlider2")
   elseif (option == oidLoseOtherTotalValueSlider)
     fLoseOtherTotalValueSlider = 0.0
     _SetSliderOptionValue(oidLoseOtherTotalValueSlider, fLoseOtherTotalValueSlider, "{0}")
@@ -1066,6 +1075,10 @@ event OnOptionDefault(Int option)
     bExcludeQuestItems = True
     revivescript.itemscript.resetChecked()
     _SetToggleOptionValue(oidExcludeQuestItems, bExcludeQuestItems, False)
+  elseif (option == oidExcludeEnchantedItems)
+    bExcludeEnchantedItems = False
+    revivescript.itemscript.resetChecked()
+    _SetToggleOptionValue(oidExcludeEnchantedItems, bExcludeEnchantedItems, False)
   elseif (option == oidLoseGold)
     bLoseGold = True
     _SetToggleOptionValue(oidLoseGold, bLoseGold, False)
@@ -1134,10 +1147,10 @@ event OnOptionDefault(Int option)
     bCheckKeyword = True
     revivescript.itemscript.resetChecked()
     _SetToggleOptionValue(oidCheckKeyword, bCheckKeyword, False)
-  elseif (option == oidCheckWeight)
-    bCheckWeight = True
-    revivescript.itemscript.resetChecked()
-    _SetToggleOptionValue(oidCheckWeight, bCheckWeight, False)
+  ;elseif (option == oidCheckWeight)
+  ;  bCheckWeight = True
+  ;  revivescript.itemscript.resetChecked()
+  ;  _SetToggleOptionValue(oidCheckWeight, bCheckWeight, False)
   elseif (option == oidLevelReduce)
     bLevelReduce = False
     _SetToggleOptionValue(oidLevelReduce, bLevelReduce, False)
@@ -1572,6 +1585,8 @@ event OnOptionHighlight(Int option)
     SetInfoText("$mrt_MarkofArkay_DESC_MinLoseGSoulgemSlider")
   elseif (option == oidLoseOtherMinValueSlider)
     SetInfoText("$mrt_MarkofArkay_DESC_LoseOtherMinValueSlider")
+  elseif (option == oidMinItemWeightToCheckSlider)
+    SetInfoText("$mrt_MarkofArkay_DESC_MinItemWeightToCheckSlider")
   elseif (option == oidLoseOtherTotalValueSlider)
     SetInfoText("$mrt_MarkofArkay_DESC_LoseOtherTotalValueSlider")
   elseif (option == oidMaxItemsToCheckSlider)
@@ -1596,6 +1611,8 @@ event OnOptionHighlight(Int option)
     SetInfoText("$mrt_MarkofArkay_DESC_HealthPercSlider")
   elseif (option == oidExcludeQuestItems)
     SetInfoText("$mrt_MarkofArkay_DESC_ExcludeQuestItems")
+  elseif (option == oidExcludeEnchantedItems)
+    SetInfoText("$mrt_MarkofArkay_DESC_ExcludeEnchantedItems")
   elseif (option == oidLoseItem)
     SetInfoText("$mrt_MarkofArkay_DESC_LoseItem")
   elseif (option == oidLoseGold)
@@ -1632,8 +1649,8 @@ event OnOptionHighlight(Int option)
     SetInfoText("$mrt_MarkofArkay_DESC_LoseIngredient")
   elseif (option == oidCheckKeyword)
     SetInfoText("$mrt_MarkofArkay_DESC_CheckKeyword")
-  elseif (option == oidCheckWeight)
-    SetInfoText("$mrt_MarkofArkay_DESC_CheckWeight")
+  ;elseif (option == oidCheckWeight)
+  ;  SetInfoText("$mrt_MarkofArkay_DESC_CheckWeight")
   elseif (option == oidLevelReduce)
     SetInfoText("$mrt_MarkofArkay_DESC_LevelReduce")
   elseif (option == oidOnlyLoseSkillXP)
@@ -2326,11 +2343,15 @@ event OnOptionSelect(Int option)
     bExcludeQuestItems = !bExcludeQuestItems
     revivescript.itemscript.resetChecked()
     _SetToggleOptionValue(oidExcludeQuestItems, bExcludeQuestItems)
-  elseif (option == oidCheckWeight)
-    bCheckWeight = !bCheckWeight
+  elseif (option == oidExcludeEnchantedItems)
+    bExcludeEnchantedItems = !bExcludeEnchantedItems
     revivescript.itemscript.resetChecked()
-    _SetToggleOptionValue(oidCheckWeight, bCheckWeight)
-    ForcePageReset()
+    _SetToggleOptionValue(oidExcludeEnchantedItems, bExcludeEnchantedItems)
+  ;elseif (option == oidCheckWeight)
+  ;  bCheckWeight = !bCheckWeight
+  ;  revivescript.itemscript.resetChecked()
+  ;  _SetToggleOptionValue(oidCheckWeight, bCheckWeight)
+  ;  ForcePageReset()
   elseif (option == oidLoseArkayMark)
     bLoseArkayMark = !bLoseArkayMark
     _SetToggleOptionValue(oidLoseArkayMark, bLoseArkayMark)
@@ -2825,6 +2846,10 @@ event OnOptionSliderAccept(int option, Float value)
     revivescript.itemscript.resetChecked()
     fLoseOtherMinValueSlider = value
     _SetSliderOptionValue(oidLoseOtherMinValueSlider, fLoseOtherMinValueSlider, "{0}")
+  elseif (option == oidMinItemWeightToCheckSlider)
+    revivescript.itemscript.resetChecked()
+    fMinItemWeightToCheckSlider = value
+    _SetSliderOptionValue(oidMinItemWeightToCheckSlider, fMinItemWeightToCheckSlider, "$mrt_MarkofArkay_MinItemWeightToCheckSlider2")
   elseif (option == oidLoseOtherTotalValueSlider)
     fLoseOtherTotalValueSlider = value
     _SetSliderOptionValue(oidLoseOtherTotalValueSlider, fLoseOtherTotalValueSlider, "{0}")
@@ -3063,6 +3088,11 @@ event OnOptionSliderOpen(Int option)
     SetSliderDialogDefaultValue(0.0)
     SetSliderDialogRange(0.0, 1000.0)
     SetSliderDialogInterval(1.0)
+  elseif (option == oidMinItemWeightToCheckSlider)
+    SetSliderDialogStartValue(fMinItemWeightToCheckSlider)
+    SetSliderDialogDefaultValue(0.0)
+    SetSliderDialogRange(-0.001, 10.0)
+    SetSliderDialogInterval(0.001)
   elseif (option == oidLoseOtherTotalValueSlider)
     SetSliderDialogStartValue(fLoseOtherTotalValueSlider)
     SetSliderDialogDefaultValue(0.0)
@@ -3680,9 +3710,11 @@ event OnPageReset(String page)
       flags = OPTION_FLAG_DISABLED
     endif
     oidEquipInclude_M = AddMenuOption("$mrt_MarkofArkay_EquipInclude_M", sGetLoseInclusions()[iLoseInclusion], flags)
-    oidCheckWeight = AddToggleOption("$mrt_MarkofArkay_CheckWeight", bCheckWeight, flags)
+    ;oidCheckWeight = AddToggleOption("$mrt_MarkofArkay_CheckWeight", bCheckWeight, flags)
+	oidMinItemWeightToCheckSlider = AddSliderOption("$mrt_MarkofArkay_MinItemWeightToCheckSlider1", fMinItemWeightToCheckSlider, "$mrt_MarkofArkay_MinItemWeightToCheckSlider2", flags)
     oidCheckKeyword = AddToggleOption("Exclude by Keyword", bCheckKeyword, flags)
     oidExcludeQuestItems = AddToggleOption("$mrt_MarkofArkay_ExcludeQuestItems", bExcludeQuestItems, flags)
+	oidExcludeEnchantedItems = AddToggleOption("$mrt_MarkofArkay_ExcludeEnchantedItems", bExcludeEnchantedItems, flags)
     oidRandomItemCurse = AddToggleOption("$mrt_MarkofArkay_RandomItemCurse", bRandomItemCurse, flags)
     oidLoseOtherMinValueSlider = AddSliderOption("$mrt_MarkofArkay_LoseOtherMinValueSlider", fLoseOtherMinValueSlider, "{0}", flags)
     oidLoseOtherTotalValueSlider = AddSliderOption("$mrt_MarkofArkay_LoseOtherTotalValueSlider", fLoseOtherTotalValueSlider, "{0}", flags)
@@ -4219,6 +4251,7 @@ event OnPageReset(String page)
     _AddTextOption("UIExtensions", bUIEOK As String, flags)
     _AddHeaderOption("$mrt_MarkofArkay_HEAD_OptionalDependency")
     _AddTextOption("FISSES", bFISSOK As String, flags)
+	_AddTextOption("MOA Util", bMOAUtilOK As String, flags)
     _AddTextOption("PapyrusUtil ", bPUOK As String, flags)
     _AddTextOption("Pyramid Utils", bPYOK As String, flags)
     _AddTextOption("PO3 Papyrus Extender", bPO3Ok As String, flags)
@@ -4495,6 +4528,7 @@ function LoadDefaultSettings()
   fMaxLoseGrandSoulGemSlider = 1.0
   fMinLoseGrandSoulGemSlider = 0.0
   fLoseOtherMinValueSlider = 0.0
+  fMinItemWeightToCheckSlider = 0.0
   fLoseOtherTotalValueSlider = 0.0
   fMaxItemsToCheckSlider = 100.0
   fBossChestChanceSlider = 0.0
@@ -4508,6 +4542,7 @@ function LoadDefaultSettings()
   bAllowCreatureRape = False
   fHealthPercTrigger = 0.00
   bExcludeQuestItems = True
+  bExcludeEnchantedItems = False
   bLoseItem = False
   bLoseGold = True
   bLoseArkayMark = False
@@ -4526,7 +4561,7 @@ function LoadDefaultSettings()
   bLoseScroll = False
   bLoseIngredient = False
   bCheckKeyword = True
-  bCheckWeight = True
+  ;bCheckWeight = True
   bLevelReduce = False
   bOnlyLoseSkillXP = False
   bSpawnHostile = False
@@ -4926,6 +4961,14 @@ Bool function bCanContinue()
   return ((!bRespawnCounter && !bLockPermaDeath) || (fRespawnCounterSlider > 0))
 endfunction
 
+Bool function bCheckMOAUtil()
+  if moaUtil.Get_Version().Length > 0
+    Int[] version = moaUtil.Get_Version()
+    return ((version.Length == 3) && (version[0] || version[1] || version[2]))
+  endif
+  return false
+endfunction
+
 Bool function bCheckARCC()
   Int iARCCIndex = Game.GetModByName("mrt_ARCC.esp")
   return (iARCCIndex > 0 && iARCCIndex < 255)
@@ -5311,6 +5354,7 @@ Bool function bLoadUserSettings(String sFileName)
   fMaxLoseGrandSoulGemSlider = checkFloat(fiss.loadFloat("fMaxLoseGrandSoulGemSlider"), 0, 100, 1)
   fMinLoseGrandSoulGemSlider = checkFloat(fiss.loadFloat("fMinLoseGrandSoulGemSlider"), 0, 100, 0)
   fLoseOtherMinValueSlider = checkFloat(fiss.loadFloat("fLoseOtherMinValueSlider"), 0, 1000, 0)
+  fMinItemWeightToCheckSlider = checkFloat(fiss.loadFloat("fMinItemWeightToCheckSlider"), -0.001, 10.0, 0.0)
   fLoseOtherTotalValueSlider = checkFloat(fiss.loadFloat("fLoseOtherTotalValueSlider"), 0, 1000000, 0)
   fMaxItemsToCheckSlider = checkFloat(fiss.loadFloat("fMaxItemsToCheckSlider"), 0, 10000, 100)
   fHigherNPCMaxLvlDiff = checkFloat(fiss.loadFloat("fHigherNPCMaxLvlDiff"), 0, 200, 10)
@@ -5324,6 +5368,7 @@ Bool function bLoadUserSettings(String sFileName)
   fBossChestChanceSlider = checkFloat(fiss.loadFloat("fBossChestChanceSlider"), 0, 100, 0)
   bLoseItem = fiss.loadBool("bLoseItem")
   bExcludeQuestItems = fiss.loadBool("bExcludeQuestItems")
+  bExcludeEnchantedItems = fiss.loadBool("bExcludeEnchantedItems")
   bLoseGold = fiss.loadBool("bLoseGold")
   bLoseArkayMark = fiss.loadBool("bLoseArkayMark")
   bLoseBlackSoulGem = fiss.loadBool("bLoseBlackSoulGem")
@@ -5341,7 +5386,7 @@ Bool function bLoadUserSettings(String sFileName)
   bLoseScroll = fiss.loadBool("bLoseScroll")
   bLoseIngredient = fiss.loadBool("bLoseIngredient")
   bCheckKeyword = fiss.loadBool("bCheckKeyword")
-  bCheckWeight = fiss.loadBool("bCheckWeight")
+  ;bCheckWeight = fiss.loadBool("bCheckWeight")
   bLevelReduce = fiss.loadBool("bLevelReduce")
 
   If bLevelReduce
@@ -5579,6 +5624,7 @@ bool function bSaveUserSettings(String sFileName)
   fiss.saveFloat("fMaxLoseGrandSoulGemSlider", fMaxLoseGrandSoulGemSlider)
   fiss.saveFloat("fMinLoseGrandSoulGemSlider", fMinLoseGrandSoulGemSlider)
   fiss.saveFloat("fLoseOtherMinValueSlider", fLoseOtherMinValueSlider)
+  fiss.saveFloat("fMinItemWeightToCheckSlider", fMinItemWeightToCheckSlider)
   fiss.saveFloat("fLoseOtherTotalValueSlider", fLoseOtherTotalValueSlider)
   fiss.saveFloat("fMaxItemsToCheckSlider", fMaxItemsToCheckSlider)
   fiss.saveFloat("fBossChestChanceSlider", fBossChestChanceSlider)
@@ -5589,6 +5635,7 @@ bool function bSaveUserSettings(String sFileName)
   fiss.saveFloat("fMaxRapes", fMaxRapes)
   fiss.saveFloat("fMaxRapists", fMaxRapists)
   fiss.saveBool("bExcludeQuestItems", bExcludeQuestItems)
+  fiss.saveBool("bExcludeEnchantedItems", bExcludeEnchantedItems)
   fiss.saveBool("bLoseItem", bLoseItem)
   fiss.saveBool("bLoseGold", bLoseGold)
   fiss.saveBool("bLoseArkayMark", bLoseArkayMark)
@@ -5607,7 +5654,7 @@ bool function bSaveUserSettings(String sFileName)
   fiss.saveBool("bLoseScroll", bLoseScroll)
   fiss.saveBool("bLoseIngredient", bLoseIngredient)
   fiss.saveBool("bCheckKeyword", bCheckKeyword)
-  fiss.saveBool("bCheckWeight", bCheckWeight)
+  ;fiss.saveBool("bCheckWeight", bCheckWeight)
   fiss.saveBool("bLevelReduce", bLevelReduce)
   fiss.saveBool("bOnlyLoseSkillXP", bOnlyLoseSkillXP)
   fiss.saveInt("iSelectedCustomRPSlot", iSelectedCustomRPSlot)
@@ -5639,6 +5686,7 @@ function checkMods()
   bSKSEOK = bCheckSKSE()
   bUIEOK = bCheckUIE()
   bFISSOK = bCheckFISS()
+  bMOAUtilOK = bCheckMOAUtil()
   bARCCOK = bCheckARCC()
   bPUOK = bCheckPUtil()
   bPYOK = bCheckPYUtil()

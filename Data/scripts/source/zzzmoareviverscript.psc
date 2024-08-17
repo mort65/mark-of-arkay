@@ -224,6 +224,10 @@ event OnEnterBleedout()
     bInBleedoutAnim = False
     Game.DisablePlayerControls()
     SendModEvent("dhlp-Suspend")
+	If ConfigMenu.bPO3Ok
+	  PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
+	  PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
+	Endif
     fHealrate = PlayerRef.GetActorValue("HealRate")
     PlayerRef.SetActorValue("HealRate", 0.0)
     PlayerRef.RemoveSpell(Bleed)
@@ -502,7 +506,7 @@ event OnUpdate()
           endif
       endif
       Game.EnablePlayerControls()
-      Game.SetPlayerAIDriven(abAIDriven = false)
+      Game.SetPlayerAIDriven(false)
       if bfastTravel
         Game.EnableFastTravel(True)
       endif
@@ -558,7 +562,7 @@ Float function getBaseVersion()
 endfunction
 
 Float function getCurrentVersion()
-  return getBaseVersion() + 3.53
+  return getBaseVersion() + 3.55
 endfunction
 
 
@@ -782,8 +786,8 @@ function BleedoutHandler(String CurrentState)
         Debug.SetGodMode(False)
         If ConfigMenu.bPO3Ok
           PO3_SKSEFunctions.ResetActorDetection(PlayerRef)
-			    PO3_SKSEFunctions.ResetActorDetection(PlayerRef)
-		    Endif
+		  PO3_SKSEFunctions.ResetActorDetection(PlayerRef)
+		Endif
       else
         Game.EnablePlayerControls()
         PlayerRef.RemovePerk(Invulnerable)
@@ -2215,7 +2219,11 @@ function checkHealth()
       if !bInBleedout && !moaIgnoreBleedout.GetValue() && !bSurrendering
         bInBleedout = True
         Game.DisablePlayerControls()
-        SendModEvent("dhlp-Suspend")
+		SendModEvent("dhlp-Suspend")
+		If ConfigMenu.bPO3Ok
+		  PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
+		  PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
+		Endif
         bfastTravel = Game.IsFastTravelEnabled()
         Game.EnableFastTravel(False)
         ;Game.DisablePlayerControls(abMovement = True, abFighting = True, abCamSwitch = False, abLooking = False, abSneaking = True, abMenu = True, abActivate = True, abJournalTabs = False, aiDisablePOVType = 0)

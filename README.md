@@ -61,7 +61,8 @@ Some of the MCM settings can be locked from the debug page. You can set a maximu
  
 
 **Soft Requirements**
-    
+
+    [MOA Util](https://github.com/mort65/moaUtil)
     CrosshairRefEvents script hang fix
     PapyrusUtil
     Pyramid Utils
@@ -110,5 +111,4 @@ SKSE Team
 Creators of SkyUI
 Saerileth for Arkay mark model and texture
 
-[MOA Util Page](https://github.com/mort65/moaUtil)
 

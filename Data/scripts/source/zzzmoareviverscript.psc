@@ -562,7 +562,7 @@ Float function getBaseVersion()
 endfunction
 
 Float function getCurrentVersion()
-  return getBaseVersion() + 3.55
+  return getBaseVersion() + 3.56
 endfunction
 
 
@@ -2117,7 +2117,7 @@ Bool function bIsConditionSafe()
   elseif PlayerRef.GetActorValue("paralysis")
   elseif PlayerRef.GetAnimationVariableBool("bIsSynced")
   elseif NPCScript.isActorInSexAnimation(PlayerRef)
-  elseif (DhelplessInterface.isEnabled() || DhelplessInterface.IsSceneRunning())
+  elseif DhelplessInterface.IsSceneRunning()
   else
     return true
   endif
@@ -2481,7 +2481,7 @@ Bool Function bCanSurrender()
   If moaState.getValue() != 1
   ElseIf Utility.IsInMenuMode()
   ElseIf (ConfigMenu.iNotTradingAftermath != 1)
-  elseif DhelplessInterface.isEnabled() || DhelplessInterface.IsSceneRunning()
+  elseif DhelplessInterface.IsSceneRunning()
     Debug.Notification("$mrt_MarkofArkay_Notification_Surrender_Dhelpless_Error")
   elseif NPCScript.isActorInSexAnimation(playerRef)
   Elseif playerRef.IsFlying()

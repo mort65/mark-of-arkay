@@ -154,6 +154,7 @@ Quest property moaSoulMark01 auto
 GlobalVariable property moaState auto
 Quest property moaThiefNPC01 auto
 Bool Property bSoulMarkActivated = False Auto Hidden
+Keyword Property actorBusy_kwd Auto
 
 Bool bAnyItemRemoved_ThisRespawn
 Bool bAnySoulRemoved_ThisRespawn
@@ -283,6 +284,9 @@ event OnInit()
     ConfigMenu.moaHealthMonitor.Start()
   endif
   moaBleedoutHandlerState.SetValue(0)
+  if ConfigMenu.bPO3OK
+    PO3_SKSEFunctions.RemoveKeywordFromRef(PlayerRef, actorBusy_kwd)
+  endif
   PriorityArray = new Float[5]
   SkillScript = ReviverQuest As zzzmoaskillcursescript
   ItemScript = ReviverQuest As zzzmoaitemcursescript
@@ -516,6 +520,7 @@ event OnUpdate()
       If ConfigMenu.bPO3Ok
         PO3_SKSEFunctions.ResetActorDetection(PlayerRef)
         PO3_SKSEFunctions.ResetActorDetection(PlayerRef)
+        PO3_SKSEFunctions.RemoveKeywordFromRef(PlayerRef, actorBusy_kwd)
       Endif
       RapeScript.PacifyNPC.SetValueInt(0)
       SendModEvent("dhlp-Resume")
@@ -562,7 +567,7 @@ Float function getBaseVersion()
 endfunction
 
 Float function getCurrentVersion()
-  return getBaseVersion() + 3.56
+  return getBaseVersion() + 3.57
 endfunction
 
 
@@ -710,6 +715,9 @@ function BleedoutHandler(String CurrentState)
     bWasSwimming = False
   endif
   moaBleedoutHandlerState.SetValue(1)
+  if ConfigMenu.bPO3OK
+    PO3_SKSEFunctions.AddKeywordToRef(PlayerRef, actorBusy_kwd)
+  endif
   LowHealthImod.Remove()
   SetVars()
   NPCScript.DetectFollowers()
@@ -1347,6 +1355,9 @@ function aftermathHandler()
       Attacker = None
       ToggleSaving(True)
       moaBleedoutHandlerState.SetValue(0)
+      if ConfigMenu.bPO3OK
+        PO3_SKSEFunctions.RemoveKeywordFromRef(PlayerRef, actorBusy_kwd)
+      endif
       LowHealthImod.Remove()
       GoToState("")
       Game.QuitToMainMenu()
@@ -2401,6 +2412,9 @@ function surrenderHandler()
   endif
   ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Surrendering...")
   moaBleedoutHandlerState.SetValue(2)
+  if ConfigMenu.bPO3OK
+    PO3_SKSEFunctions.AddKeywordToRef(playerref, actorBusy_kwd)
+  endif
   isBeast = False
   RegisterForSingleUpdate(3.0)
   if PlayerRef.IsOnMount()

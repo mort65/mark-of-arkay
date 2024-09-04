@@ -5889,6 +5889,7 @@ function moaStop(Bool bReset=False)
     if bPO3OK
     	PO3_SKSEFunctions.RemoveKeywordFromRef(PlayerRef, ReviveScript.actorBusy_kwd)
     endif
+    playerRef.SendModEvent("moa-Free")
     PlayerRef.DispelSpell(ArkayBlessing)
     PlayerRef.RemoveSpell(ReviveScript.Bleed)
     PlayerRef.DispelSpell(RevivalPower)

@@ -287,6 +287,7 @@ event OnInit()
   if ConfigMenu.bPO3OK
     PO3_SKSEFunctions.RemoveKeywordFromRef(PlayerRef, actorBusy_kwd)
   endif
+  SendModEvent("moa-Free")
   PriorityArray = new Float[5]
   SkillScript = ReviverQuest As zzzmoaskillcursescript
   ItemScript = ReviverQuest As zzzmoaitemcursescript
@@ -522,6 +523,7 @@ event OnUpdate()
         PO3_SKSEFunctions.ResetActorDetection(PlayerRef)
         PO3_SKSEFunctions.RemoveKeywordFromRef(PlayerRef, actorBusy_kwd)
       Endif
+      SendModEvent("moa-Free")
       RapeScript.PacifyNPC.SetValueInt(0)
       SendModEvent("dhlp-Resume")
     endif
@@ -718,6 +720,7 @@ function BleedoutHandler(String CurrentState)
   if ConfigMenu.bPO3OK
     PO3_SKSEFunctions.AddKeywordToRef(PlayerRef, actorBusy_kwd)
   endif
+  SendModEvent("moa-Busy", numArg = 1.0)
   LowHealthImod.Remove()
   SetVars()
   NPCScript.DetectFollowers()
@@ -1355,6 +1358,7 @@ function aftermathHandler()
       Attacker = None
       ToggleSaving(True)
       moaBleedoutHandlerState.SetValue(0)
+      SendModEvent("moa-Free")
       if ConfigMenu.bPO3OK
         PO3_SKSEFunctions.RemoveKeywordFromRef(PlayerRef, actorBusy_kwd)
       endif
@@ -1883,6 +1887,7 @@ function SetGameVars(Bool abFast=False)
   if ConfigMenu.iSurrenderKey > 0
     RegisterForKey(ConfigMenu.iSurrenderKey)
   endif
+  RegisterForModEvent("moa_Surrender", "ON_MOA_Surrender")
   RapeScript.RegisterForModEvent("MOA_Int_PlayerLoadsGame", "On_MOA_Int_PlayerLoadsGame")
   sendModEvent("MOA_Int_PlayerLoadsGame")
   ItemScript.RegisterItemCheckers()
@@ -2412,6 +2417,7 @@ function surrenderHandler()
   endif
   ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Surrendering...")
   moaBleedoutHandlerState.SetValue(2)
+  SendModEvent("moa-Busy", numArg = 2.0)
   if ConfigMenu.bPO3OK
     PO3_SKSEFunctions.AddKeywordToRef(playerref, actorBusy_kwd)
   endif
@@ -2500,7 +2506,7 @@ Bool Function bCanSurrender()
   elseif NPCScript.isActorInSexAnimation(playerRef)
   Elseif playerRef.IsFlying()
   Elseif playerRef.IsSwimming() 
-  ElseIf !PlayerRef.IsInCombat()
+  ;ElseIf !PlayerRef.IsInCombat()
   Elseif NPCScript.iInBeastForm()
   ElseIf bInBleedout
   Elseif bSoulMarkActivated
@@ -2553,6 +2559,9 @@ state Bleedout1
   Event OnKeyDown(int keyCode)
   endevent
 
+  event On_MOA_Surrender(string eventName, string strArg, float numArg, Form sender)
+  endevent
+
   event OnUpdate()
     if (ConfigMenu.iSaveOption > 0)
       Game.SetInChargen(abDisableSaving=True, abDisableWaiting=False, abShowControlsDisabledMessage=True)
@@ -2597,6 +2606,9 @@ state Bleedout2
   Event OnKeyDown(int keyCode)
   endevent
 
+  event On_MOA_Surrender(string eventName, string strArg, float numArg, Form sender)
+  endevent
+
   event OnUpdate()
     if (ConfigMenu.iSaveOption > 0)
       Game.SetInChargen(abDisableSaving=True, abDisableWaiting=False, abShowControlsDisabledMessage=True)
@@ -2613,12 +2625,24 @@ Event OnKeyDown(int keyCode)
   If Utility.IsInMenuMode() 
     return
   endif
+  if PlayerRef.IsInCombat()
+    surrenderHandler()
+  else
+    Debug.Notification("$mrt_MarkofArkay_Notification_CannotSurrender")
+  endif
+endevent
+
+event On_MOA_Surrender(string eventName, string strArg, float numArg, Form sender)
+  Debug.Trace("MarkOfArkay: Surrender called from " + Sender + ", (" + Sender.GetName() + ")")
   surrenderHandler()
 endevent
 
 State Surrender
 
   Event OnKeyDown(int keyCode)
+  endevent
+
+  event On_MOA_Surrender(string eventName, string strArg, float numArg, Form sender)
   endevent
   
   event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile, Bool abPowerattack, Bool abSneakAttack, Bool abBashAttack, Bool abHitBlocked)

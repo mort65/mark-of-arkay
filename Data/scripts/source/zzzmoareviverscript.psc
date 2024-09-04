@@ -225,32 +225,32 @@ event OnEnterBleedout()
     bInBleedoutAnim = False
     Game.DisablePlayerControls()
     SendModEvent("dhlp-Suspend")
-	If ConfigMenu.bPO3Ok
-	  PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
-	  PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
-	Endif
-    fHealrate = PlayerRef.GetActorValue("HealRate")
-    PlayerRef.SetActorValue("HealRate", 0.0)
+    If ConfigMenu.bPO3Ok
+     PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
+     PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
+   Endif
+   fHealrate = PlayerRef.GetActorValue("HealRate")
+   PlayerRef.SetActorValue("HealRate", 0.0)
+   PlayerRef.RemoveSpell(Bleed)
+   PlayerRef.AddSpell(Bleed, False)
+   PlayerRef.AddPerk(Invulnerable)
+   Debug.SetGodMode(True)
+   bfastTravel = Game.IsFastTravelEnabled()
+   Game.EnableFastTravel(False)
+   isBeast = NPCScript.iInBeastForm()
+   BleedoutHandler(ToggleState())
+   if GetState() == ""
+    Attacker = None
     PlayerRef.RemoveSpell(Bleed)
-    PlayerRef.AddSpell(Bleed, False)
-    PlayerRef.AddPerk(Invulnerable)
-    Debug.SetGodMode(True)
-    bfastTravel = Game.IsFastTravelEnabled()
-    Game.EnableFastTravel(False)
-    isBeast = NPCScript.iInBeastForm()
-    BleedoutHandler(ToggleState())
-    if GetState() == ""
-      Attacker = None
-      PlayerRef.RemoveSpell(Bleed)
-      PlayerRef.SetActorValue("HealRate", fHealrate)
-      ;Game.EnablePlayerControls()
-      LowHealthImod.Remove()
-      RegisterForSingleUpdate(3.0)
-      bRevived = true
-      ToggleSaving(True)
-      bInBleedout = False
-    endif
+    PlayerRef.SetActorValue("HealRate", fHealrate)
+    ;Game.EnablePlayerControls()
+    LowHealthImod.Remove()
+    RegisterForSingleUpdate(3.0)
+    bRevived = true
+    ToggleSaving(True)
+    bInBleedout = False
   endif
+endif
 endevent
 
 event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile, Bool abPowerattack, Bool abSneakAttack, Bool abBashAttack, Bool abHitBlocked)
@@ -504,11 +504,11 @@ event OnUpdate()
     Endif
     if bRevived
       if bIsRaped && !NPCScript.isActorInSexAnimation(PlayerRef)
-          RapeScript.Victimized01.clear()
-          if (ConfigMenu.moaRapeVictimIdleState.GetValue() as Int)
-            debug.SendAnimationEvent(PlayerRef, "OffsetBoundStandingStart")
-            utility.wait(1.0)
-          endif
+        RapeScript.Victimized01.clear()
+        if (ConfigMenu.moaRapeVictimIdleState.GetValue() as Int)
+          debug.SendAnimationEvent(PlayerRef, "OffsetBoundStandingStart")
+          utility.wait(1.0)
+        endif
       endif
       Game.EnablePlayerControls()
       Game.SetPlayerAIDriven(false)
@@ -517,16 +517,20 @@ event OnUpdate()
       endif
       bRevived = false
       bfastTravel = False
-      moaBleedoutHandlerState.SetValue(0)
       If ConfigMenu.bPO3Ok
         PO3_SKSEFunctions.ResetActorDetection(PlayerRef)
         PO3_SKSEFunctions.ResetActorDetection(PlayerRef)
-        PO3_SKSEFunctions.RemoveKeywordFromRef(PlayerRef, actorBusy_kwd)
       Endif
       SendModEvent("moa-Free")
       RapeScript.PacifyNPC.SetValueInt(0)
       SendModEvent("dhlp-Resume")
     endif
+  endif
+  if (GetState() == "")
+    if ConfigMenu.bPO3Ok
+      PO3_SKSEFunctions.RemoveKeywordFromRef(PlayerRef, actorBusy_kwd)
+    endif
+    moaBleedoutHandlerState.SetValue(0)
   endif
 endevent
 
@@ -797,41 +801,41 @@ function BleedoutHandler(String CurrentState)
         Debug.SetGodMode(False)
         If ConfigMenu.bPO3Ok
           PO3_SKSEFunctions.ResetActorDetection(PlayerRef)
-		  PO3_SKSEFunctions.ResetActorDetection(PlayerRef)
-		Endif
+          PO3_SKSEFunctions.ResetActorDetection(PlayerRef)
+        Endif
       else
         Game.EnablePlayerControls()
         PlayerRef.RemovePerk(Invulnerable)
         Debug.SetGodMode(False)
-    		If ConfigMenu.bPO3Ok
-    			PO3_SKSEFunctions.ResetActorDetection(PlayerRef)
-    			PO3_SKSEFunctions.ResetActorDetection(PlayerRef)
-    		Endif
-      endif
-      Utility.Wait(ConfigMenu.fBleedoutTimeSlider)
+        If ConfigMenu.bPO3Ok
+         PO3_SKSEFunctions.ResetActorDetection(PlayerRef)
+         PO3_SKSEFunctions.ResetActorDetection(PlayerRef)
+       Endif
+     endif
+     Utility.Wait(ConfigMenu.fBleedoutTimeSlider)
+   endif
+   if !PlayerRef.IsBleedingOut() && (!bInBleedoutAnim || (playerRef.GetActorValuePercentage("Health") > ConfigMenu.fHealthPercTrigger)) ;player revived with potion or another script and is alive after 6 secs
+    if ConfigMenu.iTotalRevives < 99999999
+      ConfigMenu.iTotalRevives += 1
     endif
-    if !PlayerRef.IsBleedingOut() && (!bInBleedoutAnim || (playerRef.GetActorValuePercentage("Health") > ConfigMenu.fHealthPercTrigger)) ;player revived with potion or another script and is alive after 6 secs
-      if ConfigMenu.iTotalRevives < 99999999
-        ConfigMenu.iTotalRevives += 1
-      endif
-      Restore(iRevivePlayer=1, bReviveFollower=ConfigMenu.bPlayerProtectFollower, bEffect=ConfigMenu.bIsEffectEnabled, sTrace="MarkOfArkay: Player is not in bleedout. (probably revived by manual drinking of a healing potion.)")
-      return
-    else
-      reviveHandler(currentState)
-    endif
+    Restore(iRevivePlayer=1, bReviveFollower=ConfigMenu.bPlayerProtectFollower, bEffect=ConfigMenu.bIsEffectEnabled, sTrace="MarkOfArkay: Player is not in bleedout. (probably revived by manual drinking of a healing potion.)")
+    return
   else
-    Utility.Wait(ConfigMenu.fBleedoutTimeSlider)
-    if !PlayerRef.IsBleedingOut() && (!bInBleedoutAnim || playerRef.GetActorValuePercentage("Health") > ConfigMenu.fHealthPercTrigger)
-      if ConfigMenu.iTotalRevives < 99999999
-        ConfigMenu.iTotalRevives += 1
-      endif
-      Restore(iRevivePlayer=0, bReviveFollower=False, bEffect=False, sTrace="MarkOfArkay: Player can't be revived but isn't in bleedout.")
-      return
-    else
-      ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Player can't be revived...")
-      RevivePlayer(False)
-    endif
+    reviveHandler(currentState)
   endif
+else
+  Utility.Wait(ConfigMenu.fBleedoutTimeSlider)
+  if !PlayerRef.IsBleedingOut() && (!bInBleedoutAnim || playerRef.GetActorValuePercentage("Health") > ConfigMenu.fHealthPercTrigger)
+    if ConfigMenu.iTotalRevives < 99999999
+      ConfigMenu.iTotalRevives += 1
+    endif
+    Restore(iRevivePlayer=0, bReviveFollower=False, bEffect=False, sTrace="MarkOfArkay: Player can't be revived but isn't in bleedout.")
+    return
+  else
+    ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Player can't be revived...")
+    RevivePlayer(False)
+  endif
+endif
 endfunction
 
 function reviveHandler(string currentState)
@@ -1207,112 +1211,112 @@ function rapeHandler()
   If ConfigMenu.bPO3Ok
    PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
    PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
+ Endif
+ if ConfigMenu.bFadeToBlack
+  FastFadeOut.Apply()
+  Utility.Wait(1.0)
+  FastFadeOut.PopTo(BlackScreen)
+endif
+NPCScript.HoldFollowers()
+restoreActorHealth(playerRef, bSurrendering)
+unParalyzeActor(PlayerRef)
+RapeScript.Victim1.ForceRefTo(PlayerRef)
+PlayerRef.EvaluatePackage()
+utility.wait(1.0)
+if ConfigMenu.bFadeToBlack
+  BlackScreen.PopTo(FadeIn)
+endif
+Game.SetPlayerAIDriven(True)
+RapeScript.sAnimInterface = RapeScript.getInterface()
+CrimeGold = 0
+CrimeGoldViolent = 0
+CrimeFaction = None
+Actor[] rapistActors = RapeScript.getRapists(PlayerRef, Attacker)
+bIsRaped = RapeScript.rapePlayer(rapistActors)
+if bIsRaped
+  PlayerRef.setGhost(True)
+  If ConfigMenu.bPO3Ok
+    PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
+    PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
   Endif
-  if ConfigMenu.bFadeToBlack
-    FastFadeOut.Apply()
-    Utility.Wait(1.0)
-    FastFadeOut.PopTo(BlackScreen)
-  endif
-  NPCScript.HoldFollowers()
-  restoreActorHealth(playerRef, bSurrendering)
-  unParalyzeActor(PlayerRef)
-  RapeScript.Victim1.ForceRefTo(PlayerRef)
-  PlayerRef.EvaluatePackage()
-  utility.wait(1.0)
-  if ConfigMenu.bFadeToBlack
-    BlackScreen.PopTo(FadeIn)
-  endif
-  Game.SetPlayerAIDriven(True)
-  RapeScript.sAnimInterface = RapeScript.getInterface()
-  CrimeGold = 0
-  CrimeGoldViolent = 0
-  CrimeFaction = None
-  Actor[] rapistActors = RapeScript.getRapists(PlayerRef, Attacker)
-  bIsRaped = RapeScript.rapePlayer(rapistActors)
-  if bIsRaped
+  int i = Utility.randomInt(0, (ConfigMenu.fMaxRapes - 1) As int)
+  while bIsRaped && (i > 0)
+    Game.DisablePlayerControls(abMovement=True, abFighting=True, abCamSwitch=True, abLooking=False, abSneaking=True, abMenu=True, abActivate=True, abJournalTabs=False)
+    if (!rapistActors || !rapistActors.Length)
+      rapistActors = RapeScript.getRapists(PlayerRef, Attacker)
+    elseif (rapistActors.find(none) > -1)
+      NPCScript.checkedActors.revert()
+      int j = rapistActors.Length
+      int c = 0
+      while j > 0
+        j -= 1
+        if (!rapistActors[j] || (rapistActors[j] == None))
+          c += 1
+        else
+          NPCScript.checkedActors.addform(rapistActors[j])
+        endif
+      endwhile
+      if (((ConfigMenu.fMaxRapists > 1.0) && (c < 2)) || ((ConfigMenu.fMaxRapists > 2.0) && (c < 3)) || ((ConfigMenu.fMaxRapists > 3.0) && (c < 4)))
+        rapistActors = RapeScript.getRapists(PlayerRef, Attacker)
+        if (rapistActors.find(none) > -1)
+          int cc = 0
+          i = rapistActors.Length
+          while i > 0
+            i -= 1
+            if (!rapistActors[i] || (rapistActors[i] == None))
+              cc += 1
+            endif
+          endWhile
+          if cc > c
+            actor act
+            i = NPCScript.checkedActors.getSize()
+            while i > 0 && (rapistActors.find(none) > -1)
+              i -= 1
+              j = rapistActors.find(none)
+              act = NPCScript.checkedActors.getAt(i) as actor
+              if (j > -1) && act && (rapistActors.find(act) == -1) && !act.isdead() && !act.IsDisabled() && act.IS3dLoaded()
+                rapistActors[j] = act
+              endif
+            endWhile
+          endif
+        endif
+      endif
+      NPCScript.checkedActors.revert()
+    endif
+    RapeScript.shuffleActorArray(rapistActors)
+    bIsRaped = RapeScript.rapePlayer(rapistActors)
     PlayerRef.setGhost(True)
     If ConfigMenu.bPO3Ok
       PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
       PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
     Endif
-    int i = Utility.randomInt(0, (ConfigMenu.fMaxRapes - 1) As int)
-    while bIsRaped && (i > 0)
-      Game.DisablePlayerControls(abMovement=True, abFighting=True, abCamSwitch=True, abLooking=False, abSneaking=True, abMenu=True, abActivate=True, abJournalTabs=False)
-      if (!rapistActors || !rapistActors.Length)
-        rapistActors = RapeScript.getRapists(PlayerRef, Attacker)
-      elseif (rapistActors.find(none) > -1)
-        NPCScript.checkedActors.revert()
-        int j = rapistActors.Length
-        int c = 0
-        while j > 0
-          j -= 1
-          if (!rapistActors[j] || (rapistActors[j] == None))
-            c += 1
-          else
-            NPCScript.checkedActors.addform(rapistActors[j])
-          endif
-        endwhile
-        if (((ConfigMenu.fMaxRapists > 1.0) && (c < 2)) || ((ConfigMenu.fMaxRapists > 2.0) && (c < 3)) || ((ConfigMenu.fMaxRapists > 3.0) && (c < 4)))
-          rapistActors = RapeScript.getRapists(PlayerRef, Attacker)
-          if (rapistActors.find(none) > -1)
-            int cc = 0
-            i = rapistActors.Length
-            while i > 0
-              i -= 1
-              if (!rapistActors[i] || (rapistActors[i] == None))
-                cc += 1
-              endif
-            endWhile
-            if cc > c
-              actor act
-              i = NPCScript.checkedActors.getSize()
-              while i > 0 && (rapistActors.find(none) > -1)
-                i -= 1
-                j = rapistActors.find(none)
-                act = NPCScript.checkedActors.getAt(i) as actor
-                if (j > -1) && act && (rapistActors.find(act) == -1) && !act.isdead() && !act.IsDisabled() && act.IS3dLoaded()
-                  rapistActors[j] = act
-                endif
-              endWhile
-            endif
-          endif
-        endif
-        NPCScript.checkedActors.revert()
-      endif
-      RapeScript.shuffleActorArray(rapistActors)
-      bIsRaped = RapeScript.rapePlayer(rapistActors)
-      PlayerRef.setGhost(True)
-      If ConfigMenu.bPO3Ok
-        PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
-        PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
-      Endif
-      i -= 1
-    endwhile
-    bIsRaped = true
+    i -= 1
+  endwhile
+  bIsRaped = true
+endif
+If !PlayerRef.HasMagicEffect(VoiceMakeEthereal)
+  PlayerRef.setGhost(False)
+Endif
+PlayerRef.RemoveFromFaction(RapeScript.CalmFaction)
+if attacker
+  Attacker.RemoveFromFaction(RapeScript.CalmFaction)
+  if Configmenu.bPYOK
+    PyramidUtils.SetActorCalmed(attacker, false)
   endif
-  If !PlayerRef.HasMagicEffect(VoiceMakeEthereal)
-    PlayerRef.setGhost(False)
-  Endif
-  PlayerRef.RemoveFromFaction(RapeScript.CalmFaction)
-  if attacker
-    Attacker.RemoveFromFaction(RapeScript.CalmFaction)
-    if Configmenu.bPYOK
-      PyramidUtils.SetActorCalmed(attacker, false)
-    endif
+endif
+Game.DisablePlayerControls(abMovement=True, abFighting=True, abCamSwitch=True, abLooking=False, abSneaking=True, abMenu=True, abActivate=True, abJournalTabs=False)
+restoreCrime()
+ConfigMenu.bIsLoggingEnabled && Debug.trace("MarkOfArkay: Player raped = " + bIsRaped)
+RapeScript.unPacify()
+if !NPCScript.isActorInSexAnimation(PlayerRef) && (ConfigMenu.moaRapeVictimIdleState.GetValue() as Int)
+  if bIsRaped
+    debug.SendAnimationEvent(PlayerRef, "OffsetBoundStandingStart")
+    RapeScript.Victimized01.ForceRefTo(playerRef)
+  else
+    debug.SendAnimationEvent(PlayerRef, "OffsetBoundStandingCut")
   endif
-  Game.DisablePlayerControls(abMovement=True, abFighting=True, abCamSwitch=True, abLooking=False, abSneaking=True, abMenu=True, abActivate=True, abJournalTabs=False)
-  restoreCrime()
-  ConfigMenu.bIsLoggingEnabled && Debug.trace("MarkOfArkay: Player raped = " + bIsRaped)
-  RapeScript.unPacify()
-  if !NPCScript.isActorInSexAnimation(PlayerRef) && (ConfigMenu.moaRapeVictimIdleState.GetValue() as Int)
-    if bIsRaped
-      debug.SendAnimationEvent(PlayerRef, "OffsetBoundStandingStart")
-      RapeScript.Victimized01.ForceRefTo(playerRef)
-    else
-      debug.SendAnimationEvent(PlayerRef, "OffsetBoundStandingCut")
-    endif
-  endif
-  NPCScript.respawnFollowers()
+endif
+NPCScript.respawnFollowers()
 endFunction
 
 
@@ -1694,35 +1698,35 @@ function skillCurseHandler()
 endFunction
 
 function itemCurseHandler()
-   Debug.TraceConditional("MarkOfArkay: Removing items from the player...", ConfigMenu.bIsLoggingEnabled)
-    Int totalDragonSouls = PlayerRef.GetActorValue("DragonSouls") as Int
-    if !Configmenu.bLoseForever
-      LostItemsChest.RemoveAllItems(ItemScript.PrevLostItemsChest, true, true)
-    endif
-    Float fStart = Utility.GetCurrentRealTime()
-    ItemScript.loseItems()
-    bAnyItemRemoved_ThisRespawn = (LostItemsChest.GetNumItems() > 0)
-    bAnySoulRemoved_ThisRespawn = ((PlayerRef.GetActorValue("DragonSouls") as Int) < totalDragonSouls)
-    ItemScript.PrevLostItemsChest.RemoveAllItems(LostItemsChest, true, true)
-    Debug.TraceConditional("MarkOfArkay: Removing items from the player finished in " + (Utility.GetCurrentRealTime() - fStart) + " seconds.", ConfigMenu.bIsLoggingEnabled)
-    if ConfigMenu.bIsLoggingEnabled
-      Int c = LostItemsChest.GetNumItems()
-      String str = "MarkOfArkay: Currently removed items -> "
-      if ItemScript.fLostSouls > 0.0
-        c += 1
-        str += c
-        str += "("
-        str += (c - 1)
-      else
-        str += c
-        str += "("
-        str += c
-      endif
-      str += " + "
-      str += (ItemScript.fLostSouls As Int)
-      str += " dragon souls)"
-      Debug.Trace(str)
-    endif
+ Debug.TraceConditional("MarkOfArkay: Removing items from the player...", ConfigMenu.bIsLoggingEnabled)
+ Int totalDragonSouls = PlayerRef.GetActorValue("DragonSouls") as Int
+ if !Configmenu.bLoseForever
+  LostItemsChest.RemoveAllItems(ItemScript.PrevLostItemsChest, true, true)
+endif
+Float fStart = Utility.GetCurrentRealTime()
+ItemScript.loseItems()
+bAnyItemRemoved_ThisRespawn = (LostItemsChest.GetNumItems() > 0)
+bAnySoulRemoved_ThisRespawn = ((PlayerRef.GetActorValue("DragonSouls") as Int) < totalDragonSouls)
+ItemScript.PrevLostItemsChest.RemoveAllItems(LostItemsChest, true, true)
+Debug.TraceConditional("MarkOfArkay: Removing items from the player finished in " + (Utility.GetCurrentRealTime() - fStart) + " seconds.", ConfigMenu.bIsLoggingEnabled)
+if ConfigMenu.bIsLoggingEnabled
+  Int c = LostItemsChest.GetNumItems()
+  String str = "MarkOfArkay: Currently removed items -> "
+  if ItemScript.fLostSouls > 0.0
+    c += 1
+    str += c
+    str += "("
+    str += (c - 1)
+  else
+    str += c
+    str += "("
+    str += c
+  endif
+  str += " + "
+  str += (ItemScript.fLostSouls As Int)
+  str += " dragon souls)"
+  Debug.Trace(str)
+endif
 endFunction
 
 function soulMarkHandler()
@@ -1782,27 +1786,27 @@ function bossChestHandler()
 endfunction
 
 function thiefHandler()
-    if !moaThiefNPC01.IsRunning() || moaThiefNPC01.GetStage() == 1
-      ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Finding a hostile NPC who can steal from player ...")
-      NPCScript.checkedActors.revert()
-      NPCScript.DetectThiefNPC()
-      NPCScript.checkedActors.revert()
-      if Thief
-        if !ThiefNPC01.GetActorReference() || (ConfigMenu.bAlwaysSpawn && (ThiefNPC01.GetActorReference() != Thief))
-          ThiefNPC.ForceRefTo(Thief)
-        endif
-        if !moaThiefNPC01.IsRunning()
-          moaThiefNPC01.Start()
-        endif
-        ThiefMarker.MoveTo(Thief)
-        if ThiefNPC01.GetActorReference() && (ThiefNPC.GetActorReference() && (Thief == ThiefNPC.GetActorReference()))
-          RemoveStolenItemMarkers(ThiefNPC01.GetActorReference())
-        endif
-      elseif moaThiefNPC01.IsRunning() && !bCursed() ;if cursed, location change event will respawn or stop the quest
-        RemoveStolenItemMarkers(ThiefNPC.GetReference() As Actor)
-        StopAndConfirm(moaThiefNPC01, 3, 25)
+  if !moaThiefNPC01.IsRunning() || moaThiefNPC01.GetStage() == 1
+    ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Finding a hostile NPC who can steal from player ...")
+    NPCScript.checkedActors.revert()
+    NPCScript.DetectThiefNPC()
+    NPCScript.checkedActors.revert()
+    if Thief
+      if !ThiefNPC01.GetActorReference() || (ConfigMenu.bAlwaysSpawn && (ThiefNPC01.GetActorReference() != Thief))
+        ThiefNPC.ForceRefTo(Thief)
       endif
+      if !moaThiefNPC01.IsRunning()
+        moaThiefNPC01.Start()
+      endif
+      ThiefMarker.MoveTo(Thief)
+      if ThiefNPC01.GetActorReference() && (ThiefNPC.GetActorReference() && (Thief == ThiefNPC.GetActorReference()))
+        RemoveStolenItemMarkers(ThiefNPC01.GetActorReference())
+      endif
+    elseif moaThiefNPC01.IsRunning() && !bCursed() ;if cursed, location change event will respawn or stop the quest
+      RemoveStolenItemMarkers(ThiefNPC.GetReference() As Actor)
+      StopAndConfirm(moaThiefNPC01, 3, 25)
     endif
+  endif
 endfunction
 
 function resurrectActors()
@@ -1988,53 +1992,53 @@ function ShowNotification()
   endif
   Int totalRemainingLives = 0
   SetVars()
-    if !(strRemovedItem == "")
-      if (strRemovedItem == "Dragon Soul")
-        Debug.Notification("$mrt_MarkofArkay_Notification_DragonSoul_Removed")
-        Debug.Notification(iDragonSoulCost)
-      endif
+  if !(strRemovedItem == "")
+    if (strRemovedItem == "Dragon Soul")
+      Debug.Notification("$mrt_MarkofArkay_Notification_DragonSoul_Removed")
+      Debug.Notification(iDragonSoulCost)
     endif
-    if (bArkayMarkRevive)
-      if ConfigMenu.fValueMarkSlider == 0.0
-        return
-      else
-        totalRemainingLives += (iArkayMarkCount / iArkayMarkCost) As Int
-      endif
-    endif
-    if (bBSoulGemRevive)
-      if ConfigMenu.fValueBSoulGemSlider == 0.0
-        return
-      else
-        totalRemainingLives += (iBSoulGemCount / iBSoulGemCost) As Int
-      endif
-    endif
-    if (bGSoulGemRevive)
-      if ConfigMenu.fValueGSoulGemSlider == 0.0
-        return
-      else
-        totalRemainingLives += (iGSoulGemCount / iGSoulGemCost) As Int
-      endif
-    endif
-    if (bDragonSoulRevive)
-      if ConfigMenu.fValueSoulSlider == 0.0
-        return
-      else
-        totalRemainingLives += (fDragonSoulCount / iDragonSoulCost) As Int
-      endif
-    endif
-    if (bSeptimRevive)
-      if ConfigMenu.fValueGoldSlider == 0.0
-        return
-      else
-        totalRemainingLives += (iSeptimCount / iSeptimCost) As Int
-      endif
-    endif
-    if (totalRemainingLives > 0)
-      Debug.Notification("$mrt_MarkofArkay_Notification_totalRemainingTrades")
-      Debug.Notification(totalRemainingLives)
+  endif
+  if (bArkayMarkRevive)
+    if ConfigMenu.fValueMarkSlider == 0.0
+      return
     else
-      Debug.Notification("$mrt_MarkofArkay_Notification_NoRemainingTrades")
+      totalRemainingLives += (iArkayMarkCount / iArkayMarkCost) As Int
     endif
+  endif
+  if (bBSoulGemRevive)
+    if ConfigMenu.fValueBSoulGemSlider == 0.0
+      return
+    else
+      totalRemainingLives += (iBSoulGemCount / iBSoulGemCost) As Int
+    endif
+  endif
+  if (bGSoulGemRevive)
+    if ConfigMenu.fValueGSoulGemSlider == 0.0
+      return
+    else
+      totalRemainingLives += (iGSoulGemCount / iGSoulGemCost) As Int
+    endif
+  endif
+  if (bDragonSoulRevive)
+    if ConfigMenu.fValueSoulSlider == 0.0
+      return
+    else
+      totalRemainingLives += (fDragonSoulCount / iDragonSoulCost) As Int
+    endif
+  endif
+  if (bSeptimRevive)
+    if ConfigMenu.fValueGoldSlider == 0.0
+      return
+    else
+      totalRemainingLives += (iSeptimCount / iSeptimCost) As Int
+    endif
+  endif
+  if (totalRemainingLives > 0)
+    Debug.Notification("$mrt_MarkofArkay_Notification_totalRemainingTrades")
+    Debug.Notification(totalRemainingLives)
+  else
+    Debug.Notification("$mrt_MarkofArkay_Notification_NoRemainingTrades")
+  endif
 endfunction
 
 function SortPriorityArray() ;sort priority so higher priority and those items that can be traded are first
@@ -2235,11 +2239,11 @@ function checkHealth()
       if !bInBleedout && !moaIgnoreBleedout.GetValue() && !bSurrendering
         bInBleedout = True
         Game.DisablePlayerControls()
-		SendModEvent("dhlp-Suspend")
-		If ConfigMenu.bPO3Ok
-		  PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
-		  PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
-		Endif
+        SendModEvent("dhlp-Suspend")
+        If ConfigMenu.bPO3Ok
+          PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
+          PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
+        Endif
         bfastTravel = Game.IsFastTravelEnabled()
         Game.EnableFastTravel(False)
         ;Game.DisablePlayerControls(abMovement = True, abFighting = True, abCamSwitch = False, abLooking = False, abSneaking = True, abMenu = True, abActivate = True, abJournalTabs = False, aiDisablePOVType = 0)
@@ -2422,7 +2426,7 @@ function surrenderHandler()
     PO3_SKSEFunctions.AddKeywordToRef(playerref, actorBusy_kwd)
   endif
   isBeast = False
-  RegisterForSingleUpdate(3.0)
+  ;RegisterForSingleUpdate(3.0)
   if PlayerRef.IsOnMount()
     PlayerRef.Dismount()
     utility.wait(3.0)
@@ -2446,55 +2450,55 @@ function surrenderHandler()
           Attacker = npc2
           bFound = True
         else
-           NPCScript.checkedActors.addform(npc2)
-        endif
-      endWhile
-      NPCScript.checkedActors.revert()
-    endif
-    if bFound
-      ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: NPC for surrendering found: " + Attacker.GetActorBase().GetName() + " = " + Attacker)
-      AttackerActor.ForceRefTo(Attacker)
-      AttackerActor01.ForceRefTo(Attacker)
-    endif
-  else
-    ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Surrender to: " + Attacker.GetActorBase().GetName() + " = " + Attacker)
+         NPCScript.checkedActors.addform(npc2)
+       endif
+     endWhile
+     NPCScript.checkedActors.revert()
+   endif
+   if bFound
+    ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: NPC for surrendering found: " + Attacker.GetActorBase().GetName() + " = " + Attacker)
     AttackerActor.ForceRefTo(Attacker)
     AttackerActor01.ForceRefTo(Attacker)
   endif
-  RapeScript.Surrendered01.ForceRefTo(PlayerRef)
-  PlayerRef.EvaluatePackage()
-  utility.wait(1.0)
-  if ConfigMenu.bPO3Ok
-    PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
-    PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
-  endif 
-  PlayerRef.StopCombatAlarm()
-  RapeScript.NPCPacifier.start()
-  RapeScript.PacifyNPC.SetValueInt(1)
-  Game.DisablePlayerControls(abMovement=True, abFighting=True, abCamSwitch=True, abLooking=False, abSneaking=True, abMenu=True, abActivate=True, abJournalTabs=False)
-  stopAndConfirm(moaHostileNPCDetector)
-  stopAndConfirm(moaHostileNPCDetector01)
-  if ConfigMenu.iHostileOption == 2
-    if ConfigMenu.bNPCHasLevelRange
-      Int iMinNPCLevel = PlayerRef.GetLevel() - (ConfigMenu.fLowerNPCMaxLvlDiff As Int)
-      Int iMaxNPCLevel = PlayerRef.GetLevel() + (ConfigMenu.fHigherNPCMaxLvlDiff As Int)
-      if iMinNPCLevel < 0
-        iMinNPCLevel = 1
-      endif
-      ConfigMenu.moaLowerNPCMaxLvlDiff.SetValueInt(iMinNPCLevel)
-      ConfigMenu.moaHigherNPCMaxLvlDiff.SetValueInt(iMaxNPCLevel)
+else
+  ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Surrender to: " + Attacker.GetActorBase().GetName() + " = " + Attacker)
+  AttackerActor.ForceRefTo(Attacker)
+  AttackerActor01.ForceRefTo(Attacker)
+endif
+RapeScript.Surrendered01.ForceRefTo(PlayerRef)
+PlayerRef.EvaluatePackage()
+utility.wait(1.0)
+if ConfigMenu.bPO3Ok
+  PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
+  PO3_SKSEFunctions.PreventActorDetection(PlayerRef)
+endif 
+PlayerRef.StopCombatAlarm()
+RapeScript.NPCPacifier.start()
+RapeScript.PacifyNPC.SetValueInt(1)
+Game.DisablePlayerControls(abMovement=True, abFighting=True, abCamSwitch=True, abLooking=False, abSneaking=True, abMenu=True, abActivate=True, abJournalTabs=False)
+stopAndConfirm(moaHostileNPCDetector)
+stopAndConfirm(moaHostileNPCDetector01)
+if ConfigMenu.iHostileOption == 2
+  if ConfigMenu.bNPCHasLevelRange
+    Int iMinNPCLevel = PlayerRef.GetLevel() - (ConfigMenu.fLowerNPCMaxLvlDiff As Int)
+    Int iMaxNPCLevel = PlayerRef.GetLevel() + (ConfigMenu.fHigherNPCMaxLvlDiff As Int)
+    if iMinNPCLevel < 0
+      iMinNPCLevel = 1
     endif
-    moaHostileNPCDetector.Start()
-  elseif ConfigMenu.iHostileOption == 1
-    moaHostileNPCDetector01.Start()
+    ConfigMenu.moaLowerNPCMaxLvlDiff.SetValueInt(iMinNPCLevel)
+    ConfigMenu.moaHigherNPCMaxLvlDiff.SetValueInt(iMaxNPCLevel)
   endif
-  RapeScript.Surrendered01.clear()
-  RevivePlayer(False)
-  RapeScript.NPCPacifier.stop()
-  GoToState("")
-  bSurrendering = False
-  RegisterForSingleUpdate(3.0)
-  bRevived = true
+  moaHostileNPCDetector.Start()
+elseif ConfigMenu.iHostileOption == 1
+  moaHostileNPCDetector01.Start()
+endif
+RapeScript.Surrendered01.clear()
+RevivePlayer(False)
+RapeScript.NPCPacifier.stop()
+GoToState("")
+bSurrendering = False
+RegisterForSingleUpdate(3.0)
+bRevived = true
 endFunction
 
 Bool Function bCanSurrender()
@@ -2506,7 +2510,6 @@ Bool Function bCanSurrender()
   elseif NPCScript.isActorInSexAnimation(playerRef)
   Elseif playerRef.IsFlying()
   Elseif playerRef.IsSwimming() 
-  ;ElseIf !PlayerRef.IsInCombat()
   Elseif NPCScript.iInBeastForm()
   ElseIf bInBleedout
   Elseif bSoulMarkActivated

@@ -2419,6 +2419,7 @@ function surrenderHandler()
   else
     return
   endif
+  RegisterForSingleUpdate(3.0)
   ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Surrendering...")
   moaBleedoutHandlerState.SetValue(2)
   SendModEvent("moa-Busy", numArg = 2.0)
@@ -2426,7 +2427,6 @@ function surrenderHandler()
     PO3_SKSEFunctions.AddKeywordToRef(playerref, actorBusy_kwd)
   endif
   isBeast = False
-  ;RegisterForSingleUpdate(3.0)
   if PlayerRef.IsOnMount()
     PlayerRef.Dismount()
     utility.wait(3.0)

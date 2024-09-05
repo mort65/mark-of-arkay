@@ -5886,6 +5886,7 @@ function moaStop(Bool bReset=False)
     PlayerRef.SetNoBleedoutRecovery(False)
     PlayerRef.RemovePerk(ReviveScript.Invulnerable)
     moaBleedoutHandlerState.SetValue(0)
+    ReviveScript.removeSceneFlagFromPlayer()
     if bPO3OK
     	PO3_SKSEFunctions.RemoveKeywordFromRef(PlayerRef, ReviveScript.actorBusy_kwd)
     endif

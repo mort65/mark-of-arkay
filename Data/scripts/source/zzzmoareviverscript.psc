@@ -155,6 +155,9 @@ GlobalVariable property moaState auto
 Quest property moaThiefNPC01 auto
 Bool Property bSoulMarkActivated = False Auto Hidden
 Keyword Property actorBusy_kwd Auto
+Quest Property ReviverSceneQst Auto
+Scene Property ReviverScene Auto
+ReferenceAlias Property ReviverSceneAlias Auto
 
 Bool bAnyItemRemoved_ThisRespawn
 Bool bAnySoulRemoved_ThisRespawn
@@ -284,6 +287,7 @@ event OnInit()
     ConfigMenu.moaHealthMonitor.Start()
   endif
   moaBleedoutHandlerState.SetValue(0)
+  removeSceneFlagFromPlayer()
   if ConfigMenu.bPO3OK
     PO3_SKSEFunctions.RemoveKeywordFromRef(PlayerRef, actorBusy_kwd)
   endif
@@ -531,6 +535,7 @@ event OnUpdate()
       PO3_SKSEFunctions.RemoveKeywordFromRef(PlayerRef, actorBusy_kwd)
     endif
     moaBleedoutHandlerState.SetValue(0)
+    removeSceneFlagFromPlayer()
   endif
 endevent
 
@@ -573,7 +578,7 @@ Float function getBaseVersion()
 endfunction
 
 Float function getCurrentVersion()
-  return getBaseVersion() + 3.57
+  return getBaseVersion() + 3.58
 endfunction
 
 
@@ -721,6 +726,7 @@ function BleedoutHandler(String CurrentState)
     bWasSwimming = False
   endif
   moaBleedoutHandlerState.SetValue(1)
+  addSceneFlagToPlayer()
   if ConfigMenu.bPO3OK
     PO3_SKSEFunctions.AddKeywordToRef(PlayerRef, actorBusy_kwd)
   endif
@@ -1362,6 +1368,7 @@ function aftermathHandler()
       Attacker = None
       ToggleSaving(True)
       moaBleedoutHandlerState.SetValue(0)
+      removeSceneFlagFromPlayer()
       SendModEvent("moa-Free")
       if ConfigMenu.bPO3OK
         PO3_SKSEFunctions.RemoveKeywordFromRef(PlayerRef, actorBusy_kwd)
@@ -2422,6 +2429,7 @@ function surrenderHandler()
   RegisterForSingleUpdate(3.0)
   ConfigMenu.bIsLoggingEnabled && Debug.Trace("MarkOfArkay: Surrendering...")
   moaBleedoutHandlerState.SetValue(2)
+  addSceneFlagToPlayer()
   SendModEvent("moa-Busy", numArg = 2.0)
   if ConfigMenu.bPO3OK
     PO3_SKSEFunctions.AddKeywordToRef(playerref, actorBusy_kwd)
@@ -2682,3 +2690,13 @@ State Surrender
     RegisterForSingleUpdate(3.0)
   endEvent
 endstate
+
+function addSceneFlagToPlayer()
+  ReviverSceneAlias.ForceRefTo(PlayerRef)
+  ReviverSceneQst.IsRunning() || ReviverSceneQst.Start()
+  ReviverScene.IsPlaying() || ReviverScene.Start()
+EndFunction
+
+function removeSceneFlagFromPlayer()
+  ReviverSceneAlias.Clear()
+EndFunction

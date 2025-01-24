@@ -578,7 +578,7 @@ Float function getBaseVersion()
 endfunction
 
 Float function getCurrentVersion()
-  return getBaseVersion() + 3.58
+  return getBaseVersion() + 3.59
 endfunction
 
 

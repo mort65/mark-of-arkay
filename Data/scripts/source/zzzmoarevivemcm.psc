@@ -4253,7 +4253,7 @@ event OnPageReset(String page)
     _AddTextOption("FISSES", bFISSOK As String, flags)
 	_AddTextOption("MOA Util", bMOAUtilOK As String, flags)
     _AddTextOption("PapyrusUtil ", bPUOK As String, flags)
-    _AddTextOption("Pyramid Utils", bPYOK As String, flags)
+    _AddTextOption("Scrab's Papyrus Extender", bPYOK As String, flags)
     _AddTextOption("PO3 Papyrus Extender", bPO3Ok As String, flags)
     AddTextOption("OStim", bIsOStimActive As String, flags)
     AddTextOption("Flower Girls", bIsFlowerGirlsActive As String, flags)
@@ -5123,7 +5123,7 @@ Bool function bCheckPreset(FISSInterface fiss, String sFileName)
 endfunction
 
 Bool function bCheckPYUtil()
-	return bSKSELoaded && (SKSE.GetPluginVersion("PyramidUtils") != -1) && (PyramidUtils.GetVersion() > 0)
+	return bSKSELoaded && (PyramidUtils.GetVersion() > 0)
 EndFunction
 
 Bool function bCheckSKSE()

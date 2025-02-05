@@ -74,6 +74,7 @@ Some of the MCM settings can be locked from the debug page. You can set a maximu
     OStim Standalone
     Simple Slavery ++
     Sanguine Debauchery enhanced: SD+ 
+    SkyPatcher
 
 
 **Compatibility**

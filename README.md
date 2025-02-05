@@ -66,7 +66,7 @@ Some of the MCM settings can be locked from the debug page. You can set a maximu
     
     CrosshairRefEvents script hang fix
     PapyrusUtil
-    Pyramid Utils
+    Scrab's Papyrus Extender
     FISSES
     powerofthree's Papyrus Extender
     SexLab
